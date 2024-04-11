@@ -1,25 +1,74 @@
 version: '3.8'
 services:
-  appseed-app:
-    container_name: appseed_app
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: always
+    env_file: .env
+    environment: 
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+      - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
+      - MONGO_INITDB_USERNAME=${MONGO_DB_USERNAME}
+      - MONGO_INITDB_PASSWORD=${MONGO_DB_PASSWORD}
+    volumes:
+      - ${PWD}/_data/mongo:/data/db
+      - ${PWD}/docker/_mongo/fixtures:/import
+      - ${PWD}/docker/_mongo/scripts/init.sh:/docker-entrypoint-initdb.d/setup.sh
+    ports:
+      - 27017:27017
+
+  postgres:
+    container_name: postgres
+    image: postgres:12
+    restart: always
+    env_file: .env
+    environment:
+      - POSTGRES_DB=app_db
+      - POSTGRES_USER=app_db_user
+      - POSTGRES_PASSWORD=supersecretpassword
+      - POSTGRES_PORT=5432
+    ports:
+      - 5432:5432
+    volumes:
+      - ${PWD}/_data/postgres:/var/lib/postgresql/data
+      - ${PWD}/docker/_postgres/scripts/create_test_db.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
+
+  redis:
+    image: redis:6
+    container_name: redis
+    restart: always
+    env_file: .env
+    command: redis-server --requirepass $REDIS_PASSWORD
+    ports:
+      - 6379:6379
+    volumes:
+      - ${PWD}/_data/redis:/var/lib/redis
+
+  phutmot-app:
+    container_name: phutmot_app
     restart: always
     env_file: .env
     build: .
     networks:
       - db_network
       - web_network
+    depends_on:
+      - postgres
+      - redis
   nginx:
     container_name: nginx
     restart: always
     image: "nginx:latest"
     ports:
-      - "5085:5085"
+      - "6090:5085"
     volumes:
       - ./nginx:/etc/nginx/conf.d
     networks:
       - web_network
     depends_on: 
-      - appseed-app
+      - phutmot-app
+  
 networks:
   db_network:
     driver: bridge
