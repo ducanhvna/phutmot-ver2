@@ -10,7 +10,7 @@ urlpatterns = [
 
     # The home page
     path('', views.index, name='home'),
-    path('async', post_generator),
+    # path('async', post_generator),
     # Matches any html file
     re_path(r'^.*\.*', views.pages, name='pages'),
 
