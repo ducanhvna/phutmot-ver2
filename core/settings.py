@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.home'  # Enable the inner home (home)
+    'apps_home'  # Enable the inner home (home)
 ]
 
 MIDDLEWARE = [
@@ -108,7 +108,7 @@ DATABASES = {
         },
     }
 }
-DATABASE_ROUTERS = ['apps_home.utils.db_routers.NonRelRouter', ]
+DATABASE_ROUTERS = ['apps.home.utils.db_routers.NonRelRouter', ]
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
