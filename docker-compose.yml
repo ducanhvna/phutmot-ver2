@@ -56,6 +56,9 @@ services:
     depends_on:
       - postgres
       - redis
+    volumes:
+      - ./apps:/apps
+      - ./core:/core
   nginx-phutmot:
     container_name: nginx_phutmot
     restart: always
