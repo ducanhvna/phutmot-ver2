@@ -108,6 +108,7 @@ DATABASES = {
         },
     }
 }
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 DATABASE_ROUTERS = ['apps.home.utils.db_routers.NonRelRouter', ]
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

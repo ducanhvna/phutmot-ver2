@@ -8,6 +8,14 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.urls import reverse
+from django.http.response import JsonResponse
+
+from .tasks import create_random_posts
+
+
+def post_generator(request):
+    create_random_posts.delay()
+    return JsonResponse({"success": True})
 
 
 @login_required(login_url="/login/")
