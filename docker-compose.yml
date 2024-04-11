@@ -61,7 +61,7 @@ services:
     restart: always
     image: "nginx:latest"
     ports:
-      - "6090:5085"
+      - "8072:5085"
     volumes:
       - ./nginx:/etc/nginx/conf.d
     networks:
