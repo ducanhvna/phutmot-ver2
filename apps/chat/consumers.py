@@ -2,7 +2,7 @@ from email.headerregistry import Group
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 from django.http import JsonResponse
-from apps.home.models import *
+from .models import User, Message
 import json 
 from django.utils import timezone
 from datetime import datetime
