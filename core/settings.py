@@ -27,7 +27,7 @@ DEBUG = env('DEBUG')
 ASSETS_ROOT = os.getenv('ASSETS_ROOT', '/static/assets') 
 
 # load production server from .env
-ALLOWED_HOSTS        = ['localhost', 'hinosoft.com', 'localhost:85', '127.0.0.1',               env('SERVER', default='127.0.0.1') ]
+ALLOWED_HOSTS        = ['localhost', 'hinosoft.com', 'localhost:85', '127.0.0.1',               env('SERVER', default='127.0.0.1'), '103.143.207.113' ]
 CSRF_TRUSTED_ORIGINS = ['http://localhost:85', 'hinosoft.com', 'https://hinosoft.com', 'http://127.0.0.1', 'https://' + env('SERVER', default='127.0.0.1') ]
 
 # Application definition
