@@ -54,6 +54,7 @@ services:
     restart: always
     env_file: .env
     build: .
+    image: app:latest
     networks:
       - db_network
       - web_network
@@ -75,7 +76,35 @@ services:
       - web_network
     depends_on: 
       - phutmot-app
-  
+  celery:
+    build: .
+    image: app:latest
+    container_name: celery
+    restart: always
+    command: [
+      "celery",
+      "-A",
+      "app",
+      "worker",
+      "-c",
+      "1",
+      "-l",
+      "INFO",
+      "--without-heartbeat",
+      "--without-gossip",
+      "--without-mingle",
+    ]
+    env_file: .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=app.settings
+      - DJANGO_WSGI=app.wsgi
+      - DEBUG=False
+    # volumes:
+    #   - ${PWD}/app:/app
+    depends_on:
+      - postgres
+      - redis
+
 networks:
   db_network:
     driver: bridge
