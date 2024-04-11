@@ -80,24 +80,30 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-if os.environ.get('DB_ENGINE') and os.environ.get('DB_ENGINE') == "mysql":
-    DATABASES = { 
-      'default': {
-        'ENGINE'  : 'django.db.backends.mysql', 
-        'NAME'    : os.getenv('DB_NAME'     , 'appseed_db'),
-        'USER'    : os.getenv('DB_USERNAME' , 'appseed_db_usr'),
-        'PASSWORD': os.getenv('DB_PASS'     , 'pass'),
-        'HOST'    : os.getenv('DB_HOST'     , 'localhost'),
-        'PORT'    : os.getenv('DB_PORT'     , 3306),
-        }, 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'HOST': os.environ.get('POSTGRES_HOST'),
+        'NAME': os.environ.get('POSTGRES_NAME'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'PORT': os.environ.get('POSTGRES_PORT'),
+
+    },
+    "nonrel": {
+        "ENGINE": "djongo",
+        "NAME": os.environ.get('MONGO_DB_NAME'),
+        "CLIENT": {
+            "host": os.environ.get('MONGO_DB_HOST'),
+            "port": int(os.environ.get('MONGO_DB_PORT')),
+            "username": os.environ.get('MONGO_DB_USERNAME'),
+            "password": os.environ.get('MONGO_DB_PASSWORD'),
+        },
+        'TEST': {
+            'MIRROR': 'default',
+        },
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': 'db.sqlite3',
-        }
-    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
