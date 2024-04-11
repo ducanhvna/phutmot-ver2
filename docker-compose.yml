@@ -84,7 +84,7 @@ services:
     command: [
       "celery",
       "-A",
-      "app",
+      "core",
       "worker",
       "-c",
       "1",
@@ -96,8 +96,8 @@ services:
     ]
     env_file: .env
     environment:
-      - DJANGO_SETTINGS_MODULE=app.settings
-      - DJANGO_WSGI=app.wsgi
+      - DJANGO_SETTINGS_MODULE=core.settings
+      - DJANGO_WSGI=core.wsgi
       - DEBUG=False
     # volumes:
     #   - ${PWD}/app:/app
