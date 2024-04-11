@@ -56,8 +56,8 @@ services:
     depends_on:
       - postgres
       - redis
-  nginx:
-    container_name: nginx
+  nginx-phutmot:
+    container_name: nginx_phutmot
     restart: always
     image: "nginx:latest"
     ports:
