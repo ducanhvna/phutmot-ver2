@@ -20,7 +20,7 @@ services:
 
   postgres:
     container_name: postgres
-    image: postgres:12
+    image: postgres:13
     restart: always
     env_file: .env
     environment:
