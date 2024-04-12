@@ -1,7 +1,7 @@
 from django.dispatch import receiver
 from numpy import True_, source
 from rest_framework import serializers
-from apps.home.models import *
+from .models import Message, User, Friendship
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:

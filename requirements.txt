@@ -23,3 +23,5 @@ django-channels-jwt-auth-middleware
 channels
 daphne
 djangorestframework
+pandas==1.5.3
+numpy
