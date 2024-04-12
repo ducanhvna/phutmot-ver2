@@ -29,3 +29,6 @@ apps/static/assets/node_modules
 apps/static/assets/yarn.lock
 apps/static/assets/.temp
 
+apps/apec/migrations/
+apps/chat/migrations/
+apps/home/migrations/

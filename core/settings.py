@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'apps.home',  # Enable the inner home (home)
     'apps.chat',
+    'apps.apec',
     
     'channels' , 
 ]
@@ -106,11 +107,16 @@ DATABASES = {
     "nonrel": {
         "ENGINE": "djongo",
         "NAME": os.environ.get('MONGO_DB_NAME'),
+        'USERNAME':  os.environ.get('MONGO_DB_USERNAME'),
+        'PASSWORD': os.environ.get('MONGO_DB_PASSWORD'),
+        'HOST': os.environ.get('MONGO_DB_HOST'),
+        'PORT': int(os.environ.get('MONGO_DB_PORT')),
         "CLIENT": {
             "host": os.environ.get('MONGO_DB_HOST'),
             "port": int(os.environ.get('MONGO_DB_PORT')),
             "username": os.environ.get('MONGO_DB_USERNAME'),
             "password": os.environ.get('MONGO_DB_PASSWORD'),
+            'authMechanism': 'SCRAM-SHA-1',
         },
         'TEST': {
             'MIRROR': 'default',

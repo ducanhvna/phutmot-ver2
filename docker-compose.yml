@@ -13,6 +13,7 @@ services:
       - MONGO_INITDB_PASSWORD=${MONGO_DB_PASSWORD}
     networks:
       - db_network
+      - web_network
     volumes:
       - ${PWD}/_data/mongo:/data/db
       - ${PWD}/docker/_mongo/fixtures:/import
