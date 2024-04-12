@@ -136,7 +136,17 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_IGNORE_RESULT = True
+CELERY_BROKER_URL = os.environ.get('CELERY_URL')
+BROKER_URL = os.environ.get('BROKER_URL')
+CELERYD_HIJACK_ROOT_LOGGER = False
+REDIS_CHANNEL_URL = os.environ.get('REDIS_CHANNEL_URL')
+# settings.py
+REDIS_HOST = os.environ.get('REDIS_HOST')
+REDIS_PORT = os.environ.get('REDIS_PORT')
+REDIS_DB = 0
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 

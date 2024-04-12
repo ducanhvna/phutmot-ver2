@@ -44,11 +44,16 @@ services:
     restart: always
     env_file: .env
     command: redis-server --requirepass $REDIS_PASSWORD
+    expose:
+      - 6379
     ports:
       - 6379:6379
     volumes:
       - ${PWD}/_data/redis:/var/lib/redis
-
+    networks:
+      - db_network
+      - web_network
+    
   phutmot-app:
     container_name: phutmot_app
     restart: always
@@ -73,6 +78,7 @@ services:
     volumes:
       - ./nginx:/etc/nginx/conf.d
     networks:
+      - db_network
       - web_network
     depends_on: 
       - phutmot-app
@@ -101,6 +107,9 @@ services:
       - DEBUG=False
     # volumes:
     #   - ${PWD}/app:/app
+    networks:
+      - db_network
+      - web_network
     depends_on:
       - postgres
       - redis

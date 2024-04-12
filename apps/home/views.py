@@ -14,6 +14,7 @@ from .tasks import create_random_posts
 
 
 def post_generator(request):
+    print('aaaaaaaaaaaaaaa')
     create_random_posts.delay()
     return JsonResponse({"success": True})
 
