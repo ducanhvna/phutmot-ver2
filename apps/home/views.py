@@ -14,7 +14,7 @@ from .models import Device, create_new_ref_number
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .tasks import create_random_posts
-
+from .models import Company 
 
 def post_generator(request):
     print('aaaaaaaaaaaaaaa')
@@ -97,4 +97,15 @@ class CreateDevice(APIView):
         else:    
             result['api'] = 'api/core' if not device.company else 'api/core' if not device.company.api_version else device.company.api_version
         return Response(result)
+        
+# create a viewset 
+class CompanyViewSet(APIView): 
+    # define queryset 
+    def get(self, request, *args, **kwargs): 
+        result =[]
+        queryset = Company.objects.all() 
+        for item in queryset:
+            result.append({'id': item.id, 'name': item.name, 'api_version': item.api_version, 'code': item.code})
+        # print('aaaaaa')
+        return Response({'count': len(result),'data':result})
         
