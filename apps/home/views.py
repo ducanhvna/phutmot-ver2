@@ -9,7 +9,10 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.urls import reverse
 from django.http.response import JsonResponse
-
+from django.conf import settings
+from .models import Device, create_new_ref_number
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from .tasks import create_random_posts
 
 
@@ -51,3 +54,47 @@ def pages(request):
     except:
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
+
+class CreateDevice(APIView):
+    def post(self, request, format=None):
+        device_id = request.data.get('id')
+        device_type = request.data.get('type')
+        
+        devices = Device.objects.filter(id=device_id)
+        
+        if len(devices) == 0:
+            code = create_new_ref_number()
+            while len(settings.AUTH_USER_MODEL.objects.filter(username=code)) > 0:
+                code = create_new_ref_number()
+            print('code: ',code)
+            # device_id = request.data.get('id')
+            user = settings.AUTH_USER_MODEL.objects.create_user(username=code,
+                                    email=f'{code}@hinosoft.com',
+                                    password=code)
+            
+            result = {'device_id': device.id,'device_name': device.name, 'owner': device.user_owner, 
+                'username': user.username}
+            # return Response(device)
+        else:
+            device = devices[0]
+            if not device.name:
+                device.name = device.user.username if device.user else None
+                device.save()
+            try:
+                result = {'device_id': device.id,
+                            'device_name': device.name, 
+                            'owner': device.user_owner.username if device.user_owner else None, 
+                            'username': device.user.username if device.user else None}
+            except:
+                result = {'device_id': device.id,
+                            'device_name': device.name, 
+                            'owner': device.user_owner.username if device.user_owner else None, 
+                            'username': device.user.username if device.user else None}
+                
+        if device.user_owner:
+            device_company = None if not device.user_owner.user_device else device.user_owner.user_device.company
+            result['api'] = 'api/core' if not device_company else 'api/core' if not device_company.api_version else device_company.api_version
+        else:    
+            result['api'] = 'api/core' if not device.company else 'api/core' if not device.company.api_version else device.company.api_version
+        return Response(result)
+        

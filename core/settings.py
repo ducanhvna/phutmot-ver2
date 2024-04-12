@@ -182,3 +182,39 @@ STATICFILES_DIRS = (
 
 #############################################################
 #############################################################
+VANTAIHAHAI_CONFIG = {
+        "user_id": 2,
+        "user_context": {
+            "lang": "vi_VN",
+            "tz": "Asia/Saigon",
+            "uid": 2
+        },
+        "company_id": 1,
+        "access_token": "fd949520448ba5966593f194548f24cfc56fc519",
+        "expires_in": 72000000,
+        "refresh_token": "7dd3502a2eb684903b7e5c8fecd537796173460e",
+        "refresh_expires_in": 72000000,
+        'register_token':'123456',
+        'url': 'https://vantaihahai.com',
+        'db': 'fleet',
+        'username':'admin',
+        'password':'admin'
+          
+}
+
+APEC_CONFIG = {
+    'MINIO_ACCESS_KEY' : "FLoU4kYrt6EQ8eyWBLjD",
+    'MINIO_SECRET_KEY' : "LBa3KybNAxwxHWuFPqKF00ppIi5iOotJXQQzriUa",
+    'MINIO_BUCKET_NAME' : "apecerp",
+    'MINIO_ENDPOINT_URL' : "http://42.113.122.201:9000/apecerp/",
+    'MINIO_ENDPOINT' : "42.113.122.201:9000",
+    'MINIO_PUBLIC_URL' : "https://minio.qcloud.asia/apecerp/",
+    'SERVER_URL' : 'https://hrm.mandalahotel.com.vn',
+    'SERVER_URL_DB' : 'apechrm_product_v3',
+    'SERVER_USERNAME': 'admin_ho',
+    'SERVER_PASSWORD': '369249ce990803ee489c47cf604e3c8622173f39',
+# CLOUD_OUTPUT_REPORT_FOLDER = env('CLOUD_OUTPUT_REPORT_FOLDER', default='C:/Users/PC/Dropbox/APECHRMS/OuputReport_M2')
+
+    'SERVER_CRM_USERNAME': 'yenbt',
+    'SERVER_CRM_PASSWORD': 'c278b3b1aea761ebaccf5a4f2589716d4cc800df'
+}

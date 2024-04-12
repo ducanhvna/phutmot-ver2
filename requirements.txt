@@ -26,3 +26,6 @@ djangorestframework
 pandas==1.5.3
 numpy
 redis-cli
+requests==2.31.0
+markdown==3.6
+django-filter==23.5
