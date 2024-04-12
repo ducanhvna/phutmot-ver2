@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'apps.home',  # Enable the inner home (home)
     'apps.chat',
     'apps.apec',
-    
+    'rest_framework',
     'channels' , 
 ]
 
