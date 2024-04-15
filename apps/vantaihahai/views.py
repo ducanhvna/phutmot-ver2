@@ -23,13 +23,12 @@ class SyncUserDevice(APIView):
         #     company_info = user.user_owner.company
         # else:
         company_info = Company.objects.get(pk = company_id)
-        apec = VanTaiHaHai(url=company_info.url, 
+        vantai = VanTaiHaHai(url=company_info.url, 
                             dbname= company_info.dbname,
                             username= company_info.username, 
                             password= company_info.password)
-        correct = apec.authenticate(username, password) 
         
-        if correct > 0:
+        if vantai.uid > 0:
             try:
                 target_user = User.objects.get(username=f'{company_info.code}_{username}')
             except:

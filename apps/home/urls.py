@@ -15,6 +15,7 @@ urlpatterns = [
     path('apiv2/create_device', CreateDevice.as_view(), name='api_create_device'),
     path("api/versions/", CompanyViewSet.as_view(), name='versions'),
     path("apiv2/apec/", include("apps.apec.urls")),
+    path("apiv2/vantaihahai/", include("apps.apec.urls")),
     
     re_path(r'^.*\.*', views.pages, name='pages'),
 ]
