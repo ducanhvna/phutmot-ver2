@@ -1,5 +1,4 @@
 from django.urls import path, include , re_path
-from apps.home import views
 from .views import SyncUserDevice, GetListCompany, GetListHrmEmployees, \
                         GetListHrmAttendanceReport
 
