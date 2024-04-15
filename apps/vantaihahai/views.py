@@ -75,3 +75,56 @@ class SyncUserDevice(APIView):
         # type = request.data.get('type')
         
         return Response({'data': results})
+    
+    
+class GetListCompany(APIView):
+    permission_classes = (IsAuthenticated,)
+    def get(self, request, *args, **kwargs): 
+        user = request.user 
+        device = user.user_device
+        results = []
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        company_info = device.company
+        username = device.username
+        password = device.password
+        apec = VanTaiHaHai(company_info.url, company_info.dbname, username, password)
+        
+        results = []
+            
+        return Response({'data': results})
+    
+class GetListHrmEmployees(APIView):
+    permission_classes = (IsAuthenticated,)
+    def get(self, request, *args, **kwargs): 
+        user = request.user 
+        device = user.user_device
+        results = []
+
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        company_info = device.company
+        username = device.username
+        password = device.password
+        vantai = VanTaiHaHai(company_info.url, company_info.dbname, username, password)
+        results = []
+        return Response({'data': results})
+    
+class GetListHrmAttendanceReport(APIView):
+    permission_classes = (IsAuthenticated,)
+    def get(self, request, *args, **kwargs): 
+        user = request.user 
+        device = user.user_device
+        results = []
+
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        company_info = device.company
+        username = device.username
+        password = device.password
+        vantai = VanTaiHaHai(company_info.url, company_info.dbname, username, password)
+        results = []
+        return Response({'data': results})
