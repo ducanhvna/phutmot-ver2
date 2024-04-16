@@ -17,7 +17,20 @@ class VanTaiHaHai():
             self.uid = common.authenticate(self.db, self.username, self.password, {})
         except Exception as ex:
             print("day la: ", ex)
-    def tatcachuyendicuataixe(self, employee_id):
+    def getlistemployee(self):
+        domain = ['&',('active', '=', True), ('user_id', '=', self.uid)]
+        employees = self.models.execute_kw(self.db, self.uid,  self.password, 'hr.employee', 'search_read', [domain], 
+        {'fields': ['id', 'name', 'user_id','employee_ho',
+                        'company_id']})
+        return employees
+   
+    def tatcachuyendicuataixe(self, employee_id=None):
+        if not employee_id:
+
+            employees = self.getlistemployee()
+            # employee_code = employees[0]['code']
+            employee_id = employees[0]['id']
+            
         results = []
         if employee_id>0:
             results = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'search_read', 
@@ -27,7 +40,7 @@ class VanTaiHaHai():
             for item in results:
                 item['fleet_product_id'] = {'id': item['fleet_product_id'][0], 'name': item['fleet_product_id'][1]} \
                         if item['fleet_product_id'] else None
-        return {'data':{'results': results}}
+        return {'data':{'results': results}, 'employee': {'id': employee_id}}
     
     def tatcachuyendihomnay(self):
         today_str = datetime.datetime.now().strftime('%Y-%m-%d') 
