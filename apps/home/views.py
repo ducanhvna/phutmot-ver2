@@ -14,7 +14,7 @@ from .models import Device, create_new_ref_number
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .tasks import create_random_posts
-from .models import Company 
+from .models import Company, Device
 
 def post_generator(request):
     print('aaaaaaaaaaaaaaa')
