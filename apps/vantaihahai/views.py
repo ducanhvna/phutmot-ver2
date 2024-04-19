@@ -91,7 +91,10 @@ class GetListCompany(APIView):
         company_info = device.company
         username = device.username
         password = device.password
-        apec = VanTaiHaHai(company_info.url, company_info.dbname, username, password)
+        vantai = VanTaiHaHai(url=company_info.url, 
+                            dbname= company_info.dbname,
+                            username= username, 
+                            password= password)
         
         results = []
             
@@ -110,7 +113,10 @@ class GetListHrmEmployees(APIView):
         company_info = device.company
         username = device.username
         password = device.password
-        vantai = VanTaiHaHai(company_info.url, company_info.dbname, username, password)
+        vantai = VanTaiHaHai(url=company_info.url, 
+                            dbname= company_info.dbname,
+                            username= username, 
+                            password= password)
         results = []
         return Response({'data': results})
     
@@ -127,7 +133,10 @@ class GetListHrmAttendanceReport(APIView):
         company_info = device.company
         username = device.username
         password = device.password
-        vantai = VanTaiHaHai(company_info.url, company_info.dbname, username, password)
+        vantai = VanTaiHaHai(url=company_info.url, 
+                            dbname= company_info.dbname,
+                            username= username, 
+                            password= password)
         results = []
         return Response({'data': results})
 
@@ -158,7 +167,10 @@ class ThongtintaixeApi(APIView):
                 company_info = device.company
                 username = device.username
                 password = device.password
-                vantai = VanTaiHaHai(company_info.url, company_info.dbname, username, password)
+                vantai = VanTaiHaHai(url=company_info.url, 
+                            dbname= company_info.dbname,
+                            username= username, 
+                            password= password)
                 data = GetThongtintaixe(vantai.uid)
                 data['data']['code'] = device.name
                 # salaries = MemberSalary.objects.filter(member = device.device_membership.member)
@@ -199,7 +211,10 @@ class Tatcachuyendi(APIView):
                 company_info = device.company
                 username = device.username
                 password = device.password
-                vantai = VanTaiHaHai(company_info.url, company_info.dbname, username, password)
+                vantai = VanTaiHaHai(url=company_info.url, 
+                            dbname= company_info.dbname,
+                            username= username, 
+                            password= password)
                 
                 queryset2= vantai.tatcachuyendicuataixe()
                 employee_id = queryset2['employee']['id']
@@ -228,9 +243,19 @@ class Cacchuyenhomnay(APIView):
         queryset = []
         result= []
         # find device
-        devices = Device.objects.filter(user=self.request.user)
-
-        vantai = VanTaiHaHai()
+        # devices = Device.objects.filter(user=self.request.user)
+        device = self.request.user.user_device
+        results = []
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        username = device.username
+        password = device.password
+        company_info = device.company
+        vantai = VanTaiHaHai(url=company_info.url, 
+                    dbname= company_info.dbname,
+                    username= username, 
+                    password= password)
         result = vantai.tatcachuyendihomnay()
             # except Exception as ex:
             #     print(ex)
@@ -247,8 +272,18 @@ class CapnhatHanghoa(APIView):
     def put(self, request, *args, **kwargs): 
         hanhtrinh = kwargs.get('hanhtrinh')
         product_id = request.data.get('product_id')
-    
-        vantai = VanTaiHaHai()
+        device = self.request.user.user_device
+        results = []
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        company_info = device.company
+        username = device.username
+        password = device.password
+        vantai = VanTaiHaHai(url=company_info.url, 
+                    dbname= company_info.dbname,
+                    username= username, 
+                    password= password)
         result = vantai.capnhathanghoa(hanhtrinh, product_id)
     
         return Response(result)    
@@ -265,7 +300,18 @@ class CapnhatkmKetthuc(APIView):
         # ht_object = Hanhtrinh.objects.get(hanhtrinh_id=hanhtrinh)
         # ht_object.odo_end= km_end
         # ht_object.save()
-        vantai = VanTaiHaHai()
+        device = self.request.user.user_device
+        results = []
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        username = device.username
+        password = device.password
+        company_info = device.company
+        vantai = VanTaiHaHai(url=company_info.url, 
+                    dbname= company_info.dbname,
+                    username= username, 
+                    password= password)
         result = vantai.capnhatsokmketthuchanhtrinh(hanhtrinh, km_end, None, attackements)
             # attachments = body['attachments']
             # for item in attachments:
@@ -311,10 +357,18 @@ class CapnhatDiadiemBatdau(APIView):
     def put(self, request, *args, **kwargs): 
         hanhtrinh = kwargs.get('hanhtrinh')
         location_id = request.data.get('location_id')
-        # ht_object = Hanhtrinh.objects.get(hanhtrinh_id=hanhtrinh)
-        # ht_object.odo_start= km_end
-        # ht_object.save()
-        vantai = VanTaiHaHai()
+        device = self.request.user.user_device
+        results = []
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        username = device.username
+        password = device.password
+        company_info = device.company
+        vantai = VanTaiHaHai(url=company_info.url, 
+                    dbname= company_info.dbname,
+                    username= username, 
+                    password= password)
         result = vantai.capnhatlocationbatdauhanhtrinh(hanhtrinh, location_id)
             # attachments = body['attachments']
             # for item in attachments:
@@ -335,7 +389,20 @@ class CapnhatDiadiemKetthuc(APIView):
         # ht_object = Hanhtrinh.objects.get(hanhtrinh_id=hanhtrinh)
         # ht_object.odo_start= km_end
         # ht_object.save()
-        vantai = VanTaiHaHai()
+        device = self.request.user.user_device
+        results = []
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        company_info = device.company
+        username = device.username
+        password = device.password
+        
+
+        vantai = VanTaiHaHai(url=company_info.url, 
+                    dbname= company_info.dbname,
+                    username= username, 
+                    password= password)
         result = vantai.capnhatlocationketthuchanhtrinh(hanhtrinh, location_id)
             # attachments = body['attachments']
             # for item in attachments:
@@ -358,7 +425,19 @@ class CapnhatkmBatdau(APIView):
         # ht_object = Hanhtrinh.objects.get(hanhtrinh_id=hanhtrinh)
         # ht_object.odo_start= km_end
         # ht_object.save()
-        vantai = VanTaiHaHai()
+        device = self.request.user.user_device
+        results = []
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        company_info = device.company
+
+        username = device.username
+        password = device.password
+        vantai = VanTaiHaHai(url=company_info.url, 
+                    dbname= company_info.dbname,
+                    username= username, 
+                    password= password)
         vantai.capnhatsokmbatdauhanhtrinh(hanhtrinh, km_end, None, attackements)
             # attachments = body['attachments']
             # for item in attachments:
@@ -453,12 +532,19 @@ class ListYeucaubaotrixe(APIView):
     def get(self, request, *args, **kwargs): 
         equitment_id = request.data.get('equitment')
         equitment_id = kwargs.get('equitment')
-        # user = request.user 
-        # try:
-            # device = user.user_device
-        # if device:
-            
-        result = VanTaiHaHai().danhsachyeucaubaotrixe(equitment_id)
+        device = self.request.user.user_device
+        results = []
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        company_info = device.company
+        username = device.username
+        password = device.password
+        vantai = VanTaiHaHai(url=company_info.url, 
+                    dbname= company_info.dbname,
+                    username= username, 
+                    password= password)
+        result = vantai.danhsachyeucaubaotrixe(equitment_id)
         return Response(result)
         # except Exception as ex:
         #     print(ex)
@@ -601,7 +687,12 @@ class Taohanhtrinh(APIView):
                 "fleet_product_id": request.data.get('fleet_product_id'),
                 "employee_id":hahai_member.employee_id,
             }
-        vantai = VanTaiHaHai()
+        username = device.username
+        password = device.password
+        vantai = VanTaiHaHai(url=company_info.url, 
+                    dbname= company_info.dbname,
+                    username= username, 
+                    password= password)
         result = vantai.themmoichuyendi(body)
         return Response(result)
         # except Exception as ex:
