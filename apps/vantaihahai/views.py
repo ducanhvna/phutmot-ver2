@@ -196,9 +196,12 @@ class Tatcachuyendi(APIView):
                 owner_devices = Device.objects.filter(user=device.user_owner)
                 if len(owner_devices)>0:
                     device = owner_devices[0]
-            
+                company_info = device.company
+                username = device.username
+                password = device.password
+                vantai = VanTaiHaHai(company_info.url, company_info.dbname, username, password)
                 
-                queryset2= VanTaiHaHai().tatcachuyendicuataixe()
+                queryset2= vantai.tatcachuyendicuataixe()
                 employee_id = queryset2['employee']['id']
                 print("Tat ca cac chuyen di cua: ", employee_id)
             
