@@ -9,7 +9,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.urls import reverse
 from django.http.response import JsonResponse
-from django.conf import settings
+from django.contrib.auth.models import User
 from .models import Device, create_new_ref_number
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -64,11 +64,11 @@ class CreateDevice(APIView):
         
         if len(devices) == 0:
             code = create_new_ref_number()
-            while len(settings.AUTH_USER_MODEL.objects.filter(username=code)) > 0:
+            while len(User.objects.filter(username=code)) > 0:
                 code = create_new_ref_number()
             print('code: ',code)
             # device_id = request.data.get('id')
-            user = settings.AUTH_USER_MODEL.objects.create_user(username=code,
+            user = User.objects.create_user(username=code,
                                     email=f'{code}@hinosoft.com',
                                     password=code)
             device = Device(type = device_type, name=code, id=device_id, user= user)
