@@ -1,7 +1,7 @@
 
 from django.conf import  settings
 import requests, json
-from .models import VantaihahaiMember, VantaihahaiMembership
+# from .models import VantaihahaiMember, VantaihahaiMembership
 import xmlrpc.client
 import datetime
 class VanTaiHaHai():
