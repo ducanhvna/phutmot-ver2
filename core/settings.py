@@ -130,6 +130,9 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=72),
+}
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 DATABASE_ROUTERS = ['apps.home.utils.db_routers.NonRelRouter', ]
 # Password validation
