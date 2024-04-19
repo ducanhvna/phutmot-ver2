@@ -27,8 +27,8 @@ class SyncUserDevice(APIView):
         company_info = Company.objects.get(pk = company_id)
         vantai = VanTaiHaHai(url=company_info.url, 
                             dbname= company_info.dbname,
-                            username= company_info.username, 
-                            password= company_info.password)
+                            username= username, 
+                            password= password)
         
         if vantai.uid > 0:
             try:
