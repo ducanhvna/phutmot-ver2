@@ -71,7 +71,8 @@ class CreateDevice(APIView):
             user = settings.AUTH_USER_MODEL.objects.create_user(username=code,
                                     email=f'{code}@hinosoft.com',
                                     password=code)
-            
+            device = Device(type = device_type, name=code, id=device_id, user= user)
+            device.save()
             result = {'device_id': device.id,'device_name': device.name, 'owner': device.user_owner, 
                 'username': user.username}
             # return Response(device)
