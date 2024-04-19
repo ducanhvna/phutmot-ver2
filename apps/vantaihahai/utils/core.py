@@ -20,7 +20,7 @@ class VanTaiHaHai():
     def getlistemployee(self):
         domain = ['&',('active', '=', True), ('user_id', '=', self.uid)]
         employees = self.models.execute_kw(self.db, self.uid,  self.password, 'hr.employee', 'search_read', [domain], 
-        {'fields': ['id', 'name', 'user_id','employee_ho',
+        {'fields': ['id', 'name', 'user_id',
                         'company_id']})
         return employees
    
