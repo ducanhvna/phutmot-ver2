@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apps.vantaihahai',
     'rest_framework',
     'channels' , 
+    'rest_framework_simplejwt'
 ]
 
 CHANNEL_LAYERS = {
@@ -123,6 +124,11 @@ DATABASES = {
             'MIRROR': 'default',
         },
     }
+}
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
 }
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 DATABASE_ROUTERS = ['apps.home.utils.db_routers.NonRelRouter', ]
