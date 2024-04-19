@@ -227,9 +227,9 @@ class Tatcachuyendi(APIView):
                             item['location_id'] = item2['location_id']
                             item['location_dest_id'] = item2['location_dest_id']
                             item['fleet_product_id'] = item2['fleet_product_id']
-                queryset['employee_id'] = employee_id
-                print(queryset)
-        return Response(queryset)
+                queryset2['employee_id'] = employee_id
+                print(queryset2)
+        return Response(queryset2)
         # except Exception as ex:
         #     print(ex)
         #     return Response({
