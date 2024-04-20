@@ -310,8 +310,10 @@ class CapnhatkmKetthuc(APIView):
         user_owner = device.user_owner
         if user_owner:
             device = user_owner.user_device
-        username = device.username
-        password = device.password
+        # username = device.username
+        # password = device.password
+        username = settings.VANTAIHAHAI_CONFIG['username']
+        password = settings.VANTAIHAHAI_CONFIG['password']
         company_info = device.company
         vantai = VanTaiHaHai(url=company_info.url, 
                     dbname= company_info.dbname,
@@ -367,8 +369,10 @@ class CapnhatDiadiemBatdau(APIView):
         user_owner = device.user_owner
         if user_owner:
             device = user_owner.user_device
-        username = device.username
-        password = device.password
+        # username = device.username
+        # password = device.password
+        username = settings.VANTAIHAHAI_CONFIG['username']
+        password = settings.VANTAIHAHAI_CONFIG['password']
         company_info = device.company
         vantai = VanTaiHaHai(url=company_info.url, 
                     dbname= company_info.dbname,
@@ -400,9 +404,10 @@ class CapnhatDiadiemKetthuc(APIView):
         if user_owner:
             device = user_owner.user_device
         company_info = device.company
-        username = device.username
-        password = device.password
-        
+        # username = device.username
+        # password = device.password
+        username = settings.VANTAIHAHAI_CONFIG['username']
+        password = settings.VANTAIHAHAI_CONFIG['password']
 
         vantai = VanTaiHaHai(url=company_info.url, 
                     dbname= company_info.dbname,
@@ -436,9 +441,10 @@ class CapnhatkmBatdau(APIView):
         if user_owner:
             device = user_owner.user_device
         company_info = device.company
-
-        username = device.username
-        password = device.password
+        username = settings.VANTAIHAHAI_CONFIG['username']
+        password = settings.VANTAIHAHAI_CONFIG['password']
+        # username = device.username
+        # password = device.password
         vantai = VanTaiHaHai(url=company_info.url, 
                     dbname= company_info.dbname,
                     username= username, 
@@ -564,6 +570,8 @@ class TaoghichuBaotri(APIView):
     def post(self, request, *args, **kwargs): 
         equitment = kwargs.get('equitment')
         note = request.data.get('note')
+        username = settings.VANTAIHAHAI_CONFIG['username']
+        password = settings.VANTAIHAHAI_CONFIG['password']
         # user = request.user 
         try:
             # device = user.user_device

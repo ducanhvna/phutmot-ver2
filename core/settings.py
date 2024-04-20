@@ -208,7 +208,7 @@ VANTAIHAHAI_CONFIG = {
         'url': 'https://vantaihahai.com',
         'db': 'fleet',
         'username':'admin',
-        'password':'admin'
+        'password':'1a604ab3fb196f6ea5f8967229b6b38cf4a5c73d'
           
 }
 
