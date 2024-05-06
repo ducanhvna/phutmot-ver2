@@ -678,10 +678,10 @@ class Taohanhtrinh(APIView):
         user_owner = device.user_owner
         if user_owner:
             device = user_owner.user_device
-        # username = device.username
-        # password = device.password
-        username = settings.VANTAIHAHAI_CONFIG['username']
-        password = settings.VANTAIHAHAI_CONFIG['password']
+        username = device.username
+        password = device.password
+        # username = settings.VANTAIHAHAI_CONFIG['username']
+        # password = settings.VANTAIHAHAI_CONFIG['password']
         company_info = device.company
     
         vantai = VanTaiHaHai(url=company_info.url, 
