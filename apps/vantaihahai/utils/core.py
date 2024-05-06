@@ -162,6 +162,9 @@ class VanTaiHaHai():
             except Exception as ex:
                 print('des errr', ex)
         print('chot ha: ', body)
+        for k in body.keys():
+            if not body[k]:
+                body[k] = False
         id_trip = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'create', [body])
        
         return id_trip
