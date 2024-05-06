@@ -672,24 +672,20 @@ class Taohanhtrinh(APIView):
     def post(self, request, *args, **kwargs): 
         # equitment = kwargs.get('equitment')
         user = request.user 
-        print(user)
-        is_superuser = user.is_superuser
-        # admin_boad = AdminBoard.objects.filter(user=user).first()
-        # if not is_superuser and  not admin_boad :
-        #     return HttpResponseRedirect('/auth')
-        # if is_superuser or admin_boad.is_vantaihahai_admin :
-        user_devices = Device.objects.filter(user = user)
-        hahai_member = None
-        xe_phutrach = None
-        if  len(user_devices)>0:
-            print('ha hai member: ', hahai_member)
-            user_device = user_devices[0]
-            # device = devices[0]
-            if user_device.user_owner:
-                owner_devices = Device.objects.filter(user=user_device.user_owner)
-                if len(owner_devices)>0:
-                    user_device = owner_devices[0]
-            print("tim kiem xe cua : ",hahai_member.member_id)
+        device = self.request.user.user_device
+        results = []
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        # username = device.username
+        # password = device.password
+        username = settings.VANTAIHAHAI_CONFIG['username']
+        password = settings.VANTAIHAHAI_CONFIG['password']
+        company_info = device.company
+        vantai = VanTaiHaHai(url=company_info.url, 
+                    dbname= company_info.dbname,
+                    username= username, 
+                    password= password)
       
         body = {
                 # "equipment_id": request.data.get('equipment_id'),
@@ -700,13 +696,13 @@ class Taohanhtrinh(APIView):
                 "fleet_product_id": request.data.get('fleet_product_id'),
                 "employee_id":hahai_member.employee_id,
             }
-        username = device.username
-        password = device.password
+        # username = device.username
+        # password = device.password
         try:
-            vantai = VanTaiHaHai(url=company_info.url, 
-                        dbname= company_info.dbname,
-                        username= username, 
-                        password= password)
+            # vantai = VanTaiHaHai(url=company_info.url, 
+            #             dbname= company_info.dbname,
+            #             username= username, 
+            #             password= password)
             result = vantai.themmoichuyendi(body)
             return Response(result)
         except Exception as ex:
