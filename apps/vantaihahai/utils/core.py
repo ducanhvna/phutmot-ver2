@@ -4,6 +4,29 @@ import requests, json
 # from .models import VantaihahaiMember, VantaihahaiMembership
 import xmlrpc.client
 import datetime
+
+def chitiethanhtrinh(hanhtrinh):
+     # user = order.user
+    url = f'https://vantaihahai.com/api/fleet.trip/{hanhtrinh}'
+    access_token = settings.VANTAIHAHAI_CONFIG['access_token']
+    headers = {
+        # 'Content-Type': 'application/json',
+        'access_token': f'{access_token}'
+    }
+
+    print("Chi tiet hanh trinh: ", hanhtrinh)
+   
+    response = requests.request("GET", url, headers=headers)
+    print(response)
+    
+    if response.status_code == 200:
+        # order.haravan_order = response_json['order']['name']
+        # order.save() 
+        response_json =  response.json()
+        return response_json
+    else:
+        return None
+
 class VanTaiHaHai():
     def __init__(self,url=None, dbname= None, username=None, password=None):
         print('init hahai')
@@ -167,7 +190,7 @@ class VanTaiHaHai():
                 body[k] = False
         id_trip = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'create', [body])
        
-        return id_trip
+        return chitiethanhtrinh(id_trip)
     def capnhatsokmketthuchanhtrinh(self, hanhtrinh, sokm, body, attackements=None):
         result = None
         try:
@@ -697,28 +720,6 @@ def danhsachmathang():
     }
 
     print("Dan sach cac mat hang: ")
-   
-    response = requests.request("GET", url, headers=headers)
-    print(response)
-    
-    if response.status_code == 200:
-        # order.haravan_order = response_json['order']['name']
-        # order.save() 
-        response_json =  response.json()
-        return response_json
-    else:
-        return None
-
-def chitiethanhtrinh(hanhtrinh):
-     # user = order.user
-    url = f'https://vantaihahai.com/api/fleet.trip/{hanhtrinh}'
-    access_token = settings.VANTAIHAHAI_CONFIG['access_token']
-    headers = {
-        # 'Content-Type': 'application/json',
-        'access_token': f'{access_token}'
-    }
-
-    print("Chi tiet hanh trinh: ", hanhtrinh)
    
     response = requests.request("GET", url, headers=headers)
     print(response)
