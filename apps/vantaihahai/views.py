@@ -671,18 +671,19 @@ class Taohanhtrinh(APIView):
     # authentication_classes = [authentication.SessionAuthentication]
     def post(self, request, *args, **kwargs): 
         # equitment = kwargs.get('equitment')
-        user = request.user 
-        device = self.request.user.user_device
-        results = []
-        user_owner = device.user_owner
-        if user_owner:
-            device = user_owner.user_device
-        # username = device.username
-        # password = device.password
-        username = settings.VANTAIHAHAI_CONFIG['username']
-        password = settings.VANTAIHAHAI_CONFIG['password']
-        company_info = device.company
         try:
+            user = request.user 
+            device = self.request.user.user_device
+            results = []
+            user_owner = device.user_owner
+            if user_owner:
+                device = user_owner.user_device
+            # username = device.username
+            # password = device.password
+            username = settings.VANTAIHAHAI_CONFIG['username']
+            password = settings.VANTAIHAHAI_CONFIG['password']
+            company_info = device.company
+        
             vantai = VanTaiHaHai(url=company_info.url, 
                         dbname= company_info.dbname,
                         username= username, 
