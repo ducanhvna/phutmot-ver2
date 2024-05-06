@@ -126,7 +126,11 @@ class VanTaiHaHai():
         location_ids = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.location',  'search', [[]], {})
         list_locations = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.location', 'read',
                 [location_ids],{'fields':['id','ward_id', 'district_id','state_id']})
-    
+        employee_ids = self.models.execute_kw(self.db, self.uid, self.password, 'hr.employee', 'search',[[('user_id','=',self.uid)],{}])
+        if len(employee_ids)>0:
+            body['employee_id'] = employee_ids[0]
+        else:
+            body['employee_id'] = False
         print("danh sach dia chir", list_locations)
       
         location_id = body['location_id']

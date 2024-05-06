@@ -696,7 +696,7 @@ class Taohanhtrinh(APIView):
                 "location_dest_id": request.data.get('location_dest_id'),
                 "equipment_id":request.data.get('equipmentId'),
                 "fleet_product_id": request.data.get('fleet_product_id'),
-                "employee_id":hahai_member.employee_id,
+                # "employee_id":hahai_member.employee_id,
             }
         # username = device.username
         # password = device.password
