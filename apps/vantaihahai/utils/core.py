@@ -190,7 +190,7 @@ class VanTaiHaHai():
                 body[k] = False
         id_trip = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'create', [body])
        
-        return chitiethanhtrinh(id_trip)
+        return {'data': {'result': id_trip}}
     def capnhatsokmketthuchanhtrinh(self, hanhtrinh, sokm, body, attackements=None):
         result = None
         try:
