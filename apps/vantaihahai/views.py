@@ -682,23 +682,24 @@ class Taohanhtrinh(APIView):
         username = settings.VANTAIHAHAI_CONFIG['username']
         password = settings.VANTAIHAHAI_CONFIG['password']
         company_info = device.company
-        vantai = VanTaiHaHai(url=company_info.url, 
-                    dbname= company_info.dbname,
-                    username= username, 
-                    password= password)
-      
-        body = {
-                # "equipment_id": request.data.get('equipment_id'),
-                "schedule_date": request.data.get('schedule_date'),
-                "location_id": request.data.get('location_id'),
-                "location_dest_id": request.data.get('location_dest_id'),
-                "equipment_id":xe_phutrach.hahai_id,
-                "fleet_product_id": request.data.get('fleet_product_id'),
-                "employee_id":hahai_member.employee_id,
-            }
+        try:
+            vantai = VanTaiHaHai(url=company_info.url, 
+                        dbname= company_info.dbname,
+                        username= username, 
+                        password= password)
+        
+            body = {
+                    # "equipment_id": request.data.get('equipment_id'),
+                    "schedule_date": request.data.get('schedule_date'),
+                    "location_id": request.data.get('location_id'),
+                    "location_dest_id": request.data.get('location_dest_id'),
+                    "equipment_id":xe_phutrach.hahai_id,
+                    "fleet_product_id": request.data.get('fleet_product_id'),
+                    "employee_id":hahai_member.employee_id,
+                }
         # username = device.username
         # password = device.password
-        try:
+        
             # vantai = VanTaiHaHai(url=company_info.url, 
             #             dbname= company_info.dbname,
             #             username= username, 
