@@ -702,15 +702,16 @@ class Taohanhtrinh(APIView):
             }
         username = device.username
         password = device.password
-        vantai = VanTaiHaHai(url=company_info.url, 
-                    dbname= company_info.dbname,
-                    username= username, 
-                    password= password)
-        result = vantai.themmoichuyendi(body)
-        return Response(result)
-        # except Exception as ex:
-        #     print(ex)
-        #     return Response({
-        #                     'status': False, 
-        #                     'error' : ex.message
-        #                 })
+        try:
+            vantai = VanTaiHaHai(url=company_info.url, 
+                        dbname= company_info.dbname,
+                        username= username, 
+                        password= password)
+            result = vantai.themmoichuyendi(body)
+            return Response(result)
+        except Exception as ex:
+            print(ex)
+            return Response({
+                            'status': False, 
+                            'error' : ex.message
+                        })
