@@ -694,7 +694,7 @@ class Taohanhtrinh(APIView):
                 "schedule_date": request.data.get('schedule_date'),
                 "location_id": request.data.get('location_id'),
                 "location_dest_id": request.data.get('location_dest_id'),
-                "equipment_id":xe_phutrach.hahai_id,
+                "equipment_id":request.data.get('equipmentId'),
                 "fleet_product_id": request.data.get('fleet_product_id'),
                 "employee_id":hahai_member.employee_id,
             }
