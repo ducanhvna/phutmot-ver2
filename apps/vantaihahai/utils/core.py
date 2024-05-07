@@ -142,14 +142,16 @@ class VanTaiHaHai():
             print('item: ', result)
         print(result)
         return result
-    def themmoichuyendi(self, body):
+    def themmoichuyendi(self, body, drive_user, drive_pass):
         print("Bat dau them moi chuyen di")
         # Get list chuyen di
        
         location_ids = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.location',  'search', [[]], {})
         list_locations = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.location', 'read',
                 [location_ids],{'fields':['id','ward_id', 'district_id','state_id']})
-        employee_ids = self.models.execute_kw(self.db, self.uid, self.password, 'hr.employee', 'search',[[('user_id','=',self.uid)],{}])
+
+        drive_uid = common.authenticate(self.db, drive_user, drive_pass, {})
+        employee_ids = self.models.execute_kw(self.db, self.uid, self.password, 'hr.employee', 'search',[[('user_id','=',drive_uid)],{}])
         if len(employee_ids)>0:
             body['employee_id'] = employee_ids[0]
         else:

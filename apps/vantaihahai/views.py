@@ -705,7 +705,7 @@ class Taohanhtrinh(APIView):
             #             dbname= company_info.dbname,
             #             username= username, 
             #             password= password)
-        result = vantai.themmoichuyendi(body)
+        result = vantai.themmoichuyendi(body, username_drive, password_drive)
         return Response(result)
         # except Exception as ex:
         #     # print(ex)
