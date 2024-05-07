@@ -189,8 +189,11 @@ class VanTaiHaHai():
             if not body[k]:
                 body[k] = False
         id_trip = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'create', [body])
-       
-        return {'data': {'result': id_trip}}
+        [result] = results = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'read', [[id_trip]],
+                 {'fields': ['id', 'company_id', "currency_id", "equipment_id", "location_name",
+                        "location_dest_name", "location_id", "location_dest_id", 'eating_fee', 'note', 'odometer_start', 'odometer_dest',
+                        'odometer_end', 'employee_id', 'schedule_date', 'start_date', 'end_date', 'attachment_ids', 'fleet_product_id',]})
+        return {'data': result}
     def capnhatsokmketthuchanhtrinh(self, hanhtrinh, sokm, body, attackements=None):
         result = None
         try:
