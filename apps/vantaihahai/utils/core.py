@@ -195,6 +195,9 @@ class VanTaiHaHai():
                  {'fields': ['id', 'company_id', "currency_id", "equipment_id", "location_name",
                         "location_dest_name", "location_id", "location_dest_id", 'eating_fee', 'note', 'odometer_start', 'odometer_dest',
                         'odometer_end', 'employee_id', 'schedule_date', 'start_date', 'end_date', 'attachment_ids', 'fleet_product_id']})
+        for k in result.keys():
+            if not result[k]:
+                result[k] = None
         return {'data': result}
     def capnhatsokmketthuchanhtrinh(self, hanhtrinh, sokm, body, attackements=None):
         result = None
