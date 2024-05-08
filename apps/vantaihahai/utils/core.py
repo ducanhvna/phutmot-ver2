@@ -200,6 +200,16 @@ class VanTaiHaHai():
                                             'name': result['fleet_product_id'][1]}
         except:
             result['fleet_product_id'] = None
+        try:
+            result['location_id'] = {'id': result['location_id'][0],
+                                            'name': result['location_id'][1]}
+        except:
+            result['location_id'] = None
+        try:
+            result['location_dest_id'] = {'id': result['location_dest_id'][0],
+                                            'name': result['location_dest_id'][1]}
+        except:
+            result['location_dest_id'] = None
         for k in result.keys():
             if not result[k]:
                 result[k] = None
