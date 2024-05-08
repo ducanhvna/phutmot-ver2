@@ -195,6 +195,11 @@ class VanTaiHaHai():
                  {'fields': ['id', 'company_id', "currency_id", "equipment_id", "location_name",
                         "location_dest_name", "location_id", "location_dest_id", 'eating_fee', 'note', 'odometer_start', 'odometer_dest',
                         'odometer_end', 'employee_id', 'schedule_date', 'start_date', 'end_date', 'attachment_ids', 'fleet_product_id']})
+        try:
+            result['fleet_product_id'] = {'id': result['fleet_product_id'][0],
+                                            'name': result['fleet_product_id'][1]}
+        except:
+            result['fleet_product_id'] = None
         for k in result.keys():
             if not result[k]:
                 result[k] = None
