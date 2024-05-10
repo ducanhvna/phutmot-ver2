@@ -230,7 +230,7 @@ class VanTaiHaHai():
         id_trip = self.models.execute_kw(self.db, self.uid, self.password, 'maintenance.request', 'create', [body])
         [result] = results = self.models.execute_kw(self.db, self.uid, self.password, 'maintenance.request', 'read', [[id_trip]],
                  {'fields': ['id', 'company_id',  "equipment_id", "request_date", 
-                        'odometer_maintenance', 'user_id', drive_uid]})
+                        'odometer_maintenance', 'user_id']})
 
         for k in result.keys():
             if not result[k]:
