@@ -4,7 +4,7 @@ from .views import SyncUserDevice, GetListCompany, GetListHrmEmployees, GetListH
         ThongtintaixeApi, Tatcachuyendi, Cacchuyenhomnay, CapnhatkmKetthuc, CapnhatHanghoa, \
         CapnhatkmBatdau, CapnhatDiadiemBatdau, CapnhatDiadiemKetthuc, Danhsachtatcaxe, \
         Thongtinxe, ListYeucaubaotrixe, TaoghichuBaotri, Danhsachcactinh, ListHuyentheotinh, \
-        TatcaDiadiem, DanhsachMathang, Taohanhtrinh
+        TatcaDiadiem, DanhsachMathang, Taohanhtrinh, Taobaotri
 urlpatterns = [
     path("syncuser/", SyncUserDevice.as_view(), name='vantai_api_syncuser'),
     path("listcompany/", GetListCompany.as_view(), name='vantai_api_listcompany'),
@@ -31,4 +31,5 @@ urlpatterns = [
     path("danhsachcacdiadiem/", TatcaDiadiem.as_view(), name="list_diadiem"),
     path("danhsachmathang/", DanhsachMathang.as_view(), name="list_mathang"),
     path("taohanhtrinh/", Taohanhtrinh.as_view(), name="hahai_taohanhtrinh"),
+    path("taobaotri/", Taobaotri.as_view(), name="hahai_taobaotri"),
 ]

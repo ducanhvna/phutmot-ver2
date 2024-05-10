@@ -713,3 +713,50 @@ class Taohanhtrinh(APIView):
         #                     'status': False, 
         #                     'error' : str(ex)
         #                 })
+
+class Taobaotri(APIView): 
+    permission_classes = (IsAuthenticated,)
+    # authentication_classes = [authentication.SessionAuthentication]
+    def post(self, request, *args, **kwargs): 
+        # equitment = kwargs.get('equitment')
+        
+        user = request.user 
+        device = self.request.user.user_device
+        results = []
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        username_drive = device.username
+        password_drive = device.password
+        username = settings.VANTAIHAHAI_CONFIG['username']
+        password = settings.VANTAIHAHAI_CONFIG['password']
+        company_info = device.company
+    
+        vantai = VanTaiHaHai(url=company_info.url, 
+                    dbname= company_info.dbname,
+                    username= username, 
+                    password= password)
+    
+        body = {
+                # "equipment_id": request.data.get('equipment_id'),
+                "schedule_date": request.data.get('request_date'),
+               
+                "equipment_id":request.data.get('equipmentId'),
+                "fleet_product_id": request.data.get('fleet_product_id'),
+                # "employee_id":hahai_member.employee_id,
+            }
+        # username = device.username
+        # password = device.password
+        # try:
+            # vantai = VanTaiHaHai(url=company_info.url, 
+            #             dbname= company_info.dbname,
+            #             username= username, 
+            #             password= password)
+        result = vantai.themmoibaotri(body, username_drive, password_drive)
+        return Response(result)
+        # except Exception as ex:
+        #     # print(ex)
+        #     return Response({
+        #                     'status': False, 
+        #                     'error' : str(ex)
+        #                 })
