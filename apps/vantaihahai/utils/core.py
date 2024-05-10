@@ -221,12 +221,6 @@ class VanTaiHaHai():
        
         common = xmlrpc.client.ServerProxy('{}/xmlrpc/2/common'.format(self.url))
         drive_uid = common.authenticate(self.db, drive_user, drive_pass, {})
-        employee_ids = self.models.execute_kw(self.db, self.uid, self.password, 'hr.employee', 'search',[[('user_id','=',drive_uid)],{}])
-        if len(employee_ids)>0:
-            body['employee_id'] = employee_ids[0]
-        else:
-            body['employee_id'] = False
-        
         print('chot ha: ', body)
         for k in body.keys():
             if not body[k]:
@@ -235,7 +229,7 @@ class VanTaiHaHai():
         [result] = results = self.models.execute_kw(self.db, self.uid, self.password, 'maintenance.request', 'read', [[id_trip]],
                  {'fields': ['id', 'company_id',  "equipment_id", "request_date", 
                         'odometer_maintenance', 'user_id', drive_uid]})
-                        
+
         for k in result.keys():
             if not result[k]:
                 result[k] = None
