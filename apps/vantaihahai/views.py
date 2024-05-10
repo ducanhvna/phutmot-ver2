@@ -549,8 +549,10 @@ class ListYeucaubaotrixe(APIView):
         if user_owner:
             device = user_owner.user_device
         company_info = device.company
-        username = device.username
-        password = device.password
+        # username = device.username
+        # password = device.password
+        username = settings.VANTAIHAHAI_CONFIG['username']
+        password = settings.VANTAIHAHAI_CONFIG['password']
         vantai = VanTaiHaHai(url=company_info.url, 
                     dbname= company_info.dbname,
                     username= username, 
