@@ -223,7 +223,7 @@ class VanTaiHaHai():
         drive_uid = common.authenticate(self.db, drive_user, drive_pass, {})
 
         [xe_info] = self.models.execute_kw(self.db, self.uid, self.password, 'maintenance.equipment', 'read',
-                [body['equipment_id']],{'fields':['id', 'name', "owner_user_id", "last_request", "license_plate",
+                [int(body['equipment_id'])],{'fields':['id', 'name', "owner_user_id", "last_request", "license_plate",
                         "trip_count", "note", "message_ids"]})
         body['name'] = f"Bảo trì xe {xe_info['license_plate']} - Ngày : {body['request_date']}"
         print('chot ha: ', body)
