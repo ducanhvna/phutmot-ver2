@@ -739,10 +739,10 @@ class Taobaotri(APIView):
     
         body = {
                 # "equipment_id": request.data.get('equipment_id'),
-                "schedule_date": request.data.get('request_date'),
+                "request_date": request.data.get('request_date'),
                
                 "equipment_id":request.data.get('equipmentId'),
-                "fleet_product_id": request.data.get('fleet_product_id'),
+                # "fleet_product_id": request.data.get('fleet_product_id'),
                 # "employee_id":hahai_member.employee_id,
             }
         # username = device.username
