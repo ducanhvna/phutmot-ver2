@@ -222,10 +222,7 @@ class VanTaiHaHai():
         common = xmlrpc.client.ServerProxy('{}/xmlrpc/2/common'.format(self.url))
         drive_uid = common.authenticate(self.db, drive_user, drive_pass, {})
 
-        [xe_info] = self.models.execute_kw(self.db, self.uid, self.password, 'maintenance.equipment', 'read',
-                [int(body['equipment_id'])],{'fields':['id', 'name', "owner_user_id", "last_request", "license_plate",
-                        "trip_count", "note", "message_ids"]})
-        body['name'] = f"Bảo trì xe {xe_info['license_plate']} - Ngày : {body['request_date']}"
+        body['name'] = f"Bảo trì xe  Ngày : {body['request_date']}"
         print('chot ha: ', body)
         for k in body.keys():
             if not body[k]:
