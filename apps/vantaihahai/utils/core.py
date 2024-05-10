@@ -221,7 +221,7 @@ class VanTaiHaHai():
        
         common = xmlrpc.client.ServerProxy('{}/xmlrpc/2/common'.format(self.url))
         drive_uid = common.authenticate(self.db, drive_user, drive_pass, {})
-
+        body['equipment_id'] = int(body['equipment_id'])
         body['name'] = f"Bảo trì xe  Ngày : {body['request_date']}"
         print('chot ha: ', body)
         for k in body.keys():
