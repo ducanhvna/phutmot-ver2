@@ -250,7 +250,7 @@ class VanTaiHaHai():
                     try:
                         if attachment:
                             id_trip = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 'create', [{
-                                'name': fleet_trip_object[0]['equipment_id'][1],
+                                'name': f'odoo-end-trip {hanhtrinh}',
                                 'type': 'url',
                                 'url': attachment,
                                 'res_model': 'fleet.trip',
@@ -287,7 +287,7 @@ class VanTaiHaHai():
                 # url = url + '&attachments={}'.format(attackements)
                 for attachment in attackements:
                     id_trip = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 'create', [{
-                            'name': fleet_trip_object[0]['equipment_id'][1],
+                            'name': f'odoo-end-trip {hanhtrinh}',
                             'type': 'url',
                             'url': attachment,
                             'res_model': 'fleet.trip',
