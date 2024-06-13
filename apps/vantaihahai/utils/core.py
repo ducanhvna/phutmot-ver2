@@ -489,7 +489,7 @@ def tatcachuyendicuataixe(emmployeeid = None):
         else:
             return {'data':{'results':[]}}
     except Exception as ex:
-        return {'data':{'results':[]}}
+        return {'data':{'results':[ex]}}
 
 def cacchuyendihomnaycuataixe(emmployeeid):
     # user = order.user
