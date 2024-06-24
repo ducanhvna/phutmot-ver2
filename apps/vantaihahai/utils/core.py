@@ -70,7 +70,7 @@ class VanTaiHaHai():
             item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None
             
             msg = {
-                'id': chat_id,
+                'id': f'{chat_id}',
                 'content': item['location_name'] ,
                 'thumbnail': '',
                 'msg': item['location_dest_name'],
