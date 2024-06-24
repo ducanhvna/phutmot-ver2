@@ -267,7 +267,7 @@ class Cacchuyenhomnay(APIView):
             #                 })
         return Response(result)
     
-class fetchChat(APIView): 
+class fetchChatView(APIView): 
     permission_classes = (IsAuthenticated,)
     # authentication_classes = [authentication.SessionAuthentication]
     def get(self, request, *args, **kwargs): 
