@@ -4,6 +4,10 @@ import requests, json
 # from .models import VantaihahaiMember, VantaihahaiMembership
 import xmlrpc.client
 import datetime
+import calendar
+
+def unix_time_millis(dt):
+    return 0 if (not dt) else (calendar.timegm(dt.timetuple()) * 1000)
 
 def chitiethanhtrinh(hanhtrinh):
      # user = order.user
@@ -70,7 +74,7 @@ class VanTaiHaHai():
             item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None
             
             msg = {
-                'id': f'{chat_id}',
+                'id': f'{unix_time_millis(item["schedule_date"])}',
                 'content': item['location_name'] ,
                 'thumbnail': '',
                 'msg': item['location_dest_name'],
