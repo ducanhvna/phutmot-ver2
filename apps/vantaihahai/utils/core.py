@@ -6,8 +6,10 @@ import xmlrpc.client
 import datetime
 import calendar
 
+epoch = datetime.datetime.utcfromtimestamp(0)
+
 def unix_time_millis(dt):
-    return 0 if (not dt) else (calendar.timegm(dt.timetuple()) * 1000)
+    return 0 if (dt is None) else int((dt - epoch).total_seconds() * 1000)
 
 def chitiethanhtrinh(hanhtrinh):
      # user = order.user
