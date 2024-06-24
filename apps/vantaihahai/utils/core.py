@@ -46,6 +46,43 @@ class VanTaiHaHai():
         {'fields': ['id', 'name', 'user_id',
                         'company_id']})
         return employees
+    
+    def fetchChat(self, fleetid):
+        results = []
+        fleets = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'search_read', 
+                [[('id','=', fleetid)]], {'fields': ['id', 'company_id', "currency_id", "equipment_id", "location_name",
+                        "location_dest_name", "location_id", "location_dest_id", 'eating_fee', 'note', 'odometer_start', 'odometer_dest',
+                        'odometer_end', 'employee_id', 'schedule_date', 'start_date', 'end_date', 'attachment_ids', 'fleet_product_id',]})
+        chat_id = 1
+        for item in fleets:
+            item['fleet_product_id'] = {'id': item['fleet_product_id'][0], 'name': item['fleet_product_id'][1]} \
+                    if item['fleet_product_id'] else None
+            item['company_id'] ={'id':  item['company_id'][0] , 'name':item['company_id'][1]} \
+                                if item['company_id'] else None
+            item['location_id'] ={'id':  item['location_id'][0], 'name':item['location_id'][1]} \
+                                    if item['location_id'] else None
+            item['location_dest_id'] ={'id':  item['location_dest_id'][0], 'name':item['location_dest_id'][1]} \
+                                    if item['location_dest_id'] else None
+            item['equipment_id'] = {'id': item['equipment_id'][0], 'name':item['equipment_id'][1]} \
+                                    if item['equipment_id'] else None
+            item['location_name'] = item['location_name'] if item['location_name'] else None
+            item['schedule_date'] = item['schedule_date'] if item['schedule_date'] else None
+            item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None
+            
+            msg = {
+                'id': chat_id,
+                'content': item['location_name'] ,
+                'thumbnail': '',
+                'msg': item['location_dest_name'],
+                'msgType': "TEXT",
+                'senderId': 0,
+                'reply': ''
+                
+            }
+            chat_id = chat_id + 1
+            results.append(msg)
+        return {'data':{'results': results}}
+        
    
     def tatcachuyendicuataixe(self, employee_id=None):
         if not employee_id:

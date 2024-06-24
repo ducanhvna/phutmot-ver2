@@ -266,7 +266,30 @@ class Cacchuyenhomnay(APIView):
             #                     'error' : "You does not own any device, please create a new one"
             #                 })
         return Response(result)
+    
+class fetchChat(APIView): 
+    permission_classes = (IsAuthenticated,)
+    # authentication_classes = [authentication.SessionAuthentication]
+    def get(self, request, *args, **kwargs): 
+        hanhtrinh = kwargs.get('hanhtrinh')
 
+        result= []
+        # find device
+        # devices = Device.objects.filter(user=self.request.user)
+        device = self.request.user.user_device
+        results = []
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        username = device.username
+        password = device.password
+        company_info = device.company
+        vantai = VanTaiHaHai(url=company_info.url, 
+                    dbname= company_info.dbname,
+                    username= username, 
+                    password= password)
+        result = vantai.fetchChat(hanhtrinh)
+        return Response(result)
 
 class CapnhatHanghoa(APIView): 
     permission_classes = (IsAuthenticated,)
