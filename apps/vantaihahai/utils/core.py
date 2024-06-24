@@ -9,7 +9,7 @@ import calendar
 epoch = datetime.datetime.utcfromtimestamp(0)
 
 def unix_time_millis(dt):
-    return 0 if (dt is None) else int(dt.timestamp() * 1000)
+    return 0 if (dt is None) else int(dt.timestamp() * 1000000)
 
 def chitiethanhtrinh(hanhtrinh):
      # user = order.user
