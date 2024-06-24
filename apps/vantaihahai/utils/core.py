@@ -79,7 +79,7 @@ class VanTaiHaHai():
                 'id': f'{unix_time_millis(datetime.datetime.strptime(item["schedule_date"], "%Y-%m-%d"))}',
                 'content': item['location_name'] ,
                 'thumbnail': '',
-                'msg': item['location_dest_name'],
+                'msg':f'{item["schedule_date"]} - {item["location_dest_name"]}',
                 'msgType': "TEXT",
                 'senderId': 0,
                 'reply': ''
