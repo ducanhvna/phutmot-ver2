@@ -74,7 +74,7 @@ class VanTaiHaHai():
             item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None
             
             msg = {
-                'id': f'{unix_time_millis(item["schedule_date"])}',
+                'id': f'{unix_time_millis(datetime.datetime.strptime(item["schedule_date"], "%Y-%m-%d"))}',
                 'content': item['location_name'] ,
                 'thumbnail': '',
                 'msg': item['location_dest_name'],
