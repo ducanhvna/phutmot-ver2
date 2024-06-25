@@ -88,7 +88,7 @@ class VanTaiHaHai():
                 
             }
             results.append(msg)
-            
+
             dt2 = dt + datetime.timedelta(seconds=1)
             msg = {
                 'id': f'{unix_time_millis(dt=dt2)}',
@@ -106,7 +106,7 @@ class VanTaiHaHai():
             dt2 = dt + datetime.timedelta(seconds=2)
             msg = {
                 'id': f'{unix_time_millis(dt=dt2)}',
-                'content': item['odometer_start'] ,
+                'content': f"{item['odometer_start']}" ,
                 'thumbnail': '',
                 'msg':f'odoo xuất phát - {item["odometer_start"]}',
                 'msgType': "TEXT",
@@ -133,7 +133,7 @@ class VanTaiHaHai():
             dt2 = dt + datetime.timedelta(seconds=22)
             msg = {
                 'id': f'{unix_time_millis(dt=dt2)}',
-                'content': item['odometer_end'] ,
+                'content': f"{item['odometer_end']}" ,
                 'thumbnail': '',
                 'msg':f'odoo điểm đến - {item["odometer_end"]}',
                 'msgType': "TEXT",
