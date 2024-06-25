@@ -88,13 +88,12 @@ class VanTaiHaHai():
                 
             }
             results.append(msg)
-            
             dt2 = dt + datetime.timedelta(seconds=1)
             msg = {
                 'id': f'{unix_time_millis(dt=dt2)}',
                 'content': item['location_name'] ,
                 'thumbnail': '',
-                'msg':f'Điểm đích - {item["location_dest_name"]}',
+                'msg':f'Điểm xuất phát- {item["location_name"]}',
                 'msgType': "TEXT",
                 'senderId': 0,
                 'reply': ''
@@ -102,6 +101,33 @@ class VanTaiHaHai():
             }
 
             results.append(msg)
+
+            dt2 = dt + datetime.timedelta(seconds=2)
+            msg = {
+                'id': f'{unix_time_millis(dt=dt2)}',
+                'content': item['odometer_start'] ,
+                'thumbnail': '',
+                'msg':f'odoo xuất phát - {item["odometer_start"]}',
+                'msgType': "TEXT",
+                'senderId': 0,
+                'reply': ''
+                
+            }
+
+            results.append(msg)
+
+            results.append(msg)
+            dt2 = dt + datetime.timedelta(seconds=15)
+            msg = {
+                'id': f'{unix_time_millis(dt=dt2)}',
+                'content': item['location_dest_name'] ,
+                'thumbnail': '',
+                'msg':f'Điểm đích - {item["location_dest_name"]}',
+                'msgType': "TEXT",
+                'senderId': 0,
+                'reply': ''
+                
+            }
         return {'data':{'results': results}}
         
    
