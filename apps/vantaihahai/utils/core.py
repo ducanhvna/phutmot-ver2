@@ -200,6 +200,16 @@ class VanTaiHaHai():
             print('item: ', result)
         print(result)
         return result
+    
+    def tatcadiadiem(self):
+        try:
+            location_ids = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.location',  'search', [[]], {})
+            list_locations = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.location', 'read',
+                    [location_ids],{'fields':['id','ward_id', 'district_id','state_id']})
+            return {'data':{'results': list_locations}}
+        except Exception as ex:
+            return {'data':{'results':[]}}
+        
     def themmoichuyendi(self, body, drive_user, drive_pass):
         print("Bat dau them moi chuyen di")
         # Get list chuyen di

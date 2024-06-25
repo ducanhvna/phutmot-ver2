@@ -679,10 +679,22 @@ class TatcaDiadiem(APIView):
         
         # user = request.user 
         try:
-            # device = user.user_device
-        # if device:
-            
-            result = tatcadiadiem()
+            user = request.user 
+            device = self.request.user.user_device
+            results = []
+            user_owner = device.user_owner
+            if user_owner:
+                device = user_owner.user_device
+            username_drive = device.username
+            password_drive = device.password
+            username = settings.VANTAIHAHAI_CONFIG['username']
+            password = settings.VANTAIHAHAI_CONFIG['password']
+            company_info = device.company
+            vantai = VanTaiHaHai(url=company_info.url, 
+                    dbname= company_info.dbname,
+                    username= username, 
+                    password= password)
+            result = vantai.tatcadiadiem()
             return Response(result)
         except Exception as ex:
             # print(ex)
