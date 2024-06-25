@@ -205,7 +205,23 @@ class VanTaiHaHai():
         try:
             location_ids = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.location',  'search', [[]], {})
             list_locations = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.location', 'read',
-                    [location_ids],{'fields':['id','ward_id', 'district_id','state_id']})
+                    [location_ids],{'fields':['id', 'name', 'ward_id', 'district_id','state_id']})
+            for item in list_locations:
+                try:
+                    item['ward_id'] = {'id': item['ward_id'][0], 'name': item['ward_id'][1]}
+                except:
+                    item['ward_id'] = None
+                    
+                try:
+                    item['district_id'] = {'id': item['district_id'][0], 'name': item['district_id'][1]}
+                except:
+                    item['district_id'] = None
+                    
+                try:
+                    item['state_id'] = {'id': item['state_id'][0], 'name': item['state_id'][1]}
+                except:
+                    item['state_id'] = None
+                    
             return {'data':{'results': list_locations}}
         except Exception as ex:
             return {'data':{'results':[]}}
@@ -446,6 +462,7 @@ class VanTaiHaHai():
         
     
 def checkishasmembership(device):
+    
     result = VantaihahaiMembership.objects.filter(device=device)
     return len(result)>0
 
