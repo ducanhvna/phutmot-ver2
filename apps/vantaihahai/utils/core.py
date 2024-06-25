@@ -75,8 +75,8 @@ class VanTaiHaHai():
             item['schedule_date'] = item['schedule_date'] if item['schedule_date'] else None
             item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None
             dt = 0
-            if isinstance(item["schedule_date"], datetime.date):
-                dt = datetime.datetime.strptime(item["schedule_date"], "%Y-%m-%d")
+            dt = datetime.datetime.strptime(item["schedule_date"], "%Y-%m-%d")
+                
             msg = {
                 'id': f'{unix_time_millis(dt)}',
                 'content': item['location_name'] ,
@@ -88,10 +88,10 @@ class VanTaiHaHai():
                 
             }
             results.append(msg)
-            if isinstance(item["schedule_date"], datetime.date):
-                dt = datetime.datetime.strptime(item["schedule_date"], "%Y-%m-%d") + datetime.timedelta(seconds=1)
+            
+            dt2 = dt + datetime.timedelta(seconds=1)
             msg = {
-                'id': f'{unix_time_millis(dt=dt)}',
+                'id': f'{unix_time_millis(dt=dt2)}',
                 'content': item['location_name'] ,
                 'thumbnail': '',
                 'msg':f'Điểm đích - {item["location_dest_name"]}',
