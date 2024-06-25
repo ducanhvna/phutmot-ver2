@@ -128,6 +128,18 @@ class VanTaiHaHai():
                 'reply': ''
                 
             }
+
+            dt2 = dt + datetime.timedelta(seconds=22)
+            msg = {
+                'id': f'{unix_time_millis(dt=dt2)}',
+                'content': item['odometer_end'] ,
+                'thumbnail': '',
+                'msg':f'odoo điểm đến - {item["odometer_end"]}',
+                'msgType': "TEXT",
+                'senderId': 0,
+                'reply': ''
+                
+            }
         return {'data':{'results': results}}
         
    
