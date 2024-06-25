@@ -88,6 +88,7 @@ class VanTaiHaHai():
                 
             }
             results.append(msg)
+            
             dt2 = dt + datetime.timedelta(seconds=1)
             msg = {
                 'id': f'{unix_time_millis(dt=dt2)}',
@@ -116,7 +117,6 @@ class VanTaiHaHai():
 
             results.append(msg)
 
-            results.append(msg)
             dt2 = dt + datetime.timedelta(seconds=15)
             msg = {
                 'id': f'{unix_time_millis(dt=dt2)}',
@@ -129,6 +129,7 @@ class VanTaiHaHai():
                 
             }
 
+            results.append(msg)
             dt2 = dt + datetime.timedelta(seconds=22)
             msg = {
                 'id': f'{unix_time_millis(dt=dt2)}',
@@ -140,6 +141,7 @@ class VanTaiHaHai():
                 'reply': ''
                 
             }
+            results.append(msg)
         return {'data':{'results': results}}
         
    
