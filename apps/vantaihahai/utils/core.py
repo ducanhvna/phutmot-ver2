@@ -74,18 +74,33 @@ class VanTaiHaHai():
             item['location_name'] = item['location_name'] if item['location_name'] else None
             item['schedule_date'] = item['schedule_date'] if item['schedule_date'] else None
             item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None
-            
+            dt = 0
+            if isinstance(item["schedule_date"], datetime.date):
+                dt = datetime.datetime.strptime(item["schedule_date"], "%Y-%m-%d")
             msg = {
-                'id': f'{unix_time_millis(datetime.datetime.strptime(item["schedule_date"], "%Y-%m-%d"))}',
+                'id': f'{unix_time_millis(dt)}',
                 'content': item['location_name'] ,
                 'thumbnail': '',
-                'msg':f'{item["schedule_date"]} - {item["location_dest_name"]}',
+                'msg':f'Ngày dự kiến: {item["schedule_date"]}',
                 'msgType': "TEXT",
                 'senderId': 0,
                 'reply': ''
                 
             }
-            chat_id = chat_id + 1
+            results.append(msg)
+            if isinstance(item["schedule_date"], datetime.date):
+                dt = datetime.datetime.strptime(item["schedule_date"], "%Y-%m-%d") + datetime.timedelta(seconds=1)
+            msg = {
+                'id': f'{unix_time_millis(dt=dt)}',
+                'content': item['location_name'] ,
+                'thumbnail': '',
+                'msg':f'Điểm đích - {item["location_dest_name"]}',
+                'msgType': "TEXT",
+                'senderId': 0,
+                'reply': ''
+                
+            }
+
             results.append(msg)
         return {'data':{'results': results}}
         
