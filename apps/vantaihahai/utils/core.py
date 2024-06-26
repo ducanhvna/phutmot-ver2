@@ -1,4 +1,3 @@
-
 from django.conf import  settings
 import requests, json
 # from .models import VantaihahaiMember, VantaihahaiMembership
@@ -52,7 +51,7 @@ class VanTaiHaHai():
         {'fields': ['id', 'name', 'user_id',
                         'company_id']})
         return employees
-    
+
     def fetchChat(self, fleetid):
         results = []
         fleets = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'search_read', 
@@ -76,7 +75,7 @@ class VanTaiHaHai():
             item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None
             dt = 0
             dt = datetime.datetime.strptime(item["schedule_date"], "%Y-%m-%d")
-                
+
             msg = {
                 'id': f'{unix_time_millis(dt)}',
                 'content': item['location_name'] ,
@@ -143,15 +142,14 @@ class VanTaiHaHai():
             }
             results.append(msg)
         return {'data':{'results': results}}
-        
-   
+
     def tatcachuyendicuataixe(self, employee_id=None):
         if not employee_id:
 
             employees = self.getlistemployee()
             # employee_code = employees[0]['code']
             employee_id = employees[0]['id']
-            
+
         results = []
         if employee_id>0:
             results = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'search_read', 
@@ -173,7 +171,7 @@ class VanTaiHaHai():
                 item['schedule_date'] = item['schedule_date'] if item['schedule_date'] else None
                 item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None
         return {'data':{'results': results}, 'employee': {'id': employee_id}}
-    
+
     def tatcachuyendihomnay(self):
         today_str = datetime.datetime.now().strftime('%Y-%m-%d') 
         last_week_str = (datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y-%m-%d') 
@@ -196,10 +194,9 @@ class VanTaiHaHai():
             item['location_name'] = item['location_name'] if item['location_name'] else None
             item['schedule_date'] = item['schedule_date'] if item['schedule_date'] else None
             item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None
-            
-            
+
         return {'data':{'results': results,'today':today_str}}
-        
+
     def danhsachtatcaxe(self):
         result = self.models.execute_kw(self.db, self.uid, self.password, 'maintenance.equipment', 'search_read', 
                 [[]], {'fields': ['id', 'name', "owner_user_id", "last_request", "license_plate", 
@@ -213,7 +210,7 @@ class VanTaiHaHai():
     def create_free_user(self, code):
         user_id= self.models.execute_kw(self.db, self.uid, self.password, 'res.users', 'create', [{'name':f"free{code}", 'login':f'free_{code}@free.com',
                 'company_ids':[2], 'company_id':2, 'new_password':code}])
-        
+
         return user_id
 
     def create_fist_car(self, member):
@@ -230,7 +227,7 @@ class VanTaiHaHai():
                                                   [update_data])
         return id_employee
     def chitietxe(self, xe_id):
-     # user = order.user
+        # user = order.user
         [result] = self.models.execute_kw(self.db, self.uid, self.password, 'maintenance.equipment', 'read',
                 [xe_id],{'fields':['id', 'name', "owner_user_id", "last_request", "license_plate",
                         "trip_count", "note", "message_ids"]})
@@ -240,7 +237,7 @@ class VanTaiHaHai():
             print('item: ', result)
         print(result)
         return result
-    
+
     def tatcadiadiem(self):
         try:
             location_ids = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.location',  'search', [[]], {})
@@ -251,25 +248,25 @@ class VanTaiHaHai():
                     item['ward_id'] = {'id': item['ward_id'][0], 'name': item['ward_id'][1]}
                 except:
                     item['ward_id'] = None
-                    
+
                 try:
                     item['district_id'] = {'id': item['district_id'][0], 'name': item['district_id'][1]}
                 except:
                     item['district_id'] = None
-                    
+
                 try:
                     item['state_id'] = {'id': item['state_id'][0], 'name': item['state_id'][1]}
                 except:
                     item['state_id'] = None
-                    
+
             return {'data':{'results': list_locations}}
         except Exception as ex:
             return {'data':{'results':[]}}
-        
+
     def themmoichuyendi(self, body, drive_user, drive_pass):
         print("Bat dau them moi chuyen di")
         # Get list chuyen di
-       
+
         location_ids = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.location',  'search', [[]], {})
         list_locations = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.location', 'read',
                 [location_ids],{'fields':['id','ward_id', 'district_id','state_id']})
@@ -281,7 +278,7 @@ class VanTaiHaHai():
         else:
             body['employee_id'] = False
         print("danh sach dia chir", list_locations)
-      
+
         location_id = body['location_id']
         location_dest_id = body['location_dest_id']
         location_start = None
@@ -342,7 +339,7 @@ class VanTaiHaHai():
     def themmoibaotri(self, body, drive_user, drive_pass):
         print("Bat dau them moi baotri")
         # Get list chuyen di
-       
+
         common = xmlrpc.client.ServerProxy('{}/xmlrpc/2/common'.format(self.url))
         drive_uid = common.authenticate(self.db, drive_user, drive_pass, {})
         body['equipment_id'] = int(body['equipment_id'])
@@ -367,7 +364,7 @@ class VanTaiHaHai():
             fleet_trip_object = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'read',
                     [[hanhtrinh]],{'fields':['id','equipment_id', 'odometer_start','odometer_dest', 'odometer_end']})
             print('cap nhat file dinh kem')
-            
+
             try:
                 # url = url + '&attachments={}'.format(attackements)
                 for attachment in attackements :
@@ -384,7 +381,7 @@ class VanTaiHaHai():
             except Exception as ex:
                 print(ex)
         except Exception as ex:
-                print(ex)
+            print(ex)
         try:
             print("Cap nhat so km ket thuc ")
             # km_start =  fleet_trip_object['odometer_start'] if fleet_trip_object['odometer_start'] else 0
@@ -421,10 +418,10 @@ class VanTaiHaHai():
                 print(ex)
         except Exception as ex:
             print(ex)
-            
+
         try:
             print("Cap nhat so km ket thuc ")
-        
+
             self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'write', [[hanhtrinh], {'odometer_start': sokm}])
             # get record name after having changed it
             result =  self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'name_get', [[hanhtrinh]])
@@ -440,10 +437,10 @@ class VanTaiHaHai():
                     [[hanhtrinh]],{'fields':['id','equipment_id', 'fleet_product_id']})
         except Exception as ex:
             print(ex)
-            
+
         try:
             print("Cap nhat so km ket thuc ")
-        
+
             self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'write', [[hanhtrinh], {'fleet_product_id': fleet_product_id}])
             # get record name after having changed it
             result =  self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'read',
@@ -462,11 +459,18 @@ class VanTaiHaHai():
         try:
             self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'write', [[hanhtrinh], {'location_id': location_id}])
             # get record name after having changed it
-            result =  self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'read',
-                    [[hanhtrinh]],{'fields':['id','equipment_id', 'fleet_product_id']})
-            print('result: ', result)
+            result = self.models.execute_kw(
+                self.db,
+                self.uid,
+                self.password,
+                "fleet.trip",
+                "read",
+                [[hanhtrinh]],
+                {"fields": ["id", "equipment_id", "fleet_product_id", "location_id"]},
+            )
+            print("result: ", result)
         except Exception as ex:
-            if hasattr(ex, 'message'):
+            if hasattr(ex, "message"):
                 message  = ex.message
             else:
                 message = f'{ex}'
@@ -487,9 +491,9 @@ class VanTaiHaHai():
                 message = f'{ex}'
             result = {'data': None, 'error': message, 'loc': location_id, 'id': hanhtrinh}
         return result
-    
+
     def danhsachyeucaubaotrixe(self, equimentid):
-    # user = order.user
+        # user = order.user
 
         result = self.models.execute_kw(self.db, self.uid, self.password, 'maintenance.request', 'search_read', 
                 [[('equipment_id','=', equimentid)]], {'fields': ['id', 'equipment_id', "category_id", "request_date", "maintenance_type", 
@@ -502,8 +506,8 @@ class VanTaiHaHai():
             item['odometer_maintenance'] = None if item['odometer_maintenance'] == False else item['odometer_maintenance']
             item['description'] = None if item['description'] == False else item['description']
         return {'data': {'results': result}}
-        
-    
+
+
 def checkishasmembership(device):
     
     result = VantaihahaiMembership.objects.filter(device=device)
@@ -642,7 +646,6 @@ def cacchuyendihomnaycuataixe(emmployeeid):
         return None
 
 
-
 def danhsachtatcaxe():
     # user = order.user
     url = f'https://vantaihahai.com/api/maintenance.equipment'
@@ -664,7 +667,6 @@ def danhsachtatcaxe():
         return response_json
     else:
         return None
-
 
 
 def thongtinxe(equimentid):
@@ -690,7 +692,6 @@ def thongtinxe(equimentid):
         return None
 
 
-
 def danhsachyeucaubaotrixe(equimentid):
     # user = order.user
     url = f'https://vantaihahai.com/api/maintenance.request?equipment_id={equimentid}'
@@ -712,8 +713,6 @@ def danhsachyeucaubaotrixe(equimentid):
         return response_json
     else:
         return None
-
-
 
 
 def danhsachcactinh():
@@ -836,7 +835,6 @@ def capnhatsokmketthuchanhtrinh(hanhtrinh, sokm, body, attackements=None):
         return None
 
 
-
 def capnhatghichubaotri(equitment, ghichu, body):
     # user = order.user
     url = f'https://vantaihahai.com/api/maintenance.equipment/{equitment}/create_maintenance_request?note={ghichu}'
@@ -881,7 +879,6 @@ def themmoichuyendi(body):
         return response_json
     else:
         return None
-
 
 
 def danhsachmathang():
