@@ -237,7 +237,31 @@ class VanTaiHaHai():
             print('item: ', result)
         print(result)
         return result
+    
+    def tatcamathang(self):
+        try:
+            product_ids = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.product',  'search', [[]], {})
+            list_products = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.product', 'read',
+                    [product_ids],{'fields':['id', 'name']})
+            # for item in product_ids:
+            #     try:
+            #         item['ward_id'] = {'id': item['ward_id'][0], 'name': item['ward_id'][1]}
+            #     except:
+            #         item['ward_id'] = None
 
+            #     try:
+            #         item['district_id'] = {'id': item['district_id'][0], 'name': item['district_id'][1]}
+            #     except:
+            #         item['district_id'] = None
+
+            #     try:
+            #         item['state_id'] = {'id': item['state_id'][0], 'name': item['state_id'][1]}
+            #     except:
+            #         item['state_id'] = None
+
+            return {'data':{'results': list_products}}
+        except Exception as ex:
+            return {'data':{'results':[]}}
     def tatcadiadiem(self):
         try:
             location_ids = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.location',  'search', [[]], {})

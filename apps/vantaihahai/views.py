@@ -487,8 +487,22 @@ class CapnhatkmBatdau(APIView):
 class DanhsachMathang(APIView): 
     permission_classes = (IsAuthenticated,)
     def get(self, request, *args, **kwargs): 
-        queryset= tatcamathang()
         
+        device = self.request.user.user_device
+        results = []
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        company_info = device.company
+        username = settings.VANTAIHAHAI_CONFIG['username']
+        password = settings.VANTAIHAHAI_CONFIG['password']
+        # username = device.username
+        # password = device.password
+        vantai = VanTaiHaHai(url=company_info.url, 
+                    dbname= company_info.dbname,
+                    username= username, 
+                    password= password)
+        queryset= vantai.tatcamathang()
         return Response(queryset)
         
 class Danhsachtatcaxe(APIView): 
