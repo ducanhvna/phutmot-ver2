@@ -141,6 +141,19 @@ class VanTaiHaHai():
                 
             }
             results.append(msg)
+            fleet_product_name = item['fleet_product_id']['name'] if item['fleet_product_id'] else 'Chưa xác định'
+            dt2 = dt + datetime.timedelta(seconds=32)
+            msg = {
+                'id': f'{unix_time_millis(dt=dt2)}',
+                'content': f"{fleet_product_name}" ,
+                'thumbnail': '',
+                'msg':f'Hàng hoá: {fleet_product_name}',
+                'msgType': "TEXT",
+                'senderId': 0,
+                'reply': ''
+                
+            }
+            results.append(msg)
         return {'data':{'results': results}}
 
     def tatcachuyendicuataixe(self, employee_id=None):
