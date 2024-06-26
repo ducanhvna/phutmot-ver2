@@ -387,6 +387,7 @@ class CapnhatDiadiemBatdau(APIView):
     def put(self, request, *args, **kwargs): 
         hanhtrinh = kwargs.get('hanhtrinh')
         location_id = request.data.get('location_id')
+        location_name = request.data.get('location_name')
         device = self.request.user.user_device
         results = []
         user_owner = device.user_owner
@@ -401,7 +402,7 @@ class CapnhatDiadiemBatdau(APIView):
                     dbname= company_info.dbname,
                     username= username, 
                     password= password)
-        result = vantai.capnhatlocationbatdauhanhtrinh(hanhtrinh, location_id)
+        result = vantai.capnhatlocationbatdauhanhtrinh(hanhtrinh, location_id, location_name)
             # attachments = body['attachments']
             # for item in attachments:
             #     atts= AttackmentHanhTrinh.objects.filter(hanhtrinh = ht_object, url=item)
@@ -431,12 +432,12 @@ class CapnhatDiadiemKetthuc(APIView):
         # password = device.password
         username = settings.VANTAIHAHAI_CONFIG['username']
         password = settings.VANTAIHAHAI_CONFIG['password']
-
+        location_dest_name = request.data.get('location_name')
         vantai = VanTaiHaHai(url=company_info.url, 
                     dbname= company_info.dbname,
                     username= username, 
                     password= password)
-        result = vantai.capnhatlocationketthuchanhtrinh(hanhtrinh, location_id)
+        result = vantai.capnhatlocationketthuchanhtrinh(hanhtrinh, location_id, location_dest_name)
             # attachments = body['attachments']
             # for item in attachments:
             #     atts= AttackmentHanhTrinh.objects.filter(hanhtrinh = ht_object, url=item)

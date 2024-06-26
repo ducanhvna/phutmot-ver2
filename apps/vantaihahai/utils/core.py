@@ -454,10 +454,20 @@ class VanTaiHaHai():
             result = {'data': None, 'error': message, 'product': fleet_product_id, 'id': hanhtrinh}
         return result
 
-    def capnhatlocationbatdauhanhtrinh(self, hanhtrinh, location_id):
+    def capnhatlocationbatdauhanhtrinh(self, hanhtrinh, location_id, location_name):
         result = None
         try:
-            self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'write', [[hanhtrinh], {'location_id': location_id}])
+            self.models.execute_kw(
+                self.db,
+                self.uid,
+                self.password,
+                "fleet.trip",
+                "write",
+                [
+                    [hanhtrinh],
+                    {"location_id": location_id, "location_name": location_name},
+                ],
+            )
             # get record name after having changed it
             result = self.models.execute_kw(
                 self.db,
@@ -476,13 +486,27 @@ class VanTaiHaHai():
                 message = f'{ex}'
             result = {'data': None, 'error': message, 'loc': location_id, 'id': hanhtrinh}
         return result
-    def capnhatlocationketthuchanhtrinh(self, hanhtrinh, location_id):
+    
+    def capnhatlocationketthuchanhtrinh(self, hanhtrinh, location_id, location_dest_name= False):
         result = None
         try:
-            self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'write', [[hanhtrinh], {'location_dest_id': location_id}])
+            self.models.execute_kw(
+                self.db,
+                self.uid,
+                self.password,
+                "fleet.trip",
+                "write",
+                [
+                    [hanhtrinh],
+                    {
+                        "location_dest_id": location_id,
+                        "location_dest_name": location_dest_name,
+                    },
+                ],
+            )
             # get record name after having changed it
             result =  self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'read',
-                    [[hanhtrinh]],{'fields':['id','equipment_id', 'fleet_product_id']})
+                    [[hanhtrinh]],{'fields':['id','equipment_id', 'fleet_product_id', location_dest_name]})
             print('result: ', result)
         except Exception as ex:
             if hasattr(ex, 'message'):
