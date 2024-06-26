@@ -446,7 +446,8 @@ class VanTaiHaHai():
         
             self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'write', [[hanhtrinh], {'fleet_product_id': fleet_product_id}])
             # get record name after having changed it
-            result =  self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'name_get', [[hanhtrinh]])
+            result =  self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'read',
+                    [[hanhtrinh]],{'fields':['id','equipment_id', 'fleet_product_id']})
             print('result: ', result)
         except Exception as ex:
             if hasattr(ex, 'message'):
@@ -461,7 +462,8 @@ class VanTaiHaHai():
         try:
             self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'write', [[hanhtrinh], {'location_id': location_id}])
             # get record name after having changed it
-            result =  self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'name_get', [[hanhtrinh]])
+            result =  self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'read',
+                    [[hanhtrinh]],{'fields':['id','equipment_id', 'fleet_product_id']})
             print('result: ', result)
         except Exception as ex:
             if hasattr(ex, 'message'):
@@ -475,7 +477,8 @@ class VanTaiHaHai():
         try:
             self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'write', [[hanhtrinh], {'location_dest_id': location_id}])
             # get record name after having changed it
-            result =  self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'name_get', [[hanhtrinh]])
+            result =  self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'read',
+                    [[hanhtrinh]],{'fields':['id','equipment_id', 'fleet_product_id']})
             print('result: ', result)
         except Exception as ex:
             if hasattr(ex, 'message'):
