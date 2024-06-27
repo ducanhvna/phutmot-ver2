@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from apps.home.models import Device, Company
 from .unity import Apec
+from django.conf import settings
 
 from django.contrib.auth.models import User
 # Create your views here.
@@ -21,8 +22,9 @@ class SyncUserDevice(APIView):
         # if user.user_owner :
         #     company_info = user.user_owner.company
         # else:
-        company_info = Company.objects.get(pk = company_id)
-        apec = Apec(company_info.url, company_info.dbname, company_info.username, company_info.password)
+        company_info = Company.objects.get(url = settings.APEC_CONFIG['SERVER_URL'])
+        apec = Apec(settings.APEC_CONFIG['SERVER_URL'], settings.APEC_CONFIG['SERVER_URL_DB'],
+                settings.APEC_CONFIG['SERVER_USERNAME'], settings.APEC_CONFIG['SERVER_PASSWORD'])
         correct = apec.authenticate(username, password) 
         
         if correct > 0:
