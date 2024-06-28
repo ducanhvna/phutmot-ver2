@@ -1,7 +1,8 @@
 from django.conf import  settings
 import requests, json
 import xmlrpc.client
-import datetime
+import datetime, calendar
+
 class Apec():
     def __init__(self, url, db, username, password):
         print('init APEC')
@@ -206,6 +207,58 @@ class Apec():
                
         return results
     
+    def fetchRoomByMonth(self, fisttime):
+        last_month_fist_day_str = (fisttime - datetime.timedelta(days=2)).replace(day=1).strftime('%Y-%m-%d')
+        _, lastday = calendar.monthrange(fisttime.year, fisttime.month)
+        results = []
+        end_str = fisttime.replace(day=lastday).strftime('%Y-%m-%d')
+        domain = ['&',('active', '=', True), ('user_id','=', self.uid)]
+        employee_Sids = self.models.execute_kw( self.db, self.uid,  self.password, 'hr.employee', 'search', [domain],
+                                                                                                {'offset': 0, 'limit': 1})
+        list_employees = self.models.execute_kw( self.db, self.uid,  self.password, 'hr.employee', 'read', [employee_Sids], {'fields': ['id', 'name', 'user_id', 'employee_ho', 'part_time_company_id', 'part_time_department_id',
+                                                                                                                            'company_id', 'code', 'department_id', 'time_keeping_code', 'job_title',
+                                                                                                                            'probationary_contract_termination_date', 'severance_day', 'workingday',
+                                                                                                                            'probationary_salary_rate', 'resource_calendar_id', 'date_sign', 'level']})
+        employee = list_employees[0]
+        code = employee['code']
+        
+        fields = ['id', 'employee_name', 'date', 'shift_name', 'employee_code', 'company','additional_company',
+                                                                 'shift_start', 'shift_end', 'rest_start', 'rest_end', 'rest_shift', 'probation_completion_wage',
+                                                                 'total_shift_work_time', 'total_work_time', 'time_keeping_code', 'kid_time',
+                                                                 'department', 'attendance_attempt_1', 'attendance_attempt_2', 'minutes_working_reduced', 
+                                                                 'attendance_attempt_3', 'attendance_attempt_4', 'attendance_attempt_5',
+                                                                 'attendance_attempt_6', 'attendance_attempt_7', 'attendance_attempt_8',
+                                                                 'attendance_attempt_9', 'attendance_attempt_10', 'attendance_attempt_11',
+                                                                 'attendance_attempt_12', 'attendance_attempt_13', 'attendance_attempt_14',
+                                                                 'attendance_inout_1','attendance_inout_2','attendance_inout_3',
+                                                                 'attendance_inout_4','attendance_inout_5','attendance_inout_6',
+                                                                 'attendance_inout_7','attendance_inout_8','attendance_inout_9', 'amount_al_reserve', 'amount_cl_reserve',
+                                                                 'attendance_inout_10','attendance_inout_11','attendance_inout_12', 
+                                                                 'attendance_inout_13','attendance_inout_14','attendance_inout_15','actual_total_work_time', 'standard_working_day',
+                                                                 'attendance_attempt_15', 'last_attendance_attempt', 'night_hours_normal', 'night_hours_holiday', 'probation_wage_rate', 
+                                                                 'split_shift', 'missing_checkin_break', 'leave_early', 'attendance_late', 'night_shift', 'minute_worked_day_holiday','total_attendance',
+                                                                 'ot_holiday', 'ot_normal','create_date', 'write_date']
+        domain = ["&","&", "&", ('company', '=', self.select_company_name), ("date", ">=", fisttime),
+                                    ("date", "<=", end_str), ('employee_code','=', code)]
+        
+        ids = self.models.execute_kw(self.db, self.uid, self.password, 'hr.apec.attendance.report', 'search', [domain],  {'offset': 0})
+        list_scheduling_ver = self.models.execute_kw(self.db, self.uid, self.password, 'hr.apec.attendance.report', 'read', [ids],
+                                                    {'fields':fields})
+        for project in list_scheduling_ver:
+            results.append({
+                'id': project['id'],
+                'user_id': self.uid,
+                'desc': None,
+                'comments_count' : 0,
+                'likes_count': 0,
+                'created_at': project['create_date'] ,
+                'updated_at': project['write_date'] ,
+                'is_like': None,
+                'content': None,
+                'user': None
+            })               
+        return results
+        
     def getinvalidtimesheet(self, date_str=None, employee_code = None):
         if not date_str:
             date_str = datetime.datetime.now().strftime('%Y-%m-%d')
