@@ -134,7 +134,7 @@ class Apec():
                         unique_list[x['project_id'][1]] = len(result)
                         result.append({'id': x['project_id'][0], 'name': x['project_id'][1], 'tasks': [x] })
                     else:
-                        result[unique_list[x['project_id'][1]]]['task'].append(x)
+                        result[unique_list[x['project_id'][1]]]['tasks'].append(x)
                 else:
                     if 'none' not in unique_list:
                         unique_list['none'] = len(result)
@@ -174,7 +174,7 @@ class Apec():
                         unique_list[x['project_id'][1]] = len(projects)
                         projects.append({'id': x['project_id'][0], 'name': x['project_id'][1], 'created_at': x['create_date'],'updated_at': x['write_date'],  'tasks': [x] })
                     else:
-                        projects[unique_list[x['project_id'][1]]]['task'].append(x)
+                        projects[unique_list[x['project_id'][1]]]['tasks'].append(x)
                         projects[unique_list[x['project_id'][1]]]['updated_at'] =  x['write_date']
                 else:
                     if 'none' not in unique_list:
@@ -190,8 +190,8 @@ class Apec():
                 'desc': None,
                 'comments_count' : len(project['tasks']),
                 'likes_count': 0,
-                'created_at': projects['created_at'] ,
-                'updated_at': projects['updated_at'] ,
+                'created_at': project['created_at'] ,
+                'updated_at': project['updated_at'] ,
                 'is_like': None,
                 'content': None,
                 'user': None
