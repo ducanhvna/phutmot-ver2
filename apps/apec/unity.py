@@ -156,8 +156,7 @@ class Apec():
         domain =domain=[('user_ids', 'in', self.uid)]
         ids = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'search', [domain], {'offset': offset})
         list_task  = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'read', [ids], {'fields': ['id', 'user_ids', 'project_id',
-                                                'partner_id','date_deadline','description', 'company_id', 'create_date', 'write_date',
-                                                'date_assign']}
+                                                'partner_id','date_deadline', 'company_id', 'create_date', 'write_date']}
                                                 )
         unique_list = {}
         projects = []
