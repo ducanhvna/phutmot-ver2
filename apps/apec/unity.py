@@ -332,7 +332,7 @@ class Apec():
             results.append(msg)
 
            
-        return {'data':{'results': results}}
+        return  results
       
     def getinvalidtimesheet(self, date_str=None, employee_code = None):
         if not date_str:
