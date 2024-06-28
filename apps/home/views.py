@@ -95,8 +95,16 @@ class CreateDevice(APIView):
         if device.user_owner:
             device_company = None if not device.user_owner.user_device else device.user_owner.user_device.company
             result['api'] = 'api/core' if not device_company else 'api/core' if not device_company.api_version else device_company.api_version
+            company_info = device_company
+            target_device =  device.user_owner.user_device
         else:    
             result['api'] = 'api/core' if not device.company else 'api/core' if not device.company.api_version else device.company.api_version
+            company_info = device.company
+            target_device =  device
+        result['usr']= target_device.username
+        result['pas']= target_device.password,
+        result['url']= company_info.username,
+        result['db']= company_info.dbname
         return Response(result)
         
 # create a viewset 
