@@ -8,4 +8,5 @@ urlpatterns = [
     path("hrmemployees/", GetListHrmEmployees.as_view(), name='v2_list_employee'),
     path("hrmattendances/", GetListHrmAttendanceReport.as_view(), name='v2_list_attendance'),
     path("owntasks/", GetListTask.as_view(), name='v2_owntasks'),
+    path("feedfetch/", GetListTask.as_view(), name='v2_feedfetch'),
 ]
