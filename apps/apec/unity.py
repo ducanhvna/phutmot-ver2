@@ -108,9 +108,49 @@ class Apec():
                                                 )
             for item in list_shifts:
                 results.append(item)
+        
                 
-        return results
-                
+    def getlistTask(self):
+        offset = 0
+        domain =domain=[('user_ids', 'in', self.uid)]
+        ids = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'search', [domain], {'offset': offset})
+        list_task  = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'read', [ids], {'fields': ['id', 'user_ids', 'project_id',
+                                                'partner_id','date_deadline','description', 'company_id',
+                                                'date_assign']}
+                                                )
+        unique_list = {}
+        result = []
+        # traverse for all elements
+       
+            
+        for x in list_task:
+            # check if exists in unique_list or not
+            
+            if x:
+                print(x)
+                if x['project_id']:
+                    print(f'pass {x["project_id"]}')
+                    if x['project_id'][1] not in unique_list:
+                        unique_list[x['project_id'][1]] = len(result)
+                        result.append({'id': x['project_id'][0], 'name': x['project_id'][1], 'tasks': [x] })
+                    else:
+                        result[unique_list[x['project_id'][1]]]['task'].append(x)
+                else:
+                    if 'none' not in unique_list:
+                        unique_list['none'] = len(result)
+                        result.append({'id': 0, 'name': 'private', 'tasks': [x] })
+                    else:
+                        result[unique_list['none']]['tasks'].append(x)
+        for project in result:
+            for item in project['tasks']:
+                item['company_id'] ={'id':  item['company_id'][0] , 'name':item['company_id'][1]} \
+                                        if item['company_id'] else None
+                item['project_id'] ={'id':  item['project_id'][0], 'name':item['project_id'][1]} \
+                                        if item['project_id'] else None
+                item['partner_id'] ={'id':  item['partner_id'][0], 'name':item['partner_id'][1]} \
+                                        if item['partner_id'] else None
+               
+        return result
     
     def getinvalidtimesheet(self, date_str=None, employee_code = None):
         if not date_str:
