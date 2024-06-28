@@ -221,7 +221,7 @@ class Apec():
                                                                                                                             'probationary_salary_rate', 'resource_calendar_id', 'date_sign', 'level']})
         employee = list_employees[0]
         code = employee['code']
-        
+        return results
         fields = ['id', 'employee_name', 'date', 'shift_name', 'employee_code', 'company','additional_company',
                                                                  'shift_start', 'shift_end', 'rest_start', 'rest_end', 'rest_shift', 'probation_completion_wage',
                                                                  'total_shift_work_time', 'total_work_time', 'time_keeping_code', 'kid_time',
