@@ -253,6 +253,7 @@ class Apec():
                 'interest_ids': f"{fisttime.month}",
                 'comments_count' : 0,
                 'likes_count': 0,
+                'userRoomStatus': 5,
                 'created_at': project['create_date'] ,
                 'updated_at': project['write_date'] ,
                 'is_like': None,
