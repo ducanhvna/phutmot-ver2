@@ -204,7 +204,7 @@ class Apec():
             #     item['partner_id'] ={'id':  item['partner_id'][0], 'name':item['partner_id'][1]} \
             #                             if item['partner_id'] else None
                
-        return {'data':results}
+        return results
     
     def getinvalidtimesheet(self, date_str=None, employee_code = None):
         if not date_str:
