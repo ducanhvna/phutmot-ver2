@@ -156,8 +156,7 @@ class Apec():
         domain =domain=[('user_ids', 'in', self.uid)]
         ids = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'search', [domain], {'offset': offset})
         list_task  = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'read', [ids], {'fields': ['id', 'user_ids', 'project_id',
-                                                'partner_id','date_deadline', 'company_id', 'create_date', 'write_date']}
-                                                )
+                                                'partner_id','date_deadline', 'company_id', 'create_date', 'write_date']})
         unique_list = {}
         projects = []
         results = []
@@ -176,14 +175,14 @@ class Apec():
                         projects.append({'id': x['project_id'][0], 'name': x['project_id'][1], 'created_at': x['create_date'],'updated_at': x['write_date'],  'tasks': [x] })
                     else:
                         projects[unique_list[x['project_id'][1]]]['task'].append(x)
-                        projects['updated_at'] =  x['write_date']
+                        projects[unique_list[x['project_id'][1]]]['updated_at'] =  x['write_date']
                 else:
                     if 'none' not in unique_list:
                         unique_list['none'] = len(projects)
                         projects.append({'id': 0, 'name': 'private', 'created_at': x['create_date'],'updated_at': x['write_date'], 'tasks': [x] })
                     else:
                         projects[unique_list['none']]['tasks'].append(x)
-                        projects['updated_at'] =  x['write_date']
+                        projects[unique_list['none']]['updated_at'] =  x['write_date']
         for project in projects:
             results.append({
                 'id': project['id'],
