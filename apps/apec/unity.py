@@ -3,6 +3,9 @@ import requests, json
 import xmlrpc.client
 import datetime, calendar
 
+def unix_time_millis(dt):
+    return 0 if (dt is None) else int(dt.timestamp() * 1000000)
+
 class Apec():
     def __init__(self, url, db, username, password):
         print('init APEC')
@@ -261,7 +264,76 @@ class Apec():
                 'user': None
             })               
         return results
+    def fetchChatAttendance(self, attendanceId):
+        ids = [attendanceId]
+        fields = ['id', 'employee_name', 'date', 'shift_name', 'employee_code', 'company','additional_company',
+                                                                 'shift_start', 'shift_end', 'rest_start', 'rest_end', 'rest_shift', 'probation_completion_wage',
+                                                                 'total_shift_work_time', 'total_work_time', 'time_keeping_code', 'kid_time',
+                                                                 'department', 'attendance_attempt_1', 'attendance_attempt_2', 'minutes_working_reduced', 
+                                                                 'attendance_attempt_3', 'attendance_attempt_4', 'attendance_attempt_5',
+                                                                 'attendance_attempt_6', 'attendance_attempt_7', 'attendance_attempt_8',
+                                                                 'attendance_attempt_9', 'attendance_attempt_10', 'attendance_attempt_11',
+                                                                 'attendance_attempt_12', 'attendance_attempt_13', 'attendance_attempt_14',
+                                                                 'attendance_inout_1','attendance_inout_2','attendance_inout_3',
+                                                                 'attendance_inout_4','attendance_inout_5','attendance_inout_6',
+                                                                 'attendance_inout_7','attendance_inout_8','attendance_inout_9', 'amount_al_reserve', 'amount_cl_reserve',
+                                                                 'attendance_inout_10','attendance_inout_11','attendance_inout_12', 
+                                                                 'attendance_inout_13','attendance_inout_14','attendance_inout_15','actual_total_work_time', 'standard_working_day',
+                                                                 'attendance_attempt_15', 'last_attendance_attempt', 'night_hours_normal', 'night_hours_holiday', 'probation_wage_rate', 
+                                                                 'split_shift', 'missing_checkin_break', 'leave_early', 'attendance_late', 'night_shift', 'minute_worked_day_holiday','total_attendance',
+                                                                 'ot_holiday', 'ot_normal','create_date', 'write_date']
         
+        list_scheduling_ver = self.models.execute_kw(self.db, self.uid, self.password, 'hr.apec.attendance.report', 'read', [ids],
+                                                    {'fields':fields})
+        results = []
+        
+        for item in list_scheduling_ver:
+            # item['fleet_product_id'] = {'id': item['fleet_product_id'][0], 'name': item['fleet_product_id'][1]} \
+            #         if item['fleet_product_id'] else None
+            # item['company_id'] ={'id':  item['company_id'][0] , 'name':item['company_id'][1]} \
+            #                     if item['company_id'] else None
+            # item['location_id'] ={'id':  item['location_id'][0], 'name':item['location_id'][1]} \
+            #                         if item['location_id'] else None
+            # item['location_dest_id'] ={'id':  item['location_dest_id'][0], 'name':item['location_dest_id'][1]} \
+            #                         if item['location_dest_id'] else None
+            # item['equipment_id'] = {'id': item['equipment_id'][0], 'name':item['equipment_id'][1]} \
+            #                         if item['equipment_id'] else None
+            # item['location_name'] = item['location_name'] if item['location_name'] else None
+            # item['schedule_date'] = item['schedule_date'] if item['schedule_date'] else None
+            # item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None
+            # dt = 0
+            dt = datetime.datetime.strptime(item["date"], "%Y-%m-%d")
+
+            msg = {
+                'id': f'{unix_time_millis(dt)}',
+                'content': item['date'] ,
+                'thumbnail': '',
+                'msg':f'Ngày dự kiến: {item["date"]}',
+                'msgType': "TEXT",
+                'senderId': 0,
+                'reply': ''
+                
+            }
+            results.append(msg)
+
+
+            dt2 = dt + datetime.timedelta(seconds=2)
+            msg = {
+                'id': f'{unix_time_millis(dt=dt2)}',
+                'content': f"{item['shift_name']}" ,
+                'thumbnail': '',
+                'msg':f'odoo xuất phát - {item["shift_name"]}',
+                'msgType': "TEXT",
+                'senderId': 0,
+                'reply': ''
+                
+            }
+
+            results.append(msg)
+
+           
+        return {'data':{'results': results}}
+      
     def getinvalidtimesheet(self, date_str=None, employee_code = None):
         if not date_str:
             date_str = datetime.datetime.now().strftime('%Y-%m-%d')
