@@ -221,7 +221,7 @@ class Apec():
                                                                                                                             'probationary_salary_rate', 'resource_calendar_id', 'date_sign', 'level']})
         employee = list_employees[0]
         code = employee['code']
-        return results
+        
         fields = ['id', 'employee_name', 'date', 'shift_name', 'employee_code', 'company','additional_company',
                                                                  'shift_start', 'shift_end', 'rest_start', 'rest_end', 'rest_shift', 'probation_completion_wage',
                                                                  'total_shift_work_time', 'total_work_time', 'time_keeping_code', 'kid_time',
@@ -238,7 +238,7 @@ class Apec():
                                                                  'attendance_attempt_15', 'last_attendance_attempt', 'night_hours_normal', 'night_hours_holiday', 'probation_wage_rate', 
                                                                  'split_shift', 'missing_checkin_break', 'leave_early', 'attendance_late', 'night_shift', 'minute_worked_day_holiday','total_attendance',
                                                                  'ot_holiday', 'ot_normal','create_date', 'write_date']
-        domain = ["&","&", "&", ('company', '=', self.select_company_name), ("date", ">=", fisttime),
+        domain = ["&","&", ("date", ">=", fisttime),
                                     ("date", "<=", end_str), ('employee_code','=', code)]
         
         ids = self.models.execute_kw(self.db, self.uid, self.password, 'hr.apec.attendance.report', 'search', [domain],  {'offset': 0})
