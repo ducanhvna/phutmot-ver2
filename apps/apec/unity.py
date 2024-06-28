@@ -249,6 +249,8 @@ class Apec():
                 'id': project['id'],
                 'user_id': self.uid,
                 'desc': None,
+                'title': f"{project['date']} - {project['shift_name']}",
+                'interest_ids': f"{fisttime.month}"
                 'comments_count' : 0,
                 'likes_count': 0,
                 'created_at': project['create_date'] ,
