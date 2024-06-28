@@ -1,6 +1,6 @@
 from django.urls import path, include , re_path
 from .views import SyncUserDevice, GetListCompany, GetListHrmEmployees, \
-                        GetListHrmAttendanceReport, GetListTask
+                        GetListHrmAttendanceReport, GetListTask, FeedFetch
 
 urlpatterns = [
     path("syncuser/", SyncUserDevice.as_view(), name='apec_syncuser'),
@@ -8,5 +8,7 @@ urlpatterns = [
     path("hrmemployees/", GetListHrmEmployees.as_view(), name='v2_list_employee'),
     path("hrmattendances/", GetListHrmAttendanceReport.as_view(), name='v2_list_attendance'),
     path("owntasks/", GetListTask.as_view(), name='v2_owntasks'),
-    path("feedfetch/", GetListTask.as_view(), name='v2_feedfetch'),
+    path("feedfetch/", FeedFetch.as_view(), name='v2_feedfetch'),
+    path("fetchcomments/", GetListTask.as_view(), name='v2_fetchcomments'),
+    
 ]

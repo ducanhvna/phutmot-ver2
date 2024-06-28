@@ -151,6 +151,62 @@ class Apec():
                                         if item['partner_id'] else None
                
         return result
+    def feedfetch(self):
+        offset = 0
+        domain =domain=[('user_ids', 'in', self.uid)]
+        ids = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'search', [domain], {'offset': offset})
+        list_task  = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'read', [ids], {'fields': ['id', 'user_ids', 'project_id',
+                                                'partner_id','date_deadline','description', 'company_id', 'create_date', 'write_date',
+                                                'date_assign']}
+                                                )
+        unique_list = {}
+        projects = []
+        results = []
+        # traverse for all elements
+       
+            
+        for x in list_task:
+            # check if exists in unique_list or not
+            
+            if x:
+                print(x)
+                if x['project_id']:
+                    print(f'pass {x["project_id"]}')
+                    if x['project_id'][1] not in unique_list:
+                        unique_list[x['project_id'][1]] = len(projects)
+                        projects.append({'id': x['project_id'][0], 'name': x['project_id'][1], 'created_at': x['create_date'],'updated_at': x['write_date'],  'tasks': [x] })
+                    else:
+                        projects[unique_list[x['project_id'][1]]]['task'].append(x)
+                        projects['updated_at'] =  x['write_date']
+                else:
+                    if 'none' not in unique_list:
+                        unique_list['none'] = len(projects)
+                        projects.append({'id': 0, 'name': 'private', 'created_at': x['create_date'],'updated_at': x['write_date'], 'tasks': [x] })
+                    else:
+                        projects[unique_list['none']]['tasks'].append(x)
+                        projects['updated_at'] =  x['write_date']
+        for project in projects:
+            results.append({
+                'id': project['id'],
+                'user_id': self.uid,
+                'desc': None,
+                'comments_count' : len(project['tasks']),
+                'likes_count': 0,
+                'created_at': projects['created_at'] ,
+                'updated_at': projects['updated_at'] ,
+                'is_like': None,
+                'content': None,
+                'user': None
+            })
+            # for item in project['tasks']:
+            #     item['company_id'] ={'id':  item['company_id'][0] , 'name':item['company_id'][1]} \
+            #                             if item['company_id'] else None
+            #     item['project_id'] ={'id':  item['project_id'][0], 'name':item['project_id'][1]} \
+            #                             if item['project_id'] else None
+            #     item['partner_id'] ={'id':  item['partner_id'][0], 'name':item['partner_id'][1]} \
+            #                             if item['partner_id'] else None
+               
+        return {'data':results}
     
     def getinvalidtimesheet(self, date_str=None, employee_code = None):
         if not date_str:
