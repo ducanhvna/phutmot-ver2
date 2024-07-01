@@ -5,7 +5,6 @@ import xmlrpc.client
 import datetime
 import calendar
 
-epoch = datetime.datetime.utcfromtimestamp(0)
 
 def unix_time_millis(dt):
     return 0 if (dt is None) else int(dt.timestamp() * 1000000)
@@ -185,6 +184,21 @@ class VanTaiHaHai():
                 item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None
         return {'data':{'results': results}, 'employee': {'id': employee_id}}
 
+    def tatcachuyendicuaphuongtien(self, equipment_id):
+        results = []
+        if equipment_id>0:
+            results = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'search_read', 
+                [[('equipment_id','=', equipment_id)]], {'fields': ['id', 'company_id', "currency_id", "equipment_id", "location_name",
+                        "location_dest_name", "location_id", "location_dest_id", 'eating_fee', 'note', 'odometer_start', 'odometer_dest',
+                        'odometer_end', 'employee_id', 'schedule_date', 'start_date', 'end_date', 'attachment_ids']})
+        else:
+            results = self.models.execute_kw(self.db, self.uid, self.password, 'fleet.trip', 'search_read', 
+                [[('equipment_id','=', False)]], {'fields': ['id', 'company_id', "currency_id", "equipment_id", "location_name",
+                        "location_dest_name", "location_id", "location_dest_id", 'eating_fee', 'note', 'odometer_start', 'odometer_dest',
+                        'odometer_end', 'employee_id', 'schedule_date', 'start_date', 'end_date', 'attachment_ids']})
+            
+        return {'data':{'results': results}}
+    
     def tatcachuyendihomnay(self):
         today_str = datetime.datetime.now().strftime('%Y-%m-%d') 
         last_week_str = (datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y-%m-%d') 

@@ -607,7 +607,29 @@ class ListYeucaubaotrixe(APIView):
         #                     'status': False, 
         #                     'error' : "You does not own any device, please create a new one"
         #                 })
-
+class Fetchmessagevehicle(APIView): 
+    # permission_classes = (IsAuthenticated,)
+    # authentication_classes = [authentication.SessionAuthentication]
+    def get(self, request, *args, **kwargs): 
+        
+        equitment_id = kwargs.get('equitment')
+        device = self.request.user.user_device
+        results = []
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        company_info = device.company
+        # username = device.username
+        # password = device.password
+        username = settings.VANTAIHAHAI_CONFIG['username']
+        password = settings.VANTAIHAHAI_CONFIG['password']
+        vantai = VanTaiHaHai(url=company_info.url, 
+                    dbname= company_info.dbname,
+                    username= username, 
+                    password= password)
+        result = vantai.tatcachuyendicuaphuongtien(equitment_id)
+        return Response(result)
+    
 class TaoghichuBaotri(APIView): 
     permission_classes = (IsAuthenticated,)
     # authentication_classes = [authentication.SessionAuthentication]
