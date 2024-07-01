@@ -196,7 +196,20 @@ class VanTaiHaHai():
                 [[('equipment_id','=', False)]], {'fields': ['id', 'company_id', "currency_id", "equipment_id", "location_name",
                         "location_dest_name", "location_id", "location_dest_id", 'eating_fee', 'note', 'odometer_start', 'odometer_dest',
                         'odometer_end', 'employee_id', 'schedule_date', 'start_date', 'end_date', 'attachment_ids']})
-            
+        for item in results:
+                item['fleet_product_id'] = {'id': item['fleet_product_id'][0], 'name': item['fleet_product_id'][1]} \
+                        if item['fleet_product_id'] else None
+                item['company_id'] ={'id':  item['company_id'][0] , 'name':item['company_id'][1]} \
+                                    if item['company_id'] else None
+                item['location_id'] ={'id':  item['location_id'][0], 'name':item['location_id'][1]} \
+                                        if item['location_id'] else None
+                item['location_dest_id'] ={'id':  item['location_dest_id'][0], 'name':item['location_dest_id'][1]} \
+                                        if item['location_dest_id'] else None
+                item['equipment_id'] = {'id': item['equipment_id'][0], 'name':item['equipment_id'][1]} \
+                                        if item['equipment_id'] else None
+                item['location_name'] = item['location_name'] if item['location_name'] else None
+                item['schedule_date'] = item['schedule_date'] if item['schedule_date'] else None
+                item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None 
         return {'data': results}
     
     def tatcachuyendihomnay(self):
