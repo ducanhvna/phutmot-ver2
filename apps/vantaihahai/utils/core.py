@@ -197,7 +197,7 @@ class VanTaiHaHai():
                         "location_dest_name", "location_id", "location_dest_id", 'eating_fee', 'note', 'odometer_start', 'odometer_dest',
                         'odometer_end', 'employee_id', 'schedule_date', 'start_date', 'end_date', 'attachment_ids']})
             
-        return {'data':{'results': results}}
+        return {'data': results}
     
     def tatcachuyendihomnay(self):
         today_str = datetime.datetime.now().strftime('%Y-%m-%d') 
