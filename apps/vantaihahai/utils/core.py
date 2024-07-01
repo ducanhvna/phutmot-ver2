@@ -210,6 +210,9 @@ class VanTaiHaHai():
                 item['location_name'] = item['location_name'] if item['location_name'] else None
                 item['schedule_date'] = item['schedule_date'] if item['schedule_date'] else None
                 item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None 
+                if item['attachment_ids']:
+                    item['attachment_ids'] = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 
+                        'read', item['attachment_ids'] ,{'fields': ['name', 'type', 'url', 'res_model', 'res_id']})
         return {'data': results}
     
     def tatcachuyendihomnay(self):
