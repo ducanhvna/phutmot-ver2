@@ -209,7 +209,16 @@ class Apec():
             #                             if item['partner_id'] else None
                
         return results
-    
+
+    def addJob(self, project_id, deadline, content):
+        ids = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'create', [{
+            'user_ids': [self.uid], 
+            'project_id': project_id, 'partner_id': False, 'date_deadline': deadline , 'company_id':False}])
+        [task]  = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'read', [ids], {'fields': ['id', 'user_ids', 'project_id',
+                                                'partner_id','date_deadline', 'company_id', 'create_date', 'write_date']})
+
+        return task
+
     def fetchRoomByMonth(self, fisttime):
         last_month_fist_day_str = (fisttime - datetime.timedelta(days=2)).replace(day=1).strftime('%Y-%m-%d')
         _, lastday = calendar.monthrange(fisttime.year, fisttime.month)

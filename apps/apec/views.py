@@ -293,6 +293,46 @@ class fetchChatAttendance(APIView):
         #             results.append({'id': item[0] if item[0] else None, 'name': item[1] if item[1] else None})
         return Response({'data': results})
 
+class addJob(APIView):
+    permission_classes = (IsAuthenticated,)
+    def post(self, request,  *args, **kwargs):
+        project_id = kwargs.get('pid')
+        content = request.data.get('content')
+        user = request.user 
+        device = user.user_device
+        results = []
+
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
+        # company_info = device.company
+        # target_users = User.objects.filter(username=username, password=password)
+        # target_user = User.objects.get(username=username)
+        # this checks the plaintext password against the stored hash
+
+        # if user.user_owner :
+        #     company_info = user.user_owner.company
+        # else:
+        # company_info = Company.objects.get(pk = company_id)
+        # apec = Apec(company_info.url, company_info.dbname, company_info.username, company_info.password)
+        username = device.username
+        password = device.password
+        apec = Apec(
+            settings.APEC_CONFIG["SERVER_URL"],
+            settings.APEC_CONFIG["SERVER_URL_DB"],
+            username,
+            password,
+        )
+        current_month= timezone.now().replace(day=1)
+        deadline =  timezone.now().strftime('%Y-%m-%d')
+        results = apec.addJob(project_id=project_id, deadline = deadline, content=content)
+        
+        # if apec.uid > 0:
+        #     for item in apec.getlistemployee():
+        #         if item:
+        #             results.append({'id': item[0] if item[0] else None, 'name': item[1] if item[1] else None})
+        return Response({'data': results})
+
 class GetListCompany(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self, request, *args, **kwargs): 

@@ -1,5 +1,5 @@
 from django.urls import path, include , re_path
-from .views import SyncUserDevice, GetListCompany, GetListHrmEmployees, \
+from .views import SyncUserDevice, GetListCompany, GetListHrmEmployees, addJob, \
                         GetListHrmAttendanceReport, GetListTask, FeedFetch, fetchRoomByMonth, fetchChatAttendance
 
 urlpatterns = [
@@ -12,4 +12,5 @@ urlpatterns = [
     path("fetchcomments/", GetListTask.as_view(), name='v2_fetchcomments'),
     path("fetchroomsbymonth/", fetchRoomByMonth.as_view(), name='v2_fetchrooms'),
     path("<int:attendanceId>/fetchchat/", fetchChatAttendance.as_view(), name='v2_fetchchat'),
+    path("<int:pid>/addjob/", addJob.as_view(), name='v2_addjob'),
 ]
