@@ -197,7 +197,7 @@ class Apec():
                 'created_at': project['created_at'] ,
                 'updated_at': project['updated_at'] ,
                 'is_like': None,
-                'content': None,
+                'content': [{'content': project['name'], 'content_type': 0}],
                 'user': None
             })
             # for item in project['tasks']:
@@ -213,11 +213,14 @@ class Apec():
     def addJob(self, project_id, deadline, content):
         ids = []
         try:
+            [project] =  self.models.execute_kw(self.db, self.uid, self.password, 'project.project', 'read', [project_id], {'fields': ['company_id', 'create_date', 'write_date']})
             ids = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'create', [{
                 'user_ids': [self.uid], 
-                'project_id': project_id, 'partner_id': False, 'date_deadline': deadline , 'company_id':2}])
+                'project_id': project_id, 'partner_id': False, 'date_deadline': deadline , 'company_id':project['company_id'][0], 'name': content}])
         except Exception as ex:
+            print(ex)
             result = {'error': content, 'id': project_id, 'deadline': deadline}
+        
         try:
             results  = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'read', [ids], {'fields': ['id', 'user_ids', 'project_id',
                                                 'partner_id','date_deadline', 'company_id', 'create_date', 'write_date']})
