@@ -191,13 +191,13 @@ class Apec():
             results.append({
                 'id': project['id'],
                 'user_id': self.uid,
-                'desc': None,
+                'desc': project['name'],
                 'comments_count' : len(project['tasks']),
                 'likes_count': 0,
                 'created_at': project['created_at'] ,
                 'updated_at': project['updated_at'] ,
                 'is_like': None,
-                'content': [{'content': project['name'], 'content_type': 0}],
+                'content': [],
                 'user': None
             })
             # for item in project['tasks']:
