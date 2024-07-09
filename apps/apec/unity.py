@@ -116,7 +116,7 @@ class Apec():
                 
     def getlistTask(self):
         offset = 0
-        domain =domain=[('user_ids', 'in', self.uid)]
+        domain=[('user_ids', 'in', self.uid)]
         ids = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'search', [domain], {'offset': offset})
         list_task  = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'read', [ids], {'fields': ['id', 'user_ids', 'project_id',
                                                 'partner_id','date_deadline','description', 'company_id',
@@ -229,6 +229,28 @@ class Apec():
             result = {'error': ids, 'id': project_id, 'deadline': deadline}
 
         return result
+    
+    def fetchcomments(self, project_id, uid = 0):
+        offset = 0
+        domain=[('project_id', '=', project_id)]
+        
+        if uid == 0:
+            domain.append('user_ids', 'in', self.uid)
+        ids = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'search', [domain], {'offset': offset})
+        list_task  = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'read', [ids], {'fields': ['id', 'user_ids', 'project_id',
+                                                'partner_id','date_deadline','description', 'company_id', 'write_date', 'create_date',
+                                                'date_assign']})
+        results = []
+        for task in list_task:
+            results.append({
+                'id':task['id'], 
+                'post_id' :task['project_id'],
+                'desc': task['description'],
+                'created_at': task['create_date'],
+                'updated_at': task['write_date'],  
+            })
+
+        return results
 
     def fetchRoomByMonth(self, fisttime):
         last_month_fist_day_str = (fisttime - datetime.timedelta(days=2)).replace(day=1).strftime('%Y-%m-%d')
