@@ -244,7 +244,7 @@ class Apec():
         for task in list_task:
             results.append({
                 'id':task['id'], 
-                'post_id' :task['project_id'],
+                'post_id' : task['project_id'][0] if task['project_id'] else None,
                 'desc': task['description'],
                 'created_at': task['create_date'],
                 'updated_at': task['write_date'],  
