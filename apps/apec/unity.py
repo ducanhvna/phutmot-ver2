@@ -237,7 +237,7 @@ class Apec():
         if uid == 0:
             domain.append(('user_ids', 'in', self.uid))
         ids = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'search', [domain], {'offset': offset})
-        list_task  = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'read', [ids], {'fields': ['id', 'user_ids', 'project_id',
+        list_task  = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'read', [ids], {'fields': ['id', 'user_ids', 'project_id', 'name',
                                                 'partner_id','date_deadline','description', 'company_id', 'write_date', 'create_date',
                                                 'date_assign']})
         results = []
@@ -245,7 +245,7 @@ class Apec():
             results.append({
                 'id':task['id'], 
                 'post_id' : task['project_id'][0] if task['project_id'] else None,
-                'desc': task['description'],
+                'desc': task['name'],
                 'created_at': task['create_date'],
                 'updated_at': task['write_date'],  
             })
