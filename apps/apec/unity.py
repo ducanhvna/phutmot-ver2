@@ -211,14 +211,19 @@ class Apec():
         return results
 
     def addJob(self, project_id, deadline, content):
+        ids = []
         try:
             ids = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'create', [{
                 'user_ids': [self.uid], 
                 'project_id': project_id, 'partner_id': False, 'date_deadline': deadline , 'company_id':False}])
-            [result]  = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'read', [ids], {'fields': ['id', 'user_ids', 'project_id',
-                                                'partner_id','date_deadline', 'company_id', 'create_date', 'write_date']})
         except Exception as ex:
-            result = {'error': ex.msg}
+            result = {'error': content, 'id': project_id, 'deadline': deadline}
+        try:
+            results  = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'read', [ids], {'fields': ['id', 'user_ids', 'project_id',
+                                                'partner_id','date_deadline', 'company_id', 'create_date', 'write_date']})
+            result = results[0]
+        except Exception as ex:
+            result = {'error': ids, 'id': project_id, 'deadline': deadline}
 
         return result
 
