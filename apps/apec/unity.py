@@ -218,7 +218,7 @@ class Apec():
             [result]  = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'read', [ids], {'fields': ['id', 'user_ids', 'project_id',
                                                 'partner_id','date_deadline', 'company_id', 'create_date', 'write_date']})
         except Exception as ex:
-            result = {'error': ex}
+            result = {'error': ex.msg}
 
         return result
 
