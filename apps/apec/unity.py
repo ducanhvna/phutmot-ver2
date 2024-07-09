@@ -215,7 +215,7 @@ class Apec():
         try:
             ids = self.models.execute_kw(self.db, self.uid, self.password, 'project.task', 'create', [{
                 'user_ids': [self.uid], 
-                'project_id': project_id, 'partner_id': False, 'date_deadline': deadline , 'company_id':False}])
+                'project_id': project_id, 'partner_id': False, 'date_deadline': deadline , 'company_id':2}])
         except Exception as ex:
             result = {'error': content, 'id': project_id, 'deadline': deadline}
         try:
