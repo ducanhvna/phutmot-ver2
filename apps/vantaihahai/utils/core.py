@@ -64,6 +64,19 @@ class VanTaiHaHai():
                 [[('res_id','=',fleetid)]],
                 {"fields":["id","res_id","model_model","line_ids"],"limit":1000})
             for log_content in logs:
+                dt = datetime.datetime.strptime(item["schedule_date"], "%Y-%m-%d")
+
+                msg = {
+                    'id': f'{unix_time_millis(dt)}',
+                    'content': log_content['model_model'] ,
+                    'thumbnail': '',
+                    'msg':f'Thay đổi: {log_content["model_model"]}',
+                    'msgType': "TEXT",
+                    'senderId': 0,
+                    'reply': ''
+                    
+                }
+                results.append(msg)
                 for line_id in log_content['line_ids']:
                     
                     try:
