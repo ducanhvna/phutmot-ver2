@@ -70,7 +70,7 @@ class VanTaiHaHai():
                     'id': f'{unix_time_millis(dt)}',
                     'content': log_content['model_model'] ,
                     'thumbnail': '',
-                    'msg':f'Thay đổi: {log_content["model_model"]}',
+                    'msg':f'Thay đổi: {log_content["model_model"]}: {log_content["line_ids"]}->{log_content["line_ids"]}',
                     'msgType': "TEXT",
                     'senderId': 0,
                     'reply': ''
@@ -85,9 +85,9 @@ class VanTaiHaHai():
                         dt = datetime.datetime.strptime(log["create_date"], "%Y-%m-%d")
                         msg = {
                             'id': f'{unix_time_millis(dt)}',
-                            'content': f"{log['old_value_text']['field_id']}: {log['old_value_text']} -> {log['new_value_text']}" ,
+                            'content': f"{log['field_id']}: {log['old_value_text']} -> {log['new_value_text']}" ,
                             'thumbnail': '',
-                            'msg':f"{log['old_value_text']['field_id']}: {log['old_value_text']} -> {log['new_value_text']}",
+                            'msg':f"{log['field_id']}: {log['old_value_text']} -> {log['new_value_text']}",
                             'msgType': "TEXT",
                             'senderId': 0,
                             'reply': ''}
