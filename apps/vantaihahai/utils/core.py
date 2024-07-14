@@ -87,7 +87,7 @@ class VanTaiHaHai():
                             'id': f'{unix_time_millis(dt)}',
                             'content': f"{log['new_value_text']}" ,
                             'thumbnail': '',
-                            'msg':f"-----> {log['new_value_text']}",
+                            'msg':f"{log['old_value_text']} -----> {log['new_value_text']}",
                             'msgType': "TEXT",
                             'senderId': 0,
                             'reply': ''}
