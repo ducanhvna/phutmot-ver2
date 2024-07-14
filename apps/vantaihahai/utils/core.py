@@ -81,14 +81,14 @@ class VanTaiHaHai():
                     
                     try:
                         log = self.models.execute_kw(self.db, self.uid, self.password, 'auditlog.log.line', 'read', line_id,
-                            {"fields":["id", "old_value_text",'new_value_text',"create_date"]})
+                            {"fields":["id"]})
                         # dt = datetime.datetime.strptime(log["create_date"], "%Y-%m-%d")
                         dt = datetime.datetime.strptime(item["schedule_date"], "%Y-%m-%d")
                         msg = {
                             'id': f'{unix_time_millis(dt)}',
-                            'content': f"{log['new_value_text']}" ,
+                            'content': f"{log['id']}" ,
                             'thumbnail': '',
-                            'msg':f"{log['new_value_text']}",
+                            'msg':f"{log['id']}",
                             'msgType': "TEXT",
                             'senderId': 0,
                             'reply': ''}
