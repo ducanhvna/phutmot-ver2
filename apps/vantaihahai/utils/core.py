@@ -77,23 +77,22 @@ class VanTaiHaHai():
                     
                 }
                 results.append(msg)
-                for line_id in log_content['line_ids']:
-                    
-                    try:
-                        [log] = self.models.execute_kw(self.db, self.uid, self.password, 'auditlog.log.line', 'read', [line_id],
+                if len(log_content['line_ids']) > 0:
+                    log_contents = self.models.execute_kw(self.db, self.uid, self.password, 'auditlog.log.line', 'read', log_content['line_ids'],
                             {"fields":["id","old_value_text",'new_value_text',"create_date"]})
+                    for log in log_contents:
+                    
                         dt = datetime.datetime.strptime(log["create_date"], "%Y-%m-%d")
                         msg = {
                             'id': f'{unix_time_millis(dt)}',
                             'content': f"{log['new_value_text']}" ,
                             'thumbnail': '',
-                            'msg':f"{log['new_value_text']}",
+                            'msg':f"-----> {log['new_value_text']}",
                             'msgType': "TEXT",
                             'senderId': 0,
                             'reply': ''}
                         results.append(msg)
-                    except:
-                        print('1')
+                    
             item['fleet_product_id'] = {'id': item['fleet_product_id'][0], 'name': item['fleet_product_id'][1]} \
                     if item['fleet_product_id'] else None
             item['company_id'] ={'id':  item['company_id'][0] , 'name':item['company_id'][1]} \
