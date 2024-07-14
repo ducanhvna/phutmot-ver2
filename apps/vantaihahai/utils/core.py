@@ -60,8 +60,7 @@ class VanTaiHaHai():
         chat_id = 1
         
         for item in fleets:
-            logs = self.models.execute_kw(self.db, self.uid, self.password, 'auditlog.log', 'search_read', [[('model_model','=','fleet.trip'),
-                ('res_id','=',item['id'])]],
+            logs = self.models.execute_kw(self.db, self.uid, self.password, 'auditlog.log.line.view', 'search_read', [[]],
                 {"fields":["id","old_value","new_value","create_date","model_model","res_id","user_id"],"limit":1000})
             for log in logs:
                 try:
