@@ -80,18 +80,18 @@ class VanTaiHaHai():
                 if len(log_content['line_ids']) > 0:
                     log_contents = self.models.execute_kw(self.db, self.uid, self.password, 'auditlog.log.line', 'read', log_content['line_ids'],
                             {"fields":["id","old_value_text",'new_value_text',"create_date"]})
-                    # for log in log_contents:
+                    for log in log_contents:
                     
-                    #     dt = datetime.datetime.strptime(log["create_date"], "%Y-%m-%d")
-                    #     msg = {
-                    #         'id': f'{unix_time_millis(dt)}',
-                    #         'content': f"{log['new_value_text']}" ,
-                    #         'thumbnail': '',
-                    #         'msg':f"-----> {log['new_value_text']}",
-                    #         'msgType': "TEXT",
-                    #         'senderId': 0,
-                    #         'reply': ''}
-                    #     results.append(msg)
+                        dt = datetime.datetime.strptime(log["create_date"], "%Y-%m-%d  %H:%M:%S")
+                        msg = {
+                            'id': f'{unix_time_millis(dt)}',
+                            'content': f"{log['new_value_text']}" ,
+                            'thumbnail': '',
+                            'msg':f"-----> {log['new_value_text']}",
+                            'msgType': "TEXT",
+                            'senderId': 0,
+                            'reply': ''}
+                        results.append(msg)
                     
             item['fleet_product_id'] = {'id': item['fleet_product_id'][0], 'name': item['fleet_product_id'][1]} \
                     if item['fleet_product_id'] else None
