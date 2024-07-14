@@ -60,23 +60,26 @@ class VanTaiHaHai():
         chat_id = 1
         
         for item in fleets:
-            logs = self.models.execute_kw(self.db, self.uid, self.password, 'auditlog.log.line', 'search_read', [[('model_model','=','fleet.trip'),
+            logs = self.models.execute_kw(self.db, self.uid, self.password, 'auditlog.log', 'search_read', [[('model_model','=','fleet.trip'),
                 ('res_id','=',item['id'])]],
-                {"fields":["id","field_id","old_value_text","new_value_text","create_date","model_model","res_id","user_id"],"limit":1000})
-            for log in logs:
-                try:
-                    dt = datetime.datetime.strptime(log["create_date"], "%Y-%m-%d")
-                    msg = {
-                        'id': f'{unix_time_millis(dt)}',
-                        'content': f"{log['old_value_text']['field_id']}: {log['old_value_text']} -> {log['new_value_text']}" ,
-                        'thumbnail': '',
-                        'msg':f"{log['user_id']}: {log['old_value']} -> {log['new_value']}",
-                        'msgType': "TEXT",
-                        'senderId': 0,
-                        'reply': ''}
-                    results.append(msg)
-                except:
-                    print('1')
+                {"fields":["id","res_id","model_mode","line_ids"],"limit":1000})
+            for log_content in logs:
+                for line_id in log_content['line_ids']:
+                    log = self.models.execute_kw(self.db, self.uid, self.password, 'auditlog.log.line', 'read', line_id,
+                        {"fields":["id","field_id","old_value_text",'old_value_text',"create_date"]})
+                    try:
+                        dt = datetime.datetime.strptime(log["create_date"], "%Y-%m-%d")
+                        msg = {
+                            'id': f'{unix_time_millis(dt)}',
+                            'content': f"{log['old_value_text']['field_id']}: {log['old_value_text']} -> {log['old_value_text']}" ,
+                            'thumbnail': '',
+                            'msg':f"{log['old_value_text']['field_id']}: {log['old_value_text']} -> {log['old_value_text']}",
+                            'msgType': "TEXT",
+                            'senderId': 0,
+                            'reply': ''}
+                        results.append(msg)
+                    except:
+                        print('1')
             item['fleet_product_id'] = {'id': item['fleet_product_id'][0], 'name': item['fleet_product_id'][1]} \
                     if item['fleet_product_id'] else None
             item['company_id'] ={'id':  item['company_id'][0] , 'name':item['company_id'][1]} \
