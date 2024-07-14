@@ -65,9 +65,10 @@ class VanTaiHaHai():
                 {"fields":["id","res_id","model_model","line_ids"],"limit":1000})
             for log_content in logs:
                 for line_id in log_content['line_ids']:
-                    log = self.models.execute_kw(self.db, self.uid, self.password, 'auditlog.log.line', 'read', line_id,
-                        {"fields":["id","field_id","old_value_text",'new_value_text',"create_date"]})
+                    
                     try:
+                        log = self.models.execute_kw(self.db, self.uid, self.password, 'auditlog.log.line', 'read', line_id,
+                            {"fields":["id","field_id","old_value_text",'new_value_text',"create_date"]})
                         dt = datetime.datetime.strptime(log["create_date"], "%Y-%m-%d")
                         msg = {
                             'id': f'{unix_time_millis(dt)}',
