@@ -61,7 +61,7 @@ class VanTaiHaHai():
         
         for item in fleets:
             logs = self.models.execute_kw(self.db, self.uid, self.password, 'auditlog.log', 'search_read', 
-                [[('res_id','=',fleetid)]],
+                [[('model_model', '=', 'fleet.trip'), ('res_id','=',fleetid)]],
                 {"fields":["id","res_id","model_model","line_ids"],"limit":1000})
             for log_content in logs:
                 dt = datetime.datetime.strptime(item["schedule_date"], "%Y-%m-%d")
