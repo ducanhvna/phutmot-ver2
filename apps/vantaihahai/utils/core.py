@@ -66,14 +66,14 @@ class VanTaiHaHai():
             for log_content in logs:
                 for line_id in log_content['line_ids']:
                     log = self.models.execute_kw(self.db, self.uid, self.password, 'auditlog.log.line', 'read', line_id,
-                        {"fields":["id","field_id","old_value_text",'old_value_text',"create_date"]})
+                        {"fields":["id","field_id","old_value_text",'new_value_text',"create_date"]})
                     try:
                         dt = datetime.datetime.strptime(log["create_date"], "%Y-%m-%d")
                         msg = {
                             'id': f'{unix_time_millis(dt)}',
-                            'content': f"{log['old_value_text']['field_id']}: {log['old_value_text']} -> {log['old_value_text']}" ,
+                            'content': f"{log['old_value_text']['field_id']}: {log['old_value_text']} -> {log['new_value_text']}" ,
                             'thumbnail': '',
-                            'msg':f"{log['old_value_text']['field_id']}: {log['old_value_text']} -> {log['old_value_text']}",
+                            'msg':f"{log['old_value_text']['field_id']}: {log['old_value_text']} -> {log['new_value_text']}",
                             'msgType': "TEXT",
                             'senderId': 0,
                             'reply': ''}
