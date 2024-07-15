@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'apps.chat',
     'apps.apec',
     'apps.vantaihahai',
+    'apps_megavn',
     'rest_framework',
     'channels' , 
     'rest_framework_simplejwt'
