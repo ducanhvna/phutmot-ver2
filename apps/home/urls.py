@@ -22,6 +22,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path("apiv2/apec/", include("apps.apec.urls")),
     path("apiv2/vantaihahai/", include("apps.vantaihahai.urls")),
+    path("apiv2/megavn/", include("apps.megavn.urls")),
     
     re_path(r'^.*\.*', views.pages, name='pages'),
 ]
