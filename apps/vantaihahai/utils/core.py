@@ -216,6 +216,10 @@ class VanTaiHaHai():
                 item['location_name'] = item['location_name'] if item['location_name'] else None
                 item['schedule_date'] = item['schedule_date'] if item['schedule_date'] else None
                 item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None
+                if len['attachment_ids'] >0:
+                    item['attachment_ids'] = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 
+                        'read', item['attachment_ids'] ,{'fields': ['name', 'type', 'url', 'res_model', 'res_id']})
+
         return {'data':{'results': results}, 'employee': {'id': employee_id}}
 
     def tatcachuyendicuaphuongtien(self, equipment_id):
@@ -529,7 +533,7 @@ class VanTaiHaHai():
                 # url = url + '&attachments={}'.format(attackements)
                 for attachment in attackements:
                     id_trip = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 'create', [{
-                            'name': f'odoo-end-trip {hanhtrinh}',
+                            'name': f'odoo-start-trip {hanhtrinh}',
                             'type': 'url',
                             'url': attachment,
                             'res_model': 'fleet.trip',
