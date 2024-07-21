@@ -68,7 +68,7 @@ class VanTaiHaHai():
                     item['attachment_ids'] = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 
                         'read', item['attachment_ids'] ,{'fields': ['name', 'type', 'url', 'res_model', 'res_id', 'create_date']})
 
-            for attachment in attachment_ids:
+            for attachment in item['attachment_ids']:
                 dt = datetime.datetime.strptime(attachment["create_date"], "%Y-%m-%d  %H:%M:%S")
 
                 msg = {
