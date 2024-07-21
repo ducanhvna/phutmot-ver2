@@ -346,7 +346,7 @@ class CapnhatImageKetthuc(APIView):
                     password= password)
         result = vantai.capnhatimageketthuchanhtrinh(hanhtrinh, url)
          
-        return Response(result)
+        return Response({'data':result})
       
 
 class CapnhatkmKetthuc(APIView): 
