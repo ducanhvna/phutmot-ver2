@@ -66,7 +66,7 @@ class VanTaiHaHai():
             if item['attachment_ids']:
                 if len(item['attachment_ids']) >0:
                     item['attachment_ids'] = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 
-                        'read', item['attachment_ids'] ,{'fields': ['name', 'type', 'url', 'res_model', 'res_id', 'create_date']})
+                        'read', item['attachment_ids'] ,{'fields': ['name', 'url', 'create_date']})
             try:
                 for attachment in item['attachment_ids']:
                     dt = datetime.datetime.strptime(attachment["create_date"], "%Y-%m-%d  %H:%M:%S")
