@@ -499,6 +499,26 @@ class VanTaiHaHai():
                 message = f'{ex}'
             result = {'data': None, 'error': message, 'km': sokm, 'id': hanhtrinh}
         return result
+    def capnhatimageketthuchanhtrinh(self, hanhtrinh, attachment):
+        result = None
+        try:
+           
+            self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 'create', [{
+                'name': f'odoo-end-trip {hanhtrinh}',
+                'type': 'url',
+                'url': attachment,
+                'res_model': 'fleet.trip',
+                'res_id': hanhtrinh, }])
+    
+    
+        except Exception as ex:
+            if hasattr(ex, 'message'):
+                message  = ex.message
+            else:
+                message = f'{ex}'
+            result = {'data': None, 'error': message, 'id': hanhtrinh}
+        return result
+
     def capnhatsokmbatdauhanhtrinh(self, hanhtrinh, sokm, body, attackements=None):
         result = None
         try:
