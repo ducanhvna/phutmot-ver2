@@ -214,8 +214,8 @@ class Tatcachuyendi(APIView):
                 if len(owner_devices)>0:
                     device = owner_devices[0]
                 company_info = device.company
-                username = device.username
-                password = device.password
+                username = settings.VANTAIHAHAI_CONFIG['username']
+                password = settings.VANTAIHAHAI_CONFIG['password']
                 vantai = VanTaiHaHai(url=company_info.url, 
                             dbname= company_info.dbname,
                             username= username, 
