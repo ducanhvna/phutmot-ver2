@@ -64,10 +64,13 @@ class VanTaiHaHai():
                 [[('model_model', '=', 'fleet.trip'), ('res_id','=',fleetid)]],
                 {"fields":["id","res_id","model_model","line_ids"],"limit":1000})
             if item['attachment_ids']:
+                attachments = []
                 if len(item['attachment_ids']) >0:
-                    ids = [a_id for a_id in item['attachment_ids']]
-                    item['attachment_ids'] = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 
-                        'read', ids,{'fields': ['name', 'url', 'create_date']})
+                    for a_id in item['attachment_ids']:
+                        attachment = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 
+                            'read', [a_id],{'fields': ['name', 'url', 'create_date']})
+                        attachments.append(attachment)
+                item['attachment_ids'] = attachments
             try:
                 for attachment in item['attachment_ids']:
                     dt = datetime.datetime.strptime(attachment["create_date"], "%Y-%m-%d  %H:%M:%S")
