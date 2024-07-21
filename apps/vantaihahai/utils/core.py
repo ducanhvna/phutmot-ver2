@@ -70,24 +70,24 @@ class VanTaiHaHai():
                         attachment = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 
                             'read', [a_id],{'fields': ['name', 'url', 'create_date']})
                         attachments.append(attachment)
-                item['attachment_ids'] = attachments
-            try:
-                for attachment in item['attachment_ids']:
-                    dt = datetime.datetime.strptime(attachment["create_date"], "%Y-%m-%d  %H:%M:%S")
+            #     item['attachment_ids'] = attachments
+                        try:
+            #     for attachment in item['attachment_ids']:
+                            dt = datetime.datetime.strptime(attachment["create_date"], "%Y-%m-%d  %H:%M:%S")
 
-                    msg = {
-                        'id': f'{unix_time_millis(dt)}',
-                        'content': attachment['url'],
-                        'thumbnail': attachment['url'],
-                        'msg':  attachment['name'],
-                        'msgType': "IMAGE",
-                        'senderId': 0,
-                        'reply': ''
-                        
-                    }
-                    results.append(msg)
-            except Exception as ex:
-                print(ex)
+                            msg = {
+                                'id': f'{unix_time_millis(dt)}',
+                                'content': attachment['url'],
+                                'thumbnail': attachment['url'],
+                                'msg':  attachment['name'],
+                                'msgType': "IMAGE",
+                                'senderId': 0,
+                                'reply': ''
+                                
+                            }
+                            results.append(msg)
+                        except Exception as ex:
+                            print(ex)
             for log_content in logs:
                 dt = datetime.datetime.strptime(item["schedule_date"], "%Y-%m-%d")
 
