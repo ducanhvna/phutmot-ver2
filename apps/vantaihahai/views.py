@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from apps.home.models import Device, Company
 from django.conf import settings
-from .utils.core import VanTaiHaHai, GetThongtintaixe, tatcachuyendicuataixe, chitiethanhtrinh, \
+from .utils.core import VanTaiHaHai, GetThongtintaixe, chitiethanhtrinh, \
     danhsachtatcaxe, tatcamathang, thongtinxe, danhsachyeucaubaotrixe, capnhatghichubaotri, \
     danhsachcacphuongtheohuyen, danhsachcachuyentheotinh, danhsachcactinh, tatcadiadiem, themmoichuyendi
 
@@ -225,15 +225,15 @@ class Tatcachuyendi(APIView):
                 employee_id = queryset2['employee']['id']
                 print("Tat ca cac chuyen di cua: ", employee_id)
             
-                queryset= tatcachuyendicuataixe(employee_id)
-                for item in queryset['data']['results']:
-                    for item2 in queryset2['data']['results']:
-                        if (item['id'] == item2['id']):
-                            item['location_id'] = item2['location_id']
-                            item['location_dest_id'] = item2['location_dest_id']
-                            item['fleet_product_id'] = item2['fleet_product_id']
-                queryset['employee_id'] = employee_id
-                print(queryset)
+                # queryset= tatcachuyendicuataixe(employee_id)
+                # for item in queryset['data']['results']:
+                #     for item2 in queryset2['data']['results']:
+                #         if (item['id'] == item2['id']):
+                #             item['location_id'] = item2['location_id']
+                #             item['location_dest_id'] = item2['location_dest_id']
+                #             item['fleet_product_id'] = item2['fleet_product_id']
+                # queryset['employee_id'] = employee_id
+                # print(queryset)
         return Response(queryset2)
         # except Exception as ex:
         #     print(ex)
