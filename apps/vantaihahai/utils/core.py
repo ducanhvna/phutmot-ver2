@@ -64,9 +64,9 @@ class VanTaiHaHai():
                 [[('model_model', '=', 'fleet.trip'), ('res_id','=',fleetid)]],
                 {"fields":["id","res_id","model_model","line_ids"],"limit":1000})
             if item['attachment_ids']:
-                if len(item['attachment_ids']) >0:
+                for item_id in item['attachment_ids']:
                     attachment_ids = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 
-                        'read', item['attachment_ids'] ,{'fields': ['name', 'type', 'url', 'res_model', 'res_id', 'create_date']})
+                        'read', [item_id] ,{'fields': ['name', 'type', 'url', 'res_model', 'res_id', 'create_date']})
                 
                     for attachment in attachment_ids:
                         try:
