@@ -321,7 +321,7 @@ class CapnhatHanghoa(APIView):
         return Response(result)    
 
 class CapnhatImageKetthuc(APIView): 
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
     # authentication_classes = [authentication.SessionAuthentication]
     def put(self, request, *args, **kwargs): 
         hanhtrinh = kwargs.get('hanhtrinh')
@@ -331,17 +331,17 @@ class CapnhatImageKetthuc(APIView):
         # ht_object = Hanhtrinh.objects.get(hanhtrinh_id=hanhtrinh)
         # ht_object.odo_end= km_end
         # ht_object.save()
-        # device = self.request.user.user_device
-        # results = []
-        # user_owner = device.user_owner
-        # if user_owner:
-        #     device = user_owner.user_device
+        device = self.request.user.user_device
+        results = []
+        user_owner = device.user_owner
+        if user_owner:
+            device = user_owner.user_device
      
         username = settings.VANTAIHAHAI_CONFIG['username']
         password = settings.VANTAIHAHAI_CONFIG['password']
-        # company_info = device.company
-        vantai = VanTaiHaHai(url=settings.VANTAIHAHAI_CONFIG['url'], 
-                    dbname= settings.VANTAIHAHAI_CONFIG['db'],
+        company_info = device.company
+        vantai = VanTaiHaHai(url=company_info.url, 
+                    dbname= company_info.dbname,
                     username= username, 
                     password= password)
         result = vantai.capnhatimageketthuchanhtrinh(hanhtrinh, url)
