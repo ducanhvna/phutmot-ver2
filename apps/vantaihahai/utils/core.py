@@ -503,13 +503,13 @@ class VanTaiHaHai():
         result = None
         try:
            
-            self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 'create', [{
+            id_trip = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 'create', [{
                 'name': f'odoo-end-trip {hanhtrinh}',
                 'type': 'url',
                 'url': attachment,
                 'res_model': 'fleet.trip',
                 'res_id': hanhtrinh, }])
-    
+            result = {'data': id_trip, 'id': hanhtrinh}
     
         except Exception as ex:
             if hasattr(ex, 'message'):
