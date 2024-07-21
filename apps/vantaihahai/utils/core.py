@@ -67,21 +67,23 @@ class VanTaiHaHai():
                 if len(item['attachment_ids']) >0:
                     item['attachment_ids'] = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 
                         'read', item['attachment_ids'] ,{'fields': ['name', 'type', 'url', 'res_model', 'res_id', 'create_date']})
+            try:
+                for attachment in item['attachment_ids']:
+                    dt = datetime.datetime.strptime(attachment["create_date"], "%Y-%m-%d  %H:%M:%S")
 
-            for attachment in item['attachment_ids']:
-                dt = datetime.datetime.strptime(attachment["create_date"], "%Y-%m-%d  %H:%M:%S")
-
-                msg = {
-                    'id': f'{unix_time_millis(dt)}',
-                    'content': attachment['url'],
-                    'thumbnail': attachment['url'],
-                    'msg':  attachment['name'],
-                    'msgType': "IMAGE",
-                    'senderId': 0,
-                    'reply': ''
-                    
-                }
-                results.append(msg)
+                    msg = {
+                        'id': f'{unix_time_millis(dt)}',
+                        'content': attachment['url'],
+                        'thumbnail': attachment['url'],
+                        'msg':  attachment['name'],
+                        'msgType': "IMAGE",
+                        'senderId': 0,
+                        'reply': ''
+                        
+                    }
+                    results.append(msg)
+            except Exception as ex:
+                print(ex)
             for log_content in logs:
                 dt = datetime.datetime.strptime(item["schedule_date"], "%Y-%m-%d")
 
@@ -235,11 +237,14 @@ class VanTaiHaHai():
                 item['location_name'] = item['location_name'] if item['location_name'] else None
                 item['schedule_date'] = item['schedule_date'] if item['schedule_date'] else None
                 item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None
-                if item['attachment_ids']:
-                    if len(item['attachment_ids']) >0:
-                        item['attachment_ids'] = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 
-                            'read', item['attachment_ids'] ,{'fields': ['name', 'type', 'url', 'res_model', 'res_id']})
+                try:
+                    if item['attachment_ids']:
+                        if len(item['attachment_ids']) >0:
+                            item['attachment_ids'] = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 
+                                'read', item['attachment_ids'] ,{'fields': ['name', 'type', 'url', 'res_model', 'res_id', 'create_date']})
 
+                except:
+                    print('att')
         return {'data':{'results': results}, 'employee': {'id': employee_id}}
 
     def tatcachuyendicuaphuongtien(self, equipment_id):
@@ -270,7 +275,7 @@ class VanTaiHaHai():
                 item['location_dest_name'] = item['location_dest_name'] if item['location_dest_name'] else None 
                 if item['attachment_ids']:
                     item['attachment_ids'] = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 
-                        'read', item['attachment_ids'] ,{'fields': ['name', 'type', 'url', 'res_model', 'res_id']})
+                        'read', item['attachment_ids'] ,{'fields': ['id', 'name', 'type', 'url', 'res_model', 'res_id']})
         return {'data': results}
     
     def tatcachuyendihomnay(self):
