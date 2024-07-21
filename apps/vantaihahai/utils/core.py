@@ -63,6 +63,25 @@ class VanTaiHaHai():
             logs = self.models.execute_kw(self.db, self.uid, self.password, 'auditlog.log', 'search_read', 
                 [[('model_model', '=', 'fleet.trip'), ('res_id','=',fleetid)]],
                 {"fields":["id","res_id","model_model","line_ids"],"limit":1000})
+            if item['attachment_ids']:
+                if len(item['attachment_ids']) >0:
+                    item['attachment_ids'] = self.models.execute_kw(self.db, self.uid, self.password, 'ir.attachment', 
+                        'read', item['attachment_ids'] ,{'fields': ['name', 'type', 'url', 'res_model', 'res_id', 'create_date']})
+
+            for attachment in attachment_ids:
+                dt = datetime.datetime.strptime(attachment["create_date"], "%Y-%m-%d  %H:%M:%S")
+
+                msg = {
+                    'id': f'{unix_time_millis(dt)}',
+                    'content': attachment['name'] ,
+                    'thumbnail': attachment['url'],
+                    'msg':  attachment['name'],
+                    'msgType': "IMAGE",
+                    'senderId': 0,
+                    'reply': ''
+                    
+                }
+                results.append(msg)
             for log_content in logs:
                 dt = datetime.datetime.strptime(item["schedule_date"], "%Y-%m-%d")
 
