@@ -73,7 +73,7 @@ class VanTaiHaHai():
 
                 msg = {
                     'id': f'{unix_time_millis(dt)}',
-                    'content': attachment['name'] ,
+                    'content': attachment['url'],
                     'thumbnail': attachment['url'],
                     'msg':  attachment['name'],
                     'msgType': "IMAGE",
