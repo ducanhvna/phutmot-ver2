@@ -222,8 +222,8 @@ class Tatcachuyendi(APIView):
                             password= password)
                 
                 queryset2= vantai.tatcachuyendicuataixe()
-                employee_id = queryset2['employee']['id']
-                print("Tat ca cac chuyen di cua: ", employee_id)
+                # employee_id = queryset2['employee']['id']
+                # print("Tat ca cac chuyen di cua: ", employee_id)
             
                 # queryset= tatcachuyendicuataixe(employee_id)
                 # for item in queryset['data']['results']:
