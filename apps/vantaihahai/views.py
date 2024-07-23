@@ -33,27 +33,30 @@ class SyncUserDevice(APIView):
         
         if vantai.uid > 0:
             try:
-                target_user = User.objects.get(username=f'{company_info.code}_{username}')
-            except:
-                target_user = User.objects.create_user(username=f'{company_info.code}_{username}',
-                                    email=f'{company_info.code}_{username}@{company_info.code}.com',
-                                    password=f'{company_info.code}_{username}')
-            try:
-                target_device = target_user.user_device
-            except:
-                target_device= None
-            if not target_device:
-                target_device = Device(type = 4, name=f'{company_info.code}_{username}', id=f'{company_info.code}_{username}', 
-                        user= target_user)
+                try:
+                    target_user = User.objects.get(username=f'{company_info.code}_{username}')
+                except:
+                    target_user = User.objects.create_user(username=f'{company_info.code}_{username}',
+                                        email=f'{company_info.code}_{username}@{company_info.code}.com',
+                                        password=f'{company_info.code}_{username}')
+                try:
+                    target_device = target_user.user_device
+                except:
+                    target_device= None
+                if not target_device:
+                    target_device = Device(type = 4, name=f'{company_info.code}_{username}', id=f'{company_info.code}_{username}', 
+                            user= target_user)
+                    target_device.save()
+                else:
+                    target_device = target_user.user_device
+                target_device.company = company_info
+                target_device.username = username
+                target_device.password = password
                 target_device.save()
-            else:
-                target_device = target_user.user_device
-            target_device.company = company_info
-            target_device.username = username
-            target_device.password = password
-            target_device.save()
-            # target_user= target_users[0]
-            current_devices = Device.objects.filter(user=self.request.user)
+                # target_user= target_users[0]
+                current_devices = Device.objects.filter(user=self.request.user)
+            except:
+                print('')
             for device in current_devices:
     
                 try:
