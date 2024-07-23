@@ -56,25 +56,22 @@ class SyncUserDevice(APIView):
             current_devices = Device.objects.filter(user=self.request.user)
             for device in current_devices:
     
-            # serializer.save(user= user, name=code)
-            # user_profile = UserProfile(user_id=user.id,
-            #                            affiliate_code=''.join(
-            #                                random.choices(string.ascii_uppercase + string.digits, k=8)))
-            # user_profile.save()
-            # return Response(serializer.data, status=status.HTTP_201_CREATED)
-                device.user_owner = target_user
-                device.save()
-            # if len(current_devices) == 0:
-            #     result = {'devices': len(current_devices), 'username': target_user.username}
-            # else:
-                result_item = {'device_id': device.id,'device_name': device.name, 
-                        'owner': device.user_owner.username if device.user_owner else None, 
-                        'username': device.user.username if device.user else None,
-                        'usr': target_device.username,
-                        'pas': target_device.password,
-                        'url': company_info.username,
-                        'db': company_info.dbname}
-                results.append(result_item)
+                try:
+                    device.user_owner = target_user
+                    device.save()
+                # if len(current_devices) == 0:
+                #     result = {'devices': len(current_devices), 'username': target_user.username}
+                # else:
+                    result_item = {'device_id': device.id,'device_name': device.name, 
+                            'owner': device.user_owner.username if device.user_owner else None, 
+                            'username': device.user.username if device.user else None,
+                            'usr': target_device.username,
+                            'pas': target_device.password,
+                            'url': company_info.username,
+                            'db': company_info.dbname}
+                    results.append(result_item)
+                except:
+                    print('')
             # return Response(device)
         # else:
         #     result = {'result': None}
