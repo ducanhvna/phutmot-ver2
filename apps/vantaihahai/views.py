@@ -755,9 +755,9 @@ class TatcaDiadiem(APIView):
         
         # user = request.user 
         try:
-            user = request.user 
+            # user = request.user 
             device = self.request.user.user_device
-            results = []
+            # results = []
             user_owner = device.user_owner
             if user_owner:
                 device = user_owner.user_device
@@ -776,7 +776,7 @@ class TatcaDiadiem(APIView):
             # print(ex)
             return Response({
                             'status': False, 
-                            'error' : ex.message
+                            # 'error' : ex.message
                         })
 
 class Taohanhtrinh(APIView): 
