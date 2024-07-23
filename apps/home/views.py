@@ -91,20 +91,22 @@ class CreateDevice(APIView):
                             'device_name': device.name, 
                             'owner': device.user_owner.username if device.user_owner else None, 
                             'username': device.user.username if device.user else None}
-                
-        if device.user_owner:
-            device_company = None if not device.user_owner.user_device else device.user_owner.user_device.company
-            result['api'] = 'api/core' if not device_company else 'api/core' if not device_company.api_version else device_company.api_version
-            company_info = device_company
-            target_device =  device.user_owner.user_device
-        else:    
-            result['api'] = 'api/core' if not device.company else 'api/core' if not device.company.api_version else device.company.api_version
-            company_info = device.company
-            target_device =  device
-        result['usr']= target_device.username
-        result['pas']= target_device.password,
-        result['url']= company_info.username,
-        result['db']= company_info.dbname
+        try:      
+            if device.user_owner:
+                device_company = None if not device.user_owner.user_device else device.user_owner.user_device.company
+                result['api'] = 'api/core' if not device_company else 'api/core' if not device_company.api_version else device_company.api_version
+                company_info = device_company
+                target_device =  device.user_owner.user_device
+            else:    
+                result['api'] = 'api/core' if not device.company else 'api/core' if not device.company.api_version else device.company.api_version
+                company_info = device.company
+                target_device =  device
+            result['usr']= target_device.username
+            result['pas']= target_device.password,
+            result['url']= company_info.username,
+            result['db']= company_info.dbname
+        except Exception as ex:
+            result['error'] = 400
         return Response(result)
         
 # create a viewset 
