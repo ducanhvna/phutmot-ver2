@@ -32,6 +32,7 @@ class SyncUserDevice(APIView):
                             password= password)
         
         if vantai.uid > 0:
+            current_devices = []
             try:
                 try:
                     target_user = User.objects.get(username=f'{company_info.code}_{username}')
