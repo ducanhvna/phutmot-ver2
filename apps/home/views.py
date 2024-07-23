@@ -102,11 +102,15 @@ class CreateDevice(APIView):
                 company_info = device.company
                 target_device =  device
             result['usr']= target_device.username
-            result['pas']= target_device.password,
-            result['url']= company_info.username,
+            result['pas']= target_device.password
+            result['url']= company_info.username
             result['db']= company_info.dbname
         except Exception as ex:
             result['error'] = 400
+            result['usr']   = ''
+            result['pas']   = ''
+            result['url']   = ''
+            result['db']    = ''
         return Response(result)
         
 # create a viewset 
