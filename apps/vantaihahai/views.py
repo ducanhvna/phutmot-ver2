@@ -756,16 +756,16 @@ class TatcaDiadiem(APIView):
         # user = request.user 
         try:
             # user = request.user 
-            device = self.request.user.user_device
-            # results = []
-            user_owner = device.user_owner
-            if user_owner:
-                device = user_owner.user_device
-            username_drive = device.username
-            password_drive = device.password
+            # device = self.request.user.user_device
+            # # results = []
+            # user_owner = device.user_owner
+            # if user_owner:
+            #     device = user_owner.user_device
+            # username_drive = device.username
+            # password_drive = device.password
             username = settings.VANTAIHAHAI_CONFIG['username']
             password = settings.VANTAIHAHAI_CONFIG['password']
-            company_info = device.company
+            # company_info = device.company
             vantai = VanTaiHaHai(url=settings.VANTAIHAHAI_CONFIG['url'], 
                     dbname= settings.VANTAIHAHAI_CONFIG['db'],
                     username= username, 
