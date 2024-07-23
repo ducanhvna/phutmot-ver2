@@ -766,8 +766,8 @@ class TatcaDiadiem(APIView):
             username = settings.VANTAIHAHAI_CONFIG['username']
             password = settings.VANTAIHAHAI_CONFIG['password']
             company_info = device.company
-            vantai = VanTaiHaHai(url=company_info.url, 
-                    dbname= company_info.dbname,
+            vantai = VanTaiHaHai(url=settings.VANTAIHAHAI_CONFIG['url'], 
+                    dbname= settings.VANTAIHAHAI_CONFIG['db'],
                     username= username, 
                     password= password)
             result = vantai.tatcadiadiem()
