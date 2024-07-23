@@ -13,6 +13,6 @@ urlpatterns = [
     # ADD NEW Routes HERE
 
     # Leave `Home.Urls` as last the last line
-    path('chat/', include('apps.chat.urls')),
+    # path('chat/', include('apps.chat.urls')),
     path("", include("apps.home.urls"))
 ]
