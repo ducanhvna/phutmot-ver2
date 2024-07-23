@@ -75,7 +75,7 @@ class SyncUserDevice(APIView):
                         'username': device.user.username if device.user else None,
                         'usr': target_device.username,
                         'pas': target_device.password,
-                        'url': company_info.username,
+                        'url': company_info.url,
                         'db': company_info.dbname}
                 results.append(result_item)
             except:
