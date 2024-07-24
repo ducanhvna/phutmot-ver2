@@ -14,5 +14,6 @@ class GetListEmployee(APIView):
                         'name': item.name, 
                         'other' :item.other, 
                         'title' : item.title,
-                        'email': item.email})
+                        'email': item.email,
+                        'chat_id': item.chat_id})
         return Response({'data': results})
