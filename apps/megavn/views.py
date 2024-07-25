@@ -36,3 +36,16 @@ class ErpProfile(APIView):
                         'WorkEmail': item.email,
                         'chat_id': item.chat_id}
         return Response({'data': result})
+
+class ErpLink(APIView):
+    def post(self, request): 
+        result = {}
+        email = request.data.get('email')
+        password = request.data.get('password')
+        chat_id = request.data.get('chat_id')
+        results = MegaEmployee.objects.filter((Q(code=email) | Q(email=email)&  Q(email__isnull=False)))
+        for item in results:
+            
+            item.chat_id = chat_id
+            item.save()
+        return Response({'data': results})
