@@ -22,7 +22,7 @@ class ErpProfile(APIView):
     def post(self, request, *args, **kwargs): 
         result = {}
         code = request.data.get('code')
-        results = MegaEmployee.objects.filter(Q(code=code) | Q(email=code))
+        results = MegaEmployee.objects.filter((Q(code=code) | Q(email=code)&  Q(email__isnull=False)))
         if len(results)> 0:
             item = results[0]
             result = {'EmployeeId': item.code, 
