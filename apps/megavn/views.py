@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from .models import MegaEmployee
 from rest_framework.response import Response
-
+from django.db.models import Q
 # Create your views here.
 class GetListEmployee(APIView):
     def get(self, request, *args, **kwargs): 
@@ -17,3 +17,22 @@ class GetListEmployee(APIView):
                         'email': item.email,
                         'chat_id': item.chat_id})
         return Response({'data': results})
+    
+class ErpProfile(APIView):
+    def post(self, request, *args, **kwargs): 
+        result = {}
+        code = request.data.get('code')
+        results = MegaEmployee.objects.filter(Q(code=code) | Q(email=code))
+        if len(results)> 0:
+            item = results[0]
+            result = {'EmployeeId': item.code, 
+                        'Photo': None, 
+                        'DepartmentName' : item.department, 
+                        'FullName': item.name, 
+                        'DepartmentId' :'', 
+                        'JobTitleName' : item.title,
+                        'JobTitleId': 0,
+                        'HomeEmail': None,
+                        'WorkEmail': item.email,
+                        'chat_id': item.chat_id}
+        return Response({'data': result})
