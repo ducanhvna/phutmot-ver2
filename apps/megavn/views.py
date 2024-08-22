@@ -48,7 +48,7 @@ class ErpLink(APIView):
         chat_id = request.data.get('chat_id')
         results = MegaEmployee.objects.filter(Q(code=email) | \
                     (Q(email=email) &  Q(email__isnull=False)) | \
-                    (Q(other=code) &  Q(other__isnull=False)))
+                    (Q(other=email) &  Q(other__isnull=False)))
         for item in results:
             item.chat_id = chat_id
             item.save()
