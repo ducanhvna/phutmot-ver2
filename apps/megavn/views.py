@@ -55,5 +55,30 @@ class ErpLink(APIView):
             item.chat_id = chat_id
             if (deviceToken):
                 item.device_token = deviceToken
+            if password:
+                item.password = password
             item.save()
         return Response({'data': results})
+
+class getDeviceToken(APIView):
+    def post(self, request): 
+        # result = {}
+        email = request.data.get('email')
+        password = request.data.get('password')
+        # chat_id = request.data.get('chat_id')
+        # deviceToken = request.data.get('deviceToken')
+        results = MegaEmployee.objects.filter(Q(code=email) & Q(email__isnull=False))
+        # | \
+        #             (Q(email=email) &  Q(email__isnull=False)) | \
+        #             (Q(other=email) &  Q(other__isnull=False)))
+        # for item in results:
+        #     item.chat_id = chat_id
+        #     if (deviceToken):
+        #         item.device_token = deviceToken
+        #     if password:
+        #         item.password = password
+        #     item.save()
+        if len(results)>0:
+            return Response({'deviceToken': results[0].device_token})
+        else:
+            return Response({'deviceToken': None})
