@@ -3,6 +3,10 @@ from rest_framework.views import APIView
 from .models import MegaEmployee
 from rest_framework.response import Response
 from django.db.models import Q
+
+import requests
+import json
+
 # Create your views here.
 class GetListEmployee(APIView):
     def get(self, request, *args, **kwargs): 
@@ -17,17 +21,49 @@ class GetListEmployee(APIView):
                         'email': item.email,
                         'chat_id': item.chat_id})
         return Response({'data': results})
-    
+
 class ErpProfile(APIView):
     def post(self, request): 
         result = {}
         code = request.data.get('Code')
-
+        
         results = MegaEmployee.objects.filter(Q(code=code) | 
                     (Q(email=code)&  Q(email__isnull=False)) | \
                     (Q(other=code)&  Q(other__isnull=False))    )
         if len(results)> 0:
             item = results[0]
+            
+            try:
+                url = "https://mbapi.megavietnamgroup.com/api/hr/employees/getprofile"
+
+                payload = json.dumps({
+                "Code": item.code
+                })
+                token = request.data.get('token')
+                headers = {
+                'Authorization': f'Bearer {token}',
+                'Content-Type': 'application/json'
+                }
+                
+                response = requests.request("POST", url, headers=headers, data=payload)
+                response_data = response.json()
+
+                # Extract the data field and convert it back to a dictionary
+                if response_data.get("errorCode") == 200:
+                    data_str = response_data.get("data")
+                    if data_str:
+                        data_dict = json.loads(data_str)
+                        print(data_dict)
+                # print(response.text)
+                item.name = data_dict['FullName']
+                item.department = data_dict['DepartmentName']
+                item.title = data_dict['JobTitleName']
+                if data_dict['WorkEmail']:
+                    item.email = data_dict['WorkEmail']
+                item.save()
+            except Exception as ex:
+                print(ex)
+                
             result = {'EmployeeId': item.code, 
                         'Photo': None, 
                         'DepartmentName' : item.department, 
@@ -38,6 +74,7 @@ class ErpProfile(APIView):
                         'HomeEmail': None,
                         'WorkEmail': item.email,
                         'chat_id': item.chat_id}
+            
         return Response({'data': result})
 
 class ErpLink(APIView):
