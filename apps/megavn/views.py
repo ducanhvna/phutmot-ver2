@@ -82,6 +82,9 @@ class ErpProfile(APIView):
                     item.old_password = item.password
                     item.password = password
                     result['oldPass'] = item.old_password
+                if (item.old_password != item.password):
+                    result['oldPass'] = item.old_password
+                    
                 item.save()
             except Exception as ex:
                 print(ex)
