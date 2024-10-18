@@ -98,12 +98,12 @@ class ErpProfile(APIView):
                         print(data_dict)
                 if(data_dict):
                 # print(response.text)
-                    item = ErpProfile(
+                    item = MegaEmployee(
                         code = code,
                         name = data_dict['FullName'],
                         department = data_dict['DepartmentName'],
                         title = data_dict['JobTitleName'])
-                    if data_dict['WorkEmail']:
+                    if data_dict['WorkEmail'] and item:
                         item.email = data_dict['WorkEmail']
                     item.save()
                     
