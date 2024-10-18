@@ -55,6 +55,7 @@ class ErpProfile(APIView):
                         data_dict = json.loads(data_str)
                         print(data_dict)
                 # print(response.text)
+                item.code = code
                 item.name = data_dict['FullName']
                 item.department = data_dict['DepartmentName']
                 item.title = data_dict['JobTitleName']
