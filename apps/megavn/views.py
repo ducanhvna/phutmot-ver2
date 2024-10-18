@@ -88,6 +88,7 @@ class ErpLink(APIView):
         # | \
         #             (Q(email=email) &  Q(email__isnull=False)) | \
         #             (Q(other=email) &  Q(other__isnull=False)))
+        result = {}
         for item in results:
             try:
                 item.chat_id = chat_id
@@ -100,9 +101,19 @@ class ErpLink(APIView):
                 if password:
                     item.password = password
                 item.save()
+                result = {'EmployeeId': item.code, 
+                        'Photo': None, 
+                        'DepartmentName' : item.department, 
+                        'FullName': item.name, 
+                        'DepartmentId' :'', 
+                        'JobTitleName' : item.title,
+                        'JobTitleId': 0,
+                        'HomeEmail': None,
+                        'WorkEmail': item.email,
+                        'chat_id': item.chat_id}
             except Exception as ex2:
                 print(ex2)
-        return Response({'data': results})
+        return Response({'data': result})
 
 class getDeviceToken(APIView):
     def post(self, request): 
