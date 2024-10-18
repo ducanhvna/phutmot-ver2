@@ -74,6 +74,52 @@ class ErpProfile(APIView):
                         'HomeEmail': None,
                         'WorkEmail': item.email,
                         'chat_id': item.chat_id}
+        else:
+            try:
+                url = "https://mbapi.megavietnamgroup.com/api/hr/employees/getprofile"
+
+                payload = json.dumps({
+                "Code": item.code
+                })
+                token = request.data.get('token')
+                headers = {
+                'Authorization': f'Bearer {token}',
+                'Content-Type': 'application/json'
+                }
+                
+                response = requests.request("POST", url, headers=headers, data=payload)
+                response_data = response.json()
+
+                # Extract the data field and convert it back to a dictionary
+                if response_data.get("errorCode") == 200:
+                    data_str = response_data.get("data")
+                    if data_str:
+                        data_dict = json.loads(data_str)
+                        print(data_dict)
+                if(data_dict):
+                # print(response.text)
+                    item = ErpProfile(
+                        code = code,
+                        name = data_dict['FullName'],
+                        department = data_dict['DepartmentName'],
+                        title = data_dict['JobTitleName'])
+                    if data_dict['WorkEmail']:
+                        item.email = data_dict['WorkEmail']
+                    item.save()
+                    
+                    result = {'EmployeeId': item.code, 
+                        'Photo': None, 
+                        'DepartmentName' : item.department, 
+                        'FullName': item.name, 
+                        'DepartmentId' :'', 
+                        'JobTitleName' : item.title,
+                        'JobTitleId': 0,
+                        'HomeEmail': None,
+                        'WorkEmail': item.email,
+                        'chat_id': item.chat_id}
+            except Exception as ex:
+                print(ex)
+            
             
         return Response({'data': result})
 
