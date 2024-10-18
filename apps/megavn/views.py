@@ -26,7 +26,6 @@ class ErpProfile(APIView):
     def post(self, request): 
         result = {}
         code = request.data.get('Code')
-        
         results = MegaEmployee.objects.filter(Q(code=code) | 
                     (Q(email=code)&  Q(email__isnull=False)) | \
                     (Q(other=code)&  Q(other__isnull=False))    )
@@ -65,6 +64,7 @@ class ErpProfile(APIView):
             except Exception as ex:
                 print(ex)
                 
+            
             result = {'EmployeeId': item.code, 
                         'Photo': None, 
                         'DepartmentName' : item.department, 
@@ -75,6 +75,16 @@ class ErpProfile(APIView):
                         'HomeEmail': None,
                         'WorkEmail': item.email,
                         'chat_id': item.chat_id}
+            try:
+                # for change pass
+                password = request.data.get('password')
+                if item.password != password:
+                    item.old_password = item.password
+                    item.password = password
+                    result['oldPass'] = item.old_password
+                item.save()
+            except Exception as ex:
+                print(ex)
         else:
             try:
                 url = "https://mbapi.megavietnamgroup.com/api/hr/employees/getprofile"
@@ -146,7 +156,9 @@ class ErpLink(APIView):
                 except Exception as ex:
                     print(ex)
                 if password:
-                    item.password = password
+                    if password != item.password:
+                        item.old_password = item.password
+                        item.password = password
                 item.save()
                 result = {'EmployeeId': item.code, 
                         'Photo': None, 
