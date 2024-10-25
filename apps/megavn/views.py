@@ -30,6 +30,7 @@ class ErpProfile(APIView):
                     (Q(email=code)&  Q(email__isnull=False)) | \
                     (Q(other=code)&  Q(other__isnull=False))    )
         if len(results)> 0:
+            result = {'process': 'init item 0'}
             item = results[0]
             
             try:
@@ -111,7 +112,7 @@ class ErpProfile(APIView):
                         data_dict = json.loads(data_str)
                         print(data_dict)
                         result = data_dict
-                result = {'process': 'step 1 - step 2'}
+                result['process'] = 'step 1 - step 2'
                 if(data_dict):
                 # print(response.text)
                     item = MegaEmployee(
