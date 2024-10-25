@@ -92,7 +92,7 @@ class ErpProfile(APIView):
         else:
             try:
                 url = "https://mbapi.megavietnamgroup.com/api/hr/employees/getprofile"
-
+                result = {'process': 'process two item'}
                 payload = json.dumps({
                 "Code": item.code
                 })
@@ -101,7 +101,8 @@ class ErpProfile(APIView):
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
                 }
-                result = {'process': 'step 1'}
+                
+                result ['process']= 'step 1'
                 response = requests.request("POST", url, headers=headers, data=payload)
                 response_data = response.json()
 
