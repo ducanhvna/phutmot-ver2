@@ -95,7 +95,7 @@ class ErpProfile(APIView):
                 url = "https://mbapi.megavietnamgroup.com/api/hr/employees/getprofile"
                 result = {'process': 'process two item'}
                 payload = json.dumps({
-                "Code": item.code
+                "Code": code
                 })
                 token = request.data.get('token')
                 headers = {
