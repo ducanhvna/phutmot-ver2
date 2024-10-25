@@ -100,7 +100,7 @@ class ErpProfile(APIView):
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
                 }
-                
+                result = {'process': 'step 1'}
                 response = requests.request("POST", url, headers=headers, data=payload)
                 response_data = response.json()
 
@@ -111,15 +111,16 @@ class ErpProfile(APIView):
                         data_dict = json.loads(data_str)
                         print(data_dict)
                         result = data_dict
+                result = {'process': 'step 1 - step 2'}
                 if(data_dict):
                 # print(response.text)
                     item = MegaEmployee(
                         code = code,
-                        name = data_dict['FullName'],
-                        department = data_dict['DepartmentName'],
-                        title = data_dict['JobTitleName'],
+                        name = data_dict['FullName'] if data_dict['FullName'] else '' ,
+                        department = data_dict['DepartmentName'] if data_dict['DepartmentName'] else '',
+                        title = data_dict['JobTitleName'] if data_dict['JobTitleName'] else '',
                         # if data_dict['WorkEmail'] and item:
-                        email = data_dict['WorkEmail'])
+                        email = data_dict['WorkEmail'] if data_dict['WorkEmail'] else '') 
                     item.save()
                     
                     result = {'EmployeeId': item.code, 
