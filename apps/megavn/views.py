@@ -24,11 +24,12 @@ class GetListEmployee(APIView):
 
 class ErpProfile(APIView):
     def post(self, request): 
-        result = {}
+        result = {'status': 'init'}
         code = request.data.get('Code')
         results = MegaEmployee.objects.filter(Q(code=code) | 
                     (Q(email=code)&  Q(email__isnull=False)) | \
                     (Q(other=code)&  Q(other__isnull=False))    )
+        
         if len(results)> 0:
             result = {'process': 'init item 0'}
             item = results[0]
@@ -101,7 +102,7 @@ class ErpProfile(APIView):
                 'Authorization': f'Bearer {token}',
                 'Content-Type': 'application/json'
                 }
-                
+
                 result ['process']= 'step 1'
                 response = requests.request("POST", url, headers=headers, data=payload)
                 response_data = response.json()
