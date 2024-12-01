@@ -5,7 +5,7 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile.prod
-    command: gunicorn hello_django.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn hello_django.asgi:application --bind 0.0.0.0:8000 -k uvicorn.workers.UvicornWorker
     volumes:
       - static_volume:/home/app/web/staticfiles
       - media_volume:/home/app/web/mediafiles
@@ -15,6 +15,7 @@ services:
       - ./.env.prod
     depends_on:
       - db
+      - redis
   db:
     image: postgres:15
     volumes:
@@ -27,9 +28,13 @@ services:
       - static_volume:/home/app/web/staticfiles
       - media_volume:/home/app/web/mediafiles
     ports:
-      - 1337:80
+      - 8072:80
     depends_on:
       - web
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
 
 volumes:
   postgres_data:
