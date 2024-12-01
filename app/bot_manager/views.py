@@ -32,6 +32,8 @@ class TelegramBotView(View):
             self.send_message(telegram_user_id, welcome_message)
 
         try:
+            welcome_message = 'hi1'
+            self.send_message(telegram_user_id, welcome_message)
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
                 f'chat_{customer.id}',
