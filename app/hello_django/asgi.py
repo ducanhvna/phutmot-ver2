@@ -5,6 +5,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 import bot_manager.routing
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hello_django.settings')
+django.setup()
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
