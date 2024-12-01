@@ -3,6 +3,7 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from .models import Customer, Message
+
 class TelegramBotView(View):
     def post(self, request):
         data = request.POST
@@ -16,7 +17,7 @@ class TelegramBotView(View):
 
         # Xử lý tin nhắn
         customer, created = Customer.objects.get_or_create(telegram_user_id=telegram_user_id)
-        Message.objects.create(customer=customer, content=content)        
+        Message.objects.create(customer=customer, content=content)
         # Gửi tin nhắn qua WebSocket
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
@@ -25,5 +26,5 @@ class TelegramBotView(View):
                 'type': 'chat_message',
                 'message': content
             }
-        )        
+        )
         return JsonResponse({'status': 'ok', 'created': created})
