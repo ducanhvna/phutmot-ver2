@@ -5,4 +5,5 @@ djangorestframework
 channels
 channels_redis
 uvicorn
+requests
 
