@@ -43,7 +43,15 @@ class TelegramBotView(View):
                 }
             )
 
-            welcome_message = 'hi'
+            async_to_sync(channel_layer.group_send)(
+                "broadcast",
+                {
+                    "type": "chat_message",
+                    "message": f"This is a broadcast message {content}"
+                }
+            )
+
+            welcome_message = f'hi {channel_layer}'
             self.send_message(telegram_user_id, welcome_message)
         except Exception as e:
             welcome_message = f'error {e}'

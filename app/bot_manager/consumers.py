@@ -8,6 +8,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # if isinstance(self.scope['user'], AnonymousUser):
         #     await self.close()
         # else:
+        # Thêm người dùng vào nhóm broadcast 
+        await self.channel_layer.group_add("broadcast", self.channel_name)
+
         self.room_group_name = 'chat_%s' % self.scope['user'].id
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -20,6 +23,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+        # Loại bỏ người dùng khỏi nhóm broadcast 
+        await self.channel_layer.group_discard("broadcast", self.channel_name)
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
