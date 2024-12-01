@@ -10,7 +10,7 @@ urlpatterns = [
     path("", image_upload, name="upload"),
     path("admin/", admin.site.urls),
     path("telegram/webhook/", TelegramBotView.as_view(), name="telegram_webhook"),
-    path("ws/", include("bot_manager.routing.websocket_urlpatterns")),
+    path("ws/", include("bot_manager.routing")),
 ]
 
 if bool(settings.DEBUG):
