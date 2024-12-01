@@ -1,7 +1,0 @@
-from django.apps import AppConfig
-
-
-class VantaihahaiConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.vantaihahai'
-    label= 'apps_vantaihahai'

@@ -1,123 +1,25 @@
 version: '3.8'
+
 services:
-  mongo:
-    image: mongo
-    container_name: mongo
-    restart: always
-    env_file: .env
-    environment: 
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=root
-      - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
-      - MONGO_INITDB_USERNAME=${MONGO_DB_USERNAME}
-      - MONGO_INITDB_PASSWORD=${MONGO_DB_PASSWORD}
-    networks:
-      - db_network
-      - web_network
+  web:
+    build: ./app
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ${PWD}/_data/mongo:/data/db
-      - ${PWD}/docker/_mongo/fixtures:/import
-      - ${PWD}/docker/_mongo/scripts/init.sh:/docker-entrypoint-initdb.d/setup.sh
+      - ./app/:/usr/src/app/
     ports:
-      - 27017:27017
-
-  postgres:
-    container_name: postgres
-    image: postgres:13
-    restart: always
-    env_file: .env
-    environment:
-      - POSTGRES_DB=app_db
-      - POSTGRES_USER=app_db_user
-      - POSTGRES_PASSWORD=supersecretpassword
-      - POSTGRES_PORT=5432
-    ports:
-      - 5433:5432
-    networks:
-      - db_network
-    # volumes:
-    #   - ${PWD}/_data/postgres:/var/lib/postgresql/data
-    #   - ${PWD}/docker/_postgres/scripts/create_test_db.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
-
-  redis:
-    image: redis:6
-    container_name: redis
-    restart: always
-    env_file: .env
-    command: redis-server --requirepass $REDIS_PASSWORD
-    expose:
-      - 6379
-    ports:
-      - 6379:6379
-    volumes:
-      - ${PWD}/_data/redis:/var/lib/redis
-    networks:
-      - db_network
-      - web_network
-    
-  phutmot-app:
-    container_name: phutmot_app
-    restart: always
-    env_file: .env
-    build: .
-    image: app:latest
-    networks:
-      - db_network
-      - web_network
+      - 8000:8000
+    env_file:
+      - ./.env.dev
     depends_on:
-      - postgres
-      - redis
+      - db
+  db:
+    image: postgres:15
     volumes:
-      - ./apps:/apps
-      - ./core:/core
-  nginx-phutmot:
-    container_name: nginx_phutmot
-    restart: always
-    image: "nginx:latest"
-    ports:
-      - "8072:5085"
-    volumes:
-      - ./nginx:/etc/nginx/conf.d
-    networks:
-      - db_network
-      - web_network
-    depends_on: 
-      - phutmot-app
-  celery:
-    build: .
-    image: app:latest
-    container_name: celery
-    restart: always
-    command: [
-      "celery",
-      "-A",
-      "core",
-      "worker",
-      "-c",
-      "1",
-      "-l",
-      "INFO",
-      "--without-heartbeat",
-      "--without-gossip",
-      "--without-mingle",
-    ]
-    env_file: .env
+      - postgres_data:/var/lib/postgresql/data/
     environment:
-      - DJANGO_SETTINGS_MODULE=core.settings
-      - DJANGO_WSGI=core.wsgi
-      - DEBUG=False
-    # volumes:
-    #   - ${PWD}/app:/app
-    networks:
-      - db_network
-      - web_network
-    depends_on:
-      - postgres
-      - redis
+      - POSTGRES_USER=hello_django
+      - POSTGRES_PASSWORD=hello_django
+      - POSTGRES_DB=hello_django_dev
 
-networks:
-  db_network:
-    driver: bridge
-  web_network:
-    driver: bridge
- 
+volumes:
+  postgres_data:
