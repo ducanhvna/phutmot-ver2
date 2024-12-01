@@ -39,10 +39,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Third-party apps 
+    # Third-party apps
     "channels",
     "upload",
-    # Your apps 
+    # Your apps
     "bot_manager",
 ]
 

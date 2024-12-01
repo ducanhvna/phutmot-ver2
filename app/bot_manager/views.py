@@ -30,4 +30,3 @@ class TelegramBotView(View):
         )
         
         return JsonResponse({'status': 'ok', 'created': created})
-
