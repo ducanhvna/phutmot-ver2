@@ -4,6 +4,7 @@ psycopg2-binary==2.9.6
 djangorestframework
 channels
 channels_redis
-uvicorn
+uvicorn[standard]
 requests
-
+websockets
+wsproto
