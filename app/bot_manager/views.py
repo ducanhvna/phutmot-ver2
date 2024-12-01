@@ -4,6 +4,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from .models import Customer, Message
 
+
 class TelegramBotView(View):
     def post(self, request):
         data = request.POST
