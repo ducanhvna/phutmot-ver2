@@ -39,8 +39,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
+    # Third-party apps 
+    "channels",
     "upload",
+    # Your apps 
+    "bot_manager",
 ]
 
 MIDDLEWARE = [
@@ -72,6 +75,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "hello_django.wsgi.application"
+ASGI_APPLICATION = 'hello_django.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('redis', 6379)],
+        },
+    },
+}
 
 
 # Database
