@@ -1,25 +1,35 @@
 from django.views import View
 from django.http import JsonResponse, HttpResponseBadRequest
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from .models import Customer, Message
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from .models import Customer, Message
+import requests
+import json
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class TelegramBotView(View):
     def post(self, request):
-        data = request.POST
+        data = json.loads(request.body.decode('utf-8'))
 
-        # Kiểm tra các trường bắt buộc
-        if 'user_id' not in data or 'content' not in data:
-            return HttpResponseBadRequest("Missing required fields: 'user_id' and/or 'content'")
+        if 'message' not in data:
+            return HttpResponseBadRequest("Invalid data")
 
-        telegram_user_id = data['user_id']
-        content = data['content']
+        message_data = data['message']
+        telegram_user_id = message_data['from']['id']
+        content = message_data.get('text', '')
 
-        # Xử lý tin nhắn
+        if not content:
+            return HttpResponseBadRequest("No content to process")
+
         customer, created = Customer.objects.get_or_create(telegram_user_id=telegram_user_id)
         Message.objects.create(customer=customer, content=content)
-        # Gửi tin nhắn qua WebSocket
+
+        if created:
+            welcome_message = "Welcome! We have created a new user for you."
+            self.send_message(telegram_user_id, welcome_message)
+
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
             f'chat_{customer.id}',
@@ -28,4 +38,14 @@ class TelegramBotView(View):
                 'message': content
             }
         )
-        return JsonResponse({'status': 'ok', 'created': created})
+
+        return JsonResponse({'status': 'ok'})
+
+    def send_message(self, chat_id, text):
+        token = '7681184275:AAFhfoK6NrTASoSzWuzMmV8qkCybh4Ocaaw'
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        payload = {
+            'chat_id': chat_id,
+            'text': text,
+        }
+        requests.post(url, json=payload)
