@@ -32,16 +32,21 @@ class TelegramBotView(View):
             self.send_message(telegram_user_id, welcome_message)
 
         channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            f'chat_{customer.id}',
-            {
-                'type': 'chat_message',
-                'message': content
-            }
-        )
+        try:
+            async_to_sync(channel_layer.group_send)(
+                f'chat_{customer.id}',
+                {
+                    'type': 'chat_message',
+                    'message': content
+                }
+            )
 
-        welcome_message = 'hi'
-        self.send_message(telegram_user_id, welcome_message)
+            welcome_message = 'hi'
+            self.send_message(telegram_user_id, welcome_message)
+        except Exception as e:
+            welcome_message = f'error {e}'
+            self.send_message(telegram_user_id, welcome_message)
+
         return JsonResponse({'status': 'ok'})
 
     def send_message(self, chat_id, text):
