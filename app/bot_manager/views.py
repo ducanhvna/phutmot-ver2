@@ -8,6 +8,7 @@ from channels.layers import get_channel_layer
 import requests
 import json
 
+
 @method_decorator(csrf_exempt, name='dispatch')
 class TelegramBotView(View):
     def post(self, request):
