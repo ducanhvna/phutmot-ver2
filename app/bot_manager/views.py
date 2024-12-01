@@ -40,6 +40,8 @@ class TelegramBotView(View):
             }
         )
 
+        welcome_message = 'hi'
+        self.send_message(telegram_user_id, welcome_message)
         return JsonResponse({'status': 'ok'})
 
     def send_message(self, chat_id, text):
