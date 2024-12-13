@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     # Third-party apps
     "channels",
     "upload",
+    "notifications",
     # Your apps
     "bot_manager",
 ]
