@@ -41,7 +41,7 @@ def register_user(request):
             form.save()
             username = form.cleaned_data.get("username")
             raw_password = form.cleaned_data.get("password1")
-            user = authenticate(username=username, password=raw_password)
+            # user = authenticate(username=username, password=raw_password)
 
             msg = 'User created successfully.'
             success = True
