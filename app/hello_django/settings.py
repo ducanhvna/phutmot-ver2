@@ -25,7 +25,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 DEBUG = bool(os.environ.get("DEBUG", default=0))
 
 # Assets Management
-ASSETS_ROOT = os.environ.get('ASSETS_ROOT', default='/static/assets') 
+ASSETS_ROOT = os.environ.get('ASSETS_ROOT', default='/static/assets')
 
 # 'DJANGO_ALLOWED_HOSTS' should be a single string of hosts with a space between each.
 # For example: 'DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]'
