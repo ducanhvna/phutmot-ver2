@@ -27,6 +27,8 @@ services:
       - ./postgre_dj_data:/var/lib/postgresql/data/
     env_file:
       - ./.env.prod.db
+    ports:
+      - "5433:5432"
     networks:
       - backend
       - backdjango
