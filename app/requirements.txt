@@ -8,3 +8,7 @@ uvicorn[standard]
 requests
 websockets
 wsproto
+# UI
+django-theme-material-kit==1.0.25
+# Deployment
+whitenoise==6.6.0

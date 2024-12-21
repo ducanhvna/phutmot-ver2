@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "notifications",
     # Your apps
     "bot_manager",
+    "home",
 ]
 
 MIDDLEWARE = [

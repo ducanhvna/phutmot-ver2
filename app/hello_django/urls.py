@@ -8,7 +8,8 @@ from bot_manager.views import TelegramBotView
 from bot_manager.routing import websocket_urlpatterns
 
 urlpatterns = [
-    path("", image_upload, name="upload"),
+    path('', include('home.urls')),
+    path("upload/", image_upload, name="upload"),
     path("admin/", admin.site.urls),
     path("telegram/webhook/", TelegramBotView.as_view(), name="telegram_webhook"),
     re_path(r'^ws/', include(websocket_urlpatterns)),
