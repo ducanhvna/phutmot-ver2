@@ -16,6 +16,8 @@ services:
     depends_on:
       - db
       - redis
+    networks:
+      - backend
   db:
     image: postgres:16
     user: root
@@ -23,6 +25,8 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env.prod.db
+    networks:
+      - backend
   nginx:
     build: ./nginx
     volumes:
@@ -32,10 +36,14 @@ services:
       - 8072:80
     depends_on:
       - web
+    networks:
+      - backend
   redis:
     image: redis:latest
     ports:
       - 6379:6379
+    networks:
+      - backend
   odoo17:
     image: odoo:17
     user: root
@@ -57,8 +65,14 @@ services:
       - ./addons:/mnt/extra-addons
       - ./etc:/etc/odoo
     restart: always             # run as a service
+    networks:
+      - backend
 
 volumes:
   postgres_data:
   static_volume:
   media_volume:
+
+networks:
+  backend:
+    driver: bridge
