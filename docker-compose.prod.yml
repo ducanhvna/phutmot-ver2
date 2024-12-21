@@ -17,7 +17,7 @@ services:
       - dbweb
       - redis
     networks:
-      - backend
+      - backdjango
   dbweb:
     image: postgres:16
     user: root
@@ -27,6 +27,7 @@ services:
       - ./.env.prod.db
     networks:
       - backend
+      - backdjango
   nginx:
     build: ./nginx
     volumes:
@@ -92,4 +93,7 @@ networks:
     driver: bridge
   backodoo:
     name: backodoo 
+    internal: true
+  backdjango:
+    name: backdjango 
     internal: true
