@@ -1,3 +1,4 @@
+from django import template
 from django.shortcuts import render
 from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
@@ -8,6 +9,7 @@ def index(request):
     context = {'segment': 'index'}
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
+
 
 def pages(request):
     context = {}
@@ -29,6 +31,6 @@ def pages(request):
         html_template = loader.get_template('home/page-404.html')
         return HttpResponse(html_template.render(context, request))
 
-    except:
+    except Exception:
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
