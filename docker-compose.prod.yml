@@ -27,10 +27,7 @@ services:
       - ./postgre_dj_data:/var/lib/postgresql/data/
     env_file:
       - ./.env.prod.db
-    ports:
-      - "5439:5432"  # Chạy PostgreSQL trên cổng 5439
     networks:
-      - backend
       - backdjango
 
   nginx:
@@ -62,8 +59,6 @@ services:
     restart: always
     volumes:
         - ./postgresql:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"  # Chạy trên cổng 5432
     networks:
       - backend
       - backodoo
