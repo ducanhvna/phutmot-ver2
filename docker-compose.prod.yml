@@ -30,7 +30,6 @@ services:
     ports:
       - "5433:5432"
     networks:
-      - backend
       - backdjango
 
   nginx:
