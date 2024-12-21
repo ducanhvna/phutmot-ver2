@@ -14,11 +14,11 @@ services:
     env_file:
       - ./.env.prod
     depends_on:
-      - dbpg
+      - dbweb
       - redis
     networks:
       - backend
-  dbpg:
+  dbweb:
     image: postgres:16
     user: root
     volumes:
@@ -44,20 +44,32 @@ services:
       - 6379:6379
     networks:
       - backend
+  db:
+    image: postgres:16
+    user: root
+    environment:
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo17@2023
+      - POSTGRES_DB=postgres
+    restart: always             # run as a service
+    volumes:
+        - ./postgresql:/var/lib/postgresql/data
+    networks:
+      - backodoo
   odoo17:
     image: odoo:17
     user: root
     depends_on:
-      - dbpg
+      - db
     ports:
       - "10017:8069"
       - "20017:8072" # live chat
     tty: true
     command: --
     environment:
-      - HOST=dbpg
-      - USER=hello_django
-      - PASSWORD=hello_django
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=odoo17@2023
     volumes:
       #- /etc/timezone:/etc/timezone:ro
       #- /etc/localtime:/etc/localtime:ro
@@ -67,6 +79,8 @@ services:
     restart: always             # run as a service
     networks:
       - backend
+      - backodoo
+  
 
 volumes:
   postgres_data:
@@ -76,3 +90,6 @@ volumes:
 networks:
   backend:
     driver: bridge
+  backodoo:
+    name: backodoo 
+    internal: true
