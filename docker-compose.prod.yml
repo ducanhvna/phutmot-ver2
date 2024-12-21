@@ -19,6 +19,7 @@ services:
     networks:
       - backend
       - backdjango
+
   dbweb:
     image: postgres:16
     user: root
@@ -27,7 +28,9 @@ services:
     env_file:
       - ./.env.prod.db
     networks:
+      - backend
       - backdjango
+
   nginx:
     build: ./nginx
     volumes:
@@ -39,12 +42,14 @@ services:
       - web
     networks:
       - backend
+
   redis:
     image: redis:latest
     ports:
       - 6379:6379
     networks:
       - backend
+
   db:
     image: postgres:16
     user: root
@@ -52,11 +57,13 @@ services:
       - POSTGRES_USER=odoo
       - POSTGRES_PASSWORD=odoo17@2023
       - POSTGRES_DB=postgres
-    restart: always             # run as a service
+    restart: always
     volumes:
         - ./postgresql:/var/lib/postgresql/data
     networks:
+      - backend
       - backodoo
+
   odoo17:
     image: odoo:17
     user: root
@@ -77,11 +84,10 @@ services:
       # - ./entrypoint.sh:/entrypoint.sh   # if you want to install additional Python packages, uncomment this line!
       - ./addons:/mnt/extra-addons
       - ./etc:/etc/odoo
-    restart: always             # run as a service
+    restart: always
     networks:
       - backend
       - backodoo
-  
 
 volumes:
   postgres_data:
