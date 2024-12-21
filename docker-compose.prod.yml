@@ -37,7 +37,7 @@ services:
       - 6379:6379
   odoo17:
     image: odoo:17
-    user: root
+    user: hello_django
     depends_on:
       - db
     ports:
