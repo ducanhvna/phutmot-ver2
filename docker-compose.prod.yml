@@ -17,6 +17,7 @@ services:
       - dbweb
       - redis
     networks:
+      - backend
       - backdjango
   dbweb:
     image: postgres:16
@@ -26,7 +27,6 @@ services:
     env_file:
       - ./.env.prod.db
     networks:
-      - backend
       - backdjango
   nginx:
     build: ./nginx
