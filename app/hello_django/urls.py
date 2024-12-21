@@ -8,7 +8,7 @@ from bot_manager.views import TelegramBotView
 from bot_manager.routing import websocket_urlpatterns
 
 urlpatterns = [
-    path("", include("apps.authentication.urls")), # Auth routes - login / register
+    path("", include("apps.authentication.urls")),  # Auth routes - login / register
     path('', include('home.urls')),
     path("upload/", image_upload, name="upload"),
     path("admin/", admin.site.urls),
