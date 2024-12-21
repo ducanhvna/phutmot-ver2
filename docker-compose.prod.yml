@@ -18,6 +18,7 @@ services:
       - redis
   db:
     image: postgres:15
+    user: root
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
@@ -37,7 +38,7 @@ services:
       - 6379:6379
   odoo17:
     image: odoo:17
-    user: hello_django
+    user: root
     depends_on:
       - db
     ports:
