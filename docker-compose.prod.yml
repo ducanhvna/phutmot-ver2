@@ -14,11 +14,11 @@ services:
     env_file:
       - ./.env.prod
     depends_on:
-      - db
+      - dbpg
       - redis
     networks:
       - backend
-  db:
+  dbpg:
     image: postgres:16
     user: root
     volumes:
@@ -48,14 +48,14 @@ services:
     image: odoo:17
     user: root
     depends_on:
-      - db
+      - dbpg
     ports:
       - "10017:8069"
       - "20017:8072" # live chat
     tty: true
     command: --
     environment:
-      - HOST=db
+      - HOST=dbpg
       - USER=hello_django
       - PASSWORD=hello_django
     volumes:
