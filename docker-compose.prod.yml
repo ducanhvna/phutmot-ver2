@@ -35,6 +35,27 @@ services:
     image: redis:latest
     ports:
       - 6379:6379
+  odoo17:
+    image: odoo:17
+    user: root
+    depends_on:
+      - db
+    ports:
+      - "10017:8069"
+      - "20017:8072" # live chat
+    tty: true
+    command: --
+    environment:
+      - HOST=db
+      - USER=hello_django
+      - PASSWORD=hello_django
+    volumes:
+      #- /etc/timezone:/etc/timezone:ro
+      #- /etc/localtime:/etc/localtime:ro
+      # - ./entrypoint.sh:/entrypoint.sh   # if you want to install additional Python packages, uncomment this line!
+      - ./addons:/mnt/extra-addons
+      - ./etc:/etc/odoo
+    restart: always             # run as a service
 
 volumes:
   postgres_data:
