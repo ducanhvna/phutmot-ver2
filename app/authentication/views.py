@@ -100,6 +100,7 @@ class EmployeeListCreateAPIView(APIView):
             return Response({"error": "Failed to authenticate with Odoo"}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class EmployeeDetailAPIView(APIView):
     def get_employee(self, uid, employee_id):
         models = xmlrpc.client.ServerProxy(f"{ODOO_URL}/xmlrpc/2/object")
