@@ -93,7 +93,7 @@ class EmployeeListCreateAPIView(APIView):
                         'name': serializer.validated_data['name'],
                         'job_id': serializer.validated_data['job_id'],
                         'department_id': serializer.validated_data['department_id'],
-                        'code': serializer.validated_data['code'],
+                        # 'code': serializer.validated_data['code'],
                     }]
                 )
                 return Response({"id": employee_id}, status=status.HTTP_201_CREATED)
@@ -106,7 +106,7 @@ class EmployeeDetailAPIView(APIView):
         models = xmlrpc.client.ServerProxy(f"{ODOO_URL}/xmlrpc/2/object")
         employees = models.execute_kw(
             ODOO_DB, uid, ODOO_PASSWORD, 'hr.employee', 'search_read',
-            [[['id', '=', employee_id]]], {'fields': ['id', 'name', 'job_id', 'department_id', 'code']}
+            [[['id', '=', employee_id]]], {'fields': ['id', 'name', 'job_id', 'department_id']}
         )
         return employees[0] if employees else None
 
@@ -136,7 +136,7 @@ class EmployeeDetailAPIView(APIView):
                             'name': serializer.validated_data['name'],
                             'job_id': serializer.validated_data['job_id'],
                             'department_id': serializer.validated_data['department_id'],
-                            'code': serializer.validated_data['code'],
+                            # 'code': serializer.validated_data['code'],
                         }]
                     )
                     return Response({"message": "Employee updated successfully"}, status=status.HTTP_200_OK)
