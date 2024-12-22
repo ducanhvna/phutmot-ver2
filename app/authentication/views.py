@@ -12,6 +12,10 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import EmployeeSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.models import User
+from .models import UserProfile
+from .serializers import RegisterSerializer
 
 ODOO_URL = "http://odoo17:8069"
 ODOO_DB = "odoo"
