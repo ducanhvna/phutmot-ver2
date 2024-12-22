@@ -6,4 +6,4 @@ class EmployeeSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255)
     job_id = serializers.CharField(max_length=255)
     department_id = serializers.CharField(max_length=255)
-    code = serializers.CharField(max_length=255)
+    # code = serializers.CharField(max_length=255)
