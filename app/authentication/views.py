@@ -153,3 +153,58 @@ class EmployeeDetailAPIView(APIView):
             )
             return Response({"message": "Employee deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         return Response({"error": "Failed to authenticate with Odoo"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RegisterAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            password = serializer.validated_data['password']
+            employee_id = serializer.validated_data['employee_id']
+
+            # Kết nối với Odoo để lấy thông tin employee
+            common = xmlrpc.client.ServerProxy(f"{ODOO_URL}/xmlrpc/2/common")
+            uid = common.authenticate(ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD, {})
+            if uid:
+                models = xmlrpc.client.ServerProxy(f"{ODOO_URL}/xmlrpc/2/object")
+                employee = models.execute_kw(
+                    ODOO_DB, uid, ODOO_PASSWORD, 'hr.employee', 'search_read',
+                    [[['id', '=', employee_id]]],
+                    {'fields': ['name', 'job_id', 'department_id']}
+                )
+
+                if employee:
+                    employee_data = employee[0]
+                    employee_info = {
+                        'employee_name': employee_data['name'],
+                        'job_title': employee_data['job_id'][1],
+                        'department': employee_data['department_id'][1],
+                    }
+
+                    # Tạo user trong Django
+                    user, created = User.objects.get_or_create(username=username)
+                    if created:
+                        user.set_password(password)
+                        user.save()
+
+                    # Tạo profile và liên kết user với employee nếu chưa có
+                    user_profile, created = UserProfile.objects.get_or_create(
+                        user=user,
+                        defaults={
+                            'employee_info': employee_info,
+                            'other_employees_info': []
+                        }
+                    )
+
+                    # Tạo token
+                    refresh = RefreshToken.for_user(user)
+                    return Response({
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                        'message': "User registered and linked with employee successfully."
+                    }, status=status.HTTP_201_CREATED)
+
+                return Response({"error": "Employee not found in Odoo."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Failed to authenticate with Odoo."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

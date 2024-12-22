@@ -7,3 +7,9 @@ class EmployeeSerializer(serializers.Serializer):
     job_id = serializers.JSONField()
     department_id = serializers.JSONField()
     # code = serializers.CharField(max_length=255)
+
+
+class RegisterSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=255)
+    password = serializers.CharField(max_length=255, write_only=True)
+    employee_id = serializers.IntegerField()

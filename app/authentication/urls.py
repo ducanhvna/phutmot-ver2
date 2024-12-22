@@ -14,4 +14,5 @@ urlpatterns = [
     path("logout/", LogoutView.as_view(), name="logout"),
     path('api/employees/', EmployeeListCreateAPIView.as_view(), name='employee_list_create'),
     path('api/employees/<int:employee_id>/', EmployeeDetailAPIView.as_view(), name='employee_detail'),
+    path('api/register/', RegisterAPIView.as_view(), name='register'),
 ]
