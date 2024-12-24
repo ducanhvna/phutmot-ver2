@@ -102,7 +102,7 @@
     if (odooResponse.ok) {
         window.location.href = '/home';
     } else {
-        console.error('Đăng nhập thất bại');
+        console.error('Đăng nhập thất bại', await odooResponse.text());
         // Xử lý lỗi đăng nhập tại đây
     }
 });
