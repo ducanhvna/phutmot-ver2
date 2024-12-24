@@ -93,7 +93,7 @@
             'X-CSRFToken': csrf_token  // Thêm CSRF token vào header
         },
         body: new URLSearchParams({
-            // csrf_token: csrf_token,
+            csrf_token: csrf_token,
             login: username,
             password: password,
             redirect: ''
