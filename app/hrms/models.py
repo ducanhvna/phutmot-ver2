@@ -7,7 +7,7 @@ from django.utils import timezone
 class Employee(models.Model):
     employee_code = models.CharField("Mã nhân sự", max_length=255, unique=True)
     info = JSONField("Thông tin bổ sung", default=dict, blank=True)
-    scheduling = JSONField("Thông tin chấm công", default=list, blank=True)
+    other_profile = JSONField("Hồ sơ khác", default=list, blank=True)
     create_time = models.DateTimeField("Thời gian tạo", auto_now_add=True)
     update_time = models.DateTimeField("Thời gian cập nhật", auto_now=True)
     created_user = models.CharField("Người tạo", max_length=255)
@@ -86,3 +86,17 @@ class Shifts(models.Model):
             delta = end - start
             return delta.total_seconds() / 3600  # Chuyển đổi thành giờ
         return 0
+
+
+class Scheduling(models.Model):
+    employee = models.ForeignKey('Employee', on_delete=models.CASCADE)
+    scheduling_records = JSONField("Thông tin chấm công", default=list, blank=True)
+    start_date = models.DateField("Ngày bắt đầu tháng")
+    end_date = models.DateField("Ngày kết thúc tháng")
+    create_time = models.DateTimeField("Thời gian tạo", auto_now_add=True)
+    update_time = models.DateTimeField("Thời gian cập nhật", auto_now=True)
+    created_user = models.CharField("Người tạo", max_length=255)
+    modified_user = models.CharField("Người sửa đổi", max_length=255)
+
+    def __str__(self):
+        return f"Scheduling for {self.employee.employee_code} from {self.start_date} to {self.end_date}"
