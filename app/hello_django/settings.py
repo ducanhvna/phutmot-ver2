@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "bot_manager",
     "authentication",
     "home",
+    "hrms",
     'rest_framework',
     'rest_framework_simplejwt',
 ]
