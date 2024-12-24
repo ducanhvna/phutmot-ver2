@@ -61,7 +61,7 @@
 <script>
     document.getElementById("loginForm").addEventListener('submit', async function (event) {
         event.preventDefault();
-        const username = document.getElementById('username').value;
+        const login = document.getElementById('username').value;
         const password = document.getElementById('password').value;
         // gui thong tin dang nhap toi user
         const odooResponse = await fetch('https://admin.hinosoft.com/web/login',{
@@ -69,7 +69,7 @@
             headers:{
                 'Content-Type':'application/json'
             },
-            body: JSON.stringify({username, password})
+            body: JSON.stringify({login, password})
         });
         if (odooResponse.ok){
             window.location.href='/home';
