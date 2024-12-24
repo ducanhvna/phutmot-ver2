@@ -80,8 +80,8 @@
     <script>
         document.getElementById("loginForm").addEventListener('submit', async function (event) {
             event.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            const username = document.getElementsByName('username')[0].value;
+            const password = document.getElementsByName('password')[0].value;
             // gui thong tin dang nhap toi user
             const odooResponse = await fetch('https://admin.hinosoft.com/web/login',{
                 method:'POST',
