@@ -60,22 +60,53 @@
     </div>
 <script>
     document.getElementById("loginForm").addEventListener('submit', async function (event) {
-        event.preventDefault();
-        const login = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        // gui thong tin dang nhap toi user
-        const odooResponse = await fetch('https://admin.hinosoft.com/web/login',{
-            method:'POST',
-            headers:{
-                'Content-Type':'application/json'
-            },
-            body: JSON.stringify({login, password})
-        });
-        if (odooResponse.ok){
-            window.location.href='/home';
+    event.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    // Hàm để lấy CSRF token từ cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Kiểm tra xem cookie bắt đầu với tên mong muốn
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
         }
-        
-    })
+        return cookieValue;
+    }
+    
+    const csrf_token = getCookie('csrftoken');
+
+    // Gửi thông tin đăng nhập tới server
+    const odooResponse = await fetch('https://admin.hinosoft.com/web/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrf_token  // Thêm CSRF token vào header
+        },
+        body: new URLSearchParams({
+            csrf_token: csrf_token,
+            login: username,
+            password: password,
+            redirect: ''
+        }).toString()
+    });
+
+    if (odooResponse.ok) {
+        window.location.href = '/home';
+    } else {
+        console.error('Đăng nhập thất bại');
+        // Xử lý lỗi đăng nhập tại đây
+    }
+});
+
 </script>
 {% endblock content %}
 
