@@ -120,8 +120,9 @@ document.getElementById("loginForm").addEventListener('submit', async function (
             alert("Đăng nhập thất bại: " + errorText);
         }
     } else {
-        console.error('Không thể lấy CSRF token mới');
-        alert('Không thể lấy CSRF token mới');
+        const errorText = await csrfResponse.text();
+        console.error('Không thể lấy CSRF token mới:', errorText);
+        alert('Không thể lấy CSRF token mới: ' + errorText);
     }
 });
 
