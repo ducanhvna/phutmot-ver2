@@ -1,6 +1,6 @@
 from django.db import models
 from datetime import datetime, date, timedelta
-from django.contrib.postgres.fields import JSONField
+from django.db.models import JSONField
 
 
 class Shifts(models.Model):
