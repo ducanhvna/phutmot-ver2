@@ -59,7 +59,7 @@
 
     </div>
 <script>
-    document.getElementById("loginForm").addEventListener('submit', async function (event) {
+document.getElementById("loginForm").addEventListener('submit', async function (event) {
     event.preventDefault();
     
     const username = document.getElementById('username').value;
@@ -82,31 +82,45 @@
         return cookieValue;
     }
     
-    const csrf_token = getCookie('csrftoken');
-    console.log("CSRF Token:", csrf_token);
-
-    // Gửi thông tin đăng nhập tới server
-    const odooResponse = await fetch('https://admin.hinosoft.com/web/login', {
-        method: 'POST',
+    // Lấy CSRF token mới từ server
+    const csrfResponse = await fetch('https://admin.hinosoft.com/web/login', {
+        method: 'GET',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': csrf_token  // Thêm CSRF token vào header
+            'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: new URLSearchParams({
-            csrf_token: csrf_token,
-            login: username,
-            password: password,
-            redirect: ''
-        }).toString()
+        credentials: 'include' // Bao gồm cookies trong yêu cầu
     });
 
-    if (odooResponse.ok) {
-        window.location.href = '/home';
+    if (csrfResponse.ok) {
+        const csrf_token = getCookie('csrftoken');
+        console.log("CSRF Token:", csrf_token);
+
+        // Gửi thông tin đăng nhập tới server
+        const odooResponse = await fetch('https://admin.hinosoft.com/web/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrf_token  // Thêm CSRF token vào header
+            },
+            body: new URLSearchParams({
+                csrf_token: csrf_token,
+                login: username,
+                password: password,
+                redirect: ''
+            }).toString()
+        });
+
+        if (odooResponse.ok) {
+            window.location.href = '/home';
+        } else {
+            const errorText = await odooResponse.text();
+            console.error('Đăng nhập thất bại:', errorText);
+            // Xử lý lỗi đăng nhập tại đây, hiển thị thông báo cho người dùng
+            alert("Đăng nhập thất bại: " + errorText);
+        }
     } else {
-        const errorText = await odooResponse.text();
-        console.error('Đăng nhập thất bại:', errorText);
-        // Xử lý lỗi đăng nhập tại đây, hiển thị thông báo cho người dùng
-        alert("Đăng nhập thất bại: " + errorText);
+        console.error('Không thể lấy CSRF token mới');
+        alert('Không thể lấy CSRF token mới');
     }
 });
 
