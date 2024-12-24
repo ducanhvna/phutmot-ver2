@@ -31,7 +31,6 @@
                             <field name="company_id"/>
                         </group>
                         <group>
-                            <field name="code"/>
                             <field name="location_type"/>
                             <field name="location_area_unit"/>
                         </group>
