@@ -83,16 +83,16 @@ document.getElementById("loginForm").addEventListener('submit', async function (
     }
     
     // Lấy CSRF token mới từ server
-    const csrfResponse = await fetch('https://admin.hinosoft.com/web/login', {
+    const csrfResponse = await fetch('https://admin.hinosoft.com/get_csrf_token', {
         method: 'GET',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/json'
         },
         credentials: 'include' // Bao gồm cookies trong yêu cầu
     });
 
     if (csrfResponse.ok) {
-        const csrf_token = getCookie('csrftoken');
+        const csrf_token = await csrfResponse.json();
         console.log("CSRF Token:", csrf_token);
 
         // Gửi thông tin đăng nhập tới server
@@ -102,6 +102,7 @@ document.getElementById("loginForm").addEventListener('submit', async function (
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'X-CSRFToken': csrf_token  // Thêm CSRF token vào header
             },
+            credentials: 'include', // Bao gồm cookies trong yêu cầu
             body: new URLSearchParams({
                 csrf_token: csrf_token,
                 login: username,
@@ -123,7 +124,6 @@ document.getElementById("loginForm").addEventListener('submit', async function (
         alert('Không thể lấy CSRF token mới');
     }
 });
-
 
 </script>
 {% endblock content %}
