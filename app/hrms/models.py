@@ -51,4 +51,3 @@ class Shifts(models.Model):
             delta = end - start
             return delta.total_seconds() / 3600  # Chuyển đổi thành giờ
         return 0
-
