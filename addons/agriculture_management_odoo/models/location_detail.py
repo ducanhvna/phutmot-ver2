@@ -35,6 +35,9 @@ class LocationDetail(models.Model):
     location_name = fields.Char(string='Location Name', required=True,
                                 help='Give the name of Location where'
                                      ' farming done', tracking=True)
+    code = fields.Char(string='Location Code', required=False,
+                                help='Give the Code of location', tracking=True)
+    
     location_address = fields.Char(string='Location Address', required=True,
                                    help='Give the full address of the location',
                                    tracking=True)
