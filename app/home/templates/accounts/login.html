@@ -39,14 +39,18 @@
                                     <div class="col-md-12 px-md-1">
                                         <div class="form-group">
                                             <label>Username</label>
-                                            {{ form.username }}
+                                            <!-- {{ form.username }} -->
+                                            <input type="text" class="form-control" placeholder="Username"
+                                            value="admin" name="username" id="username">
                                         </div>
                                     </div>
 
                                     <div class="col-md-12 px-md-1">
                                         <div class="form-group">
                                             <label>Password</label>
-                                            {{ form.password }}
+                                            <!-- {{ form.password }} -->
+                                            <input type="password" class="form-control" placeholder="password"
+                                                        value="admin" name="password" id="password">
                                         </div>
                                     </div>
                                 </div>
@@ -73,7 +77,25 @@
         </div>
 
     </div>
-
+    <script>
+        document.getElementById("loginForm").addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            // gui thong tin dang nhap toi user
+            const odooResponse = await fetch('https://admin.hinosoft.com/web/login',{
+                method:'POST',
+                headers:{
+                    'Content-Type':'application/json'
+                },
+                body: JSON.stringify({username, password})
+            });
+            if (odooResponse.ok){
+                window.location.href='/home';
+            }
+            
+        })
+    </script>
 {% endblock content %}
 
 <!-- Specific Page JS goes HERE  -->
