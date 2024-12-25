@@ -27,7 +27,7 @@ class Attendance(models.Model):
     # modified_user = models.CharField("Người sửa đổi", max_length=255)
 
     def __str__(self):
-        return f"Attendance for {self.employee.employee_code} from {self.start_date} to {self.end_date}"
+        return f"Attendance for {self.employee_code} from {self.start_date} to {self.end_date}"
 
     def add_attendance_record(self, record):
         """
@@ -98,4 +98,4 @@ class Scheduling(models.Model):
     # modified_user = models.CharField("Người sửa đổi", max_length=255)
 
     def __str__(self):
-        return f"Scheduling from {self.start_date} to {self.end_date}"
+        return f"Scheduling {self.employee_code} from {self.start_date} to {self.end_date}"
