@@ -9,8 +9,8 @@ class Employee(models.Model):
     other_profile = JSONField("Hồ sơ khác", default=list, blank=True)
     create_time = models.DateTimeField("Thời gian tạo", auto_now_add=True)
     update_time = models.DateTimeField("Thời gian cập nhật", auto_now=True)
-    created_user = models.CharField("Người tạo", max_length=255)
-    modified_user = models.CharField("Người sửa đổi", max_length=255)
+    # created_user = models.CharField("Người tạo", max_length=255)
+    # modified_user = models.CharField("Người sửa đổi", max_length=255)
 
     def __str__(self):
         return self.employee_code
@@ -23,8 +23,8 @@ class Attendance(models.Model):
     end_date = models.DateField("Ngày kết thúc tháng")
     create_time = models.DateTimeField("Thời gian tạo", auto_now_add=True)
     update_time = models.DateTimeField("Thời gian cập nhật", auto_now=True)
-    created_user = models.CharField("Người tạo", max_length=255)
-    modified_user = models.CharField("Người sửa đổi", max_length=255)
+    # created_user = models.CharField("Người tạo", max_length=255)
+    # modified_user = models.CharField("Người sửa đổi", max_length=255)
 
     def __str__(self):
         return f"Attendance for {self.employee.employee_code} from {self.start_date} to {self.end_date}"
@@ -88,14 +88,14 @@ class Shifts(models.Model):
 
 
 class Scheduling(models.Model):
-    employee = models.ForeignKey('Employee', on_delete=models.CASCADE)
+    # employee = models.ForeignKey('Employee', on_delete=models.CASCADE)
     scheduling_records = JSONField("Thông tin chấm công", default=list, blank=True)
     start_date = models.DateField("Ngày bắt đầu tháng")
     end_date = models.DateField("Ngày kết thúc tháng")
     create_time = models.DateTimeField("Thời gian tạo", auto_now_add=True)
     update_time = models.DateTimeField("Thời gian cập nhật", auto_now=True)
-    created_user = models.CharField("Người tạo", max_length=255)
-    modified_user = models.CharField("Người sửa đổi", max_length=255)
+    # created_user = models.CharField("Người tạo", max_length=255)
+    # modified_user = models.CharField("Người sửa đổi", max_length=255)
 
     def __str__(self):
         return f"Scheduling for {self.employee.employee_code} from {self.start_date} to {self.end_date}"
