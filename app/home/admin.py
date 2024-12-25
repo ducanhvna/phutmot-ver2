@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import Book
+from .models import Company
 
 
-@admin.register(Book)
-class Company(admin.ModelAdmin):
-    list_display = ('db', 'url', 'username', 'password', 'company_name')
-    search_fields = ('company_code', 'author')
+@admin.register(Company)
+class CompanyAdmin(admin.ModelAdmin):
+    list_display = ('db', 'url', 'username', 'password', 'company_name', 'company_code')
+    search_fields = ('company_code', 'company_code')
