@@ -17,7 +17,7 @@ class Employee(models.Model):
 
 
 class Attendance(models.Model):
-    employee = models.ForeignKey('Employee', on_delete=models.CASCADE)
+    employee_code = models.CharField("Mã nhân sự", max_length=255, unique=True)
     attendance_records = JSONField("Thông tin điểm danh", default=list, blank=True)
     start_date = models.DateField("Ngày bắt đầu tháng")
     end_date = models.DateField("Ngày kết thúc tháng")
@@ -88,7 +88,7 @@ class Shifts(models.Model):
 
 
 class Scheduling(models.Model):
-    # employee = models.ForeignKey('Employee', on_delete=models.CASCADE)
+    employee_code = models.CharField("Mã nhân sự", max_length=255, unique=True)
     scheduling_records = JSONField("Thông tin chấm công", default=list, blank=True)
     start_date = models.DateField("Ngày bắt đầu tháng")
     end_date = models.DateField("Ngày kết thúc tháng")
