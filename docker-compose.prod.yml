@@ -22,7 +22,7 @@ services:
 
   dbweb:
     image: postgres:16
-    user: root
+    user: hello_django
     volumes:
       - ./postgre_dj_data:/var/lib/postgresql/data/
     env_file:
@@ -51,7 +51,7 @@ services:
 
   db:
     image: postgres:16
-    user: hello_django
+    user: root
     environment:
       - POSTGRES_USER=odoo
       - POSTGRES_PASSWORD=odoo17@2023
