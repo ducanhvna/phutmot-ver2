@@ -13,3 +13,4 @@ django-theme-material-kit==1.0.25
 # Deployment
 whitenoise==6.6.0
 djangorestframework-simplejwt
+django-cuser

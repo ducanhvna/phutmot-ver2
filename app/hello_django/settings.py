@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "upload",
     "notifications",
     # Your apps
+    'django_cuser',
     "bot_manager",
     "authentication",
     "home",
