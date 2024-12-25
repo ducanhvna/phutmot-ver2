@@ -1,7 +1,6 @@
 from django.db import models
 from datetime import datetime, date, timedelta
 from django.db.models import JSONField
-from django.utils import timezone
 
 
 class Employee(models.Model):
