@@ -51,7 +51,7 @@ services:
 
   db:
     image: postgres:16
-    user: root
+    user: hello_django
     environment:
       - POSTGRES_USER=odoo
       - POSTGRES_PASSWORD=odoo17@2023
