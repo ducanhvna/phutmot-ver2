@@ -22,7 +22,7 @@ services:
 
   dbweb:
     image: postgres:16
-    user: hello_django
+    user: root
     volumes:
       - ./postgre_dj_data:/var/lib/postgresql/data/
     env_file:
