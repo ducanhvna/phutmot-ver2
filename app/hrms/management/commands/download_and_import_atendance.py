@@ -89,11 +89,7 @@ class Command(BaseCommand):
         grouped_data = defaultdict(list)
         for record in merged_data:
             grouped_data[record["name"]].append(record)
-            print(
-                len(
-                    f"{record['name']} -- {len(grouped_data[record['name']])}"
-                )
-            )
+            print(f"{record['name']} -- {len(grouped_data[record['name']])}")
 
         # Save data to Django
         self.save_to_django(grouped_data, start_str, end_str)
