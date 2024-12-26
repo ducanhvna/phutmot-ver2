@@ -99,7 +99,7 @@ class Command(BaseCommand):
         len_data = 0
         merged_array = []
         if model_name == 'hr.employee':
-            domain = [
+            domain = [[
                 '&',
                 '&',
                 '|',
@@ -111,9 +111,9 @@ class Command(BaseCommand):
                 '|',
                 ['workingday', '=', False],
                 ['workingday', '<', nextmonthFistdayStr]
-            ]
+            ]]
         elif model_name == 'hr.contract':
-            domain = [
+            domain = [[
                 '&',
                 '&',
                 '|',
@@ -125,7 +125,7 @@ class Command(BaseCommand):
                 '|',
                 ['date_start', '=', False],
                 ['date_start', '<', nextmonthFistdayStr]
-            ]
+            ]]
         else:
             raise ValueError("Invalid model name")
 
