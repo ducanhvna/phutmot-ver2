@@ -7,7 +7,7 @@ from celery import shared_task
 def calculate_scheduling(attendance_id):
     # Import cục bộ để tránh import vòng lặp
     from .models import Attendance, Scheduling
-    
+
     # Lấy đối tượng Attendance
     attendance = Attendance.objects.get(id=attendance_id)
 
