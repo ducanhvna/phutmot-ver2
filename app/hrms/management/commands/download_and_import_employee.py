@@ -97,7 +97,6 @@ class Command(BaseCommand):
         index = 0
         len_data = 0
         merged_array = []
-        
         if model_name == 'hr.employee':
             domain = [
                 '&',
