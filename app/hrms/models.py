@@ -5,6 +5,7 @@ from django.db.models import JSONField
 
 class Employee(models.Model):
     employee_code = models.CharField("Mã nhân sự", max_length=255, unique=True)
+    time_keeping_code = models.CharField("Mã chấm công", max_length=255, unique=True)
     info = JSONField("Thông tin bổ sung", default=dict, blank=True)
     other_profile = JSONField("Hồ sơ khác", default=list, blank=True)
     create_time = models.DateTimeField("Thời gian tạo", auto_now_add=True)
