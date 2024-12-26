@@ -175,7 +175,7 @@ class Command(BaseCommand):
         for contract in contracts:
             contract_dict[contract['employee_code']].append(contract)
 
-        for code, records in grouped_employee_data.items():
+        for employee_code, records in grouped_employee_data.items():
             # Sắp xếp các record để tìm record phù hợp
             records = sorted(records, key=lambda x: (
                 x['severance_day'] is not False,
@@ -190,7 +190,7 @@ class Command(BaseCommand):
             other_records = records[1:] if len(records) > 1 else []  # Các record không phải là employee.info
 
             employee, created = Employee.objects.get_or_create(
-                code=code,
+                employee_code=employee_code,
                 defaults={
                     'start_date': datetime.strptime(start_date, "%Y-%m-%d"),
                     'end_date': datetime.strptime(end_date, "%Y-%m-%d"),
@@ -206,9 +206,9 @@ class Command(BaseCommand):
                 employee.other_profile = other_records
 
             # Xử lý hợp đồng
-            employee_contracts = contract_dict.get(code, [])
+            employee_contracts = contract_dict.get(employee_code, [])
             main_contract = next(
-                (contract for contract in employee_contracts if contract['employee_code'] == selected_record['code'] or contract['employee_id'] == selected_record['id']),
+                (contract for contract in employee_contracts if contract['employee_code'] == selected_record['employee_code'] or contract['employee_id'] == selected_record['id']),
                 None
             )
             other_contracts = [contract for contract in employee_contracts if contract != main_contract]
