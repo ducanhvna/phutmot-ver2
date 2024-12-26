@@ -22,13 +22,14 @@ class Command(BaseCommand):
 
         # Get the first day of the current month
         first_day_of_month = datetime.now().replace(day=1)
-        last_day_of_month = first_day_of_month.replace(month=first_day_of_month.month + 1, day=1) - timedelta(days=1)
 
         # Calculate the last day of the current month
         if first_day_of_month.month == 12:
             next_month_first_day = first_day_of_month.replace(year=first_day_of_month.year + 1, month=1, day=1)
         else:
             next_month_first_day = first_day_of_month.replace(month=first_day_of_month.month + 1, day=1)
+
+        last_day_of_month = next_month_first_day - timedelta(days=1)
 
         # Format the dates
         start_str = first_day_of_month.strftime('%Y-%m-%d')
