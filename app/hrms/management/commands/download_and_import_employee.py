@@ -115,13 +115,9 @@ class Command(BaseCommand):
         elif model_name == 'hr.contract':
             domain = [[
                 '&',
-                '&',
                 '|',
                 ['active', '=', False],
                 ['active', '=', True],
-                '|',
-                ['date_end', '=', False],
-                ['date_end', '>', start_str],
                 '|',
                 ['date_start', '=', False],
                 ['date_start', '<', nextmonthFistdayStr]
