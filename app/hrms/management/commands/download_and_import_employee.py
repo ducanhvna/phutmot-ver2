@@ -218,13 +218,9 @@ class Command(BaseCommand):
                 contract_type = str(main_contract['contract_type_id']).lower()
                 if 'chính thức' in contract_type:
                     employee.main_offical_contract = main_contract
-                    employee.main_probation_contract = {}
-                elif 'thử việc' in contract_type:
-                    employee.main_probation_contract = main_contract
-                    employee.main_offical_contract = {}
 
                     # Tìm hợp đồng thử việc trong các hợp đồng khác
-                    probation_contracts = [contract for contract in other_contracts if 'thử việc' in str(contract['contract_type_id']).lower()]
+                    probation_contracts = [contract for contract in other_contracts if not ('chính thức' in str(contract['contract_type_id']).lower())]
                     if probation_contracts:
                         # Sắp xếp các hợp đồng thử việc theo các điều kiện đã cho
                         probation_contracts = sorted(probation_contracts, key=lambda x: (
@@ -235,6 +231,9 @@ class Command(BaseCommand):
                             x['id']
                         ), reverse=True)
                         employee.main_probation_contract = probation_contracts[0] if len(probation_contracts) > 0 else {}
+                else:
+                    employee.main_probation_contract = main_contract
+                    employee.main_offical_contract = {}
 
             # Lưu thông tin hợp đồng vào employee
             employee.main_contract = main_contract
