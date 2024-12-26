@@ -61,7 +61,6 @@ services:
     env_file:
       - ./.env.prod
     depends_on:
-      - web
       - redis
     networks:
       - backend
@@ -78,7 +77,6 @@ services:
     env_file:
       - ./.env.prod
     depends_on:
-      - web
       - redis
     networks:
       - backend
