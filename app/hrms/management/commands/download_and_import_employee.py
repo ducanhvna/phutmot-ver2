@@ -203,7 +203,7 @@ class Command(BaseCommand):
 
             # Xử lý hợp đồng
             employee_contracts = contract_dict.get(employee_code, [])
-            employee_contracts = sorted(probation_contracts, key=lambda x: (
+            employee_contracts = sorted(employee_contracts, key=lambda x: (
                             x['date_end'] is not False,
                             x['date_end'],
                             x['date_start'] is not False,
