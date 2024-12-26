@@ -115,30 +115,50 @@ class Command(BaseCommand):
         index = 0
         len_data = 0
         merged_array = []
-        while (len_data == LIMIT_SIZE) or (index ==0):
-            ids = models.execute_kw(db, uid, password, 'hr.apec.attendance.report', 'search', 
-                                    [["&",("date", ">=", start_str),("date", "<=", end_str)]], {'offset': index * LIMIT_SIZE, 'limit': LIMIT_SIZE})
+        while (len_data == LIMIT_SIZE) or (index == 0):
+            ids = models.execute_kw(
+                db,
+                uid,
+                password,
+                "hr.apec.attendance.report",
+                "search",
+                [["&", ("date", ">=", start_str), ("date", "<=", end_str)]],
+                {"offset": index * LIMIT_SIZE, "limit": LIMIT_SIZE},
+            )
             len_data = len(ids)
             print(ids)
             merged_array = list(set(merged_array) | set(ids))
             index = index + 1
 
         # Split ids into chunks of 200
-        ids_chunks = [merged_array[i:i + 200] for i in range(0, len(merged_array), 200)]
+        ids_chunks = [
+            merged_array[i : i + 200] for i in range(0, len(merged_array), 200)
+        ]
         print(ids_chunks)
         merged_data = []
 
         for ids_chunk in ids_chunks:
             # Fetch data from Odoo
-            list_attendance_trans = models.execute_kw(db, uid, password, 
-                                                      'hr.apec.attendance.report', 'read', [ids_chunk], {'fields': fields})
+            list_attendance_trans = models.execute_kw(
+                db,
+                uid,
+                password,
+                "hr.apec.attendance.report",
+                "read",
+                [ids_chunk],
+                {"fields": fields},
+            )
             merged_data.extend(list_attendance_trans)
 
         # Group data by employee_code
         grouped_data = defaultdict(list)
         for record in merged_data:
-            grouped_data[record['employee_code']].append(record)
-            print(len(f"{record['employee_code']} -- {len(grouped_data[record['employee_code']])}"))
+            grouped_data[record["employee_code"]].append(record)
+            print(
+                len(
+                    f"{record['employee_code']} -- {len(grouped_data[record['employee_code']])}"
+                )
+            )
 
         # Save data to Django
         self.save_to_django(grouped_data, start_str, end_str)
@@ -147,8 +167,8 @@ class Command(BaseCommand):
         for employee_code, records in grouped_data.items():
             scheduling, created = Scheduling.objects.get_or_create(
                 employee_code=employee_code,
-                start_date=datetime.strptime(start_date, '%Y-%m-%d'),
-                end_date=datetime.strptime(end_date, '%Y-%m-%d'),
+                start_date=datetime.strptime(start_date, "%Y-%m-%d"),
+                end_date=datetime.strptime(end_date, "%Y-%m-%d"),
             )
             scheduling.scheduling_records = records
             scheduling.save()
