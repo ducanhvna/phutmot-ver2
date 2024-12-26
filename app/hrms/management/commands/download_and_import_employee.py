@@ -115,6 +115,8 @@ class Command(BaseCommand):
         elif model_name == 'hr.contract':
             domain = [[
                 '&',
+                '&',
+                ['employee_id', '!=', False],
                 '|',
                 ['active', '=', False],
                 ['active', '=', True],
@@ -201,10 +203,14 @@ class Command(BaseCommand):
 
             # Xử lý hợp đồng
             employee_contracts = contract_dict.get(employee_code, [])
-            main_contract = next(
-                (contract for contract in employee_contracts if contract['employee_code'] == selected_record['code'] or contract['employee_id'] == selected_record['id']),
-                {}
-            )
+            employee_contracts = sorted(probation_contracts, key=lambda x: (
+                            x['date_end'] is not False,
+                            x['date_end'],
+                            x['date_start'] is not False,
+                            x['date_start'],
+                            x['id']
+                        ), reverse=True)
+            main_contract =  employee_contracts[0] if len(employee_contracts) > 0 else {}     
             other_contracts = [contract for contract in employee_contracts if contract != main_contract]
 
             # Xác định hợp đồng chính thức và hợp đồng thử việc
@@ -228,7 +234,7 @@ class Command(BaseCommand):
                             x['date_start'],
                             x['id']
                         ), reverse=True)
-                        employee.main_probation_contract = probation_contracts[0]
+                        employee.main_probation_contract = probation_contracts[0] if len(probation_contracts) > 0 else {}
 
             # Lưu thông tin hợp đồng vào employee
             employee.main_contract = main_contract
