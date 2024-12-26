@@ -4,7 +4,6 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from hrms.models import Scheduling
 from collections import defaultdict
-from datetime import datetime
 import xmlrpc.client
 from datetime import datetime, timedelta
 
@@ -41,28 +40,76 @@ class Command(BaseCommand):
         print(f"Start date: {start_str}")
         print(f"End date: {end_str}")
 
-
         fields = [
-            "id", "employee_name", "date", "shift_name", "employee_code", "company", 
-            "additional_company", "shift_start", "shift_end", "rest_start", "rest_end", 
-            "rest_shift", "probation_completion_wage", "total_shift_work_time", 
-            "total_work_time", "time_keeping_code", "kid_time", "department", 
-            "attendance_attempt_1", "attendance_attempt_2", "minutes_working_reduced", 
-            "attendance_attempt_3", "attendance_attempt_4", "attendance_attempt_5", 
-            "attendance_attempt_6", "attendance_attempt_7", "attendance_attempt_8", 
-            "attendance_attempt_9", "attendance_attempt_10", "attendance_attempt_11", 
-            "attendance_attempt_12", "attendance_attempt_13", "attendance_attempt_14", 
-            "attendance_inout_1", "attendance_inout_2", "attendance_inout_3", 
-            "attendance_inout_4", "attendance_inout_5", "attendance_inout_6", 
-            "attendance_inout_7", "attendance_inout_8", "attendance_inout_9", 
-            "amount_al_reserve", "amount_cl_reserve", "attendance_inout_10", 
-            "attendance_inout_11", "attendance_inout_12", "attendance_inout_13", 
-            "attendance_inout_14", "attendance_inout_15", "actual_total_work_time", 
-            "standard_working_day", "attendance_attempt_15", "last_attendance_attempt", 
-            "attendance_inout_last", "night_hours_normal", "night_hours_holiday", 
-            "probation_wage_rate", "split_shift", "missing_checkin_break", "leave_early", 
-            "attendance_late", "night_shift", "minute_worked_day_holiday", 
-            "total_attendance", "ot_holiday", "ot_normal", "write_date", "locked"
+            "id",
+            "employee_name",
+            "date",
+            "shift_name",
+            "employee_code",
+            "company",
+            "additional_company",
+            "shift_start",
+            "shift_end",
+            "rest_start",
+            "rest_end",
+            "rest_shift",
+            "probation_completion_wage",
+            "total_shift_work_time",
+            "total_work_time",
+            "time_keeping_code",
+            "kid_time",
+            "department",
+            "attendance_attempt_1",
+            "attendance_attempt_2",
+            "minutes_working_reduced",
+            "attendance_attempt_3",
+            "attendance_attempt_4",
+            "attendance_attempt_5",
+            "attendance_attempt_6",
+            "attendance_attempt_7",
+            "attendance_attempt_8",
+            "attendance_attempt_9",
+            "attendance_attempt_10",
+            "attendance_attempt_11",
+            "attendance_attempt_12",
+            "attendance_attempt_13",
+            "attendance_attempt_14",
+            "attendance_inout_1",
+            "attendance_inout_2",
+            "attendance_inout_3",
+            "attendance_inout_4",
+            "attendance_inout_5",
+            "attendance_inout_6",
+            "attendance_inout_7",
+            "attendance_inout_8",
+            "attendance_inout_9",
+            "amount_al_reserve",
+            "amount_cl_reserve",
+            "attendance_inout_10",
+            "attendance_inout_11",
+            "attendance_inout_12",
+            "attendance_inout_13",
+            "attendance_inout_14",
+            "attendance_inout_15",
+            "actual_total_work_time",
+            "standard_working_day",
+            "attendance_attempt_15",
+            "last_attendance_attempt",
+            "attendance_inout_last",
+            "night_hours_normal",
+            "night_hours_holiday",
+            "probation_wage_rate",
+            "split_shift",
+            "missing_checkin_break",
+            "leave_early",
+            "attendance_late",
+            "night_shift",
+            "minute_worked_day_holiday",
+            "total_attendance",
+            "ot_holiday",
+            "ot_normal",
+            "write_date",
+            "locked",
         ]
         LIMIT_SIZE = 300
         index = 0
@@ -75,7 +122,7 @@ class Command(BaseCommand):
             print(ids)
             merged_array = list(set(merged_array) | set(ids))
             index = index + 1
-            
+
         # Split ids into chunks of 200
         ids_chunks = [merged_array[i:i + 200] for i in range(0, len(merged_array), 200)]
         print(ids_chunks)
@@ -95,7 +142,6 @@ class Command(BaseCommand):
 
         # Save data to Django
         self.save_to_django(grouped_data, start_str, end_str)
-
 
     def save_to_django(self, grouped_data, start_date, end_date):
         for employee_code, records in grouped_data.items():
