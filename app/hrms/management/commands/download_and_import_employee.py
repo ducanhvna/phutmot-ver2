@@ -1,5 +1,3 @@
-# your_app/management/commands/download_and_import_data.py
-
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from hrms.models import Employee
@@ -9,7 +7,7 @@ from datetime import datetime, timedelta
 
 
 class Command(BaseCommand):
-    help = 'Download Employee data from Odoo and import into Django'
+    help = 'Download Employee and Contract data from Odoo and import into Django'
 
     def handle(self, *args, **kwargs):
         # Define your Odoo connection parameters
@@ -24,7 +22,7 @@ class Command(BaseCommand):
 
         # Get the first day of the current month
         first_day_of_month = datetime.now().replace(day=1)
-        last_day_of_month = next_month - timedelta(days=1)
+        last_day_of_month = first_day_of_month.replace(month=first_day_of_month.month + 1, day=1) - timedelta(days=1)
 
         # Calculate the last day of the current month
         if first_day_of_month.month == 12:
@@ -40,7 +38,8 @@ class Command(BaseCommand):
         print(f"Start date: {start_str}")
         print(f"nextmonthFistdayStr: {nextmonthFistdayStr}")
 
-        fields = [
+        # Download employee data
+        employee_fields = [
             'id',
             'name',
             'user_id',
@@ -63,93 +62,182 @@ class Command(BaseCommand):
             'write_date',
             'active'
         ]
+        employees = self.download_data(models, db, uid, password, 'hr.employee', employee_fields, start_str, nextmonthFistdayStr)
+
+        # Group employee data
+        grouped_employee_data = self.group_data(employees, 'code')
+
+        # Download contract data
+        contract_fields = [
+            'id',
+            'company_id',
+            'contract_type_id',
+            'minutes_per_day',
+            'employee_code',
+            'employee_id',
+            'date_end',
+            'date_start',
+            'date_sign',
+            'salary_rate',
+            'state',
+            'active',
+            'start_end_attendance',
+            'resource_calendar_id',
+            'depend_on_shift_time',
+            'by_hue_shift',
+            'write_date'
+        ]
+        contracts = self.download_data(models, db, uid, password, 'hr.contract', contract_fields, start_str, nextmonthFistdayStr)
+
+        # Process data and save to Django
+        self.save_to_django(grouped_employee_data, contracts, start_str, end_str)
+
+    def download_data(self, models, db, uid, password, model_name, fields, start_str, nextmonthFistdayStr):
         LIMIT_SIZE = 300
         index = 0
         len_data = 0
         merged_array = []
+        
+        if model_name == 'hr.employee':
+            domain = [
+                '&',
+                '&',
+                '|',
+                ['active', '=', False],
+                ['active', '=', True],
+                '|',
+                ['severance_day', '=', False],
+                ['severance_day', '>', start_str],
+                '|',
+                ['workingday', '=', False],
+                ['workingday', '<', nextmonthFistdayStr]
+            ]
+        elif model_name == 'hr.contract':
+            domain = [
+                '&',
+                '&',
+                '|',
+                ['active', '=', False],
+                ['active', '=', True],
+                '|',
+                ['date_end', '=', False],
+                ['date_end', '>', start_str],
+                '|',
+                ['date_start', '=', False],
+                ['date_start', '<', nextmonthFistdayStr]
+            ]
+        else:
+            raise ValueError("Invalid model name")
+
         while (len_data == LIMIT_SIZE) or (index == 0):
             ids = models.execute_kw(
                 db,
                 uid,
                 password,
-                "hr.employee",
-                "search",
-                [
-                    '&',
-                    '&',
-                    '|',
-                    ['active', '=', False],
-                    ['active', '=', True],
-                    '|',
-                    ['severance_day', '=', False],
-                    ['severance_day', '>', start_str],
-                    '|',
-                    ['workingday', '=', False],
-                    ['workingday', '<', nextmonthFistdayStr]
-                ],
-                {"offset": index * LIMIT_SIZE, "limit": LIMIT_SIZE},
+                model_name,
+                'search',
+                domain,
+                {'offset': index * LIMIT_SIZE, 'limit': LIMIT_SIZE},
             )
             len_data = len(ids)
             print(ids)
             merged_array = list(set(merged_array) | set(ids))
-            index = index + 1
+            index += 1
 
         # Split ids into chunks of 200
-        ids_chunks = [
-            merged_array[i:i + 200] for i in range(0, len(merged_array), 200)
-        ]
+        ids_chunks = [merged_array[i:i + 200] for i in range(0, len(merged_array), 200)]
         print(ids_chunks)
         merged_data = []
 
         for ids_chunk in ids_chunks:
             # Fetch data from Odoo
-            list_employees = models.execute_kw(
+            data_chunk = models.execute_kw(
                 db,
                 uid,
                 password,
-                "hr.employee",
-                "read",
+                model_name,
+                'read',
                 [ids_chunk],
-                {"fields": fields},
+                {'fields': fields},
             )
-            merged_data.extend(list_employees)
+            merged_data.extend(data_chunk)
 
-        # Group data by employee_code
+        return merged_data
+
+    def group_data(self, data, key):
         grouped_data = defaultdict(list)
-        for record in merged_data:
-            from datetime import datetime
+        for record in data:
+            grouped_data[record[key]].append(record)
+        return grouped_data
 
-            # Chuyển đổi các giá trị kiểu ngày tháng và kiểm tra xem chúng có bằng False không
-            if 'probationary_contract_termination_date' in record:
-                probationary_contract_termination_date = datetime.strptime(record['probationary_contract_termination_date'], '%Y-%m-%d').date()
-                if not probationary_contract_termination_date:
-                    print("Probationary Contract Termination Date is False")
+    def save_to_django(self, grouped_employee_data, contracts, start_date, end_date):
+        contract_dict = defaultdict(list)
+        for contract in contracts:
+            contract_dict[contract['employee_code']].append(contract)
 
-            if 'severance_day' in record:
-                severance_day = datetime.strptime(record['severance_day'], '%Y-%m-%d').date()
-                if not severance_day:
-                    print("Severance Day is False")
+        for code, records in grouped_employee_data.items():
+            # Sắp xếp các record để tìm record phù hợp
+            records = sorted(records, key=lambda x: (
+                x['severance_day'] is not False,
+                x['severance_day'],
+                x['workingday'] is not False,
+                x['workingday'],
+                x['id']
+            ), reverse=True)
 
-            if 'workingday' in record:
-                workingday = datetime.strptime(record['workingday'], '%Y-%m-%d').date()
-                if not workingday:
-                    print("Working Day is False")
+            # Lấy record phù hợp nhất
+            selected_record = records[0]
+            other_records = records[1:] if len(records) > 1 else []  # Các record không phải là employee.info
 
-                grouped_data[record["code"]].append(record)
-                print(f"{record['code']} -- {len(grouped_data[record['time_keeping_code']])}")
-
-        # Save data to Django
-        self.save_to_django(grouped_data, start_str, end_str)
-
-    def save_to_django(self, grouped_data, start_date, end_date):
-        for code, records in grouped_data.items():
             employee, created = Employee.objects.get_or_create(
                 code=code,
-                start_date=datetime.strptime(start_date, "%Y-%m-%d"),
-                end_date=datetime.strptime(end_date, "%Y-%m-%d"),
+                defaults={
+                    'start_date': datetime.strptime(start_date, "%Y-%m-%d"),
+                    'end_date': datetime.strptime(end_date, "%Y-%m-%d"),
+                    'info': selected_record,
+                    'other_profile': other_records  # Lưu các record khác
+                }
             )
-            # employee.info là record mà có severance_day = False hoặc lớn nhất, nếu có nhiều 
-            # giá trị xét tiếp workingday = False hoặc workingday nhỏ nhất, nếu có nhiều 
-            # lấy giá trị có id lớn nhất
-            
+
+            if not created:
+                employee.start_date = datetime.strptime(start_date, "%Y-%m-%d")
+                employee.end_date = datetime.strptime(end_date, "%Y-%m-%d")
+                employee.info = selected_record
+                employee.other_profile = other_records
+
+            # Xử lý hợp đồng
+            employee_contracts = contract_dict.get(code, [])
+            main_contract = next(
+                (contract for contract in employee_contracts if contract['employee_code'] == selected_record['code'] or contract['employee_id'] == selected_record['id']),
+                None
+            )
+            other_contracts = [contract for contract in employee_contracts if contract != main_contract]
+
+            # Xác định hợp đồng chính thức và hợp đồng thử việc
+            if main_contract:
+                contract_type = str(main_contract['contract_type_id']).lower()
+                if 'chính thức' in contract_type:
+                    employee.main_offical_contract = main_contract
+                    employee.main_probation_contract = {}
+                elif 'thử việc' in contract_type:
+                    employee.main_probation_contract = main_contract
+                    employee.main_offical_contract = {}
+
+                    # Tìm hợp đồng thử việc trong các hợp đồng khác
+                    probation_contracts = [contract for contract in other_contracts if 'thử việc' in str(contract['contract_type_id']).lower()]
+                    if probation_contracts:
+                        # Sắp xếp các hợp đồng thử việc theo các điều kiện đã cho
+                        probation_contracts = sorted(probation_contracts, key=lambda x: (
+                            x['date_end'] is not False,
+                            x['date_end'],
+                            x['date_start'] is not False,
+                            x['date_start'],
+                            x['id']
+                        ), reverse=True)
+                        employee.main_probation_contract = probation_contracts[0]
+
+            # Lưu thông tin hợp đồng vào employee
+            employee.main_contract = main_contract
+            employee.other_contracts = other_contracts
+
             employee.save()

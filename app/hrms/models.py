@@ -10,6 +10,10 @@ class Employee(models.Model):
     other_profile = JSONField("Hồ sơ khác", default=list, blank=True)
     create_time = models.DateTimeField("Thời gian tạo", auto_now_add=True)
     update_time = models.DateTimeField("Thời gian cập nhật", auto_now=True)
+    main_contract = JSONField("hợp đồng chính", default=dict, blank=True)
+    main_offical_contract = JSONField("hợp đồng chính thức chính", default=dict, blank=True)
+    main_probation_contract = JSONField("hợp đồng thử việc chính", default=dict, blank=True)
+    other_contracts = JSONField("hợp đồng khác", default=list, blank=True)
     # created_user = models.CharField("Người tạo", max_length=255)
     # modified_user = models.CharField("Người sửa đổi", max_length=255)
 
