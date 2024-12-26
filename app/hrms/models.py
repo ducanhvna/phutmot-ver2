@@ -3,7 +3,6 @@ from datetime import datetime, date, timedelta
 from django.db.models import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .tasks import calculate_scheduling
 
 
 class Employee(models.Model):
@@ -127,4 +126,5 @@ class Leave(models.Model):
 
 @receiver(post_save, sender=Attendance)
 def trigger_scheduling_calculation(sender, instance, created, **kwargs):
+    from .tasks import calculate_scheduling
     calculate_scheduling.delay(instance.id)
