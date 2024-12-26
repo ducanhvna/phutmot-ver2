@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Scheduling, Leave, Attendance
+from .models import Scheduling, Leave, Attendance, Employee
 
 
 @admin.register(Scheduling)
@@ -18,3 +18,9 @@ class LeaveAdmin(admin.ModelAdmin):
 class AttendanceAdmin(admin.ModelAdmin):
     list_display = ('code', 'start_date', 'end_date', 'create_time', 'update_time')
     search_fields = ('code', 'start_date', 'end_date')
+
+
+@admin.register(Employee)
+class EmployeeAdmin(admin.ModelAdmin):
+    list_display = ('employee_code', 'start_date', 'end_date', 'create_time', 'update_time')
+    search_fields = ('employee_code', 'start_date', 'end_date')

@@ -209,7 +209,7 @@ class Command(BaseCommand):
             employee_contracts = contract_dict.get(employee_code, [])
             main_contract = next(
                 (contract for contract in employee_contracts if contract['employee_code'] == selected_record['employee_code'] or contract['employee_id'] == selected_record['id']),
-                None
+                {}
             )
             other_contracts = [contract for contract in employee_contracts if contract != main_contract]
 
