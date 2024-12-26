@@ -187,17 +187,15 @@ class Command(BaseCommand):
 
             employee, created = Employee.objects.get_or_create(
                 employee_code=employee_code,
+                start_date=datetime.strptime(start_date, "%Y-%m-%d"),
+                end_date=datetime.strptime(end_date, "%Y-%m-%d"),
                 defaults={
-                    'start_date': datetime.strptime(start_date, "%Y-%m-%d"),
-                    'end_date': datetime.strptime(end_date, "%Y-%m-%d"),
                     'info': selected_record,
                     'other_profile': other_records  # Lưu các record khác
                 }
             )
 
             if not created:
-                employee.start_date = datetime.strptime(start_date, "%Y-%m-%d")
-                employee.end_date = datetime.strptime(end_date, "%Y-%m-%d")
                 employee.info = selected_record
                 employee.other_profile = other_records
 
