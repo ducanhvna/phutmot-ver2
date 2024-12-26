@@ -210,7 +210,7 @@ class Command(BaseCommand):
                 x['date_start'],
                 x['id']
             ), reverse=True)
-            main_contract =  employee_contracts[0] if len(employee_contracts) > 0 else {}
+            main_contract = employee_contracts[0] if len(employee_contracts) > 0 else {}
             other_contracts = [contract for contract in employee_contracts if contract != main_contract]
 
             # Xác định hợp đồng chính thức và hợp đồng thử việc
