@@ -17,7 +17,7 @@ class Employee(models.Model):
 
 
 class Attendance(models.Model):
-    employee_code = models.CharField("Mã nhân sự", max_length=255, unique=True)
+    code = models.CharField("Mã chấm công", max_length=255, unique=True)
     attendance_records = JSONField("Thông tin điểm danh", default=list, blank=True)
     start_date = models.DateField("Ngày bắt đầu tháng")
     end_date = models.DateField("Ngày kết thúc tháng")
@@ -27,7 +27,7 @@ class Attendance(models.Model):
     # modified_user = models.CharField("Người sửa đổi", max_length=255)
 
     def __str__(self):
-        return f"Attendance for {self.employee_code} from {self.start_date} to {self.end_date}"
+        return f"Attendance for {self.code} from {self.start_date} to {self.end_date}"
 
     def add_attendance_record(self, record):
         """
