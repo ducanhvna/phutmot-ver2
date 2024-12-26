@@ -132,7 +132,7 @@ class Command(BaseCommand):
 
         # Split ids into chunks of 200
         ids_chunks = [
-            merged_array[i :i + 200] for i in range(0, len(merged_array), 200)
+            merged_array[i:i + 200] for i in range(0, len(merged_array), 200)
         ]
         print(ids_chunks)
         merged_data = []
