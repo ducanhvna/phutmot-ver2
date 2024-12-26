@@ -204,13 +204,13 @@ class Command(BaseCommand):
             # Xử lý hợp đồng
             employee_contracts = contract_dict.get(employee_code, [])
             employee_contracts = sorted(employee_contracts, key=lambda x: (
-                            x['date_end'] is not False,
-                            x['date_end'],
-                            x['date_start'] is not False,
-                            x['date_start'],
-                            x['id']
-                        ), reverse=True)
-            main_contract =  employee_contracts[0] if len(employee_contracts) > 0 else {}     
+                x['date_end'] is not False,
+                x['date_end'],
+                x['date_start'] is not False,
+                x['date_start'],
+                x['id']
+            ), reverse=True)
+            main_contract =  employee_contracts[0] if len(employee_contracts) > 0 else {}
             other_contracts = [contract for contract in employee_contracts if contract != main_contract]
 
             # Xác định hợp đồng chính thức và hợp đồng thử việc
