@@ -112,7 +112,7 @@ class Command(BaseCommand):
                 'employee_id': odoo_employee_id,
                 'date_end': contract.get('date_end'),
                 'date_start': contract.get('date_start'),
-                'date_sign': contract.get('date_sign'),
+                # 'date_sign': contract.get('date_sign'),
                 # 'salary_rate': contract.get('salary_rate'),
                 'state': contract.get('state'),
                 'active': contract.get('active'),
