@@ -26,7 +26,7 @@ class Command(BaseCommand):
 
     def upload_employee_to_odoo(self, models, db, uid, password, employee):
         # Check if employee already exists in Odoo
-        odoo_employee_id = models.execute_kw(
+        odoo_employee_ids = models.execute_kw(
             db,
             uid,
             password,
@@ -60,12 +60,12 @@ class Command(BaseCommand):
             'active': employee.info.get('active')
         }
 
-        if odoo_employee_id:
+        for odoo_employee_id in odoo_employee_ids:
             # Update existing employee
             models.execute_kw(
                 db, uid, password,
                 'hr.employee', 'write',
-                [odoo_employee_id[0], employee_data]
+                [odoo_employee_id, employee_data]
             )
             print(f"Updated employee {employee.employee_code} in Odoo")
             # Upload related contracts
