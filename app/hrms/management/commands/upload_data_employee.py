@@ -80,8 +80,10 @@ class Command(BaseCommand):
             print(f"Created employee {employee.employee_code} in Odoo")
 
     def upload_contracts_to_odoo(self, models, db, uid, password, employee, odoo_employee_id):
-        contracts = [c for c in employee.other_contracts].append(employee.main_contract)  # Assuming contracts is a JSON field in Employee model
-
+        contracts = [c for c in employee.other_contracts if c] # Assuming contracts is a JSON field in Employee model
+        if employee.main_contract:
+            contracts.append(employee.main_contract) 
+        
         for contract in contracts:
             # Check if contract already exists in Odoo
             odoo_contract_id = models.execute_kw(
@@ -104,7 +106,7 @@ class Command(BaseCommand):
                 'company_id': 1,
                 # 'contract_type_id': contract.get('contract_type_id'),
                 # 'minutes_per_day': contract.get('minutes_per_day'),
-                'employee_code': employee.employee_code,
+                # 'employee_code': employee.employee_code,
                 'employee_id': odoo_employee_id,
                 'date_end': contract.get('date_end'),
                 'date_start': contract.get('date_start'),
