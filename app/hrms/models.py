@@ -6,7 +6,7 @@ from django.dispatch import receiver
 
 
 class Employee(models.Model):
-    employee_code = models.CharField("Mã nhân sự", max_length=255, unique=True)
+    employee_code = models.CharField("Mã nhân sự", max_length=255)
     start_date = models.DateField("Ngày bắt đầu tháng")
     end_date = models.DateField("Ngày kết thúc tháng")
     time_keeping_code = models.CharField("Mã chấm công", max_length=255)
@@ -21,12 +21,20 @@ class Employee(models.Model):
     # created_user = models.CharField("Người tạo", max_length=255)
     # modified_user = models.CharField("Người sửa đổi", max_length=255)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["employee_code", "start_date", "end_date"],
+                name="unique_employee_contract",
+            )
+        ]
+
     def __str__(self):
         return self.employee_code
 
 
 class Attendance(models.Model):
-    code = models.CharField("Mã chấm công", max_length=255, unique=True)
+    code = models.CharField("Mã chấm công", max_length=255)
     attendance_records = JSONField("Thông tin điểm danh", default=list, blank=True)
     start_date = models.DateField("Ngày bắt đầu tháng")
     end_date = models.DateField("Ngày kết thúc tháng")
@@ -34,6 +42,14 @@ class Attendance(models.Model):
     update_time = models.DateTimeField("Thời gian cập nhật", auto_now=True)
     # created_user = models.CharField("Người tạo", max_length=255)
     # modified_user = models.CharField("Người sửa đổi", max_length=255)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["code", "start_date", "end_date"],
+                name="unique_employee_attendance",
+            )
+        ]
 
     def __str__(self):
         return f"Attendance for {self.code} from {self.start_date} to {self.end_date}"
@@ -66,6 +82,14 @@ class Shifts(models.Model):
     free_time = models.FloatField("Thời gian tự do", null=True, blank=True, default=0)
     info = JSONField("Thông tin bổ sung", default=dict, blank=True)  # Thêm trường JSON cho thông tin bổ sung
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name", "company_code"],
+                name="unique_shift",
+            )
+        ]
+
     def __str__(self):
         return self.name
 
@@ -97,7 +121,7 @@ class Shifts(models.Model):
 
 
 class Scheduling(models.Model):
-    employee_code = models.CharField("Mã nhân sự", max_length=255, unique=True)
+    employee_code = models.CharField("Mã nhân sự", max_length=255)
     scheduling_records = JSONField("Thông tin chấm công", default=list, blank=True)
     start_date = models.DateField("Ngày bắt đầu tháng")
     end_date = models.DateField("Ngày kết thúc tháng")
@@ -106,12 +130,20 @@ class Scheduling(models.Model):
     # created_user = models.CharField("Người tạo", max_length=255)
     # modified_user = models.CharField("Người sửa đổi", max_length=255)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["employee_code", "start_date", "end_date"],
+                name="unique_employee_scheduling",
+            )
+        ]
+
     def __str__(self):
         return f"Scheduling {self.employee_code} from {self.start_date} to {self.end_date}"
 
 
 class Leave(models.Model):
-    employee_code = models.CharField("Mã nhân sự", max_length=255, unique=True)
+    employee_code = models.CharField("Mã nhân sự", max_length=255)
     leave_records = JSONField("Danh sách đơn", default=list, blank=True)
     start_date = models.DateField("Ngày bắt đầu tháng")
     end_date = models.DateField("Ngày kết thúc tháng")
@@ -119,6 +151,14 @@ class Leave(models.Model):
     update_time = models.DateTimeField("Thời gian cập nhật", auto_now=True)
     # created_user = models.CharField("Người tạo", max_length=255)
     # modified_user = models.CharField("Người sửa đổi", max_length=255)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["employee_code", "start_date", "end_date"],
+                name="unique_employee_leave",
+            )
+        ]
 
     def __str__(self):
         return f"Hr leave {self.employee_code} from {self.start_date} to {self.end_date}"
