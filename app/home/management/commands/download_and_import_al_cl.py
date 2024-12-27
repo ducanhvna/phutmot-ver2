@@ -223,7 +223,8 @@ class Command(BaseCommand):
             uid,
             password,
             "hr.al.report",
-            al_fields
+            al_fields,
+            100
         )
         # Download contract data
         contract_fields = [
@@ -259,9 +260,9 @@ class Command(BaseCommand):
         self.save_to_django(grouped_employee_data, contracts, employee_cl, employee_al)
 
     def download_data(
-        self, models, db, uid, password, model_name, fields
+        self, models, db, uid, password, model_name, fields, limit= 300
     ):
-        LIMIT_SIZE = 300
+        LIMIT_SIZE = limit
         index = 0
         len_data = 0
         merged_array = []
