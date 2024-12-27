@@ -20,36 +20,6 @@ class Command(BaseCommand):
         uid = common.authenticate(db, username, password, {})
         models = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/object")
 
-        # Get the first day of the current month
-        first_day_of_month = datetime.now().replace(day=1)
-
-        # Calculate the last day of the current month
-        if first_day_of_month.month == 12:
-            next_month_first_day = first_day_of_month.replace(
-                year=first_day_of_month.year + 1, month=1, day=1
-            )
-        else:
-            next_month_first_day = first_day_of_month.replace(
-                month=first_day_of_month.month + 1, day=1
-            )
-
-        if next_month_first_day.month == 12:
-            next_next_month_first_day = next_month_first_day.replace(
-                year=next_month_first_day.year + 1, month=1, day=1
-            )
-        else:
-            next_next_month_first_day = next_month_first_day.replace(
-                month=next_month_first_day.month + 1, day=1
-            )
-
-        # Format the dates
-        start_str = first_day_of_month.strftime("%Y-%m-%d")
-
-        nextmonthFistdayStr = next_month_first_day.strftime("%Y-%m-%d")
-        nextnextmonthFistdayStr = next_next_month_first_day.strftime("%Y-%m-%d")
-        print(f"Start date: {start_str}")
-        print(f"nextmonthFistdayStr: {nextmonthFistdayStr}")
-
         # Download employee data
         employee_fields = [
             "id",
@@ -90,8 +60,6 @@ class Command(BaseCommand):
             password,
             "hr.employee",
             employee_fields,
-            start_str,
-            nextmonthFistdayStr,
         )
 
         cl_fields = [
@@ -204,9 +172,7 @@ class Command(BaseCommand):
             uid,
             password,
             "hr.cl.report",
-            cl_fields,
-            start_str,
-            nextnextmonthFistdayStr,
+            cl_fields
         )
         # Group employee data
         grouped_employee_data = self.group_data(employees, "code")
@@ -257,9 +223,7 @@ class Command(BaseCommand):
             uid,
             password,
             "hr.al.report",
-            al_fields,
-            start_str,
-            nextnextmonthFistdayStr,
+            al_fields
         )
         # Download contract data
         contract_fields = [
@@ -288,16 +252,14 @@ class Command(BaseCommand):
             uid,
             password,
             "hr.contract",
-            contract_fields,
-            start_str,
-            nextmonthFistdayStr,
+            contract_fields
         )
 
         # Process data and save to Django
         self.save_to_django(grouped_employee_data, contracts, employee_cl, employee_al)
 
     def download_data(
-        self, models, db, uid, password, model_name, fields, start_str, endDateStr
+        self, models, db, uid, password, model_name, fields
     ):
         LIMIT_SIZE = 300
         index = 0
@@ -306,40 +268,27 @@ class Command(BaseCommand):
         if model_name == "hr.employee":
             domain = [
                 [
-                    "&",
-                    "&",
-                    "|",
                     ["active", "=", False],
                     ["active", "=", True],
-                    "|",
-                    ["severance_day", "=", False],
-                    ["severance_day", ">", start_str],
-                    "|",
-                    ["workingday", "=", False],
-                    ["workingday", "<", endDateStr],
                 ]
             ]
         elif model_name == "hr.contract":
             domain = [
                 [
                     "&",
-                    "&",
                     ["employee_id", "!=", False],
                     "|",
                     ["active", "=", False],
                     ["active", "=", True],
-                    "|",
-                    ["date_start", "=", False],
-                    ["date_start", "<", endDateStr],
                 ]
             ]
         elif model_name == "hr.cl.report":
             domain = [
-                [["date_calculate", "!=", False], ["date_calculate", "<=", endDateStr]]
+                [["date_calculate", "!=", False]]
             ]
         elif model_name == "hr.al.report":
             domain = [
-                [["date_calculate_leave", "!=", False], ["date_calculate_leave", "<=", endDateStr]]
+                [["date_calculate_leave", "!=", False]]
             ]
         else:
             raise ValueError("Invalid model name")
