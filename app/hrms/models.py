@@ -24,8 +24,7 @@ class Employee(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["employee_code", "start_date", "end_date"],
-                name="unique_employee_contract",
+                fields=["employee_code", "start_date", "end_date"]
             )
         ]
 
@@ -47,7 +46,6 @@ class Attendance(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["code", "start_date", "end_date"],
-                name="unique_employee_attendance",
             )
         ]
 
@@ -85,8 +83,7 @@ class Shifts(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["name", "company_code"],
-                name="unique_shift",
+                fields=["name", "company_code"]
             )
         ]
 
@@ -133,8 +130,7 @@ class Scheduling(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["employee_code", "start_date", "end_date"],
-                name="unique_employee_scheduling",
+                fields=["employee_code", "start_date", "end_date"]
             )
         ]
 
@@ -155,8 +151,7 @@ class Leave(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["employee_code", "start_date", "end_date"],
-                name="unique_employee_leave",
+                fields=["employee_code", "start_date", "end_date"]
             )
         ]
 
