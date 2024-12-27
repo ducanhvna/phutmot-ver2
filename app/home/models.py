@@ -38,4 +38,4 @@ class UserProfile(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user.username}'s profile"  if self.user else "<anonymous>"
+        return f"{self.user.username}'s profile" if self.user else "<anonymous>"
