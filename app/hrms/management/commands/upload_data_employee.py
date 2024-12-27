@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from hrms.models import Employee
 import xmlrpc.client
 
+
 class Command(BaseCommand):
     help = 'Upload Employee and Contract data from Django to Odoo'
 
@@ -30,7 +31,7 @@ class Command(BaseCommand):
             'hr.employee', 'search',
             [[['code', '=', employee.employee_code]]]
         )
-        
+
         # Employee data to upload
         employee_data = {
             'name': employee.info.get('name'),
@@ -78,7 +79,7 @@ class Command(BaseCommand):
 
     def upload_contracts_to_odoo(self, models, db, uid, password, employee):
         contracts = employee.contracts  # Assuming contracts is a JSON field in Employee model
-        
+
         for contract in contracts:
             # Check if contract already exists in Odoo
             odoo_contract_id = models.execute_kw(
@@ -86,7 +87,7 @@ class Command(BaseCommand):
                 'hr.contract', 'search',
                 [[['employee_code', '=', employee.employee_code], ['date_start', '=', contract.get('date_start')]]]
             )
-            
+
             # Contract data to upload
             contract_data = {
                 'company_id': contract.get('company_id'),
