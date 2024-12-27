@@ -21,11 +21,11 @@ class Company(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.SET_NULL, related_name='profile', null=True, blank=True)
     employee_code = models.CharField("Mã nhân sự", max_length=255, null=True, blank=True)
-    info = models.JSONField(default=dict)  # Thông tin profile dạng JSON
+    info = JSONField(default=dict)  # Thông tin profile dạng JSON
     other_profile = JSONField("Hồ sơ khác", default=list, blank=True)
-    contracts = models.JSONField(default=list)  # Danh sách hợp đồng dạng JSON
-    al = models.JSONField(default=list)  # Dữ liệu phép dạng JSON
-    cl = models.JSONField(default=list)  # Dữ liệu bù dạng JSON
+    contracts = JSONField(default=list)  # Danh sách hợp đồng dạng JSON
+    al = JSONField(default=list)  # Dữ liệu phép dạng JSON
+    cl = JSONField(default=list)  # Dữ liệu bù dạng JSON
     create_time = models.DateTimeField("Thời gian tạo", auto_now_add=True)
     update_time = models.DateTimeField("Thời gian cập nhật", auto_now=True)
 
