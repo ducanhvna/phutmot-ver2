@@ -71,6 +71,7 @@ class Command(BaseCommand):
         # Download contract data
         contract_fields = [
             'id',
+            'name',
             'company_id',
             'contract_type_id',
             'minutes_per_day',

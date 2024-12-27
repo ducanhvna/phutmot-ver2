@@ -60,16 +60,16 @@ class Command(BaseCommand):
             'active': employee.info.get('active')
         }
 
-        for odoo_employee_id in odoo_employee_ids:
+        if odoo_employee_ids:
             # Update existing employee
             models.execute_kw(
                 db, uid, password,
                 'hr.employee', 'write',
-                [odoo_employee_id, employee_data]
+                [odoo_employee_ids, employee_data]
             )
             print(f"Updated employee {employee.employee_code} in Odoo")
             # Upload related contracts
-            self.upload_contracts_to_odoo(models, db, uid, password, employee, odoo_employee_id)
+            self.upload_contracts_to_odoo(models, db, uid, password, employee, odoo_employee_ids)
         else:
             # Create new employee
             models.execute_kw(
@@ -79,63 +79,64 @@ class Command(BaseCommand):
             )
             print(f"Created employee {employee.employee_code} in Odoo")
 
-    def upload_contracts_to_odoo(self, models, db, uid, password, employee, odoo_employee_id):
+    def upload_contracts_to_odoo(self, models, db, uid, password, employee, odoo_employee_ids):
         contracts = [c for c in employee.other_contracts if c]
 
         # Assuming contracts is a JSON field in Employee model
         if employee.main_contract:
             contracts.append(employee.main_contract)
-
-        for contract in contracts:
-            # Check if contract already exists in Odoo
-            odoo_contract_id = models.execute_kw(
-                db,
-                uid,
-                password,
-                "hr.contract",
-                "search",
-                [
+        for odoo_employee_id in odoo_employee_ids:
+            for contract in contracts:
+                # Check if contract already exists in Odoo
+                odoo_contract_id = models.execute_kw(
+                    db,
+                    uid,
+                    password,
+                    "hr.contract",
+                    "search",
                     [
-                        ["employee_id", "=", odoo_employee_id],
-                        ["company_id", "=", 1],
-                        ["date_start", "=", contract.get("date_start")],
-                    ]
-                ],
-            )
-
-            # Contract data to upload
-            contract_data = {
-                'company_id': 1,
-                # 'contract_type_id': contract.get('contract_type_id'),
-                # 'minutes_per_day': contract.get('minutes_per_day'),
-                # 'employee_code': employee.employee_code,
-                'employee_id': odoo_employee_id,
-                'date_end': contract.get('date_end'),
-                'date_start': contract.get('date_start'),
-                # 'date_sign': contract.get('date_sign'),
-                # 'salary_rate': contract.get('salary_rate'),
-                'state': contract.get('state'),
-                'active': contract.get('active'),
-                # 'start_end_attendance': contract.get('start_end_attendance'),
-                # 'resource_calendar_id': contract.get('resource_calendar_id'),
-                # 'depend_on_shift_time': contract.get('depend_on_shift_time'),
-                # 'by_hue_shift': contract.get('by_hue_shift'),
-                # 'write_date': contract.get('write_date')
-            }
-
-            if odoo_contract_id:
-                # Update existing contract
-                models.execute_kw(
-                    db, uid, password,
-                    'hr.contract', 'write',
-                    [odoo_contract_id, contract_data]
+                        [
+                            ["employee_id", "=", odoo_employee_id],
+                            ["company_id", "=", 1],
+                            ["date_start", "=", contract.get("date_start")],
+                        ]
+                    ],
                 )
-                print(f"Updated contract for employee {employee.employee_code} in Odoo")
-            else:
-                # Create new contract
-                models.execute_kw(
-                    db, uid, password,
-                    'hr.contract', 'create',
-                    [contract_data]
-                )
-                print(f"Created contract for employee {employee.employee_code} in Odoo")
+
+                # Contract data to upload
+                contract_data = {
+                    'company_id': 1,
+                    'name': contract.get('name'),
+                    # 'contract_type_id': contract.get('contract_type_id'),
+                    # 'minutes_per_day': contract.get('minutes_per_day'),
+                    # 'employee_code': employee.employee_code,
+                    'employee_id': odoo_employee_id,
+                    'date_end': contract.get('date_end'),
+                    'date_start': contract.get('date_start'),
+                    # 'date_sign': contract.get('date_sign'),
+                    # 'salary_rate': contract.get('salary_rate'),
+                    'state': contract.get('state'),
+                    'active': contract.get('active'),
+                    # 'start_end_attendance': contract.get('start_end_attendance'),
+                    # 'resource_calendar_id': contract.get('resource_calendar_id'),
+                    # 'depend_on_shift_time': contract.get('depend_on_shift_time'),
+                    # 'by_hue_shift': contract.get('by_hue_shift'),
+                    # 'write_date': contract.get('write_date')
+                }
+
+                if odoo_contract_id:
+                    # Update existing contract
+                    models.execute_kw(
+                        db, uid, password,
+                        'hr.contract', 'write',
+                        [odoo_contract_id, contract_data]
+                    )
+                    print(f"Updated contract for employee {employee.employee_code} in Odoo")
+                else:
+                    # Create new contract
+                    models.execute_kw(
+                        db, uid, password,
+                        'hr.contract', 'create',
+                        [contract_data]
+                    )
+                    print(f"Created contract for employee {employee.employee_code} in Odoo")
