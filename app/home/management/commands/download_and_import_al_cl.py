@@ -210,7 +210,57 @@ class Command(BaseCommand):
         )
         # Group employee data
         grouped_employee_data = self.group_data(employees, "code")
-
+        al_fields = [
+            "id",
+            "year",
+            "date_calculate_leave",
+            "employee_id",
+            "company_id",
+            "employee_code",
+            "department_id",
+            "standard_day",
+            "workingday",
+            "date_sign",
+            "date_apply_leave",
+            "severance_day",
+            "seniority_leave",
+            "job_title",
+            "family_leave",
+            "leave_increase_by_seniority_leave",
+            "leave_day",
+            "leave_year",
+            "remaining_leave",
+            "january",
+            "february",
+            "march",
+            "april",
+            "may",
+            "june",
+            "july",
+            "august",
+            "september",
+            "october",
+            "november",
+            "december",
+            "leave_used",
+            "remaining_leave_minute",
+            "remaining_leave_day",
+            "note",
+            "file",
+            "employee_ho",
+            "part_time_company_id",
+            "write_date",
+        ]
+        employee_al = self.download_data(
+            models,
+            db,
+            uid,
+            password,
+            "hr.al.report",
+            al_fields,
+            start_str,
+            nextnextmonthFistdayStr,
+        )
         # Download contract data
         contract_fields = [
             "id",
@@ -244,7 +294,7 @@ class Command(BaseCommand):
         )
 
         # Process data and save to Django
-        self.save_to_django(grouped_employee_data, contracts, employee_cl)
+        self.save_to_django(grouped_employee_data, contracts, employee_cl, employee_al)
 
     def download_data(
         self, models, db, uid, password, model_name, fields, start_str, endDateStr
@@ -286,6 +336,10 @@ class Command(BaseCommand):
         elif model_name == "hr.cl.report":
             domain = [
                 [["date_calculate", "!=", False], ["date_calculate", "<=", endDateStr]]
+            ]
+        elif model_name == "hr.al.report":
+            domain = [
+                [["date_calculate_leave", "!=", False], ["date_calculate_leave", "<=", endDateStr]]
             ]
         else:
             raise ValueError("Invalid model name")
@@ -333,7 +387,7 @@ class Command(BaseCommand):
             grouped_data[record[key]].append(record)
         return grouped_data
 
-    def save_to_django(self, grouped_employee_data, contracts, cls):
+    def save_to_django(self, grouped_employee_data, contracts, cls, als):
         contract_dict = defaultdict(list)
         for contract in contracts:
             contract_dict[contract["employee_code"]].append(contract)
@@ -341,6 +395,10 @@ class Command(BaseCommand):
         cl_dict = defaultdict(list)
         for cl in cls:
             cl_dict[cl["employee_code"]].append(cl)
+
+        al_dict = defaultdict(list)
+        for al in als:
+            al_dict[al["employee_code"]].append(al)
 
         for employee_code, records in grouped_employee_data.items():
             # Sắp xếp các record để tìm record phù hợp
@@ -380,6 +438,11 @@ class Command(BaseCommand):
             employee_cls = cl_dict.get(employee_code, [])
             profile.cl = sorted(
                 employee_cls, key=lambda x: (x["date_calculate"],), reverse=True
+            )
+
+            employee_als = al_dict.get(employee_code, [])
+            profile.al = sorted(
+                employee_als, key=lambda x: (x["date_calculate_leave"],), reverse=True
             )
 
             profile.save()
