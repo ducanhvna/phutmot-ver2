@@ -260,9 +260,7 @@ class Command(BaseCommand):
         # Process data and save to Django
         self.save_to_django(grouped_employee_data, contracts, employee_cl, employee_al)
 
-    def download_data(
-        self, models, db, uid, password, model_name, fields, limit= 300
-    ):
+    def download_data(self, models, db, uid, password, model_name, fields, limit=300):
         LIMIT_SIZE = limit
         index = 0
         len_data = 0
@@ -402,5 +400,5 @@ class Command(BaseCommand):
             profile.al = sorted(
                 employee_als, key=lambda x: (x["date_calculate_leave"],), reverse=True
             )
-
+            print(f'create Profile {employee_code}')
             profile.save()
