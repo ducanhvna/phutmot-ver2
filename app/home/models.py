@@ -22,6 +22,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.SET_NULL, related_name='profile', null=True, blank=True)
     employee_code = models.CharField("Mã nhân sự", max_length=255, null=True, blank=True)
     info = models.JSONField(default=dict)  # Thông tin profile dạng JSON
+    other_profile = JSONField("Hồ sơ khác", default=list, blank=True)
     contracts = models.JSONField(default=list)  # Danh sách hợp đồng dạng JSON
     al = models.JSONField(default=list)  # Dữ liệu phép dạng JSON
     cl = models.JSONField(default=list)  # Dữ liệu bù dạng JSON

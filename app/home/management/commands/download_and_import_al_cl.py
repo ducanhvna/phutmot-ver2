@@ -362,14 +362,17 @@ class Command(BaseCommand):
                 ),
                 reverse=True,
             )
-
+            # Lấy record phù hợp nhất
+            selected_record = records[0]
+            other_records = records[1:] if len(records) > 1 else []  # Các record không phải là employee.info
             # Lấy record phù hợp nhất
             profile, created = UserProfile.objects.get_or_create(
                 employee_code=employee_code, defaults={"info": records}
             )
 
             if not created:
-                profile.info = records
+                profile.info = selected_record
+                profile.other_profile = other_records
 
             # Xử lý hợp đồng
             employee_contracts = contract_dict.get(employee_code, [])
