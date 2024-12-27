@@ -46,7 +46,7 @@ class Command(BaseCommand):
 
         # Format the dates
         start_str = first_day_of_month.strftime("%Y-%m-%d")
-        end_str = last_day_of_month.strftime("%Y-%m-%d")
+        # end_str = last_day_of_month.strftime("%Y-%m-%d")
         nextmonthFistdayStr = next_month_first_day.strftime("%Y-%m-%d")
         nextnextmonthFistdayStr = next_next_month_first_day.strftime("%Y-%m-%d")
         print(f"Start date: {start_str}")
@@ -208,7 +208,7 @@ class Command(BaseCommand):
             "hr.cl.report",
             cl_fields,
             start_str,
-            next_next_month_first_day,
+            nextnextmonthFistdayStr,
         )
         # Group employee data
         grouped_employee_data = self.group_data(employees, "code")
@@ -309,7 +309,7 @@ class Command(BaseCommand):
 
         # Split ids into chunks of 200
         ids_chunks = [
-            merged_array[i : i + 200] for i in range(0, len(merged_array), 200)
+            merged_array[i :i + 200] for i in range(0, len(merged_array), 200)
         ]
         print(ids_chunks)
         merged_data = []
