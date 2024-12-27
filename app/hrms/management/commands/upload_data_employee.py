@@ -8,10 +8,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         # Define your Odoo connection parameters
-        url = 'https://hrm.mandalahotel.com.vn'
-        db = 'apechrm_product_v3'
-        username = 'admin_ho'
-        password = '43a824d3a724da2b59d059d909f13ba0c38fcb82'
+        url = 'https://admin.hinosoft.com'
+        db = 'odoo'
+        username = 'admin'
+        password = 'admin'
 
         common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
         uid = common.authenticate(db, username, password, {})
