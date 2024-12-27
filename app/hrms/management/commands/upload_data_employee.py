@@ -46,7 +46,7 @@ class Command(BaseCommand):
             # 'time_keeping_code': employee.info.get('time_keeping_code'),
             # 'job_title': employee.info.get('job_title'),
             # 'probationary_contract_termination_date': employee.info.get('probationary_contract_termination_date'),
-            'severance_day': employee.info.get('severance_day'),
+            # 'severance_day': employee.info.get('severance_day'),
             'workingday': employee.info.get('workingday'),
             # 'probationary_salary_rate': employee.info.get('probationary_salary_rate'),
             # 'resource_calendar_id': employee.info.get('resource_calendar_id'),
