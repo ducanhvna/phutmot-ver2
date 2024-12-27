@@ -27,9 +27,12 @@ class Command(BaseCommand):
     def upload_employee_to_odoo(self, models, db, uid, password, employee):
         # Check if employee already exists in Odoo
         odoo_employee_id = models.execute_kw(
-            db, uid, password,
-            'hr.employee', 'search',
-            [[['code', '=', employee.employee_code]]]
+            db,
+            uid,
+            password,
+            "hr.employee",
+            "search",
+            [[["code", "=", employee.employee_code], ["company_id", "=", 1]]],
         )
 
         # Employee data to upload
@@ -82,14 +85,23 @@ class Command(BaseCommand):
         for contract in contracts:
             # Check if contract already exists in Odoo
             odoo_contract_id = models.execute_kw(
-                db, uid, password,
-                'hr.contract', 'search',
-                [[['employee_', '=', odoo_employee_id], ['date_start', '=', contract.get('date_start')]]]
+                db,
+                uid,
+                password,
+                "hr.contract",
+                "search",
+                [
+                    [
+                        ["employee_", "=", odoo_employee_id],
+                        ["company_id", "=", 1],
+                        ["date_start", "=", contract.get("date_start")],
+                    ]
+                ],
             )
 
             # Contract data to upload
             contract_data = {
-                'company_id': contract.get('company_id'),
+                'company_id': 1,
                 # 'contract_type_id': contract.get('contract_type_id'),
                 # 'minutes_per_day': contract.get('minutes_per_day'),
                 'employee_code': employee.employee_code,
