@@ -172,7 +172,8 @@ class Command(BaseCommand):
             uid,
             password,
             "hr.cl.report",
-            cl_fields
+            cl_fields,
+            100
         )
         # Group employee data
         grouped_employee_data = self.group_data(employees, "code")
