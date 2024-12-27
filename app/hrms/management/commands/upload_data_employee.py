@@ -8,7 +8,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         # Define your Odoo connection parameters
-        url = 'https://admin.hinosoft.com'
+        url = 'http://odoo17:8069'
         db = 'odoo'
         username = 'admin'
         password = 'admin'
@@ -96,7 +96,7 @@ class Command(BaseCommand):
                     "search",
                     [
                         [
-                            ["employee_id", "=", odoo_employee_id],
+                            ["name", "=", contract.get('name')],
                             ["company_id", "=", 1],
                             ["date_start", "=", contract.get("date_start")],
                         ]
@@ -105,21 +105,25 @@ class Command(BaseCommand):
 
                 # Contract data to upload
                 contract_data = {
-                    'company_id': 1,
-                    'name': contract.get('name'),
+                    "company_id": 1,
+                    "name": contract.get("name"),
                     # 'contract_type_id': contract.get('contract_type_id'),
                     # 'minutes_per_day': contract.get('minutes_per_day'),
                     # 'employee_code': employee.employee_code,
-                    'employee_id': odoo_employee_id,
-                    'date_end': contract.get('date_end'),
-                    'date_start': contract.get('date_start'),
+                    "employee_id": odoo_employee_id,
+                    "date_end": (
+                        max(contract.get("date_end"), contract.get("date_start"))
+                        if contract.get("date_end")
+                        else contract.get("date_end")
+                    ),
+                    "date_start": contract.get("date_start"),
                     # 'date_sign': contract.get('date_sign'),
                     # 'salary_rate': contract.get('salary_rate'),
                     # 'state': contract.get('state'),
-                    'active': contract.get('active'),
-                    'wage': 500000,
+                    "active": contract.get("active"),
+                    "wage": 500000,
                     # 'start_end_attendance': contract.get('start_end_attendance'),
-                    'resource_calendar_id': 1,
+                    "resource_calendar_id": 1,
                     # 'resource_calendar_id': contract.get('resource_calendar_id'),
                     # 'depend_on_shift_time': contract.get('depend_on_shift_time'),
                     # 'by_hue_shift': contract.get('by_hue_shift'),
