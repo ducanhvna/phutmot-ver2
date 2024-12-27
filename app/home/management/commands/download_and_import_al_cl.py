@@ -369,7 +369,11 @@ class Command(BaseCommand):
             other_records = records[1:] if len(records) > 1 else []  # Các record không phải là employee.info
             # Lấy record phù hợp nhất
             profile, created = UserProfile.objects.get_or_create(
-                employee_code=employee_code, defaults={"info": records}
+                employee_code=employee_code,
+                defaults={
+                    "info": selected_record,
+                    "other_profile": other_records,  # Lưu các record khác
+                },
             )
 
             if not created:
