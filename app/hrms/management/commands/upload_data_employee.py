@@ -65,7 +65,7 @@ class Command(BaseCommand):
             models.execute_kw(
                 db, uid, password,
                 'hr.employee', 'write',
-                [odoo_employee_id, employee_data]
+                [odoo_employee_id[0], employee_data]
             )
             print(f"Updated employee {employee.employee_code} in Odoo")
             # Upload related contracts
