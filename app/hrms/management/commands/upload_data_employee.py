@@ -65,6 +65,8 @@ class Command(BaseCommand):
                 [odoo_employee_id, employee_data]
             )
             print(f"Updated employee {employee.employee_code} in Odoo")
+            # Upload related contracts
+            self.upload_contracts_to_odoo(models, db, uid, password, employee, odoo_employee_id)
         else:
             # Create new employee
             models.execute_kw(
@@ -74,18 +76,15 @@ class Command(BaseCommand):
             )
             print(f"Created employee {employee.employee_code} in Odoo")
 
-        # Upload related contracts
-        self.upload_contracts_to_odoo(models, db, uid, password, employee)
-
-    def upload_contracts_to_odoo(self, models, db, uid, password, employee):
-        contracts = employee.contracts  # Assuming contracts is a JSON field in Employee model
+    def upload_contracts_to_odoo(self, models, db, uid, password, employee, odoo_employee_id):
+        contracts = [c for c in employee.other_contracts].append(employee.main_contract)  # Assuming contracts is a JSON field in Employee model
 
         for contract in contracts:
             # Check if contract already exists in Odoo
             odoo_contract_id = models.execute_kw(
                 db, uid, password,
                 'hr.contract', 'search',
-                [[['employee_code', '=', employee.employee_code], ['date_start', '=', contract.get('date_start')]]]
+                [[['employee_', '=', odoo_employee_id], ['date_start', '=', contract.get('date_start')]]]
             )
 
             # Contract data to upload
@@ -94,7 +93,7 @@ class Command(BaseCommand):
                 # 'contract_type_id': contract.get('contract_type_id'),
                 # 'minutes_per_day': contract.get('minutes_per_day'),
                 'employee_code': employee.employee_code,
-                'employee_id': employee.info.get('id')[0] if employee.info.get('id') else employee.info.get('id'),
+                'employee_id': odoo_employee_id,
                 'date_end': contract.get('date_end'),
                 'date_start': contract.get('date_start'),
                 'date_sign': contract.get('date_sign'),
