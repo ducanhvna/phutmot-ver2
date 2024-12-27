@@ -38,6 +38,8 @@ class Command(BaseCommand):
         # Employee data to upload
         employee_data = {
             'name': employee.info.get('name'),
+            'work_phone': employee.info.get('work_phone'),
+            'work_email': employee.info.get('work_email'),
             # 'user_id': employee.info.get('user_id'),
             # 'employee_ho': employee.info.get('employee_ho'),
             # 'part_time_company_id': employee.info.get('part_time_company_id'),
