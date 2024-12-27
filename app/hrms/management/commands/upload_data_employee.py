@@ -96,7 +96,7 @@ class Command(BaseCommand):
                 "search",
                 [
                     [
-                        ["employee_", "=", odoo_employee_id],
+                        ["employee_id", "=", odoo_employee_id],
                         ["company_id", "=", 1],
                         ["date_start", "=", contract.get("date_start")],
                     ]
