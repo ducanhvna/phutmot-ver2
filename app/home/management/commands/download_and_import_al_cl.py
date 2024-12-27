@@ -42,11 +42,9 @@ class Command(BaseCommand):
                 month=next_month_first_day.month + 1, day=1
             )
 
-        last_day_of_month = next_month_first_day - timedelta(days=1)
-
         # Format the dates
         start_str = first_day_of_month.strftime("%Y-%m-%d")
-        # end_str = last_day_of_month.strftime("%Y-%m-%d")
+
         nextmonthFistdayStr = next_month_first_day.strftime("%Y-%m-%d")
         nextnextmonthFistdayStr = next_next_month_first_day.strftime("%Y-%m-%d")
         print(f"Start date: {start_str}")
