@@ -13,6 +13,52 @@ class InoutMode:
     NoneMode = "None"
 
 
+def check_last_in_out(scheduling_record):
+    attemptWithInoutArray = scheduling_record['attemptWithInoutArray']
+    AttendanceAttemptInOut = scheduling_record['AttendanceAttemptInOut']
+    list_addItem_out = scheduling_record['list_addItem_out']
+    attemptWithInoutArray.sort(key=lambda x: x.attempt)
+    
+    if attemptWithInoutArray:
+        if attemptWithInoutArray[-1].inout != InoutMode.Out:
+            addItem = AttendanceAttemptInOut(attempt=attemptWithInoutArray[-1].attempt)
+            addItem.inout = InoutMode.Out
+
+            for in_out_addItem_before in [item for item in list_addItem_out if item.attempt <= attemptWithInoutArray[-1].attempt]:
+                in_out_addItem_before.inout = InoutMode.NoneMode
+
+            list_addItem_out.append(addItem)
+            attemptWithInoutArray.append(addItem)
+
+            add_in_item = AttendanceAttemptInOut(attempt=attemptWithInoutArray[-1].attempt + timedelta(milliseconds=10))
+            add_in_item.inout = InoutMode.In
+            attemptWithInoutArray.append(add_in_item)
+
+
+def calculate_night_worktime_custom(realTimein, realTimeout, nightStageStart, nightStageEnd, scheduling_record):
+    restStartDateTime = scheduling_record['restStartDateTime']
+    restEndDateTime = scheduling_record['restEndDateTime']
+    # Đặt giây của thời gian bằng 0
+    nightStageStart = nightStageStart.replace(second=0)
+    nightStageEnd = nightStageEnd.replace(second=0)
+    
+    stageFistWorktime = 0
+    # if shift is not None:
+        # Tính toán thời gian bắt đầu giai đoạn
+    stageStart = restStartDateTime if restStartDateTime < nightStageEnd else nightStageEnd
+    currentProgram = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > nightStageStart else nightStageStart)
+    stageFist = max(0, currentProgram.total_seconds() // 60)
+
+    # Tính toán thời gian kết thúc giai đoạn
+    stageEnd = restEndDateTime if restEndDateTime > nightStageStart else nightStageStart
+    currentProgram = (realTimeout.replace(second=0) if realTimeout < nightStageEnd else nightStageEnd) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
+    stageSecond = max(0, currentProgram.total_seconds() // 60)
+
+    stageFistWorktime = stageFist + stageSecond
+
+    return int(stageFistWorktime)
+
+
 def mergedTimeToScheduling(schedulings, shifts):
     merged_shift = {shift.name.replace('/', '_'): shift for shift in shifts}
 
@@ -132,6 +178,82 @@ def process_missing_attendance(hrLeaves, scheduling_record):
 
         attemptWithInoutArray = list(set(additionTrans + attemptWithInoutArray))
         attemptWithInoutArray.sort(key=lambda a: a.attempt)
-
+    scheduling_record['list_addItem_out'] = list_addItem_out
     attendanceAttemptArray.sort()
     return attemptWithInoutArray, attendanceAttemptArray
+
+
+def find_attendance_hue4_time_mode(scheduling_record):
+    attendanceAttemptArray = scheduling_record['attendanceAttemptArray']
+    restStartDateTime = scheduling_record['restStartDateTime']
+    restEndDateTime = scheduling_record['restEndDateTime']
+    shiftStartDateTime = scheduling_record['shiftStartDateTime']
+    shiftEndDateTime = scheduling_record['shiftEndDateTime']
+    attendanceAttemptArray.sort()
+
+    beforeRestEndStartIndex = -1
+    beforeRestEndEndIndex = -1
+    afterRestStartStartIndex = -1
+    afterRestStartEndIndex = -1
+
+    if restStartDateTime is not None and restEndDateTime is not None:
+        for index in range(len(attendanceAttemptArray)):
+            if attendanceAttemptArray[index] <= restEndDateTime:
+                if beforeRestEndStartIndex == -1:
+                    beforeRestEndStartIndex = index
+                if beforeRestEndEndIndex == -1 or (attendanceAttemptArray[index] - attendanceAttemptArray[beforeRestEndEndIndex]).total_seconds() > 1:
+                    beforeRestEndEndIndex = index
+
+            if attendanceAttemptArray[index] >= restStartDateTime:
+                if afterRestStartStartIndex == -1:
+                    afterRestStartStartIndex = index
+                if afterRestStartEndIndex == -1 or (attendanceAttemptArray[index] - attendanceAttemptArray[afterRestStartEndIndex]).total_seconds() > 1:
+                    afterRestStartEndIndex = index
+
+        HueStage1Start = attendanceAttemptArray[beforeRestEndStartIndex] if beforeRestEndStartIndex > -1 else None
+        HueStage2End = attendanceAttemptArray[afterRestStartEndIndex] if afterRestStartEndIndex > -1 else None
+
+        if beforeRestEndEndIndex > afterRestStartStartIndex and afterRestStartStartIndex >= 0:
+            HueStage1End = attendanceAttemptArray[afterRestStartStartIndex] if afterRestStartStartIndex > -1 else None
+            HueStage2Start = attendanceAttemptArray[beforeRestEndEndIndex]
+        elif beforeRestEndEndIndex < afterRestStartStartIndex and beforeRestEndEndIndex >= 0:
+            HueStage1End = attendanceAttemptArray[beforeRestEndEndIndex] if beforeRestEndEndIndex > -1 else None
+            HueStage2Start = attendanceAttemptArray[afterRestStartStartIndex]
+        else:
+            if beforeRestEndEndIndex >= 0 and HueStage1Start is not None and HueStage2End is not None:
+                tempStart1End = next((e for e in reversed(attendanceAttemptArray) if e > HueStage1Start and e < attendanceAttemptArray[beforeRestEndEndIndex]), None)
+                tempStart2Start = next((e for e in attendanceAttemptArray if e < HueStage2End and e > attendanceAttemptArray[beforeRestEndEndIndex]), None)
+
+                stage1WorktimeTemp = calculate_night_worktime_custom(HueStage1Start, attendanceAttemptArray[beforeRestEndEndIndex], shiftStartDateTime, restStartDateTime) + (calculate_night_worktime_custom(tempStart2Start, HueStage2End, restEndDateTime, shiftEndDateTime) if tempStart2Start else 0)
+                stage2WorktimeTemp = (calculate_night_worktime_custom(HueStage1Start, tempStart1End, restEndDateTime, shiftEndDateTime) if tempStart1End else 0) + calculate_night_worktime_custom(attendanceAttemptArray[beforeRestEndEndIndex], HueStage2End, restEndDateTime, shiftEndDateTime)
+
+                if stage1WorktimeTemp > stage2WorktimeTemp:
+                    HueStage1End = attendanceAttemptArray[beforeRestEndEndIndex]
+                    HueStage2Start = tempStart2Start
+                else:
+                    HueStage1End = tempStart1End
+                    HueStage2Start = attendanceAttemptArray[beforeRestEndEndIndex]
+
+    if HueStage1End is not None and HueStage1Start is not None:
+        if not HueStage1End > HueStage1Start:
+            HueStage1End = None
+    if HueStage2End is not None and HueStage2Start is not None:
+        if not HueStage2End > HueStage2Start:
+            HueStage2Start = None
+    if HueStage1Start is not None and HueStage1End is not None and shiftStartDateTime is not None and restStartDateTime is not None:
+        stage1WorktimeTemp = calculate_night_worktime_custom(HueStage1Start, HueStage1End, shiftStartDateTime, restStartDateTime)
+    else:
+        stage1WorktimeTemp = 0
+    if HueStage2Start is not None and HueStage2End is not None and shiftEndDateTime is not None and restEndDateTime is not None:
+        stage2WorktimeTemp = calculate_night_worktime_custom(HueStage2Start, HueStage2End, restEndDateTime, shiftEndDateTime)
+    else:
+        stage2WorktimeTemp = 0
+    check_last_in_out(scheduling_record=scheduling_record)
+    return {
+        "HueStage1Start": HueStage1Start,
+        "HueStage1End": HueStage1End,
+        "HueStage2Start": HueStage2Start,
+        "HueStage2End": HueStage2End,
+        "stage1WorktimeTemp": stage1WorktimeTemp,
+        "stage2WorktimeTemp": stage2WorktimeTemp
+    }

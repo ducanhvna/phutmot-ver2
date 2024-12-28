@@ -11,7 +11,9 @@ logger = logging.getLogger(__name__)
 def calculate_scheduling(attendance_id):
     # Import cục bộ để tránh import vòng lặp
     from .models import Attendance, Scheduling, Employee, Shifts, Leave
-    from .utils.attendance_report import add_attempt_more_than_limit, mergedTimeToScheduling, process_missing_attendance
+    from .utils.attendance_report import (add_attempt_more_than_limit, mergedTimeToScheduling,
+        process_missing_attendance, find_attendance_hue4_time_mode
+    )
 
     try:
         # Lấy đối tượng Attendance
@@ -32,6 +34,8 @@ def calculate_scheduling(attendance_id):
         for sched in scheduling.scheduling_records:
             add_attempt_more_than_limit(attendance.attendance_records, sched, 6, 6)
             process_missing_attendance(leave.leave_records, sched)
+
+            find_attendance_hue4_time_mode(sched)
 
         # Tính toán và cập nhật Scheduling tương ứng
         # scheduling, created = Scheduling.objects.get_or_create(attendance=attendance)
