@@ -1,4 +1,5 @@
 from datetime import timedelta, datetime
+from enum import Enum
 
 
 class AttendanceAttemptInOut:
@@ -11,6 +12,55 @@ class InoutMode:
     In = "In"
     Out = "Out"
     NoneMode = "None"
+
+
+class KidMode(Enum):
+    NONE = "None"
+    SBEGIN60 = "SBegin60"
+    SBEGIN30SEND30 = "SBegin30SEnd30"
+    SEND60 = "SEnd60"
+    RBEGIN30REND30 = "RBegin30REnd30"
+    RBEGIN60 = "RBegin60"
+    REND60 = "REnd60"
+
+
+def calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_record, shift):
+    isNightStageFist = scheduling_record['isNightStageFist']
+    isNightStageLast = scheduling_record['isNightStageLast']
+    nightStagefistStart = scheduling_record['nightStagefistStart']
+    nightStagefistEnd = scheduling_record['nightStagefistEnd']
+    nightStagelastStart = scheduling_record['nightStagelastStart']
+    nightStagelastEnd = scheduling_record['nightStagelastEnd']
+    restStartDateTime = scheduling_record['restStartDateTime']
+    restEndDateTime = scheduling_record['restEndDateTime']
+    result = 0
+    if shift is not None:
+        stage_fist_worktime = 0
+        stage_last_worktime = 0
+
+        if isNightStageFist:
+            stageStart = restStartDateTime if restStartDateTime < nightStagefistEnd else nightStagefistEnd
+            current_program = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > nightStagefistStart else nightStagefistStart)
+            stage_fist = max(0, current_program.total_seconds() // 60)
+
+            stageEnd = restEndDateTime if restEndDateTime > nightStagefistStart else nightStagefistStart
+            current_program = (realTimeout.replace(second=0) if realTimeout < nightStagefistEnd else nightStagefistEnd) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
+            stage_second = max(0, current_program.total_seconds() // 60)
+            stage_fist_worktime = stage_fist + stage_second
+
+        if isNightStageLast:
+            stageStart = restStartDateTime if restStartDateTime < nightStagelastEnd else nightStagelastEnd
+            current_program = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > nightStagelastStart else nightStagelastStart)
+            stage_fist = max(0, current_program.total_seconds() // 60)
+
+            stageEnd = restEndDateTime if restEndDateTime > nightStagelastStart else nightStagelastStart
+            current_program = (realTimeout.replace(second=0) if realTimeout < nightStagelastEnd else nightStagelastEnd) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
+            stage_second = max(0, current_program.total_seconds() // 60)
+            stage_last_worktime = stage_fist + stage_second
+
+        result = stage_fist_worktime + stage_last_worktime
+
+    return int(result)
 
 
 def calculate_worktime_without_inout(realTimein, realTimeout, scheduling_record):
@@ -354,3 +404,169 @@ def find_attendance_hue4_time_mode(scheduling_record):
     scheduling_record["HueStage2End"] = HueStage2End,
     scheduling_record["stage1WorktimeTemp"] = stage1WorktimeTemp,
     scheduling_record["stage2WorktimeTemp"] = stage2WorktimeTemp
+
+# Ví dụ sử dụng (giả định các biến đã được định nghĩa trước đó)
+attendanceAttempt1 = datetime(2024, 12, 28, 8, 0)
+attendanceAttemptArray = [
+    datetime(2024, 12, 28, 8, 0),
+    datetime(2024, 12, 28, 12, 0),
+    datetime(2024, 12, 28, 13, 0),
+    datetime(2024, 12, 28, 18, 0)
+]
+
+by_hue_shift = False
+stage1WorktimeTemp = 120
+stage2WorktimeTemp = 60
+HueStage1End = None
+HueStage2Start = None
+shiftStartDateTime = datetime(2024, 12, 28, 8, 0)
+restStartDateTime = datetime(2024, 12, 28, 12, 0)
+restEndDateTime = datetime(2024, 12, 28, 13, 0)
+shiftEndDateTime = datetime(2024, 12, 28, 18, 0)
+totalShiftWorkTime_calculate = 480
+real_late_in_minute = 0
+real_ealry_out_minute = 0
+totalWorkTime = 0
+nightWorkTime = 0
+holidayWorkTime = 0
+nightHolidayWorkTime = 0
+
+
+def process_worktime(scheduling_record):
+    global totalWorkTime, nightWorkTime, holidayWorkTime, nightHolidayWorkTime
+    global realTimein, realTimeout
+    global stage1WorktimeTemp, stage2WorktimeTemp
+    global selectOffStage, stage1Off, stage2Off, missing_checkin_break
+    global totalShiftWorkTime_calculate, real_late_in_minute, real_ealry_out_minute
+    global by_hue_shift
+    attendanceAttempt1 = scheduling_record['attendanceAttempt1']
+    attendanceAttemptArray = scheduling_record['attendanceAttemptArray']
+    shiftName = scheduling_record['shift_name']
+    shift = scheduling_record['shift_name']
+    HueStage2Start = scheduling_record['HueStage2Start']
+    HueStage1End = scheduling_record['HueStage1End']
+    restStartDateTime = scheduling_record['restStartDateTime']
+    restEndDateTime = scheduling_record['restEndDateTime']
+    shiftStartDateTime = scheduling_record['shiftStartDateTime']
+    shiftEndDateTime = scheduling_record['shiftEndDateTime']
+
+    if attendanceAttempt1 is not None:
+        find_attendance_hue4_time_mode(scheduling_record)
+        realTimein = attendanceAttempt1
+        realTimeout = attendanceAttemptArray[-1]
+        
+        for item in attendanceAttemptArray:
+            if realTimein > item:
+                realTimein = item
+            if realTimeout < item:
+                realTimeout = item
+
+        if shiftName is not None and shift is not None:
+            if '/OFF' not in shiftName and 'OFF/' not in shiftName:
+                if by_hue_shift:
+                    totalWorkTime = stage1WorktimeTemp + stage2WorktimeTemp
+                    if HueStage1End is not None and HueStage2Start is not None:
+                        pass
+                    elif HueStage1End is not None or HueStage2Start is not None:
+                        totalWorkTime = calculate_worktime_without_inout(realTimein, realTimeout)
+                        missing_checkin_break = True
+                    else:
+                        missing_checkin_break = True
+                else:
+                    totalWorkTime = calculate_worktime_without_inout(realTimein, realTimeout)
+            else:
+                stage1Off = calculate_night_worktime_custom(realTimein, realTimeout, shiftStartDateTime, restStartDateTime)
+                stage1Off = min(stage1Off, 240)
+                stage2Off = calculate_night_worktime_custom(realTimein, realTimeout, restEndDateTime, shiftEndDateTime)
+                stage2Off = min(stage2Off, 240)
+                totalWorkTime = max(stage2Off, stage1Off)
+                selectOffStage = 2 if stage2Off > stage1Off else 1
+
+        if totalShiftWorkTime_calculate > 0:
+            if realTimein is not None and shiftStartDateTime is not None:
+                real_late_in_minute = calculate_worktime_without_inout(shiftStartDateTime, realTimein)
+            if realTimeout is not None and shiftEndDateTime is not None:
+                real_ealry_out_minute = calculate_worktime_without_inout(realTimeout, shiftEndDateTime)
+
+        nightWorkTime = calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_record, shift)
+        holidayWorkTime = calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling_record, shift)
+        nightHolidayWorkTime = calculate_night_holiday_without_inout(realTimein, realTimeout, scheduling_record, shift)
+    else:
+        totalWorkTime = 0
+        nightWorkTime = 0
+        nightHolidayWorkTime = 0
+
+
+def process_late_early_leave():
+    global lateIn_private, lateIn_by_work, lateIn_by_private_num, earlyOut_private
+    global earlyOut_by_work, realTimein, realTimeout, convert_overtime
+    global employeeHo, listCouple, kidmod, shiftStartDateTime
+    global kidModeStage1EndDatetime, kidModeStage2Datetime, shiftEndDateTime
+    global totalWorkTime, lateinTime, earlyOutTime, shiftName, shift
+    global listLateInLeaves, maxLateEarly, _hrLeaves
+
+    lateIn_private = 0
+    lateIn_by_work = 0
+    lateIn_by_private_num = 0
+    earlyOut_private = 0
+    earlyOut_by_work = 0
+
+    if realTimein is not None and shiftStartDateTime is not None:
+        if convert_overtime:
+            lateinTime = 0
+            earlyOutTime = 0
+        else:
+            if employeeHo:
+                if listCouple:
+                    if kidmod == KidMode.SBEGIN30SEND30:
+                        lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, listCouple[0].itemIn.attempt)
+                        earlyOutTime = calculate_worktime_without_inout(listCouple[-1].itemOut.attempt, kidModeStage2Datetime)
+                    elif kidmod == KidMode.SBEGIN60:
+                        lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, listCouple[0].itemIn.attempt)
+                        earlyOutTime = calculate_worktime_without_inout(listCouple[-1].itemOut.attempt, shiftEndDateTime)
+                    elif kidmod == KidMode.SEND60:
+                        earlyOutTime = calculate_worktime_without_inout(listCouple[-1].itemOut.attempt, kidModeStage2Datetime)
+                        lateinTime = calculate_worktime_without_inout(shiftStartDateTime, listCouple[0].itemIn.attempt)
+                    else:
+                        lateinTime = calculate_worktime_without_inout(shiftStartDateTime, listCouple[0].itemIn.attempt)
+                        earlyOutTime = calculate_worktime_without_inout(listCouple[-1].itemOut.attempt, shiftEndDateTime)
+            else:
+                if kidmod == KidMode.SBEGIN30SEND30:
+                    lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, realTimein)
+                    earlyOutTime = calculate_worktime_without_inout(realTimeout, kidModeStage2Datetime)
+                elif kidmod == KidMode.SBEGIN60:
+                    lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, realTimein)
+                    earlyOutTime = calculate_worktime_without_inout(realTimeout, shiftEndDateTime)
+                elif kidmod == KidMode.SEND60:
+                    earlyOutTime = calculate_worktime_without_inout(realTimeout, kidModeStage2Datetime)
+                    lateinTime = calculate_worktime_without_inout(shiftStartDateTime, realTimein)
+                else:
+                    lateinTime = calculate_worktime_without_inout(shiftStartDateTime, realTimein)
+                    earlyOutTime = calculate_worktime_without_inout(realTimeout, shiftEndDateTime)
+
+        if shiftName is not None and shift is not None:
+            if '/OFF' in shiftName or 'OFF/' in shiftName:
+                if (lateinTime + totalWorkTime) >= 240:
+                    earlyOutTime = 0 if earlyOutTime > lateinTime else earlyOutTime
+
+                if (earlyOutTime + totalWorkTime) >= 240:
+                    lateinTime = lateinTime if earlyOutTime > lateinTime else 0
+
+                earlyOutTime = earlyOutTime - 240 if earlyOutTime > 240 else earlyOutTime
+                lateinTime = lateinTime - 240 if lateinTime > 240 else lateinTime
+
+        for leaveItem in listLateInLeaves:
+            if realTimein > shiftStartDateTime:
+                if leaveItem['for_reasons'] == '1':
+                    lateIn_private += min(maxLateEarly, max(leaveItem['minutes'], leaveItem['time_minute']))
+                    lateIn_by_private_num += 1
+                else:
+                    lateIn_by_work += min(maxLateEarly, max(lateinTime, max(leaveItem['minutes'], leaveItem['time_minute'])))
+
+        listEarlyOutLeave = [element for element in _hrLeaves if 'về sớm' in element['holidayStatusName'].lower() and 'đi muộn' not in element['holidayStatusName'].lower()]
+        for leaveItem in listEarlyOutLeave:
+            if realTimeout < shiftEndDateTime:
+                if leaveItem['for_reasons'] == '1':
+                    earlyOut_private += min(maxLateEarly, max(leaveItem['minutes'], leaveItem['time_minute']))
+                else:
+                    earlyOut_by_work += min(maxLateEarly, max(earlyOutTime, max(leaveItem['minutes'], leaveItem['time_minute'])))
