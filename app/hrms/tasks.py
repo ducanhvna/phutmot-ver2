@@ -4,7 +4,7 @@ import logging
 from celery import shared_task
 
 logger = logging.getLogger(__name__)
-
+from hrms.utils.attendance_report import add_attempt_more_than_limit
 
 @shared_task
 def calculate_scheduling(attendance_id):
@@ -26,6 +26,8 @@ def calculate_scheduling(attendance_id):
         logger.info(f"Get employee: {employee}")
         logger.info(f"GET scheduling: {scheduling}")
         logger.info(f"GET leave: {leave}")
+        for sched in scheduling.scheduling_records:
+            add_attempt_more_than_limit(attendance, sched, 6, 6)
 
         # Tính toán và cập nhật Scheduling tương ứng
         # scheduling, created = Scheduling.objects.get_or_create(attendance=attendance)
