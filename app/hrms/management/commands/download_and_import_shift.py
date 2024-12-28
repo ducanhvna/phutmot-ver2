@@ -158,13 +158,17 @@ class Command(BaseCommand):
 
     def save_to_django(self, grouped_data, company_grouped_data):
         for company_info, record in grouped_data.items():
-            shifts, created = Shifts.objects.get_or_create(
-                name=record['name'],
-                company_code=company_grouped_data[f"{record['company_id'][0]}"]['mis_id'],
-            )
-            shifts.start_work_time = float_to_time(record['start_work_time'])
-            shifts.end_work_time = float_to_time(record['end_work_time'])
-            shifts.start_rest_time = float_to_time(record['start_rest_time'])
-            shifts.end_rest_time = float_to_time(record['end_rest_time'])
-            shifts.info = record
-            shifts.save()
+            try:
+                shifts, created = Shifts.objects.get_or_create(
+                    name=record['name'],
+                    company_code=company_grouped_data[f"{record['company_id'][0]}"]['mis_id'],
+                )
+                shifts.start_work_time = float_to_time(record['start_work_time'])
+                shifts.end_work_time = float_to_time(record['end_work_time'])
+                shifts.start_rest_time = float_to_time(record['start_rest_time'])
+                shifts.end_rest_time = float_to_time(record['end_rest_time'])
+                shifts.info = record
+                shifts.save()
+            except Exception as ex:
+                print(ex)
+                print("Time to process: ", float_to_time(record['start_work_time']))
