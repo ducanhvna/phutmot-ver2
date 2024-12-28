@@ -18,13 +18,15 @@ def get_calendar_data():
     calendar_data = []
     for i in range(num_days_in_month):  # Tạo dữ liệu cho số ngày trong tháng
         day = datetime(current_year, current_month, i + 1)
+        # Tính toán hàng dựa trên số tuần
+        row_start = (i + start_day_of_week) // 7 + 1
         calendar_data.append({
             'date': day.strftime("%d"), # Chỉ hiển thị ngày của tháng
             'day_of_week': day.weekday(),  # 0: Thứ 2, 1: Thứ 3, ..., 6: Chủ nhật
             'order_count': i % 5,  # Số lượng đơn mẫu
             'work_hours': f"{8 + i % 3}h",  # Thời gian làm việc mẫu
             'salary': f"${100 + i * 10}",  # Công tính lương mẫu
-            'row_start': row_start # Thêm ngày trong tháng để sử dụng làm hàng })
+            'row_start': row_start
         })
     return calendar_data
 
