@@ -56,8 +56,19 @@ def timesheet(request):
         employee = Employee.objects.get(time_keeping_code=attendance.code, start_date=start_date)
         shifts = Shifts.objects.filter(company_code='IDJ')
         scheduling = Scheduling.objects.get(employee_code=employee.employee_code, start_date=start_date)
-
         leave = Leave.objects.get(employee_code=employee.employee_code, start_date=start_date)
+        scheduling_records = []
+        for record in scheduling.scheduling_records:
+            scheduling_records.append({
+                'date': record['date'],
+                'employee_name': record['employee_name'],
+                'employee_code': record['employee_code'],
+                'shift_name': record['shift_name']
+            })
+
+        # Sau đó bạn có thể đưa scheduling_records vào context
+        context['schedulingRecords'] = scheduling_records
+
         context['attendance'] = attendance
         context['employee'] = employee
         context['scheduling'] = scheduling
