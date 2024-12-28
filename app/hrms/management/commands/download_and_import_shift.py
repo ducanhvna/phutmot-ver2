@@ -31,9 +31,9 @@ class Command(BaseCommand):
         company_merged_data = self.download_data(models, db, uid, password, "res.company", company_fields)
 
         # Group data by company
-        company_grouped_data = defaultdict(list)
+        company_grouped_data = {}
         for record in company_merged_data:
-            company_grouped_data[f'{record["id"]}'].append(record)
+            company_grouped_data[f'{record["id"]}'] = record
             print(f"{record['id']} -- {record['name']}")
         shift_fields = [
             'id',
