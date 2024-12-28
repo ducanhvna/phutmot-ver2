@@ -6,6 +6,7 @@ from django.urls import reverse
 from hrms.models import Attendance, Scheduling, Employee, Shifts, Leave
 from datetime import timedelta
 
+
 def index(request):
     context = {'segment': 'index'}
     html_template = loader.get_template('home/index.html')
@@ -59,7 +60,8 @@ def timesheet(request):
         context['attendance'] = attendance
         context['employee'] = employee
         context['scheduling'] = scheduling
-        complex['shifts'] = shifts
+        context['shifts'] = shifts
+        context['leave'] = leave
 
         html_template = loader.get_template('home/timesheet.html')
         return HttpResponse(html_template.render(context, request))
