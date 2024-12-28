@@ -31,29 +31,32 @@ def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHour
     attendanceAttemptArray = []
     if scheduling_record["shiftStartDateTime"] is not None and scheduling_record["shiftEndDateTime"] is not None:
         additionTrans = []
+        shift_start = scheduling_record["shiftStartDateTime"]
+        shift_end = scheduling_record["shiftEndDateTime"]
+        # Chuyển đổi tất cả thời gian sang định dạng datetime một lần
+        for e in listAttendanceTrans:
+            e['time_dt'] = datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S")
         listitemTrans = [
             e for e in listAttendanceTrans
-            if datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S") < scheduling_record["shiftEndDateTime"] + timedelta(hours=diffHoursWithNext)
-            if datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S") > scheduling_record["shiftStartDateTime"] - timedelta(hours=diffHoursWithPrev)
+            if shift_start - timedelta(hours=diffHoursWithPrev) < e['time_dt'] < shift_end + timedelta(hours=diffHoursWithNext)
         ]
-        listitemTrans.sort(key=lambda e: datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S"))
+        listitemTrans.sort(key=lambda e: e['time_dt'])
 
         if listitemTrans:
-            if listitemTrans[0]['in_out'] == '' or listitemTrans[0]['in_out'] is None or not listitemTrans[0]['in_out']:
+            if not listitemTrans[0]['in_out']:
                 listitemTrans[0]['in_out'] = 'I'
-            if listitemTrans[-1]['in_out'] == '' or listitemTrans[-1]['in_out'] is None or not listitemTrans[-1]['in_out']:
+            if not listitemTrans[-1]['in_out']:
                 listitemTrans[-1]['in_out'] = 'O'
 
         for tran in listitemTrans:
-            additem = AttendanceAttemptInOut(attempt=datetime.strptime(tran['time'], "%Y-%m-%d %H:%M:%S"))
+            additem = AttendanceAttemptInOut(attempt=tran['time_dt'])
             additem.inout = InoutMode.In if tran['in_out'] in ['I', 'i'] else InoutMode.Out if tran['in_out'] in ['O', 'o'] else InoutMode.NoneMode
             additionTrans.append(additem)
 
         attemptWithInoutArray = list(set(additionTrans + attemptWithInoutArray))
 
         attendanceAttemptArray = list(set(
-            [datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S") for e in listitemTrans
-             if datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S") and datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S") not in attendanceAttemptArray and datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S").replace(second=0) not in attendanceAttemptArray] + attendanceAttemptArray
+            [e['time_dt'] for e in listitemTrans if e['time_dt'] not in attendanceAttemptArray and e['time_dt'].replace(second=0) not in attendanceAttemptArray] + attendanceAttemptArray
         ))
         attemptWithInoutArray.sort(key=lambda a: a.attempt)
     scheduling_record['attemptWithInoutArray'] = attemptWithInoutArray
