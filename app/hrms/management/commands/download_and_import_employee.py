@@ -198,7 +198,7 @@ class Command(BaseCommand):
 
             employee, created = Employee.objects.get_or_create(
                 employee_code=employee_code,
-                time_keeping_code = selected_record['time_keeping_code'],
+                time_keeping_code=selected_record['time_keeping_code'],
                 start_date=datetime.strptime(start_date, "%Y-%m-%d"),
                 end_date=datetime.strptime(end_date, "%Y-%m-%d"),
                 defaults={
