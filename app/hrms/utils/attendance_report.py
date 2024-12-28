@@ -39,7 +39,7 @@ def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHour
         listitemTrans.sort(key=lambda e: datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S"))
 
         if listitemTrans:
-            if listitemTrans[0]['in_out'] == '' or listitemTrans[0]['in_out'] is None  or not listitemTrans[0]['in_out']:
+            if listitemTrans[0]['in_out'] == '' or listitemTrans[0]['in_out'] is None or not listitemTrans[0]['in_out']:
                 listitemTrans[0]['in_out'] = 'I'
             if listitemTrans[-1]['in_out'] == '' or listitemTrans[-1]['in_out'] is None or not listitemTrans[-1]['in_out']:
                 listitemTrans[-1]['in_out'] = 'O'
