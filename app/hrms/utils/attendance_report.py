@@ -42,8 +42,7 @@ def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHour
 
         attendanceAttemptArray = list(set(
             [e.time for e in listitemTrans
-             if e.time and e.time not in attendanceAttemptArray
-             and e.time.replace(second=0) not in attendanceAttemptArray] + attendanceAttemptArray
+             if e.time and e.time not in attendanceAttemptArray and e.time.replace(second=0) not in attendanceAttemptArray] + attendanceAttemptArray
         ))
         attemptWithInoutArray.sort(key=lambda a: a.attempt)
     scheduling_record['attemptWithInoutArray'] = attemptWithInoutArray
