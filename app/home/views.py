@@ -22,7 +22,7 @@ def get_calendar_data():
     for i in range(num_days_in_month):  # Tạo dữ liệu cho số ngày trong tháng
         day = datetime(current_year, current_month, i + 1)
         # Tính toán hàng dựa trên số tuần
-        row_start = (i + start_day_of_week) // 7 + 1
+        row_start = (i + start_day_of_week - 1) // 7 + 1
         calendar_data.append({
             'date': day.strftime("%d"),  # Chỉ hiển thị ngày của tháng
             'day_of_week': (day.weekday() + 1) % 7 + 1,  # Chuyển đổi thành 1: Thứ 2, ..., 7: Chủ nhật
