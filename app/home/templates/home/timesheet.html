@@ -2,9 +2,7 @@
 
 {% block title %} Tables {% endblock %} 
 
-<!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}
-<!-- calendar_template.html -->
 <style>
     .calendar {
         display: grid;
@@ -25,16 +23,14 @@
         border-bottom: none;
     }
 </style>
-
 {% endblock stylesheets %}
 
 {% block content %}
-
   <div class="content">
     <h1>Lịch công tác</h1>
     <div class="calendar">
         {% for day in calendar_data %}
-        <div class="day" style="grid-column: {{ day.day_of_week + 1 }}">
+        <div class="day" style="grid-column: {{ day.day_of_week }}; grid-row-start: {{ day.row_start }}">
             <div class="date">{{ day.date }}</div>
             <div class="order-count">Số lượng đơn: {{ day.order_count }}</div>
             <div class="work-hours">Thời gian đi làm: {{ day.work_hours }}</div>
@@ -53,35 +49,19 @@
               <table class="table tablesorter " id="">
                 <thead class=" text-primary">
                   <tr>
-                    <th>
-                      Ngày
-                    </th>
-                    <th>
-                      Tên
-                    </th>
-                    <th>
-                      Mã code
-                    </th>
-                    <th class="text-center">
-                      Ca
-                    </th>
+                    <th>Ngày</th>
+                    <th>Tên</th>
+                    <th>Mã code</th>
+                    <th class="text-center">Ca</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for item in schedulingrecords %}
                   <tr>
-                    <td>
-                      {{ item.date }}
-                    </td>
-                    <td>
-                      {{ item.employee_name }}
-                    </td>
-                    <td>
-                      {{ item.employee_code }}
-                    </td>
-                    <td class="text-center">
-                      {{ item.shift_name }}
-                    </td>
+                    <td>{{ item.date }}</td>
+                    <td>{{ item.employee_name }}</td>
+                    <td>{{ item.employee_code }}</td>
+                    <td class="text-center">{{ item.shift_name }}</td>
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -93,43 +73,27 @@
       <div class="col-md-12">
         <div class="card  card-plain">
           <div class="card-header">
-            <h4 class="card-title"> Danh sách đơn</h4>
-            <p class="category"> Here is a subtitle for this table</p>
+            <h4 class="card-title">Danh sách đơn</h4>
+            <p class="category">Here is a subtitle for this table</p>
           </div>
           <div class="card-body">
             <div class="table-responsive">
               <table class="table tablesorter " id="">
                 <thead class=" text-primary">
                   <tr>
-                    <th>
-                      Từ ngày
-                    </th>
-                    <th>
-                      Tới ngày
-                    </th>
-                    <th>
-                      Loại đơn
-                    </th>
-                    <th class="text-center">
-                      Lý do
-                    </th>
+                    <th>Từ ngày</th>
+                    <th>Tới ngày</th>
+                    <th>Loại đơn</th>
+                    <th class="text-center">Lý do</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for item in leaverecords %}
                   <tr>
-                    <td>
-                      {{ item.request_date_from }}
-                    </td>
-                    <td>
-                      {{ item.request_date_to }}
-                    </td>
-                    <td>
-                      {{ item.holiday_status_id }}
-                    </td>
-                    <td class="text-center">
-                      {{ item.reasons }}
-                    </td>
+                    <td>{{ item.request_date_from }}</td>
+                    <td>{{ item.request_date_to }}</td>
+                    <td>{{ item.holiday_status_id }}</td>
+                    <td class="text-center">{{ item.reasons }}</td>
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -140,8 +104,6 @@
       </div>
     </div>
   </div>
-
 {% endblock content %}
 
-<!-- Specific Page JS goes HERE  -->
 {% block javascripts %}{% endblock javascripts %}

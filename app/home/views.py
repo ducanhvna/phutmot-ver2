@@ -23,7 +23,8 @@ def get_calendar_data():
             'day_of_week': day.weekday(),  # 0: Thứ 2, 1: Thứ 3, ..., 6: Chủ nhật
             'order_count': i % 5,  # Số lượng đơn mẫu
             'work_hours': f"{8 + i % 3}h",  # Thời gian làm việc mẫu
-            'salary': f"${100 + i * 10}"  # Công tính lương mẫu
+            'salary': f"${100 + i * 10}",  # Công tính lương mẫu
+            'day_of_month': day.day  # Thêm ngày trong tháng để sử dụng làm hàng
         })
     return calendar_data
 
