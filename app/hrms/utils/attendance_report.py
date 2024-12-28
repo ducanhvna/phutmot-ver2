@@ -18,7 +18,7 @@ def check_last_in_out(scheduling_record):
     AttendanceAttemptInOut = scheduling_record['AttendanceAttemptInOut']
     list_addItem_out = scheduling_record['list_addItem_out']
     attemptWithInoutArray.sort(key=lambda x: x.attempt)
-    
+
     if attemptWithInoutArray:
         if attemptWithInoutArray[-1].inout != InoutMode.Out:
             addItem = AttendanceAttemptInOut(attempt=attemptWithInoutArray[-1].attempt)
@@ -41,10 +41,10 @@ def calculate_night_worktime_custom(realTimein, realTimeout, nightStageStart, ni
     # Đặt giây của thời gian bằng 0
     nightStageStart = nightStageStart.replace(second=0)
     nightStageEnd = nightStageEnd.replace(second=0)
-    
+
     stageFistWorktime = 0
     # if shift is not None:
-        # Tính toán thời gian bắt đầu giai đoạn
+    # Tính toán thời gian bắt đầu giai đoạn
     stageStart = restStartDateTime if restStartDateTime < nightStageEnd else nightStageEnd
     currentProgram = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > nightStageStart else nightStageStart)
     stageFist = max(0, currentProgram.total_seconds() // 60)

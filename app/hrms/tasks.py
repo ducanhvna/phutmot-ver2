@@ -11,9 +11,7 @@ logger = logging.getLogger(__name__)
 def calculate_scheduling(attendance_id):
     # Import cục bộ để tránh import vòng lặp
     from .models import Attendance, Scheduling, Employee, Shifts, Leave
-    from .utils.attendance_report import (add_attempt_more_than_limit, mergedTimeToScheduling,
-        process_missing_attendance, find_attendance_hue4_time_mode
-    )
+    from .utils.attendance_report import add_attempt_more_than_limit, mergedTimeToScheduling, process_missing_attendance, find_attendance_hue4_time_mode
 
     try:
         # Lấy đối tượng Attendance
