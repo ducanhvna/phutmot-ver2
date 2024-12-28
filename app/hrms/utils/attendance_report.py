@@ -13,6 +13,19 @@ class InoutMode:
     NoneMode = "None"
 
 
+def mergedTimeToScheduling(schedulings, shifts):
+    merged_shift = {shift.name.replace('/','_'): shift for shift in shifts}
+    
+    for scheduling in schedulings:
+        if scheduling['shift_name'].replace('/','_') in merged_shift:
+            shift = merged_shift[scheduling['shift_name'].replace('/','_')]
+            date = datetime.strptime(scheduling['date'], "%Y-%m-%d")
+            scheduling['shiftStartDateTime'] = date.replace(
+                hour=shift.start_work_time.hour, minute=shift.start_work_time.minute)
+            scheduling['shiftEndDateTime'] = date.replace(
+                hour=shift.end_work_time.hour, minute=shift.end_work_time.minute)
+
+
 def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHoursWithNext, diffHoursWithPrev):
     attemptWithInoutArray = []
     attendanceAttemptArray = []
