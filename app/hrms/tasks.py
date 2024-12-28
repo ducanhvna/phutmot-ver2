@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def calculate_scheduling(attendance_id):
     # Import cục bộ để tránh import vòng lặp
     from .models import Attendance, Scheduling, Employee, Shifts, Leave
-    from .utils.attendance_report import add_attempt_more_than_limit
+    from .utils.attendance_report import add_attempt_more_than_limit, mergedTimeToScheduling
 
     try:
         # Lấy đối tượng Attendance
@@ -28,6 +28,7 @@ def calculate_scheduling(attendance_id):
         logger.info(f"Get employee: {employee}")
         logger.info(f"GET scheduling: {scheduling}")
         logger.info(f"GET leave: {leave}")
+        mergedTimeToScheduling(scheduling.scheduling_records, shifts)
         for sched in scheduling.scheduling_records:
             add_attempt_more_than_limit(attendance, sched, 6, 6)
 

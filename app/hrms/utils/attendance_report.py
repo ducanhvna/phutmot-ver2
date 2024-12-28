@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 
 class AttendanceAttemptInOut:
@@ -14,11 +14,11 @@ class InoutMode:
 
 
 def mergedTimeToScheduling(schedulings, shifts):
-    merged_shift = {shift.name.replace('/','_'): shift for shift in shifts}
-    
+    merged_shift = {shift.name.replace('/', '_'): shift for shift in shifts}
+
     for scheduling in schedulings:
-        if scheduling['shift_name'].replace('/','_') in merged_shift:
-            shift = merged_shift[scheduling['shift_name'].replace('/','_')]
+        if scheduling['shift_name'].replace('/', '_') in merged_shift:
+            shift = merged_shift[scheduling['shift_name'].replace('/', '_')]
             date = datetime.strptime(scheduling['date'], "%Y-%m-%d")
             scheduling['shiftStartDateTime'] = date.replace(
                 hour=shift.start_work_time.hour, minute=shift.start_work_time.minute)
