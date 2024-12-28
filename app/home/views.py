@@ -135,6 +135,7 @@ def get_details(request):
     date = request.GET.get('date')
     # Thay thế bằng logic để lấy dữ liệu thực tế của bạn
     data = {
+        'date': date,
         'order_count': 5,
         'work_hours': "8h",
         'salary': "$100"
