@@ -23,7 +23,7 @@ def get_calendar_data():
         day = datetime(current_year, current_month, i + 1)
         # Tính toán hàng dựa trên số tuần
         row_start = (i + start_day_of_week) // 7 + 1
-        day_of_week = (day.weekday() + 1) % 7  # Chuyển đổi để chủ nhật là 6
+        day_of_week = day.weekday() % 7  # Chuyển đổi để chủ nhật là 6
 
         calendar_data.append({
             'date': day.strftime("%d"),  # Chỉ hiển thị ngày của tháng
