@@ -67,7 +67,7 @@ def timesheet(request):
             })
 
         # Sau đó bạn có thể đưa scheduling_records vào context
-        context['schedulingRecords'] = scheduling_records
+        context['schedulingrecords'] = scheduling_records
 
         context['attendance'] = attendance
         context['employee'] = employee
