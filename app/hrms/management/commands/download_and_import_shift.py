@@ -157,8 +157,7 @@ class Command(BaseCommand):
         return merged_data
 
     def save_to_django(self, grouped_data, company_grouped_data):
-        for company_info, records in grouped_data.items():
-            record = records[0]
+        for company_info, record in grouped_data.items():
             shifts, created = Shifts.objects.get_or_create(
                 name=record['name'],
                 company_code=company_grouped_data[f"{record['company_id'][0]}"]['mis_id'],
