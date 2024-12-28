@@ -7,6 +7,7 @@ from hrms.models import Attendance, Scheduling, Employee, Shifts, Leave
 from datetime import datetime, timedelta
 import json
 import calendar
+from django.http import JsonResponse
 
 
 def get_calendar_data():
@@ -128,3 +129,14 @@ def timesheet(request):
     except Exception:
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
+
+
+def get_details(request):
+    date = request.GET.get('date')
+    # Thay thế bằng logic để lấy dữ liệu thực tế của bạn
+    data = {
+        'order_count': 5,
+        'work_hours': "8h",
+        'salary': "$100"
+    }
+    return JsonResponse(data)
