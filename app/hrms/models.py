@@ -93,11 +93,11 @@ class Shifts(models.Model):
     def __str__(self):
         return self.name
 
-    def save(self, *args, **kwargs):
-        # Thêm logic để tính toán các trường compute
-        self.total_work_time = self._compute_total_work_time()
-        self.total_rest_time = self._compute_total_rest_time()
-        super(Shifts, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     # Thêm logic để tính toán các trường compute
+    #     self.total_work_time = self._compute_total_work_time()
+    #     self.total_rest_time = self._compute_total_rest_time()
+    #     super(Shifts, self).save(*args, **kwargs)
 
     def _compute_total_work_time(self):
         # Tính toán tổng thời gian làm việc
