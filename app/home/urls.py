@@ -4,5 +4,6 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    re_path('timesheet/', views.timesheet, name='pages'),
     re_path(r'^.*\.*', views.pages, name='pages'),
 ]
