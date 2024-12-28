@@ -61,7 +61,7 @@ def timesheet(request):
         context['attendance'] = attendance
         context['employee'] = employee
         context['scheduling'] = scheduling
-        context['schedulingRecords'] = json.loads(scheduling.scheduling_records)
+        context['schedulingrecords'] = json.loads(scheduling.scheduling_records)
         context['shifts'] = shifts
         context['leave'] = leave
 
