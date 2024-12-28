@@ -31,6 +31,7 @@ def calculate_scheduling(attendance_id):
         mergedTimeToScheduling(scheduling.scheduling_records, shifts)
         for sched in scheduling.scheduling_records:
             add_attempt_more_than_limit(attendance.attendance_records, sched, 6, 6)
+            process_missing_attendance(leave.leave_records, attendance.attendance_records)
 
         # Tính toán và cập nhật Scheduling tương ứng
         # scheduling, created = Scheduling.objects.get_or_create(attendance=attendance)
