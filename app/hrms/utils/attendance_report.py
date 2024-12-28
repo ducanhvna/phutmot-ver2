@@ -199,6 +199,12 @@ def find_attendance_hue4_time_mode(scheduling_record):
     beforeRestEndEndIndex = -1
     afterRestStartStartIndex = -1
     afterRestStartEndIndex = -1
+    HueStage1Start = None
+    HueStage1End = None
+    HueStage2Start = None
+    HueStage2End = None
+    stage1WorktimeTemp = None
+    stage2WorktimeTemp = None
 
     if restStartDateTime is not None and restEndDateTime is not None:
         for index in range(len(attendanceAttemptArray)):
@@ -253,11 +259,11 @@ def find_attendance_hue4_time_mode(scheduling_record):
     else:
         stage2WorktimeTemp = 0
     check_last_in_out(scheduling_record=scheduling_record)
-    return {
-        "HueStage1Start": HueStage1Start,
-        "HueStage1End": HueStage1End,
-        "HueStage2Start": HueStage2Start,
-        "HueStage2End": HueStage2End,
-        "stage1WorktimeTemp": stage1WorktimeTemp,
-        "stage2WorktimeTemp": stage2WorktimeTemp
-    }
+
+    scheduling_record["HueStage1Start"] = HueStage1Start,
+    scheduling_record["HueStage1End"] = HueStage1End,
+    scheduling_record["HueStage2Start"] = HueStage2Start,
+    scheduling_record["HueStage2End"] = HueStage2End,
+    scheduling_record["stage1WorktimeTemp"] = stage1WorktimeTemp,
+    scheduling_record["stage2WorktimeTemp"] = stage2WorktimeTemp
+    
