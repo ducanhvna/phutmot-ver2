@@ -64,10 +64,10 @@ class Attendance(models.Model):
 
 class Shifts(models.Model):
     name = models.CharField("Mã ca", max_length=255, unique=False)
-    start_work_time = models.TimeField("Giờ bắt đầu làm:", null=False, blank=False)
-    end_work_time = models.TimeField("Giờ kết thúc làm:", null=False, blank=False)
-    start_rest_time = models.TimeField("Giờ bắt đầu nghỉ:", null=True, blank=True)
-    end_rest_time = models.TimeField("Giờ kết thúc nghỉ:", null=True, blank=True)
+    start_work_time = models.DateTimeField("Giờ bắt đầu làm:", null=False, blank=False)
+    end_work_time = models.DateTimeField("Giờ kết thúc làm:", null=False, blank=False)
+    start_rest_time = models.DateTimeField("Giờ bắt đầu nghỉ:", null=True, blank=True)
+    end_rest_time = models.DateTimeField("Giờ kết thúc nghỉ:", null=True, blank=True)
     total_work_time = models.FloatField("Tổng thời gian làm việc", null=True, blank=True)  # Compute field
     total_rest_time = models.FloatField("Tổng thời gian nghỉ", null=True, blank=True)  # Compute field
     company_code = models.CharField("Mã công ty", max_length=255, null=True, blank=True)  # Thay thế cho company_id
