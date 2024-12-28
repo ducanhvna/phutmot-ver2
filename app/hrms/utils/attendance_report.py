@@ -69,20 +69,20 @@ def process_missing_attendance(hrLeaves, scheduling_record):
     attemptWithInoutArray = scheduling_record['attemptWithInoutArray']
     attendanceAttemptArray = scheduling_record['attendanceAttemptArray']
     list_addItem_out = []
-    
+
     # Chuẩn hóa tên trạng thái ngày nghỉ
     for e in hrLeaves:
         e['holidayStatusName'] = e['holiday_status_id'][0] if e['holiday_status_id'][1] else ''
-    
+
     # Lọc các phần tử có trạng thái thiếu chấm công
     listMissingLeaves = [
-        element for element in hrLeaves 
+        element for element in hrLeaves
         if 'thiếu chấm công' in f"{element['holidayStatusName']}".lower()
     ]
-    
+
     shiftStartDateTime = scheduling_record["shiftStartDateTime"]
     shiftEndDateTime = scheduling_record["shiftEndDateTime"]
-    
+
     if shiftStartDateTime is not None:
         additionTrans = []
 
@@ -97,7 +97,7 @@ def process_missing_attendance(hrLeaves, scheduling_record):
                 additem.inout = mode
 
                 for in_out_addItem_before in [
-                    item for item in list_addItem_out 
+                    item for item in list_addItem_out
                     if item.attempt <= additem.attempt
                 ]:
                     in_out_addItem_before.inout = InoutMode.NoneMode
@@ -132,7 +132,6 @@ def process_missing_attendance(hrLeaves, scheduling_record):
 
         attemptWithInoutArray = list(set(additionTrans + attemptWithInoutArray))
         attemptWithInoutArray.sort(key=lambda a: a.attempt)
-    
+
     attendanceAttemptArray.sort()
     return attemptWithInoutArray, attendanceAttemptArray
-
