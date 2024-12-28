@@ -28,13 +28,13 @@ class Command(BaseCommand):
             'is_ho',
             'mis_id'
         ]
-        company_merged_data = self.download_data(model, db, uid, password, "res.company", company_fields)
+        company_merged_data = self.download_data(models, db, uid, password, "res.company", company_fields)
 
         # Group data by company
         company_grouped_data = defaultdict(list)
         for record in company_merged_data:
             company_grouped_data[f'{record["id"]}'].append(record)
-            print(f"{record['id']} -- {len(grouped_data[record['name']])}")
+            print(f"{record['id']} -- {record['name']}")
         shift_fields = [
             'id',
             'name',
@@ -57,14 +57,14 @@ class Command(BaseCommand):
             'minutes_working_not_reduced',
             'write_date'
         ]
-        shift_merged_data = self.download_data(model, db, uid, password, "shifts", shift_fields)
+        shift_merged_data = self.download_data(models, db, uid, password, "shifts", shift_fields)
         # Group data by employee_code
         shift_grouped_data = defaultdict(list)
         for record in shift_merged_data:
             shift_grouped_data[f'{record["company_id"][0]}_{record["company_id"][1]}'].append(record)
             print(f"{record['id']} -- {len(grouped_data[record['name']])}")
         # Save data to Django
-        self.save_to_django(grouped_data, shift_grouped_data, company_grouped_data)
+        self.save_to_django(shift_grouped_data, company_grouped_data)
 
     def download_data(self, models, db, uid, password, model_name, fields, limit=300):
         LIMIT_SIZE = limit
@@ -141,12 +141,12 @@ class Command(BaseCommand):
 
         return merged_data
 
-    def save_to_django(self, grouped_data, grouped_data, company_grouped_data):
+    def save_to_django(self, grouped_data, company_grouped_data):
         for company_info, records in grouped_data.items():
-            for record in records:
-                shifts, created = Shifts.objects.get_or_create(
-                    name=record['name'],
-                    company_code=company_grouped_data[f"{record['company_id'][0]}"]['mis_id'],
-                )
-                shifts.info = record
-                shifts.save()
+            record = records[0]
+            shifts, created = Shifts.objects.get_or_create(
+                name=record['name'],
+                company_code=company_grouped_data[f"{record['company_id'][0]}"]['mis_id'],
+            )
+            shifts.info = record
+            shifts.save()
