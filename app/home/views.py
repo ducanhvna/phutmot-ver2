@@ -4,8 +4,28 @@ from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from hrms.models import Attendance, Scheduling, Employee, Shifts, Leave
-from datetime import timedelta
+from datetime import datetime, timedelta
 import json
+import calendar
+
+
+def get_calendar_data():
+    today = datetime.today()
+    current_year = today.year
+    current_month = today.month
+    _, num_days_in_month = calendar.monthrange(current_year, current_month)  # Lấy số ngày trong tháng hiện tại
+
+    calendar_data = []
+    for i in range(num_days_in_month):  # Tạo dữ liệu cho số ngày trong tháng
+        day = datetime(current_year, current_month, i + 1)
+        calendar_data.append({
+            'date': day.strftime("%Y-%m-%d"),
+            'day_of_week': day.weekday(),  # 0: Thứ 2, 1: Thứ 3, ..., 6: Chủ nhật
+            'order_count': i % 5,  # Số lượng đơn mẫu
+            'work_hours': f"{8 + i % 3}h",  # Thời gian làm việc mẫu
+            'salary': f"${100 + i * 10}"  # Công tính lương mẫu
+        })
+    return calendar_data
 
 
 def index(request):
@@ -77,9 +97,10 @@ def timesheet(request):
             }
             for record in leave.leave_records
         ]
+        calendar_data = get_calendar_data()
         # Sau đó bạn có thể đưa scheduling_records vào context
         context['schedulingrecords'] = scheduling_records
-
+        context['calendar_data'] = calendar_data
         context['attendance'] = attendance
         context['employee'] = employee
         context['scheduling'] = scheduling

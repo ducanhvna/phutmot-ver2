@@ -3,12 +3,45 @@
 {% block title %} Tables {% endblock %} 
 
 <!-- Specific Page CSS goes HERE  -->
-{% block stylesheets %}{% endblock stylesheets %}
+{% block stylesheets %}
+<!-- calendar_template.html -->
+<style>
+    .calendar {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 10px;
+    }
+    .day {
+        border: 1px solid #ccc;
+        padding: 10px;
+        display: grid;
+        grid-template-rows: 1fr 1fr 1fr 1fr;
+    }
+    .day > div {
+        padding: 5px;
+        border-bottom: 1px solid #eee;
+    }
+    .day > div:last-child {
+        border-bottom: none;
+    }
+</style>
+
+{% endblock stylesheets %}
 
 {% block content %}
 
   <div class="content">
-    <h1>Thông tin từ JSON</h1>
+    <h1>Lịch công tác</h1>
+    <div class="calendar">
+        {% for day in calendar_data %}
+        <div class="day" style="grid-column: {{ day.day_of_week + 1 }}">
+            <div class="date">{{ day.date }}</div>
+            <div class="order-count">Số lượng đơn: {{ day.order_count }}</div>
+            <div class="work-hours">Thời gian đi làm: {{ day.work_hours }}</div>
+            <div class="salary">Công tính lương: {{ day.salary }}</div>
+        </div>
+        {% endfor %}
+    </div>
     <div class="row">
       <div class="col-md-12">
         <div class="card ">
