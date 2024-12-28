@@ -266,4 +266,3 @@ def find_attendance_hue4_time_mode(scheduling_record):
     scheduling_record["HueStage2End"] = HueStage2End,
     scheduling_record["stage1WorktimeTemp"] = stage1WorktimeTemp,
     scheduling_record["stage2WorktimeTemp"] = stage2WorktimeTemp
-    
