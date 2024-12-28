@@ -33,10 +33,8 @@ def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHour
         additionTrans = []
         listitemTrans = [
             e for e in listAttendanceTrans
-            if e.name is not None
-            if e.time is not None
-            if e.time < scheduling_record["shiftEndDateTime"] + timedelta(hours=diffHoursWithNext)
-            if e.time > scheduling_record["shiftStartDateTime"] - timedelta(hours=diffHoursWithPrev)
+            if datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S") < scheduling_record["shiftEndDateTime"] + timedelta(hours=diffHoursWithNext)
+            if datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S") > scheduling_record["shiftStartDateTime"] - timedelta(hours=diffHoursWithPrev)
         ]
         listitemTrans.sort(key=lambda e: e.time)
 
