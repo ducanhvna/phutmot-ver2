@@ -63,18 +63,124 @@
 {% block content %}
   <div class="content">
     <h1>Lịch công tác</h1>
-    <div class="calendar">
-        {% for day in calendar_data %}
-        <div class="day" data-date="{{ day.date }}" onclick="openModal(this)">
-            <div class="date">{{ day.date }}</div>
-            <div class="order-count">{{ day.order_count }}</div>
-            <div class="work-hours">{{ day.work_hours }}</div>
-            <div class="salary">{{ day.salary }}</div>
+    <div class="row">
+      <div class="col-md-9">
+        <div class="card ">
+          <div class="calendar">
+              {% for day in calendar_data %}
+              <div class="day" style="grid-column: {{ day.day_of_week }}; grid-row-start: {{ day.row_start }}" onclick="openModal(this)">
+                  <div class="date">{{ day.date }}</div>
+                  <div class="order-count">{{ day.order_count }}</div>
+                  <div class="work-hours">{{ day.work_hours }}</div>
+                  <div class="salary">{{ day.salary }}</div>
+              </div>
+              {% endfor %}
+          </div>
         </div>
-        {% endfor %}
+      </div>
+      <div class="col-md-3">
+        <div class="card card-user">
+          <div class="card-body">
+            <p class="card-text">
+              <div class="author">
+                <div class="block block-one"></div>
+                <div class="block block-two"></div>
+                <div class="block block-three"></div>
+                <div class="block block-four"></div>
+                <a href="javascript:void(0)">
+                  <img class="avatar" src="{{ ASSETS_ROOT }}/img/emilyz.jpg" alt="...">
+                  <h5 class="title">Mike Andrew</h5>
+                </a>
+                <p class="description">
+                  Ceo/Co-Founder
+                </p>
+              </div>
+            </p>
+            <div class="card-description">
+              Do not be scared of the truth because we need to restart the human foundation in truth And I love you like Kanye loves Kanye I love Rick Owens’ bed design but the back is...
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="button-container">
+              <button href="javascript:void(0)" class="btn btn-icon btn-round btn-facebook">
+                <i class="fab fa-facebook"></i>
+              </button>
+              <button href="javascript:void(0)" class="btn btn-icon btn-round btn-twitter">
+                <i class="fab fa-twitter"></i>
+              </button>
+              <button href="javascript:void(0)" class="btn btn-icon btn-round btn-google">
+                <i class="fab fa-google-plus"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <!-- Popup Modal -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card ">
+          <div class="card-header">
+            <h4 class="card-title">{{ scheduling.employee_code }}</h4>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table tablesorter " id="">
+                <thead class=" text-primary">
+                  <tr>
+                    <th>Ngày</th>
+                    <th>Tên</th>
+                    <th>Mã code</th>
+                    <th class="text-center">Ca</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in schedulingrecords %}
+                  <tr>
+                    <td>{{ item.date }}</td>
+                    <td>{{ item.employee_name }}</td>
+                    <td>{{ item.employee_code }}</td>
+                    <td class="text-center">{{ item.shift_name }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="card  card-plain">
+          <div class="card-header">
+            <h4 class="card-title">Danh sách đơn</h4>
+            <p class="category">Here is a subtitle for this table</p>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table tablesorter " id="">
+                <thead class=" text-primary">
+                  <tr>
+                    <th>Từ ngày</th>
+                    <th>Tới ngày</th>
+                    <th>Loại đơn</th>
+                    <th class="text-center">Lý do</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in leaverecords %}
+                  <tr>
+                    <td>{{ item.request_date_from }}</td>
+                    <td>{{ item.request_date_to }}</td>
+                    <td>{{ item.holiday_status_id }}</td>
+                    <td class="text-center">{{ item.reasons }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div id="myModal" class="modal">
       <div class="modal-content">
         <span class="close" onclick="closeModal()">&times;</span>
