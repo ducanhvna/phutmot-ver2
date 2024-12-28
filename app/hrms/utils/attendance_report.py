@@ -15,7 +15,9 @@ class InoutMode:
 
 def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHoursWithNext, diffHoursWithPrev):
     attemptWithInoutArray = []
+    attendanceAttemptArray = []
     if scheduling_record["shiftStartDateTime"] is not None and scheduling_record["shiftEndDateTime"] is not None:
+        additionTrans = []
         listitemTrans = [
             e for e in listAttendanceTrans
             if e.name is not None
@@ -38,10 +40,12 @@ def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHour
             additionTrans.append(additem)
 
         attemptWithInoutArray = list(set(additionTrans + attemptWithInoutArray))
+
         attendanceAttemptArray = list(set(
             [e.time for e in listitemTrans if e.time and e.time not in attendanceAttemptArray and e.time.replace(second=0) not in attendanceAttemptArray] +
             attendanceAttemptArray
         ))
         attemptWithInoutArray.sort(key=lambda a: a.attempt)
-        scheduling_record['attemptWithInoutArray']= attemptWithInoutArray
+    scheduling_record['attemptWithInoutArray'] = attemptWithInoutArray
+    scheduling_record['attendanceAttemptArray'] = attendanceAttemptArray
     return scheduling_record
