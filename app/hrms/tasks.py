@@ -4,12 +4,12 @@ import logging
 from celery import shared_task
 
 logger = logging.getLogger(__name__)
-from hrms.utils.attendance_report import add_attempt_more_than_limit
 
 @shared_task
 def calculate_scheduling(attendance_id):
     # Import cục bộ để tránh import vòng lặp
     from .models import Attendance, Scheduling, Employee, Shifts, Leave
+    from .utils.attendance_report import add_attempt_more_than_limit
 
     try:
         # Lấy đối tượng Attendance

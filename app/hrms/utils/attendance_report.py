@@ -30,7 +30,6 @@ def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHour
         if listitemTrans:
             if listitemTrans[0].in_out == '' or listitemTrans[0].in_out is None:
                 listitemTrans[0].in_out = 'I'
-            
             if listitemTrans[-1].in_out == '' or listitemTrans[-1].in_out is None:
                 listitemTrans[-1].in_out = 'O'
 
@@ -42,7 +41,8 @@ def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHour
         attemptWithInoutArray = list(set(additionTrans + attemptWithInoutArray))
 
         attendanceAttemptArray = list(set(
-            [e.time for e in listitemTrans if e.time and e.time not in attendanceAttemptArray and e.time.replace(second=0) not in attendanceAttemptArray] +
+            [e.time for e in listitemTrans if e.time and e.time not in attendanceAttemptArray 
+                and e.time.replace(second=0) not in attendanceAttemptArray] +
             attendanceAttemptArray
         ))
         attemptWithInoutArray.sort(key=lambda a: a.attempt)
