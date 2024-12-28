@@ -5,6 +5,7 @@ from celery import shared_task
 
 logger = logging.getLogger(__name__)
 
+
 @shared_task
 def calculate_scheduling(attendance_id):
     # Import cục bộ để tránh import vòng lặp
