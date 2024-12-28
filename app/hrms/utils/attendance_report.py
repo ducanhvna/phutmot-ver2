@@ -15,7 +15,6 @@ class InoutMode:
 
 def check_last_in_out(scheduling_record):
     attemptWithInoutArray = scheduling_record['attemptWithInoutArray']
-    AttendanceAttemptInOut = scheduling_record['AttendanceAttemptInOut']
     list_addItem_out = scheduling_record['list_addItem_out']
     attemptWithInoutArray.sort(key=lambda x: x.attempt)
 
