@@ -190,3 +190,25 @@ class Timesheet(models.Model):
 
     def __str__(self):
         return f"Timesheet {self.employee_code} from {self.start_date} to {self.end_date}"
+
+
+class Explaination(models.Model):
+    employee_code = models.CharField("Mã nhân sự", max_length=255)
+    explaination_records = JSONField("Danh sách giải trình", default=list, blank=True)
+    start_date = models.DateField("Ngày bắt đầu tháng")
+    end_date = models.DateField("Ngày kết thúc tháng")
+    create_time = models.DateTimeField("Thời gian tạo", auto_now_add=True)
+    update_time = models.DateTimeField("Thời gian cập nhật", auto_now=True)
+    # created_user = models.CharField("Người tạo", max_length=255)
+    # modified_user = models.CharField("Người sửa đổi", max_length=255)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["employee_code", "start_date", "end_date"],
+                name="unique_employee_explaination",
+            )
+        ]
+
+    def __str__(self):
+        return f"Hr Explaination {self.employee_code} from {self.start_date} to {self.end_date}"
