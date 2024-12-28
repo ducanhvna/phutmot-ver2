@@ -13,14 +13,17 @@
         border: 1px solid #ccc;
         padding: 10px;
         display: grid;
-        grid-template-rows: 1fr 1fr 1fr 1fr;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
     }
     .day > div {
         padding: 5px;
         border-bottom: 1px solid #eee;
     }
-    .day > div:last-child {
+    .date {
+        grid-column: 1 / span 2;  /* Chiếm 2 cột */
         border-bottom: none;
+        font-weight: bold;
     }
 </style>
 {% endblock stylesheets %}
@@ -32,9 +35,9 @@
         {% for day in calendar_data %}
         <div class="day" style="grid-column: {{ day.day_of_week }}; grid-row-start: {{ day.row_start }}">
             <div class="date">{{ day.date }}</div>
-            <div class="order-count">Số lượng đơn: {{ day.order_count }}</div>
-            <div class="work-hours">Thời gian đi làm: {{ day.work_hours }}</div>
-            <div class="salary">Công tính lương: {{ day.salary }}</div>
+            <div class="order-count">{{ day.order_count }}</div>
+            <div class="work-hours">{{ day.work_hours }}</div>
+            <div class="salary">{{ day.salary }}</div>
         </div>
         {% endfor %}
     </div>
