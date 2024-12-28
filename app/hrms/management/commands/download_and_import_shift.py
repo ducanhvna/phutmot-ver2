@@ -5,7 +5,14 @@ from django.utils import timezone
 from hrms.models import Shifts
 from collections import defaultdict
 import xmlrpc.client
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
+
+
+def float_to_time(hour_float):
+    """Chuyển đổi từ giờ dạng float sang thời gian dạng datetime.time"""
+    hours = int(hour_float)
+    minutes = int((hour_float - hours) * 60)
+    return time(hour=hours, minute=minutes)
 
 
 class Command(BaseCommand):
@@ -98,7 +105,15 @@ class Command(BaseCommand):
                 [["date_calculate_leave", "!=", False]]
             ]
         elif model_name == "shifts":
-            domain = [[['company_id', "!=", False]]]
+            domain = [
+                [
+                    ['company_id', "!=", False],
+                    ['start_work_time', "!=", False],
+                    ['end_work_time', "!=", False],
+                    ['start_rest_time', "!=", False],
+                    ['end_rest_time', "!=", False],
+                ]
+            ]
         elif model_name == "res.company":
             domain = [[]]
         else:
@@ -148,5 +163,9 @@ class Command(BaseCommand):
                 name=record['name'],
                 company_code=company_grouped_data[f"{record['company_id'][0]}"]['mis_id'],
             )
+            shifts.start_work_time = float_to_time(record['start_work_time'])
+            shifts.end_work_time = float_to_time(record['end_work_time'])
+            shifts.start_rest_time = float_to_time(record['start_rest_time'])
+            shifts.end_rest_time = float_to_time(record['end_rest_time'])
             shifts.info = record
             shifts.save()
