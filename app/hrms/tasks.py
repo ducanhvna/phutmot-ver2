@@ -30,7 +30,7 @@ def calculate_scheduling(attendance_id):
         logger.info(f"GET leave: {leave}")
         mergedTimeToScheduling(scheduling.scheduling_records, shifts)
         for sched in scheduling.scheduling_records:
-            add_attempt_more_than_limit(attendance, sched, 6, 6)
+            add_attempt_more_than_limit(attendance.attendance_records, sched, 6, 6)
 
         # Tính toán và cập nhật Scheduling tương ứng
         # scheduling, created = Scheduling.objects.get_or_create(attendance=attendance)
