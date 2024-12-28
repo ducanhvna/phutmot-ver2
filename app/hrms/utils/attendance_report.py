@@ -70,6 +70,10 @@ def mergedTimeToScheduling(schedulings, shifts):
                 hour=shift.start_work_time.hour, minute=shift.start_work_time.minute)
             scheduling['shiftEndDateTime'] = date.replace(
                 hour=shift.end_work_time.hour, minute=shift.end_work_time.minute)
+            scheduling['restStartDateTime'] = date.replace(
+                hour=shift.start_work_time.hour, minute=shift.start_rest_time.minute)
+            scheduling['restEndDateTime'] = date.replace(
+                hour=shift.end_work_time.hour, minute=shift.end_rest_time.minute)
 
 
 def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHoursWithNext, diffHoursWithPrev):
