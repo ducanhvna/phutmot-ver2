@@ -84,7 +84,7 @@ def calculate_worktime_without_inout(realTimein, realTimeout, scheduling_record)
     return int(result)
 
 
-def calculate_Holiday_worktime_without_inout(realTimein, realTimeout, scheduling_record, shift):
+def calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling_record, shift):
     holidayStartDatetime = scheduling_record['holidayStartDatetime']
     isHoliday = scheduling_record['isHoliday']
     shiftName = scheduling_record['shiftName']
@@ -109,7 +109,7 @@ def calculate_Holiday_worktime_without_inout(realTimein, realTimeout, scheduling
     return result
 
 
-def calculate_Night_Holiday_without_inout(realTimein, realTimeout, scheduling_record, shift):
+def calculate_night_holiday_without_inout(realTimein, realTimeout, scheduling_record, shift):
     holidayNightStageFistStartDatetime = scheduling_record['holidayNightStageFistStartDatetime']
     holidayNightStageFistEndDatetime = scheduling_record['holidayNightStageFistEndDatetime']
     holidayNightStageLastStartDatetime = scheduling_record['holidayNightStageLastStartDatetime']
@@ -405,6 +405,7 @@ def find_attendance_hue4_time_mode(scheduling_record):
     scheduling_record["stage1WorktimeTemp"] = stage1WorktimeTemp,
     scheduling_record["stage2WorktimeTemp"] = stage2WorktimeTemp
 
+
 # Ví dụ sử dụng (giả định các biến đã được định nghĩa trước đó)
 attendanceAttempt1 = datetime(2024, 12, 28, 8, 0)
 attendanceAttemptArray = [
@@ -413,7 +414,6 @@ attendanceAttemptArray = [
     datetime(2024, 12, 28, 13, 0),
     datetime(2024, 12, 28, 18, 0)
 ]
-
 by_hue_shift = False
 stage1WorktimeTemp = 120
 stage2WorktimeTemp = 60
@@ -454,7 +454,7 @@ def process_worktime(scheduling_record):
         find_attendance_hue4_time_mode(scheduling_record)
         realTimein = attendanceAttempt1
         realTimeout = attendanceAttemptArray[-1]
-        
+
         for item in attendanceAttemptArray:
             if realTimein > item:
                 realTimein = item
