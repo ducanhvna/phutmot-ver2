@@ -12,7 +12,7 @@ def float_to_time(hour_float):
     """Chuyển đổi từ giờ dạng float sang thời gian dạng datetime.time"""
     hours = int(hour_float)
     minutes = int((hour_float - hours) * 60)
-    return time(hour=hours, minute=minutes)
+    return datetime(hour=hours, minute=minutes)
 
 
 class Command(BaseCommand):
