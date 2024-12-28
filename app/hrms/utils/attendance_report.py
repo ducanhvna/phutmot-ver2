@@ -36,7 +36,7 @@ def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHour
             if datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S") < scheduling_record["shiftEndDateTime"] + timedelta(hours=diffHoursWithNext)
             if datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S") > scheduling_record["shiftStartDateTime"] - timedelta(hours=diffHoursWithPrev)
         ]
-        listitemTrans.sort(key=lambda e: e.time)
+        listitemTrans.sort(key=lambda e: datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S"))
 
         if listitemTrans:
             if listitemTrans[0].in_out == '' or listitemTrans[0].in_out is None:
@@ -45,15 +45,15 @@ def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHour
                 listitemTrans[-1].in_out = 'O'
 
         for tran in listitemTrans:
-            additem = AttendanceAttemptInOut(attempt=tran.time)
+            additem = AttendanceAttemptInOut(attempt=datetime.strptime(tran['time'], "%Y-%m-%d %H:%M:%S"))
             additem.inout = InoutMode.In if tran.in_out in ['I', 'i'] else InoutMode.Out if tran.in_out in ['O', 'o'] else InoutMode.NoneMode
             additionTrans.append(additem)
 
         attemptWithInoutArray = list(set(additionTrans + attemptWithInoutArray))
 
         attendanceAttemptArray = list(set(
-            [e.time for e in listitemTrans
-             if e.time and e.time not in attendanceAttemptArray and e.time.replace(second=0) not in attendanceAttemptArray] + attendanceAttemptArray
+            [datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S") for e in listitemTrans
+             if datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S") and datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S") not in attendanceAttemptArray and datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S").replace(second=0) not in attendanceAttemptArray] + attendanceAttemptArray
         ))
         attemptWithInoutArray.sort(key=lambda a: a.attempt)
     scheduling_record['attemptWithInoutArray'] = attemptWithInoutArray
