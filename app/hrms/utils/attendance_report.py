@@ -39,14 +39,14 @@ def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHour
         listitemTrans.sort(key=lambda e: datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S"))
 
         if listitemTrans:
-            if listitemTrans[0].in_out == '' or listitemTrans[0].in_out is None:
-                listitemTrans[0].in_out = 'I'
-            if listitemTrans[-1].in_out == '' or listitemTrans[-1].in_out is None:
-                listitemTrans[-1].in_out = 'O'
+            if listitemTrans[0]['in_out'] == '' or listitemTrans[0]['in_out'] is None  or not listitemTrans[0]['in_out']:
+                listitemTrans[0]['in_out'] = 'I'
+            if listitemTrans[-1]['in_out'] == '' or listitemTrans[-1]['in_out'] is None or not listitemTrans[-1]['in_out']:
+                listitemTrans[-1]['in_out'] = 'O'
 
         for tran in listitemTrans:
             additem = AttendanceAttemptInOut(attempt=datetime.strptime(tran['time'], "%Y-%m-%d %H:%M:%S"))
-            additem.inout = InoutMode.In if tran.in_out in ['I', 'i'] else InoutMode.Out if tran.in_out in ['O', 'o'] else InoutMode.NoneMode
+            additem.inout = InoutMode.In if tran['in_out'] in ['I', 'i'] else InoutMode.Out if tran['in_out'] in ['O', 'o'] else InoutMode.NoneMode
             additionTrans.append(additem)
 
         attemptWithInoutArray = list(set(additionTrans + attemptWithInoutArray))
