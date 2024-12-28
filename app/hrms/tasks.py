@@ -2,6 +2,7 @@
 
 import logging
 from celery import shared_task
+from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -15,12 +16,12 @@ def calculate_scheduling(attendance_id):
     try:
         # Lấy đối tượng Attendance
         attendance = Attendance.objects.get(id=attendance_id)
+        start_date = attendance.start_date + timedelta(days=1)
+        employee = Employee.objects.get(time_keeping_code=attendance.code, start_date=start_date)
 
-        employee = Employee.objects.get(time_keeping_code=attendance.code, start_date=attendance.start_date)
+        scheduling = Scheduling.objects.get(employee_code=employee.employee_code, start_date=start_date)
 
-        scheduling = Scheduling.objects.get(employee_code=employee.employee_code, start_date=attendance.start_date)
-
-        leave = Leave.objects.get(employee_code=employee.employee_code, start_date=attendance.start_date)
+        leave = Leave.objects.get(employee_code=employee.employee_code, start_date=start_date)
 
         # Log đối tượng Attendance
         logger.info(f"Create attendance: {attendance}")
