@@ -76,7 +76,7 @@ def process_missing_attendance(hrLeaves, scheduling_record):
         additionTrans = []
 
         for leaveItem in listMissingLeaves:
-            missing_checkin_break = False
+            scheduling_record["missing_checkin_break"] = False
 
             if 'chấm công ra' in f"{leaveItem['holidayStatusName']}".lower() and leaveItem.get('attendance_missing_to') and (leaveItem['attendance_missing_to'].day == shiftStartDateTime.day or leaveItem['attendance_missing_to'].day == shiftEndDateTime.day):
                 attendance_missing_to = leaveItem['attendance_missing_to']
