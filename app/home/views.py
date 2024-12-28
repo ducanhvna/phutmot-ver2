@@ -5,6 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from hrms.models import Attendance, Scheduling, Employee, Shifts, Leave
 from datetime import timedelta
+import json
 
 
 def index(request):
@@ -60,6 +61,7 @@ def timesheet(request):
         context['attendance'] = attendance
         context['employee'] = employee
         context['scheduling'] = scheduling
+        context['attendanceRecords'] = json.loads(scheduling.attendance_records)
         context['shifts'] = shifts
         context['leave'] = leave
 
