@@ -69,74 +69,70 @@ def process_missing_attendance(hrLeaves, scheduling_record):
     attemptWithInoutArray = scheduling_record['attemptWithInoutArray']
     attendanceAttemptArray = scheduling_record['attendanceAttemptArray']
     list_addItem_out = []
+    
+    # Chuẩn hóa tên trạng thái ngày nghỉ
     for e in hrLeaves:
-        e['holidayStatusName'] = e['holiday_status_id'] if e['holiday_status_id'][1] else ''
-    listMissingLeaves = [element for element in hrLeaves if 'thiếu chấm công' in f"{element['holidayStatusName']}".lower()]
+        e['holidayStatusName'] = e['holiday_status_id'][0] if e['holiday_status_id'][1] else ''
+    
+    # Lọc các phần tử có trạng thái thiếu chấm công
+    listMissingLeaves = [
+        element for element in hrLeaves 
+        if 'thiếu chấm công' in f"{element['holidayStatusName']}".lower()
+    ]
+    
     shiftStartDateTime = scheduling_record["shiftStartDateTime"]
     shiftEndDateTime = scheduling_record["shiftEndDateTime"]
+    
     if shiftStartDateTime is not None:
         additionTrans = []
 
         for leaveItem in listMissingLeaves:
             scheduling_record["missing_checkin_break"] = False
 
-            if 'chấm công ra' in f"{leaveItem['holidayStatusName']}".lower() and leaveItem.get('attendance_missing_to') and (leaveItem['attendance_missing_to'].day == shiftStartDateTime.day or leaveItem['attendance_missing_to'].day == shiftEndDateTime.day):
+            def add_to_attempt_array(attendance_time, mode):
+                if attendance_time not in attendanceAttemptArray:
+                    attendanceAttemptArray.append(attendance_time)
+
+                additem = AttendanceAttemptInOut(attempt=attendance_time)
+                additem.inout = mode
+
+                for in_out_addItem_before in [
+                    item for item in list_addItem_out 
+                    if item.attempt <= additem.attempt
+                ]:
+                    in_out_addItem_before.inout = InoutMode.NoneMode
+
+                additionTrans.append(additem)
+
+            if 'chấm công ra' in f"{leaveItem['holidayStatusName']}".lower() and leaveItem.get('attendance_missing_to'):
                 attendance_missing_to = leaveItem['attendance_missing_to']
-                if attendance_missing_to < shiftStartDateTime:
-                    attendance_missing_to += timedelta(days=1)
+                if attendance_missing_to.day in {shiftStartDateTime.day, shiftEndDateTime.day}:
+                    if attendance_missing_to < shiftStartDateTime:
+                        attendance_missing_to += timedelta(days=1)
+                    add_to_attempt_array(attendance_missing_to, InoutMode.Out)
 
-                if attendance_missing_to not in attendanceAttemptArray:
-                    attendanceAttemptArray.append(attendance_missing_to)
-
-                additem = AttendanceAttemptInOut(attempt=attendance_missing_to)
-                additem.inout = InoutMode.Out
-
-                for in_out_addItem_before in [item for item in list_addItem_out if item.attempt <= additem.attempt]:
-                    in_out_addItem_before.inout = InoutMode.NoneMode
-
-                additionTrans.append(additem)
-
-            elif 'chấm công vào' in f"{leaveItem['holidayStatusName'].lower()}" and leaveItem.get('attendance_missing_from') and (leaveItem['attendance_missing_from'].day == shiftStartDateTime.day or leaveItem['attendance_missing_from'].day == shiftEndDateTime.day):
+            if 'chấm công vào' in f"{leaveItem['holidayStatusName']}".lower() and leaveItem.get('attendance_missing_from'):
                 attendanceMissingFrom = leaveItem['attendance_missing_from']
-                if not attendanceMissingFrom < (shiftStartDateTime - timedelta(hours=3)):
-                    attendanceMissingFrom += timedelta(days=1)
+                if attendanceMissingFrom.day in {shiftStartDateTime.day, shiftEndDateTime.day}:
+                    if attendanceMissingFrom < (shiftStartDateTime - timedelta(hours=3)):
+                        attendanceMissingFrom += timedelta(days=1)
+                    add_to_attempt_array(attendanceMissingFrom, InoutMode.In)
 
-                if attendanceMissingFrom not in attendanceAttemptArray:
-                    attendanceAttemptArray.append(attendanceMissingFrom)
+            if leaveItem.get('attendance_missing_to') and leaveItem.get('attendance_missing_from'):
+                if {leaveItem['attendance_missing_from'].day, leaveItem['attendance_missing_to'].day} & {shiftStartDateTime.day, shiftEndDateTime.day}:
+                    attendanceMissingTo = leaveItem['attendance_missing_to']
+                    if attendanceMissingTo < (shiftStartDateTime - timedelta(hours=3)):
+                        attendanceMissingTo += timedelta(days=1)
+                    add_to_attempt_array(attendanceMissingTo, InoutMode.Out)
 
-                additem = AttendanceAttemptInOut(attempt=attendanceMissingFrom)
-                additem.inout = InoutMode.In
-                additionTrans.append(additem)
-
-            elif leaveItem.get('attendance_missing_to') and leaveItem.get('attendance_missing_from') and (leaveItem['attendance_missing_from'].day == shiftStartDateTime.day or leaveItem['attendance_missing_from'].day == shiftEndDateTime.day or leaveItem['attendance_missing_to'].day == shiftStartDateTime.day or leaveItem['attendance_missing_to'].day == shiftEndDateTime.day):
-                attendanceMissingTo = leaveItem['attendance_missing_to']
-                if attendanceMissingTo < (shiftStartDateTime - timedelta(hours=3)):
-                    attendanceMissingTo += timedelta(days=1)
-
-                if attendanceMissingTo not in attendanceAttemptArray:
-                    attendanceAttemptArray.append(attendanceMissingTo)
-
-                additem = AttendanceAttemptInOut(attempt=attendanceMissingTo)
-                additem.inout = InoutMode.Out
-
-                for in_out_addItem_before in [item for item in list_addItem_out if item.attempt <= additem.attempt]:
-                    in_out_addItem_before.inout = InoutMode.NoneMode
-
-                additionTrans.append(additem)
-
-                attendanceMissingFrom = leaveItem['attendance_missing_from']
-                if attendanceMissingFrom < shiftStartDateTime:
-                    attendanceMissingFrom += timedelta(days=1)
-
-                if attendanceMissingFrom not in attendanceAttemptArray:
-                    attendanceAttemptArray.append(attendanceMissingFrom)
-
-                additem = AttendanceAttemptInOut(attempt=attendanceMissingFrom)
-                additem.inout = InoutMode.In
-                additionTrans.append(additem)
+                    attendanceMissingFrom = leaveItem['attendance_missing_from']
+                    if attendanceMissingFrom < shiftStartDateTime:
+                        attendanceMissingFrom += timedelta(days=1)
+                    add_to_attempt_array(attendanceMissingFrom, InoutMode.In)
 
         attemptWithInoutArray = list(set(additionTrans + attemptWithInoutArray))
         attemptWithInoutArray.sort(key=lambda a: a.attempt)
-
+    
     attendanceAttemptArray.sort()
     return attemptWithInoutArray, attendanceAttemptArray
+
