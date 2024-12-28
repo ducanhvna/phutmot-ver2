@@ -62,7 +62,7 @@ class Command(BaseCommand):
         shift_grouped_data = defaultdict(list)
         for record in shift_merged_data:
             shift_grouped_data[f'{record["company_id"][0]}_{record["company_id"][1]}'].append(record)
-            print(f"{record['id']} -- {len(grouped_data[record['name']])}")
+            print(f"{record['id']} -- {shift_grouped_data[record['name']]}")
         # Save data to Django
         self.save_to_django(shift_grouped_data, company_grouped_data)
 
