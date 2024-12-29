@@ -1015,7 +1015,7 @@ def process_child_mode(attendance_attempt1, scheduling_record, real_time_in, rea
             if kidmod in [KidMode.RBegin30REnd30, KidMode.SBegin30SEnd30]:
                 pass
 
-    return kidmod_work_time
+    return kidmod_work_time, late_in_mid, early_out_mid
 
 
 def process_explanation(list_explanations, scheduling_record, employee_ho, list_couple_before_explanation_private, real_time_in, real_time_out, kidmod, kid_mode_stage1_datetime, kid_mode_stage1_end_datetime, kid_mode_stage2_datetime, kid_mode_stage2_end_datetime, early_out_mid, late_in_mid):
@@ -1023,7 +1023,7 @@ def process_explanation(list_explanations, scheduling_record, employee_ho, list_
     out_by_private_attendance = scheduling_record['out_by_private_attendance']
     out_by_work = scheduling_record['out_by_work']
     listexplainations_private = [element for element in list_explanations if element.reason == '1']
-    
+
     for explaination_item in [element for element in listexplainations_private if element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
         if employee_ho:
             in_time_leave = 0
