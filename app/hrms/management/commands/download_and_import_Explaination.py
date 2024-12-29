@@ -28,6 +28,23 @@ class Command(BaseCommand):
         common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
         uid = common.authenticate(db, username, password, {})
         models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
+        # Get the first day of the current month
+        first_day_of_month = datetime.now().replace(day=1)
+
+        # Calculate the last day of the current month
+        if first_day_of_month.month == 12:
+            next_month = first_day_of_month.replace(year=first_day_of_month.year + 1, month=1, day=1)
+        else:
+            next_month = first_day_of_month.replace(month=first_day_of_month.month + 1, day=1)
+
+        last_day_of_month = next_month - timedelta(days=1)
+
+        # Format the dates
+        start_str = first_day_of_month.strftime('%Y-%m-%d')
+        end_str = last_day_of_month.strftime('%Y-%m-%d')
+
+        print(f"Start date: {start_str}")
+        print(f"End date: {end_str}")
 
         company_fields = [
             'id',
@@ -63,7 +80,7 @@ class Command(BaseCommand):
             'validation_data',
             'write_date'
         ]
-        explaination_merged_data = self.download_data(models, db, uid, password, "hr.invalid.timesheet", explaination_fields)
+        explaination_merged_data = self.download_data(models, db, uid, password, "hr.invalid.timesheet", explaination_fields, 200, start_str, end_str)
         # Group data by employee_code
         explaination_grouped_data = defaultdict(list)
         for record in explaination_merged_data:
@@ -72,7 +89,7 @@ class Command(BaseCommand):
         # Save data to Django
         self.save_to_django(explaination_grouped_data, company_grouped_data)
 
-    def download_data(self, models, db, uid, password, model_name, fields, limit=300):
+    def download_data(self, models, db, uid, password, model_name, fields, limit=300, start_str=None, end_str=None):
         LIMIT_SIZE = limit
         index = 0
         len_data = 0
@@ -115,6 +132,16 @@ class Command(BaseCommand):
             ]
         elif model_name == "res.company":
             domain = [[]]
+        elif model_name == "hr.invalid.timesheet":
+            domain = [
+                [
+                    "&",
+                    "&",
+                    ["invalid_date", ">=", start_str],
+                    ["invalid_date", "<=", end_str],
+                    ["validated", "=", "2"]
+                ]
+            ]
         else:
             raise ValueError("Invalid model name")
 
