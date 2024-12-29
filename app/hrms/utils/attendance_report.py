@@ -1169,7 +1169,7 @@ def process_working_out_leave_ho(hr_leaves, scheduling_record, date, list_couple
                     or (element['attendance_missing_to'].day == date.day
                         and element['attendance_missing_to'].month == date.month)
                 )
-                    and 'ra ngoài' in element['holiday_status_name'].lower()
+                and 'ra ngoài' in element['holiday_status_name'].lower()
     ]
 
     for leave_item in list_workingout_leaves:
