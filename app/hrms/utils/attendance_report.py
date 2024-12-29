@@ -802,6 +802,15 @@ def process_overtime_leave(scheduling_record, hr_leaves):
     return overtime_by_leave, overtime_holiday_by_leave, overtime_holiday_probationary_by_leave, overtime_probationary, overtime_minutes_by_leave, overtime_wage_by_leave, total_work_time, convert_overtime, total_increase_date, total_increase_probationary
 
 
+def is_increase_leave(leave, shift_start_datetime, shift_end_datetime):
+    c1 = not leave.get('request_date_from') is None
+    c2 = not leave.get('request_date_to') is None
+    c3 = not leave['request_date_from'].replace(hour=0, minute=0, second=0).is_after(shift_end_datetime)
+    c4 = not leave['request_date_to'].replace(hour=23, minute=59, second=59).is_before(shift_start_datetime)
+    c5 = 'phát sinh tăng' in leave['holiday_status_name'].lower()
+    return c1 and c2 and c3 and c4 and c5
+
+
 def process_increase_leave(scheduling_record, hr_leaves):
     date = scheduling_record['date']
     shift_end_datetime = scheduling_record['shift_end_datetime']
@@ -816,11 +825,7 @@ def process_increase_leave(scheduling_record, hr_leaves):
     if date is None or shift_end_datetime is None or shift_start_datetime is None:
         list_increase_leaves = []
     else:
-        list_increase_leaves = [leave for leave in hr_leaves if leave.get('request_date_from') is not None
-                                and leave.get('request_date_to') is not None
-                                and not leave['request_date_from'].replace(hour=0, minute=0, second=0).is_after(shift_end_datetime)
-                                and not leave['request_date_to'].replace(hour=23, minute=59, second=59).is_before(shift_start_datetime)
-                                and 'phát sinh tăng' in leave['holiday_status_name'].lower()]
+        list_increase_leaves = list(filter(lambda leave: is_increase_leave(leave, shift_start_datetime, shift_end_datetime), hr_leaves))
 
     for leave_item in list_increase_leaves:
         total_increase_date += min(
