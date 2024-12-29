@@ -30,7 +30,7 @@ def calculate_scheduling(attendance_id):
         logger.info(f"Get employee: {employee}")
         logger.info(f"GET scheduling: {scheduling}")
         logger.info(f"GET leave: {leave}")
-        mergedTimeToScheduling(scheduling.scheduling_records, employee, leave, profile)
+        mergedTimeToScheduling(scheduling.scheduling_records, shifts, employee, leave, profile)
         for sched in scheduling.scheduling_records:
             add_attempt_more_than_limit(attendance.attendance_records, sched, 6, 6)
             process_missing_attendance(leave.leave_records, sched)
