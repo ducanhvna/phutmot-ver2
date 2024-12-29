@@ -966,31 +966,38 @@ def process_business_leave(hr_leaves, date, shift_end_datetime, shift_start_date
     if date is None or shift_end_datetime is None or shift_start_datetime is None:
         list_business_leaves = []
     else:
-        list_business_leaves = [leave for leave in hr_leaves if leave.get('request_date_from') is not None
-                                and leave.get('request_date_to') is not None
-                                and not leave['request_date_from'].replace(hour=0, minute=0, second=0) > shift_end_datetime
-                                and not leave['request_date_to'].replace(hour=23, minute=59, second=59) < shift_start_datetime
-                                and 'công tác' in leave['holiday_status_name'].lower()]
+        list_business_leaves = [
+            leave for leave in hr_leaves 
+            if leave.get('request_date_from') is not None
+            and leave.get('request_date_to') is not None
+            and not leave['request_date_from'].replace(hour=0, minute=0, second=0) > shift_end_datetime
+            and not leave['request_date_to'].replace(hour=23, minute=59, second=59) < shift_start_datetime
+            and 'công tác' in leave['holiday_status_name'].lower()
+        ]
+
 
     for leave_item in list_business_leaves:
         time_business_trip = min(
-            total_shift_work_time_calculate == 0 and
-            shift_name not in ['OFF', 'UP', '-'] and
-            shift_name is not None and
-            len(shift_name) > 1 and
-            '/' not in shift_name and
-            minutes_per_day or total_shift_work_time_calculate,
+            (total_shift_work_time_calculate == 0 
+            and shift_name not in ['OFF', 'UP', '-'] 
+            and shift_name is not None 
+            and len(shift_name) > 1 
+            and '/' not in shift_name 
+            and minutes_per_day 
+            or total_shift_work_time_calculate),
             time_business_trip + max(leave_item['minutes'], leave_item['time_minute'])
         )
+
         if time_business_trip > late_in_time and time_business_trip > 0:
             late_in_time = 0
 
     return time_business_trip, late_in_time
 
 
-def process_child_mode(attendance_attempt1, real_time_in, real_time_out, employee_ho, list_couple, out_by_private_attendance, out_by_work_attendance, select_off_stage, kidmod, kidmode_worktime_without_inout, kidmod_early_out_mid, kidmod_late_in_mid):
+def process_child_mode(attendance_attempt1, scheduling_record, real_time_in, real_time_out, employee_ho, list_couple, out_by_private_attendance, out_by_work_attendance, select_off_stage, kidmod, kidmode_worktime_without_inout, kidmod_early_out_mid, kidmod_late_in_mid):
     kidmod_work_time = 0
-
+    late_in_mid = scheduling_record['late_in_mid']
+    early_out_mid = scheduling_record['early_out_mid']
     if attendance_attempt1 is not None and real_time_in is not None and real_time_out is not None:
         if employee_ho:
             kidmod_work_time = 0
@@ -1153,12 +1160,17 @@ def process_working_out_leave_ho(hr_leaves, scheduling_record, date, list_couple
     out_by_private = scheduling_record['out_by_private']
     out_by_work = scheduling_record['out_by_work']
     list_workingout_leaves = [
-        element for element in hr_leaves
-        if element['attendance_missing_from'] is not None and element['attendance_missing_to'] is not None
-        and ((element['attendance_missing_from'].day == date.day and element['attendance_missing_from'].month == date.month)
-             or (element['attendance_missing_to'].day == date.day and element['attendance_missing_to'].month == date.month))
-        and 'ra ngoài' in element['holiday_status_name'].lower()
-    ]
+    element for element in hr_leaves
+    if element['attendance_missing_from'] is not None 
+    and element['attendance_missing_to'] is not None
+    and (
+        (element['attendance_missing_from'].day == date.day 
+        and element['attendance_missing_from'].month == date.month)
+        or (element['attendance_missing_to'].day == date.day 
+        and element['attendance_missing_to'].month == date.month)
+    )
+    and 'ra ngoài' in element['holiday_status_name'].lower()
+]
 
     for leave_item in list_workingout_leaves:
         in_time_leave = sum([
