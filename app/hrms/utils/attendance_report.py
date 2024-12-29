@@ -967,12 +967,11 @@ def process_business_leave(hr_leaves, date, shift_end_datetime, shift_start_date
         list_business_leaves = []
     else:
         list_business_leaves = [
-            leave for leave in hr_leaves 
-            if leave.get('request_date_from') is not None
-            and leave.get('request_date_to') is not None
-            and not leave['request_date_from'].replace(hour=0, minute=0, second=0) > shift_end_datetime
-            and not leave['request_date_to'].replace(hour=23, minute=59, second=59) < shift_start_datetime
-            and 'công tác' in leave['holiday_status_name'].lower()
+            leave for leave in hr_leaves
+                if leave.get('request_date_from') is not None and leave.get('request_date_to') is not None
+                and not leave['request_date_from'].replace(hour=0, minute=0, second=0) > shift_end_datetime
+                and not leave['request_date_to'].replace(hour=23, minute=59, second=59) < shift_start_datetime
+                and 'công tác' in leave['holiday_status_name'].lower()
         ]
 
     for leave_item in list_business_leaves:
