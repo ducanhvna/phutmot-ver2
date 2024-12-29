@@ -909,6 +909,9 @@ def process_casual_leave(scheduling_record, list_cl_leaves):
 
 
 def process_worktime_ho(scheduling_record, date, shift_start_datetime, shift_end_datetime, list_explanations, attempt_with_inout_array, list_add_item_out, hr_leaves, list_late_in_leaves, list_early_out_leaves, by_hue_shift, stage1_worktime_temp, stage2_worktime_temp, hue_stage1_end, hue_stage2_start, employee_code, employee_ho, total_shift_work_time_calculate, minutes_per_day):
+    rest_start_datetime = scheduling_record['rest_start_datetime']
+    rest_end_datetime = scheduling_record['rest_end_datetime']
+    rest_start_datetime = scheduling_record['rest_start_datetime']
     find_attendance_hue4_time_mode()
     check_last_in_out()
 
@@ -953,11 +956,13 @@ def process_worktime_ho(scheduling_record, date, shift_start_datetime, shift_end
         process_explanation_item_ho(explaination_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
     if 'attendance_attempt_1' in globals():
-        list_couple_after_explanation_private = find_in_out_couple(attempt_with_inout_array)
-        list_couple_out_in_after_explanation_private = get_list_couple_out_in(list_couple_after_explanation_private)
+        scheduling_record['list_couple_after_explanation_private'] = find_in_out_couple(attempt_with_inout_array)
+        scheduling_record['list_couple_out_in_after_explanation_private'] = get_list_couple_out_in(list_couple_after_explanation_private)
 
     for leave_item in [element for element in list_workingout_leaves if element.for_reasons == '1' and element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
         process_leave_item_ho(scheduling_record, leave_item)
+
+
 def is_business_leave(leave, shift_end_datetime, shift_start_datetime):
     c1 = leave.get('request_date_from') is not None
     c2 = leave.get('request_date_to') is not None
@@ -965,6 +970,7 @@ def is_business_leave(leave, shift_end_datetime, shift_start_datetime):
     c4 = not leave['request_date_to'].replace(hour=23, minute=59, second=59) < shift_start_datetime
     c5 = 'công tác' in leave['holiday_status_name'].lower()
     return c1 and c2 and c3 and c4 and c5
+
 
 def process_business_leave(hr_leaves, date, shift_end_datetime, shift_start_datetime, total_shift_work_time_calculate, shift_name, minutes_per_day, late_in_time):
     time_business_trip = 0
