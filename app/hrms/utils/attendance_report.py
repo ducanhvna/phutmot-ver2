@@ -912,13 +912,14 @@ def process_worktime_ho(scheduling_record, date, shift_start_datetime, shift_end
     rest_start_datetime = scheduling_record['rest_start_datetime']
     rest_end_datetime = scheduling_record['rest_end_datetime']
     rest_start_datetime = scheduling_record['rest_start_datetime']
+    list_couple_after_explanation_private = scheduling_record['list_couple_after_explanation_private']
     find_attendance_hue4_time_mode()
     check_last_in_out()
 
     if 'attendance_attempt_1' in globals():
         list_couple_before_explanation = find_in_out_couple(attempt_with_inout_array)
         list_couple_in_in_before_explanation = find_in_in_couple(attempt_with_inout_array)
-        list_couple_out_in_before_explanation = get_list_couple_out_in(list_couple_before_explanation)
+        scheduling_record['list_couple_out_in_before_explanation'] = get_list_couple_out_in(list_couple_before_explanation)
 
     if date is not None and shift_start_datetime is not None and shift_end_datetime is not None:
         for explaination_item in [e for e in list_explanations if e.reason == '2' and e.attendance_missing_from is not None and e.attendance_missing_to is not None and ((e.attendance_missing_from.day == date.day and e.attendance_missing_from.month == date.month) or (e.attendance_missing_to.day == date.day and e.attendance_missing_to.month == date.month))]:
@@ -926,7 +927,7 @@ def process_worktime_ho(scheduling_record, date, shift_start_datetime, shift_end
 
     check_last_in_out()
     list_workingout_leaves = [element for element in hr_leaves if element.attendance_missing_from is not None and element.attendance_missing_to is not None and ((element.attendance_missing_from.day == date.day and element.attendance_missing_from.month == date.month) or (element.attendance_missing_to.day == date.day and element.attendance_missing_to.month == date.month)) and 'ra ngoài' in element.holiday_status_name.lower()]
-    
+
     for leave_item in [element for element in list_workingout_leaves if element.for_reasons == '2' and element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
         process_leave_item_ho(leave_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
@@ -956,7 +957,7 @@ def process_worktime_ho(scheduling_record, date, shift_start_datetime, shift_end
         process_explanation_item_ho(explaination_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
     if 'attendance_attempt_1' in globals():
-        scheduling_record['list_couple_after_explanation_private'] = find_in_out_couple(attempt_with_inout_array)
+        list_couple_after_explanation_private = find_in_out_couple(attempt_with_inout_array)
         scheduling_record['list_couple_out_in_after_explanation_private'] = get_list_couple_out_in(list_couple_after_explanation_private)
 
     for leave_item in [element for element in list_workingout_leaves if element.for_reasons == '1' and element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
