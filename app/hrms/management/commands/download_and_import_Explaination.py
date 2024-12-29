@@ -55,7 +55,7 @@ class Command(BaseCommand):
             'shift_to',
             'shift_break',
             'real_time_attendance_data',
-            'attendance_missing_from', 
+            'attendance_missing_from',
             'attendance_missing_to',
             'validated',
             'reason',
@@ -65,7 +65,7 @@ class Command(BaseCommand):
         ]
         explaination_merged_data = self.download_data(models, db, uid, password, "hr.invalid.timesheet", explaination_fields)
         # Group data by employee_code
-        grouped_data = defaultdict(list)
+        explaination_grouped_data = defaultdict(list)
         for record in explaination_merged_data:
             explaination_grouped_data[f'{record["employee_code"]}'].append(record)
             print(f"{record['id']} -- {record['employee_code']} -- {record['reason']}")
