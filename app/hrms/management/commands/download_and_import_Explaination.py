@@ -85,9 +85,10 @@ class Command(BaseCommand):
         explaination_grouped_data = defaultdict(list)
         for record in explaination_merged_data:
             explaination_grouped_data[f'{record["employee_code"]}'].append(record)
-            print(f"{record['id']} -- {record['employee_code']} -- {record['reason']}")
+            record['company_code'] = company_grouped_data[f"{record['company_id'][0]}"]['mis_id'],
+            print(f"{record['id']} -- {record['employee_code']} -- {record['reason']} -- {record['company_code']}")
         # Save data to Django
-        self.save_to_django(explaination_grouped_data, company_grouped_data)
+        self.save_to_django(explaination_grouped_data, start_str, end_str)
 
     def download_data(self, models, db, uid, password, model_name, fields, limit=300, start_str=None, end_str=None):
         LIMIT_SIZE = limit
@@ -131,7 +132,11 @@ class Command(BaseCommand):
                 ]
             ]
         elif model_name == "res.company":
-            domain = [[]]
+            domain = [
+                    [
+                        ['company_id', '!=', False]
+                    ]
+                ]
         elif model_name == "hr.invalid.timesheet":
             domain = [
                 [
@@ -182,19 +187,13 @@ class Command(BaseCommand):
 
         return merged_data
 
-    def save_to_django(self, grouped_data, company_grouped_data):
-        for employee_code, record in grouped_data.items():
-            try:
-                explaination, created = Explaination.objects.get_or_create(
-                    name=record['name'],
-                    company_code=company_grouped_data[f"{record['company_id'][0]}"]['mis_id'],
-                )
-                explaination.start_work_time = float_to_time(record['start_work_time'])
-                explaination.end_work_time = float_to_time(record['end_work_time'])
-                explaination.start_rest_time = float_to_time(record['start_rest_time'])
-                explaination.end_rest_time = float_to_time(record['end_rest_time'])
-                explaination.info = record
-                explaination.save()
-            except Exception as ex:
-                print(ex)
-                print("Time to process: ", float_to_time(record['start_work_time']))
+    def save_to_django(self, grouped_data, start_str, end_str):
+        for employee_code, records in grouped_data.items():
+            explaination, created = Explaination.objects.get_or_create(
+                employee_code=employee_code,
+                start_date=datetime.strptime(start_date, "%Y-%m-%d"),
+                end_date=datetime.strptime(end_date, "%Y-%m-%d"),
+            )
+            explaination.explaination_records = records
+            explaination.save()
+
