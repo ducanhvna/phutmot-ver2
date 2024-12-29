@@ -838,9 +838,9 @@ def process_increase_leave(scheduling_record, hr_leaves):
     return total_increase_date, total_increase_probationary
 
 
-def is_paid_leave(leave):
+def is_paid_leave(leave, shift_start_datetime, shift_end_datetime):
     c1 = leave.get('request_date_from') is not None
-    c2 =  leave.get('request_date_to') is not None
+    c2 = leave.get('request_date_to') is not None
     c3 = not leave['request_date_from'].replace(hour=0, minute=0, second=0).is_after(shift_end_datetime)
     c4 = not leave['request_date_to'].replace(hour=23, minute=59, second=59).is_before(shift_start_datetime)
     c5 = 'có tính lương' in leave['holiday_status_name'].lower()
@@ -860,7 +860,7 @@ def process_leave_with_pay(scheduling_record, hr_leaves):
     if date is None or shift_end_datetime is None or shift_start_datetime is None:
         list_paided_leaves = []
     else:
-        list_paided_leaves = list(filter(lambda leave: is_paid_leave(leave), hr_leaves))
+        list_paided_leaves = list(filter(lambda leave: is_paid_leave(leave, shift_start_datetime, shift_end_datetime), hr_leaves))
 
     for leave_item in list_paided_leaves:
         total_ncl_date = min(
