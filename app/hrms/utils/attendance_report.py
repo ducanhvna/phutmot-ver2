@@ -1089,7 +1089,11 @@ def process_explanation(list_explanations, scheduling_record, employee_ho, list_
     return out_by_work
 
 
-def process_working_out_leave(hr_leaves, date, real_time_in, real_time_out, kidmod, early_out_mid, late_in_mid, kid_mode_stage1_datetime, kid_mode_stage1_end_datetime, kid_mode_stage2_datetime, kid_mode_stage2_end_datetime, calculate_night_worktime_custom, calculate_worktime_without_inout):
+def process_working_out_leave(hr_leaves, scheduling_record, date, real_time_in, real_time_out, kidmod, early_out_mid, late_in_mid, kid_mode_stage1_datetime, kid_mode_stage1_end_datetime, kid_mode_stage2_datetime, kid_mode_stage2_end_datetime, calculate_night_worktime_custom, calculate_worktime_without_inout):
+    out_by_work_attendance = scheduling_record['out_by_work_attendance']
+    out_by_work = scheduling_record['out_by_work']
+    out_by_private_attendance = scheduling_record['out_by_private_attendance']
+    out_by_private = scheduling_record['out_by_private']
     list_workingout_leaves = [
         element for element in hr_leaves
         if element['attendance_missing_from'] is not None
@@ -1150,9 +1154,9 @@ def process_working_out_leave_ho(hr_leaves, scheduling_record, date, list_couple
     out_by_work = scheduling_record['out_by_work']
     list_workingout_leaves = [
         element for element in hr_leaves
-        if element['attendance_missing_from'] is not None and element['attendance_missing_to'] is not None \
-        and ((element['attendance_missing_from'].day == date.day and element['attendance_missing_from'].month == date.month) \
-             or (element['attendance_missing_to'].day == date.day and element['attendance_missing_to'].month == date.month)) \
+        if element['attendance_missing_from'] is not None and element['attendance_missing_to'] is not None
+        and ((element['attendance_missing_from'].day == date.day and element['attendance_missing_from'].month == date.month)
+             or (element['attendance_missing_to'].day == date.day and element['attendance_missing_to'].month == date.month))
         and 'ra ngoài' in element['holiday_status_name'].lower()
     ]
 
