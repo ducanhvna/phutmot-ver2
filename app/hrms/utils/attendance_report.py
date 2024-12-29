@@ -1011,9 +1011,10 @@ def process_child_mode(attendance_attempt1, real_time_in, real_time_out, employe
     return kidmod_work_time
 
 
-def process_explanation(list_explanations, employee_ho, list_couple_before_explanation_private, real_time_in, real_time_out, kidmod, kid_mode_stage1_datetime, kid_mode_stage1_end_datetime, kid_mode_stage2_datetime, kid_mode_stage2_end_datetime, early_out_mid, late_in_mid):
-    global out_by_private, out_by_private_attendance, out_by_work
-
+def process_explanation(list_explanations, scheduling_record, employee_ho, list_couple_before_explanation_private, real_time_in, real_time_out, kidmod, kid_mode_stage1_datetime, kid_mode_stage1_end_datetime, kid_mode_stage2_datetime, kid_mode_stage2_end_datetime, early_out_mid, late_in_mid):
+    out_by_private = scheduling_record['out_by_private']
+    out_by_private_attendance = scheduling_record['out_by_private_attendance']
+    out_by_work = scheduling_record['out_by_work']
     listexplainations_private = [element for element in list_explanations if element.reason == '1']
     
     for explaination_item in [element for element in listexplainations_private if element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
@@ -1085,6 +1086,7 @@ def process_explanation(list_explanations, employee_ho, list_couple_before_expla
             explaination_item.attendance_missing_to
         ) - in_time_leave)
         out_by_work += out_time
+    return out_by_work
 
 
 def process_working_out_leave(hr_leaves, date, real_time_in, real_time_out, kidmod, early_out_mid, late_in_mid, kid_mode_stage1_datetime, kid_mode_stage1_end_datetime, kid_mode_stage2_datetime, kid_mode_stage2_end_datetime, calculate_night_worktime_custom, calculate_worktime_without_inout):
@@ -1170,7 +1172,7 @@ def process_working_out_leave_ho(hr_leaves, date, list_couple_before_explanation
             out_by_private += out_time
         elif leave_item['for_reasons'] == '2':
             out_by_work += out_time
-    
+
     process_explanation()
 
 
@@ -1206,8 +1208,7 @@ def process_personal_holiday(is_holiday, calculate_worktime_without_inout, holid
         elif '/PH' in shift_name or 'PH/' in shift_name:
             half_ph_leave = max(
                 0.5,
-                max(0, ((minutes_per_day if employee_ho else 480) - holiday_work_time_final)) /
-                (minutes_per_day if employee_ho else 480)
+                max(0, ((minutes_per_day if employee_ho else 480) - holiday_work_time_final)) / (minutes_per_day if employee_ho else 480)
             )
             half_ph_worktime_part = round((1 - half_ph_leave) * (minutes_per_day if employee_ho else 480))
             ph_date = min(1, half_ph_leave)
@@ -1245,8 +1246,8 @@ def process_up_shift(shift, shift_name, list_up_leaves, max_late_early, employee
                     absent_morning = leave_item['absent_morning']
                     absent_afternoon = leave_item['absent_afternoon']
             total_up = up_by_leave / (minutes_per_day if employee_ho else 480)
-    
-    return total_up, up_by_leave
+
+    return total_up, up_by_leave, absent_morning, absent_afternoon
 
 
 def calculate_worktime_with_inout_standard(scheduling_record):
@@ -1267,5 +1268,6 @@ def calculate_worktime_with_inout_standard(scheduling_record):
     process_off_shift()
     process_up_shift()
 
+
 def collect_data_to_schedulings(scheduling_object):
-    scheduling_records = scheduling_object.scheduling_records
+    scheduling_object['scheduling_records'] = scheduling_object.scheduling_records
