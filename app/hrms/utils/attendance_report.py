@@ -123,7 +123,7 @@ def kimode_worktime_without_inout(real_time_in, real_time_out, shift, kidmod, ki
 
         current_program = (real_time_out if real_time_out <= kid_mode_stage2_end_datetime else kid_mode_stage2_end_datetime) - (real_time_in if real_time_in >= kid_mode_stage2_datetime else kid_mode_stage2_datetime)
         stage_second = max(0, current_program.total_seconds() // 60)
-        
+
         result = [
             stage_first + stage_second if select_off_stage == 0 else (stage_second if select_off_stage == 2 else stage_first),
             0 if select_off_stage == 2 else stage_first,
@@ -131,7 +131,7 @@ def kimode_worktime_without_inout(real_time_in, real_time_out, shift, kidmod, ki
         ]
     else:
         result = [0, 0, 0]
-    
+
     return result
 
 
@@ -751,6 +751,15 @@ def process_late_early_leave():
                     earlyOut_by_work += min(maxLateEarly, max(earlyOutTime, max(leaveItem['minutes'], leaveItem['time_minute'])))
 
 
+def is_overtime_leave(leave, shift_start_datetime):
+    c1 = not leave.get('request_date_from') is None
+    c2 = not leave.get('request_date_to') is None
+    c3 = leave['request_date_from'].day == shift_start_datetime.day
+    c4 = leave['request_date_from'].month == shift_start_datetime.month
+    c5 = 'tăng ca' in leave['holiday_status_name'].lower()
+    return c1 and c2 and c3 and c4 and c5
+
+
 def process_overtime_leave(scheduling_record, hr_leaves):
     shift_start_datetime = scheduling_record['shift_start_datetime']
     is_probationary = scheduling_record['is_probationary']
@@ -772,10 +781,7 @@ def process_overtime_leave(scheduling_record, hr_leaves):
     if shift_start_datetime is None:
         return
 
-    list_overtime_leaves = [leave for leave in hr_leaves if leave.get('request_date_from') is not None and leave.get('request_date_to') is not None
-                            and leave['request_date_from'].day == shift_start_datetime.day
-                            and leave['request_date_from'].month == shift_start_datetime.month
-                            and 'tăng ca' in leave['holiday_status_name'].lower()]
+    list_overtime_leaves = list(filter(lambda leave: is_overtime_leave(leave, shift_start_datetime), hr_leaves))
 
     for leave_item in list_overtime_leaves:
         overtime_minutes_by_leave += max(leave_item['minutes'], leave_item['time_minute']) * max(0, leave_item['multiplier_work_time'])
@@ -829,12 +835,13 @@ def process_increase_leave(scheduling_record, hr_leaves):
 
     for leave_item in list_increase_leaves:
         total_increase_date += min(
-            total_shift_work_time_calculate == 0 and
-            shift_name not in ['OFF', 'UP', '-'] and
-            shift_name is not None and
-            len(shift_name) > 1 and
-            '/' not in shift_name and
-            minutes_per_day or total_shift_work_time_calculate,
+            total_shift_work_time_calculate,
+            # total_shift_work_time_calculate == 0 and
+            # shift_name not in ['OFF', 'UP', '-'] and
+            # shift_name is not None and
+            # len(shift_name) > 1 and
+            # '/' not in shift_name and
+            # minutes_per_day or total_shift_work_time_calculate,
             max(leave_item['minutes'], leave_item['time_minute'])
         )
         if is_probationary:
