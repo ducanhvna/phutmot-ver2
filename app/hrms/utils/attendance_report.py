@@ -959,17 +959,15 @@ def process_worktime_ho(scheduling_record, date, shift_start_datetime, shift_end
     for leave_item in [element for element in list_workingout_leaves if element.for_reasons == '1' and element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
         process_leave_item_ho(scheduling_record, leave_item)
 def is_business_leave(leave, shift_end_datetime, shift_start_datetime):
-    return (
-        leave.get('request_date_from') is not None
-        and leave.get('request_date_to') is not None
-        and not leave['request_date_from'].replace(hour=0, minute=0, second=0) > shift_end_datetime
-        and not leave['request_date_to'].replace(hour=23, minute=59, second=59) < shift_start_datetime
-        and 'công tác' in leave['holiday_status_name'].lower()
-    )
+    c1 = leave.get('request_date_from') is not None
+    c2 = leave.get('request_date_to') is not None
+    c3 = not leave['request_date_from'].replace(hour=0, minute=0, second=0) > shift_end_datetime
+    c4 = not leave['request_date_to'].replace(hour=23, minute=59, second=59) < shift_start_datetime
+    c5 = 'công tác' in leave['holiday_status_name'].lower()
+    return c1 and c2 and c3 and c4 and c5
 
 def process_business_leave(hr_leaves, date, shift_end_datetime, shift_start_datetime, total_shift_work_time_calculate, shift_name, minutes_per_day, late_in_time):
     time_business_trip = 0
-
     if date is None or shift_end_datetime is None or shift_start_datetime is None:
         list_business_leaves = []
     else:
@@ -977,7 +975,6 @@ def process_business_leave(hr_leaves, date, shift_end_datetime, shift_start_date
             lambda leave: is_business_leave(leave, shift_end_datetime, shift_start_datetime),
             hr_leaves
         ))
-
 
     for leave_item in list_business_leaves:
         time_business_trip = min((
