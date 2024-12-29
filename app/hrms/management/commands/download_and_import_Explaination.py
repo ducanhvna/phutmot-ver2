@@ -133,10 +133,10 @@ class Command(BaseCommand):
             ]
         elif model_name == "res.company":
             domain = [
-                    [
-                        ['company_id', '!=', False]
-                    ]
+                [
+                    ['company_id', '!=', False]
                 ]
+            ]
         elif model_name == "hr.invalid.timesheet":
             domain = [
                 [
@@ -187,7 +187,7 @@ class Command(BaseCommand):
 
         return merged_data
 
-    def save_to_django(self, grouped_data, start_str, end_str):
+    def save_to_django(self, grouped_data, start_date, end_date):
         for employee_code, records in grouped_data.items():
             explaination, created = Explaination.objects.get_or_create(
                 employee_code=employee_code,
@@ -196,4 +196,3 @@ class Command(BaseCommand):
             )
             explaination.explaination_records = records
             explaination.save()
-
