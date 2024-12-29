@@ -1062,21 +1062,21 @@ def process_explanation(list_explanations, scheduling_record, employee_ho, list_
                                 real_time_out,
                                 explaination_item.attendance_missing_from,
                                 explaination_item.attendance_missing_to
-                            ) -
-                            calculate_night_worktime_custom(
+                            )
+                            - calculate_night_worktime_custom(
                                 kid_mode_stage1_datetime,
                                 kid_mode_stage1_end_datetime,
                                 explaination_item.attendance_missing_from,
                                 explaination_item.attendance_missing_to
-                            ) -
-                            calculate_night_worktime_custom(
+                            )
+                            - calculate_night_worktime_custom(
                                 kid_mode_stage2_datetime,
                                 kid_mode_stage2_end_datetime,
                                 explaination_item.attendance_missing_from,
                                 explaination_item.attendance_missing_to
                             )
                         )
-    
+
     listexplainations_work = [element for element in list_explanations if element.reason == '2']
 
     for explaination_item in [element for element in listexplainations_work if element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
