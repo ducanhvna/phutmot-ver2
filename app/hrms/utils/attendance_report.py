@@ -1062,14 +1062,12 @@ def process_explanation(list_explanations, scheduling_record, employee_ho, list_
                                 real_time_out,
                                 explaination_item.attendance_missing_from,
                                 explaination_item.attendance_missing_to
-                            )
-                            - calculate_night_worktime_custom(
+                            ) - calculate_night_worktime_custom(
                                 kid_mode_stage1_datetime,
                                 kid_mode_stage1_end_datetime,
                                 explaination_item.attendance_missing_from,
                                 explaination_item.attendance_missing_to
-                            )
-                            - calculate_night_worktime_custom(
+                            ) - calculate_night_worktime_custom(
                                 kid_mode_stage2_datetime,
                                 kid_mode_stage2_end_datetime,
                                 explaination_item.attendance_missing_from,
