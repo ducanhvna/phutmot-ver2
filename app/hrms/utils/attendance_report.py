@@ -975,11 +975,9 @@ def process_business_leave(hr_leaves, date, shift_end_datetime, shift_start_date
             and 'công tác' in leave['holiday_status_name'].lower()
         ]
 
-
     for leave_item in list_business_leaves:
         time_business_trip = min((
-            total_shift_work_time_calculate == 0 and shift_name not in ['OFF', 'UP', '-'] 
-            and shift_name is not None and len(shift_name) > 1 and '/' not in shift_name and minutes_per_day or total_shift_work_time_calculate),
+            total_shift_work_time_calculate == 0 and shift_name not in ['OFF', 'UP', '-'] and shift_name is not None and len(shift_name) > 1 and '/' not in shift_name and minutes_per_day or total_shift_work_time_calculate),
             time_business_trip + max(leave_item['minutes'], leave_item['time_minute']))
 
         if time_business_trip > late_in_time and time_business_trip > 0:
