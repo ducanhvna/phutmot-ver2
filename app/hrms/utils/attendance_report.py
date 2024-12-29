@@ -1162,14 +1162,14 @@ def process_working_out_leave_ho(hr_leaves, scheduling_record, date, list_couple
     list_workingout_leaves = [
         element for element in hr_leaves
         if element['attendance_missing_from'] is not None
-        and element['attendance_missing_to'] is not None
-        and (
-            (element['attendance_missing_from'].day == date.day
-             and element['attendance_missing_from'].month == date.month)
-            or (element['attendance_missing_to'].day == date.day
-                and element['attendance_missing_to'].month == date.month)
-        )
-        and 'ra ngoài' in element['holiday_status_name'].lower()
+            and element['attendance_missing_to'] is not None
+                and (
+                    (element['attendance_missing_from'].day == date.day
+                        and element['attendance_missing_from'].month == date.month)
+                    or (element['attendance_missing_to'].day == date.day
+                        and element['attendance_missing_to'].month == date.month)
+                )
+                    and 'ra ngoài' in element['holiday_status_name'].lower()
     ]
 
     for leave_item in list_workingout_leaves:
