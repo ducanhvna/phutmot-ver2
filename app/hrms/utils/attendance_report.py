@@ -376,7 +376,7 @@ def calculate_night_worktime_custom(realTimein, realTimeout, nightStageStart, ni
     return int(stageFistWorktime)
 
 
-def mergedTimeToScheduling(schedulings, shifts):
+def mergedTimeToScheduling(schedulings, shifts, employee, leave, profile):
     merged_shift = {shift.name.replace('/', '_'): shift for shift in shifts}
 
     for scheduling in schedulings:
@@ -1249,7 +1249,7 @@ def process_up_shift(shift, shift_name, list_up_leaves, max_late_early, employee
     return total_up, up_by_leave
 
 
-def calculate_worktime_with_inout_standard():
+def calculate_worktime_with_inout_standard(scheduling_record):
     process_missing_attendance()
     process_worktime_ho()
     process_late_early_leave()
@@ -1266,3 +1266,6 @@ def calculate_worktime_with_inout_standard():
     process_personal_holiday()
     process_off_shift()
     process_up_shift()
+
+def collect_data_to_schedulings(scheduling_object):
+    scheduling_records = scheduling_object.scheduling_records
