@@ -838,6 +838,15 @@ def process_increase_leave(scheduling_record, hr_leaves):
     return total_increase_date, total_increase_probationary
 
 
+def is_paid_leave(leave):
+    c1 = leave.get('request_date_from') is not None
+    c2 =  leave.get('request_date_to') is not None
+    c3 = not leave['request_date_from'].replace(hour=0, minute=0, second=0).is_after(shift_end_datetime)
+    c4 = not leave['request_date_to'].replace(hour=23, minute=59, second=59).is_before(shift_start_datetime)
+    c5 = 'có tính lương' in leave['holiday_status_name'].lower()
+    return c1 and c2 and c3 and c4 and c5
+
+
 def process_leave_with_pay(scheduling_record, hr_leaves):
     date = scheduling_record['date']
     shift_end_datetime = scheduling_record['shift_end_datetime']
@@ -851,11 +860,7 @@ def process_leave_with_pay(scheduling_record, hr_leaves):
     if date is None or shift_end_datetime is None or shift_start_datetime is None:
         list_paided_leaves = []
     else:
-        list_paided_leaves = [leave for leave in hr_leaves if leave.get('request_date_from') is not None
-                              and leave.get('request_date_to') is not None
-                              and not leave['request_date_from'].replace(hour=0, minute=0, second=0).is_after(shift_end_datetime)
-                              and not leave['request_date_to'].replace(hour=23, minute=59, second=59).is_before(shift_start_datetime)
-                              and 'có tính lương' in leave['holiday_status_name'].lower()]
+        list_paided_leaves = list(filter(lambda leave: is_paid_leave(leave), hr_leaves))
 
     for leave_item in list_paided_leaves:
         total_ncl_date = min(
@@ -881,7 +886,7 @@ def process_leave_with_pay(scheduling_record, hr_leaves):
                 max(leave_item['minutes'], leave_item['time_minute']) - leave_item['used_minute']
             )
 
-    return total_ncl_date, total_ncl_hieu_hi_date
+    return total_ncl_date, total_ncl_hieu_hi_date, minutes_per_day, shift_name
 
 
 def process_annual_leave(scheduling_record, list_al_leaves):
