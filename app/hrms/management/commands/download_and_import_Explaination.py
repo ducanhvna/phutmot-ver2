@@ -132,16 +132,11 @@ class Command(BaseCommand):
                 ]
             ]
         elif model_name == "res.company":
-            domain = [
-                [
-                    ['company_id', '!=', False]
-                ]
-            ]
+            domain = [[]]
         elif model_name == "hr.invalid.timesheet":
             domain = [
                 [
-                    "&",
-                    "&",
+                    ['company_id', '!=', False],
                     ["invalid_date", ">=", start_str],
                     ["invalid_date", "<=", end_str],
                     ["validated", "=", "2"]
