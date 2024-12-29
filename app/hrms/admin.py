@@ -32,7 +32,7 @@ class EmployeeAdmin(admin.ModelAdmin):
     search_fields = ('employee_code', 'start_date', 'end_date')
 
 
-admin.register(Explaination)
+@admin.register(Explaination)
 class ExplainationAdmin(admin.ModelAdmin):
     list_display = ('employee_code', 'start_date', 'end_date', 'create_time', 'update_time')
     search_fields = ('employee_code', 'start_date', 'end_date')
