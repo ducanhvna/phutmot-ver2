@@ -857,25 +857,27 @@ def process_leave_with_pay(scheduling_record, hr_leaves):
                               and not leave['request_date_to'].replace(hour=23, minute=59, second=59).is_before(shift_start_datetime)
                               and 'có tính lương' in leave['holiday_status_name'].lower()]
 
-    calculate_shift_work_time = lambda: (
-        total_shift_work_time_calculate == 0
-        and shift_name not in ['OFF', 'UP', '-']
-        and shift_name is not None
-        and len(shift_name) > 1
-        and '/' not in shift_name
-        and minutes_per_day
-        or total_shift_work_time_calculate
-    )
-
     for leave_item in list_paided_leaves:
         total_ncl_date = min(
-            calculate_shift_work_time(),
+            total_shift_work_time_calculate,
+            # total_shift_work_time_calculate == 0 and
+            # shift_name not in ['OFF', 'UP', '-'] and
+            # shift_name is not None and
+            # len(shift_name) > 1 and
+            # '/' not in shift_name and
+            # minutes_per_day or total_shift_work_time_calculate,
             total_ncl_date + max(leave_item['minutes'], leave_item['time_minute'])
         )
 
         if 'hiếu hỉ' in leave_item['holiday_status_name'].lower():
             total_ncl_hieu_hi_date = min(
-                calculate_shift_work_time(),
+                total_shift_work_time_calculate,
+                # total_shift_work_time_calculate == 0 and
+                # shift_name not in ['OFF', 'UP', '-'] and
+                # shift_name is not None and
+                # len(shift_name) > 1 and
+                # '/' not in shift_name and
+                # minutes_per_day or total_shift_work_time_calculate,
                 max(leave_item['minutes'], leave_item['time_minute']) - leave_item['used_minute']
             )
 
