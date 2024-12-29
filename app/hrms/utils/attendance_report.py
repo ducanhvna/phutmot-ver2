@@ -24,6 +24,185 @@ class KidMode(Enum):
     REND60 = "REnd60"
 
 
+class CoupleInout:
+    def __init__(self, itemIn, itemOut):
+        self.itemIn = itemIn
+        self.itemOut = itemOut
+        self.atoffice_time = 0
+        self.nightWorkTime = 0
+        self.holidayWorkTime = 0
+        self.nightHolidayWorkTime = 0
+
+def find_in_in_couple(list_attempt):
+    result = []
+    stack = []
+
+    for item in list_attempt:
+        if item.inout != InoutMode.Out:
+            stack.append(item)
+        elif stack:
+            couple = CoupleInout(itemIn=stack.pop(0), itemOut=item)
+            couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            result.append(couple)
+
+    if not result and len(list_attempt) > 1:
+        result.append(CoupleInout(itemIn=list_attempt[0], itemOut=list_attempt[-1]))
+
+    return result
+
+
+def find_in_out_couple(list_attempt):
+    result = []
+    stack = []
+
+    for item in list_attempt:
+        if item.inout == InoutMode.In:
+            stack.append(item)
+        elif item.inout == InoutMode.Out and stack:
+            couple = CoupleInout(itemIn=stack.pop(0), itemOut=item)
+            couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            result.append(couple)
+
+    if not result and len(list_attempt) > 1:
+        result.append(CoupleInout(itemIn=list_attempt[0], itemOut=list_attempt[-1]))
+
+    return result
+
+
+def get_list_couple_out_in(list_couple_io, shift_start_datetime, shift_end_datetime, include_late_early=False):
+    result = []
+
+    if shift_start_datetime and shift_end_datetime and list_couple_io:
+        if shift_start_datetime < list_couple_io[0].itemIn.attempt and include_late_early:
+            couple = CoupleInout(
+                itemIn=AttendanceAttemptInOut(attempt=shift_start_datetime),
+                itemOut=AttendanceAttemptInOut(attempt=list_couple_io[0].itemIn.attempt)
+            )
+            couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            result.append(couple)
+
+        for i in range(1, len(list_couple_io)):
+            couple = CoupleInout(
+                itemIn=AttendanceAttemptInOut(attempt=list_couple_io[i - 1].itemOut.attempt),
+                itemOut=AttendanceAttemptInOut(attempt=list_couple_io[i].itemIn.attempt)
+            )
+            couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            result.append(couple)
+
+        if shift_end_datetime > list_couple_io[-1].itemOut.attempt and include_late_early:
+            couple = CoupleInout(
+                itemIn=AttendanceAttemptInOut(attempt=list_couple_io[-1].itemOut.attempt),
+                itemOut=AttendanceAttemptInOut(attempt=shift_end_datetime)
+            )
+            couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            result.append(couple)
+
+    return result
+
+
+def kimode_worktime_without_inout(real_time_in, real_time_out, shift, kidmod, kid_mode_stage1_end_datetime, kid_mode_stage1_datetime, kid_mode_stage2_end_datetime, kid_mode_stage2_datetime, select_off_stage):
+    result = [0, 0, 0]
+    if shift is not None and kidmod != 'None':
+        current_program = (real_time_out if real_time_out <= kid_mode_stage1_end_datetime else kid_mode_stage1_end_datetime) - (real_time_in if real_time_in >= kid_mode_stage1_datetime else kid_mode_stage1_datetime)
+        stage_first = max(0, current_program.total_seconds() // 60)
+
+        current_program = (real_time_out if real_time_out <= kid_mode_stage2_end_datetime else kid_mode_stage2_end_datetime) - (real_time_in if real_time_in >= kid_mode_stage2_datetime else kid_mode_stage2_datetime)
+        stage_second = max(0, current_program.total_seconds() // 60)
+        
+        result = [
+            stage_first + stage_second if select_off_stage == 0 else (stage_second if select_off_stage == 2 else stage_first),
+            0 if select_off_stage == 2 else stage_first,
+            0 if select_off_stage == 1 else stage_second
+        ]
+    else:
+        result = [0, 0, 0]
+    
+    return result
+
+
+def process_leave_item_ho(scheduling_record, leave_item):
+    attempt_with_inout_array = scheduling_record['attempt_with_inout_array']
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    rest_start_datetime = scheduling_record['rest_start_datetime']
+    shift_end_datetime = scheduling_record['shift_end_datetime']
+    rest_end_datetime = scheduling_record['rest_end_datetime']
+    list_add_item_out = scheduling_record['list_add_item_out']
+
+    for item in attempt_with_inout_array:
+        if not item.attempt > leave_item['attendance_missing_to'] and not item.attempt < leave_item['attendance_missing_from']:
+            item.inout = InoutMode.In
+
+    if shift_start_datetime is not None:
+        if not shift_start_datetime > leave_item['attendance_missing_to'] and not shift_start_datetime < leave_item['attendance_missing_from']:
+            item = AttendanceAttemptInOut(attempt=shift_start_datetime, inout=InoutMode.In)
+            attempt_with_inout_array.append(item)
+
+        if rest_start_datetime is not None and not rest_start_datetime > leave_item['attendance_missing_to'] and not rest_start_datetime < leave_item['attendance_missing_from']:
+            item = AttendanceAttemptInOut(attempt=rest_start_datetime, inout=InoutMode.Out)
+            for in_out_add_item_before in [i for i in list_add_item_out if not i.attempt > item.attempt]:
+                in_out_add_item_before.inout = InoutMode.NoneMode
+            attempt_with_inout_array.append(item)
+
+        if shift_end_datetime is not None and not shift_end_datetime > leave_item['attendance_missing_to'] and not shift_end_datetime < leave_item['attendance_missing_from']:
+            item = AttendanceAttemptInOut(attempt=shift_end_datetime, inout=InoutMode.Out)
+            for in_out_add_item_before in [i for i in list_add_item_out if not i.attempt > item.attempt]:
+                in_out_add_item_before.inout = InoutMode.NoneMode
+            attempt_with_inout_array.append(item)
+
+        if rest_end_datetime is not None and not rest_end_datetime > leave_item['attendance_missing_to'] and not rest_end_datetime < leave_item['attendance_missing_from']:
+            item = AttendanceAttemptInOut(attempt=rest_end_datetime, inout=InoutMode.In)
+            attempt_with_inout_array.append(item)
+
+
+def process_explanation_item_ho(scheduling_record, explaination_item):
+    attempt_with_inout_array = scheduling_record['attempt_with_inout_array']
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    rest_start_datetime = scheduling_record['rest_start_datetime']
+    shift_end_datetime = scheduling_record['shift_end_datetime']
+    rest_end_datetime = scheduling_record['rest_end_datetime']
+    list_add_item_out = scheduling_record['list_add_item_out']
+
+    for item in attempt_with_inout_array:
+        if not item.attempt > explaination_item.attendance_missing_to and not item.attempt < explaination_item.attendance_missing_from:
+            item.inout = InoutMode.In
+
+    if shift_start_datetime is not None:
+        if not shift_start_datetime > explaination_item.attendance_missing_to and not shift_start_datetime < explaination_item.attendance_missing_from:
+            item = AttendanceAttemptInOut(attempt=shift_start_datetime, inout=InoutMode.In)
+            attempt_with_inout_array.append(item)
+
+        if rest_start_datetime is not None and not rest_start_datetime > explaination_item.attendance_missing_to and not rest_start_datetime < explaination_item.attendance_missing_from:
+            item = AttendanceAttemptInOut(attempt=rest_start_datetime, inout=InoutMode.Out)
+            for in_out_add_item_before in [i for i in list_add_item_out if not i.attempt > item.attempt]:
+                in_out_add_item_before.inout = InoutMode.NoneMode
+            attempt_with_inout_array.append(item)
+
+        if shift_end_datetime is not None and not shift_end_datetime > explaination_item.attendance_missing_to and not shift_end_datetime < explaination_item.attendance_missing_from:
+            item = AttendanceAttemptInOut(attempt=shift_end_datetime, inout=InoutMode.Out)
+            for in_out_add_item_before in [i for i in list_add_item_out if not i.attempt > item.attempt]:
+                in_out_add_item_before.inout = InoutMode.NoneMode
+            attempt_with_inout_array.append(item)
+
+        if rest_end_datetime is not None and not rest_end_datetime > explaination_item.attendance_missing_to and not rest_end_datetime < explaination_item.attendance_missing_from:
+            item = AttendanceAttemptInOut(attempt=rest_end_datetime, inout=InoutMode.In)
+            attempt_with_inout_array.append(item)
+
+
 def calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_record, shift):
     isNightStageFist = scheduling_record['isNightStageFist']
     isNightStageLast = scheduling_record['isNightStageLast']
@@ -570,3 +749,520 @@ def process_late_early_leave():
                     earlyOut_private += min(maxLateEarly, max(leaveItem['minutes'], leaveItem['time_minute']))
                 else:
                     earlyOut_by_work += min(maxLateEarly, max(earlyOutTime, max(leaveItem['minutes'], leaveItem['time_minute'])))
+
+
+def process_overtime_leave(scheduling_record, hr_leaves):
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    is_probationary = scheduling_record['is_probationary']
+    is_holiday = scheduling_record['is_holiday']
+    holiday_start_datetime = scheduling_record['holiday_start_datetime']
+    holiday_end_datetime = scheduling_record['holiday_end_datetime']
+    shift_name = scheduling_record['shift_name']
+    overtime_by_leave = 0
+    overtime_holiday_by_leave = 0
+    overtime_holiday_probationary_by_leave = 0
+    overtime_probationary = 0
+    overtime_minutes_by_leave = 0
+    overtime_wage_by_leave = 0
+    total_work_time = None
+    convert_overtime = False
+    total_increase_date = 0
+    total_increase_probationary = 0
+
+    if shift_start_datetime is None:
+        return
+
+    list_overtime_leaves = [leave for leave in hr_leaves if leave.get('request_date_from') is not None and leave.get('request_date_to') is not None
+                            and leave['request_date_from'].day == shift_start_datetime.day
+                            and leave['request_date_from'].month == shift_start_datetime.month
+                            and 'tăng ca' in leave['holiday_status_name'].lower()]
+
+    for leave_item in list_overtime_leaves:
+        overtime_minutes_by_leave += max(leave_item['minutes'], leave_item['time_minute']) * max(0, leave_item['multiplier_work_time'])
+        overtime_wage_by_leave += leave_item['multiplied_wage_amount']
+
+        if leave_item['convert_overtime']:
+            convert_overtime = leave_item['convert_overtime']
+            if convert_overtime:
+                total_work_time = 0
+
+        if 'phát sinh tăng' in leave_item['reasons'].lower():
+            total_increase_date += max(leave_item['minutes'], leave_item['time_minute']) * max(0, leave_item['multiplier_work_time'])
+            if is_probationary:
+                total_increase_probationary += max(leave_item['minutes'], leave_item['time_minute']) * max(0, leave_item['multiplier_work_time'])
+        else:
+            overtime_by_leave += max(leave_item['minutes'], leave_item['time_minute']) * max(0, leave_item['multiplier_work_time'])
+            if is_holiday and holiday_start_datetime is not None:
+                overtime_holiday_by_leave += max(leave_item['minutes'], leave_item['time_minute']) * max(0, leave_item['multiplier_work_time'])
+            if is_probationary:
+                overtime_probationary += max(leave_item['minutes'], leave_item['time_minute']) * max(0, leave_item['multiplier_work_time'])
+                if is_holiday and (calculate_worktime_without_inout(holiday_start_datetime, holiday_end_datetime) > 0 or 'PH' in shift_name):
+                    overtime_holiday_probationary_by_leave += max(leave_item['minutes'], leave_item['time_minute']) * max(0, leave_item['multiplier_work_time'])
+
+    return overtime_by_leave, overtime_holiday_by_leave, overtime_holiday_probationary_by_leave, overtime_probationary, overtime_minutes_by_leave, overtime_wage_by_leave, total_work_time, convert_overtime, total_increase_date, total_increase_probationary
+
+
+def process_increase_leave(scheduling_record, hr_leaves):
+    date = scheduling_record['date']
+    shift_end_datetime = scheduling_record['shift_end_datetime']
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    total_shift_work_time_calculate = scheduling_record['total_shift_work_time_calculate']
+    shift_name = scheduling_record['shift_name']
+    minutes_per_day = scheduling_record['minutes_per_day']
+    is_probationary = scheduling_record['is_probationary']
+    total_increase_date = 0
+    total_increase_probationary = 0
+
+    if date is None or shift_end_datetime is None or shift_start_datetime is None:
+        list_increase_leaves = []
+    else:
+        list_increase_leaves = [leave for leave in hr_leaves if leave.get('request_date_from') is not None
+                                and leave.get('request_date_to') is not None
+                                and not leave['request_date_from'].replace(hour=0, minute=0, second=0).is_after(shift_end_datetime)
+                                and not leave['request_date_to'].replace(hour=23, minute=59, second=59).is_before(shift_start_datetime)
+                                and 'phát sinh tăng' in leave['holiday_status_name'].lower()]
+
+    for leave_item in list_increase_leaves:
+        total_increase_date += min(
+            total_shift_work_time_calculate == 0 and
+            shift_name not in ['OFF', 'UP', '-'] and
+            shift_name is not None and
+            len(shift_name) > 1 and
+            '/' not in shift_name and
+            minutes_per_day or total_shift_work_time_calculate,
+            max(leave_item['minutes'], leave_item['time_minute'])
+        )
+        if is_probationary:
+            total_increase_probationary += max(leave_item['minutes'], leave_item['time_minute'])
+
+    return total_increase_date, total_increase_probationary
+
+
+def process_leave_with_pay(scheduling_record, hr_leaves):
+    date = scheduling_record['date']
+    shift_end_datetime = scheduling_record['shift_end_datetime']
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    total_shift_work_time_calculate = scheduling_record['total_shift_work_time_calculate']
+    shift_name = scheduling_record['shift_name']
+    minutes_per_day = scheduling_record['minutes_per_day']
+    total_ncl_date = 0
+    total_ncl_hieu_hi_date = 0
+
+    if date is None or shift_end_datetime is None or shift_start_datetime is None:
+        list_paided_leaves = []
+    else:
+        list_paided_leaves = [leave for leave in hr_leaves if leave.get('request_date_from') is not None
+                              and leave.get('request_date_to') is not None
+                              and not leave['request_date_from'].replace(hour=0, minute=0, second=0).is_after(shift_end_datetime)
+                              and not leave['request_date_to'].replace(hour=23, minute=59, second=59).is_before(shift_start_datetime)
+                              and 'có tính lương' in leave['holiday_status_name'].lower()]
+
+    for leave_item in list_paided_leaves:
+        total_ncl_date = min(
+            total_shift_work_time_calculate == 0 and
+            shift_name not in ['OFF', 'UP', '-'] and
+            shift_name is not None and
+            len(shift_name) > 1 and
+            '/' not in shift_name and
+            minutes_per_day or total_shift_work_time_calculate,
+            total_ncl_date + max(leave_item['minutes'], leave_item['time_minute'])
+        )
+
+        if 'hiếu hỉ' in leave_item['holiday_status_name'].lower():
+            total_ncl_hieu_hi_date = min(
+                total_shift_work_time_calculate == 0 and
+                shift_name not in ['OFF', 'UP', '-'] and
+                shift_name is not None and
+                len(shift_name) > 1 and
+                '/' not in shift_name and
+                minutes_per_day or total_shift_work_time_calculate,
+                max(leave_item['minutes'], leave_item['time_minute']) - leave_item['used_minute']
+            )
+
+    return total_ncl_date, total_ncl_hieu_hi_date
+
+
+def process_annual_leave(scheduling_record, list_al_leaves):
+    total_al_date = 0
+    number_al_date = 0
+
+    for leave_item in list_al_leaves:
+        total_al_date += max(leave_item['minutes'], leave_item['time_minute'])
+        number_al_date += 1
+
+    return total_al_date, number_al_date
+
+
+def process_casual_leave(scheduling_record, list_cl_leaves):
+    is_probationary = scheduling_record['is_probationary']
+    number_cl_date = 0
+    total_cl_date = 0
+    total_cl_probationary = 0
+
+    for leave_item in list_cl_leaves:
+        total_cl_date += max(leave_item['minutes'], leave_item['time_minute'])
+        number_cl_date += 1
+        if is_probationary:
+            total_cl_probationary += max(leave_item['minutes'], leave_item['time_minute'])
+
+    return total_cl_date, number_cl_date, total_cl_probationary
+
+
+def process_worktime_ho(scheduling_record, date, shift_start_datetime, shift_end_datetime, list_explanations, attempt_with_inout_array, list_add_item_out, hr_leaves, list_late_in_leaves, list_early_out_leaves, by_hue_shift, stage1_worktime_temp, stage2_worktime_temp, hue_stage1_end, hue_stage2_start, employee_code, employee_ho, total_shift_work_time_calculate, minutes_per_day):
+    find_attendance_hue4_time_mode()
+    check_last_in_out()
+
+    if 'attendance_attempt_1' in globals():
+        list_couple_before_explanation = find_in_out_couple(attempt_with_inout_array)
+        list_couple_in_in_before_explanation = find_in_in_couple(attempt_with_inout_array)
+        list_couple_out_in_before_explanation = get_list_couple_out_in(list_couple_before_explanation)
+
+    if date is not None and shift_start_datetime is not None and shift_end_datetime is not None:
+        for explaination_item in [e for e in list_explanations if e.reason == '2' and e.attendance_missing_from is not None and e.attendance_missing_to is not None and ((e.attendance_missing_from.day == date.day and e.attendance_missing_from.month == date.month) or (e.attendance_missing_to.day == date.day and e.attendance_missing_to.month == date.month))]:
+            process_explanation_item_ho(scheduling_record, explaination_item)
+
+    check_last_in_out()
+    list_workingout_leaves = [element for element in hr_leaves if element.attendance_missing_from is not None and element.attendance_missing_to is not None and ((element.attendance_missing_from.day == date.day and element.attendance_missing_from.month == date.month) or (element.attendance_missing_to.day == date.day and element.attendance_missing_to.month == date.month)) and 'ra ngoài' in element.holiday_status_name.lower()]
+    
+    for leave_item in [element for element in list_workingout_leaves if element.for_reasons == '2' and element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
+        process_leave_item_ho(leave_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
+
+    for leave_item in [element for element in list_late_in_leaves if element.for_reasons == '2' and element.request_date_from is not None and element.request_date_from.day != shift_start_datetime.day]:
+        leave_item.attendance_missing_from = shift_start_datetime
+        leave_item.attendance_missing_to = shift_start_datetime + timedelta(minutes=leave_item.minutes)
+        if rest_start_datetime is not None and rest_end_datetime is not None:
+            if leave_item.attendance_missing_to > rest_start_datetime:
+                leave_item.attendance_missing_to += rest_end_datetime - rest_start_datetime
+        process_leave_item_ho(leave_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
+
+    for leave_item in [element for element in list_early_out_leaves if element.for_reasons == '2' and element.request_date_from is not None and element.request_date_from.day != shift_start_datetime.day]:
+        leave_item.attendance_missing_to = shift_end_datetime
+        leave_item.attendance_missing_from = shift_end_datetime - timedelta(minutes=leave_item.minutes)
+        if rest_start_datetime is not None and rest_end_datetime is not None:
+            if leave_item.attendance_missing_from < rest_end_datetime:
+                leave_item.attendance_missing_from += rest_start_datetime - rest_end_datetime
+        process_leave_item_ho(leave_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
+
+    check_last_in_out()
+    if 'attendance_attempt_1' in globals():
+        list_couple_before_explanation_private = find_in_out_couple(attempt_with_inout_array)
+        list_couple_out_in_before_explanation_private = get_list_couple_out_in(list_couple_before_explanation_private)
+
+    check_last_in_out()
+    for explaination_item in [e for e in list_explanations if e.reason == '1' and e.attendance_missing_from is not None and e.attendance_missing_to is not None]:
+        process_explanation_item_ho(explaination_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
+
+    if 'attendance_attempt_1' in globals():
+        list_couple_after_explanation_private = find_in_out_couple(attempt_with_inout_array)
+        list_couple_out_in_after_explanation_private = get_list_couple_out_in(list_couple_after_explanation_private)
+
+    for leave_item in [element for element in list_workingout_leaves if element.for_reasons == '1' and element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
+        process_leave_item_ho(scheduling_record, leave_item)
+
+
+def process_business_leave(hr_leaves, date, shift_end_datetime, shift_start_datetime, total_shift_work_time_calculate, shift_name, minutes_per_day, late_in_time):
+    time_business_trip = 0
+
+    if date is None or shift_end_datetime is None or shift_start_datetime is None:
+        list_business_leaves = []
+    else:
+        list_business_leaves = [leave for leave in hr_leaves if leave.get('request_date_from') is not None
+                                and leave.get('request_date_to') is not None
+                                and not leave['request_date_from'].replace(hour=0, minute=0, second=0) > shift_end_datetime
+                                and not leave['request_date_to'].replace(hour=23, minute=59, second=59) < shift_start_datetime
+                                and 'công tác' in leave['holiday_status_name'].lower()]
+
+    for leave_item in list_business_leaves:
+        time_business_trip = min(
+            total_shift_work_time_calculate == 0 and
+            shift_name not in ['OFF', 'UP', '-'] and
+            shift_name is not None and
+            len(shift_name) > 1 and
+            '/' not in shift_name and
+            minutes_per_day or total_shift_work_time_calculate,
+            time_business_trip + max(leave_item['minutes'], leave_item['time_minute'])
+        )
+        if time_business_trip > late_in_time and time_business_trip > 0:
+            late_in_time = 0
+
+    return time_business_trip, late_in_time
+
+
+def process_child_mode(attendance_attempt1, real_time_in, real_time_out, employee_ho, list_couple, out_by_private_attendance, out_by_work_attendance, select_off_stage, kidmod, kidmode_worktime_without_inout, kidmod_early_out_mid, kidmod_late_in_mid):
+    kidmod_work_time = 0
+
+    if attendance_attempt1 is not None and real_time_in is not None and real_time_out is not None:
+        if employee_ho:
+            kidmod_work_time = 0
+            for couple in list_couple:
+                kidmode_tuple = kidmode_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+                kidmod_work_time += kidmode_tuple[0]
+        else:
+            kidmode_tuple = kidmode_worktime_without_inout(real_time_in, real_time_out)
+            kidmod_work_time = kidmode_tuple[0]
+            if out_by_private_attendance == 0 and out_by_work_attendance == 0:
+                early_out_mid = kidmod_early_out_mid()
+                late_in_mid = kidmod_late_in_mid()
+
+        if select_off_stage == 2:
+            if kidmod in [KidMode.RBegin30REnd30, KidMode.SBegin30SEnd30]:
+                pass
+
+    return kidmod_work_time
+
+
+def process_explanation(list_explanations, employee_ho, list_couple_before_explanation_private, real_time_in, real_time_out, kidmod, kid_mode_stage1_datetime, kid_mode_stage1_end_datetime, kid_mode_stage2_datetime, kid_mode_stage2_end_datetime, early_out_mid, late_in_mid):
+    global out_by_private, out_by_private_attendance, out_by_work
+
+    listexplainations_private = [element for element in list_explanations if element.reason == '1']
+    
+    for explaination_item in [element for element in listexplainations_private if element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
+        if employee_ho:
+            in_time_leave = 0
+            for couple in list_couple_before_explanation_private:
+                in_time_leave += calculate_night_worktime_custom(
+                    couple.itemIn.attempt,
+                    couple.itemOut.attempt,
+                    explaination_item.attendance_missing_from,
+                    explaination_item.attendance_missing_to
+                )
+            out_time = calculate_worktime_without_inout(
+                explaination_item.attendance_missing_from,
+                explaination_item.attendance_missing_to
+            ) - in_time_leave
+            out_by_private += out_time
+        else:
+            out_time = calculate_worktime_without_inout(
+                explaination_item.attendance_missing_from,
+                explaination_item.attendance_missing_to
+            )
+            out_by_private += out_time
+            if real_time_in is not None and real_time_out is not None:
+                if kidmod == 'None':
+                    out_by_private_attendance += calculate_night_worktime_custom(
+                        real_time_in,
+                        real_time_out,
+                        explaination_item.attendance_missing_from,
+                        explaination_item.attendance_missing_to
+                    )
+                elif kid_mode_stage1_datetime is not None and kid_mode_stage1_end_datetime is not None and kid_mode_stage2_datetime is not None and kid_mode_stage2_end_datetime is not None:
+                    if early_out_mid + late_in_mid == 0:
+                        out_by_private_attendance = max(
+                            0,
+                            calculate_night_worktime_custom(
+                                real_time_in,
+                                real_time_out,
+                                explaination_item.attendance_missing_from,
+                                explaination_item.attendance_missing_to
+                            ) -
+                            calculate_night_worktime_custom(
+                                kid_mode_stage1_datetime,
+                                kid_mode_stage1_end_datetime,
+                                explaination_item.attendance_missing_from,
+                                explaination_item.attendance_missing_to
+                            ) -
+                            calculate_night_worktime_custom(
+                                kid_mode_stage2_datetime,
+                                kid_mode_stage2_end_datetime,
+                                explaination_item.attendance_missing_from,
+                                explaination_item.attendance_missing_to
+                            )
+                        )
+    
+    listexplainations_work = [element for element in list_explanations if element.reason == '2']
+
+    for explaination_item in [element for element in listexplainations_work if element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
+        in_time_leave = 0
+        for couple in list_couple_before_explanation_private:
+            in_time_leave += calculate_night_worktime_custom(
+                couple.itemIn.attempt,
+                couple.itemOut.attempt,
+                explaination_item.attendance_missing_from,
+                explaination_item.attendance_missing_to
+            )
+        out_time = max(0, calculate_worktime_without_inout(
+            explaination_item.attendance_missing_from,
+            explaination_item.attendance_missing_to
+        ) - in_time_leave)
+        out_by_work += out_time
+
+
+def process_working_out_leave(hr_leaves, date, real_time_in, real_time_out, kidmod, early_out_mid, late_in_mid, kid_mode_stage1_datetime, kid_mode_stage1_end_datetime, kid_mode_stage2_datetime, kid_mode_stage2_end_datetime, calculate_night_worktime_custom, calculate_worktime_without_inout):
+    list_workingout_leaves = [
+        element for element in hr_leaves
+        if element['attendance_missing_from'] is not None
+        and element['attendance_missing_to'] is not None
+        and ((element['attendance_missing_from'].day == date.day and element['attendance_missing_from'].month == date.month)
+             or (element['attendance_missing_to'].day == date.day and element['attendance_missing_to'].month == date.month))
+        and 'ra ngoài' in element['holiday_status_name'].lower()
+    ]
+
+    for leave_item in list_workingout_leaves:
+        out_time = calculate_worktime_without_inout(
+            leave_item['attendance_missing_from'],
+            leave_item['attendance_missing_to']
+        )
+        if leave_item['for_reasons'] == '1':
+            out_by_private += out_time
+            if real_time_in is not None and real_time_out is not None:
+                if kidmod == 'None':
+                    out_by_private_attendance += calculate_night_worktime_custom(
+                        real_time_in,
+                        real_time_out,
+                        leave_item['attendance_missing_from'],
+                        leave_item['attendance_missing_to']
+                    )
+                elif early_out_mid + late_in_mid == 0:
+                    out_by_private_attendance = max(
+                        0,
+                        calculate_night_worktime_custom(
+                            real_time_in,
+                            real_time_out,
+                            leave_item['attendance_missing_from'],
+                            leave_item['attendance_missing_to']
+                        ) - calculate_night_worktime_custom(
+                            kid_mode_stage1_datetime,
+                            kid_mode_stage1_end_datetime,
+                            leave_item['attendance_missing_from'],
+                            leave_item['attendance_missing_to']
+                        ) - calculate_night_worktime_custom(
+                            kid_mode_stage2_datetime,
+                            kid_mode_stage2_end_datetime,
+                            leave_item['attendance_missing_from'],
+                            leave_item['attendance_missing_to']
+                        )
+                    )
+        elif leave_item['for_reasons'] == '2':
+            out_by_work += out_time
+            if real_time_in is not None and real_time_out is not None and kidmod != 'None':
+                out_by_work_attendance += calculate_night_worktime_custom(
+                    real_time_in,
+                    real_time_out,
+                    leave_item['attendance_missing_from'],
+                    leave_item['attendance_missing_to']
+                )
+
+
+def process_working_out_leave_ho(hr_leaves, date, list_couple_before_explanation_private, calculate_night_worktime_custom, calculate_worktime_without_inout, process_explanation):
+    list_workingout_leaves = [
+        element for element in hr_leaves
+        if element['attendance_missing_from'] is not None
+        and element['attendance_missing_to'] is not None
+        and ((element['attendance_missing_from'].day == date.day and element['attendance_missing_from'].month == date.month)
+             or (element['attendance_missing_to'].day == date.day and element['attendance_missing_to'].month == date.month))
+        and 'ra ngoài' in element['holiday_status_name'].lower()
+    ]
+
+    for leave_item in list_workingout_leaves:
+        in_time_leave = sum([
+            calculate_night_worktime_custom(
+                couple.itemIn.attempt,
+                couple.itemOut.attempt,
+                leave_item['attendance_missing_from'],
+                leave_item['attendance_missing_to']
+            ) for couple in list_couple_before_explanation_private
+        ])
+        out_time = max(0, calculate_worktime_without_inout(
+            leave_item['attendance_missing_from'],
+            leave_item['attendance_missing_to']
+        ) - in_time_leave)
+        if leave_item['for_reasons'] == '1':
+            out_by_private += out_time
+        elif leave_item['for_reasons'] == '2':
+            out_by_work += out_time
+    
+    process_explanation()
+
+
+def process_cl_by_shiftname(shift_name, number_cl_date, number_al_date):
+    cl_used_by_clshiftname = 0
+    if shift_name == 'CL' and number_cl_date == 0 and number_al_date == 0:
+        cl_used_by_clshiftname = 480
+    return cl_used_by_clshiftname
+
+
+def process_al_by_shiftname(shift_name, number_cl_date, number_al_date):
+    al_used_by_alshift = 0
+    if shift_name == 'AL' and number_cl_date == 0 and number_al_date == 0:
+        al_used_by_alshift = 480
+    return al_used_by_alshift
+
+
+def process_personal_holiday(is_holiday, calculate_worktime_without_inout, holiday_start_datetime, holiday_end_datetime, shift_name, shift, minutes_per_day, holiday_work_time_final, employee_ho, total_work_time_final):
+    ph_date = 0.0
+    half_ph_worktime_part = 0
+
+    if is_holiday and (calculate_worktime_without_inout(holiday_start_datetime, holiday_end_datetime) > 0 or 'PH' in shift_name) and shift is not None:
+        if shift_name.startswith('PH') and '/' not in shift_name:
+            ph_date = 480 / minutes_per_day if shift_name == 'PHG' else 1.0
+        elif '/PH480' in shift_name or 'PH480/' in shift_name:
+            half_ph_leave = max(0.5, max(0, (480 - holiday_work_time_final)) / 480)
+            half_ph_worktime_part = round((1 - half_ph_leave) * 480)
+            ph_date = min(1, half_ph_leave)
+        elif '/PH530' in shift_name or 'PH530/' in shift_name:
+            half_ph_leave = max(0.5, max(0, (530 - holiday_work_time_final)) / 530)
+            half_ph_worktime_part = round((1 - half_ph_leave) * 480)
+            ph_date = min(1, half_ph_leave)
+        elif '/PH' in shift_name or 'PH/' in shift_name:
+            half_ph_leave = max(
+                0.5,
+                max(0, ((minutes_per_day if employee_ho else 480) - holiday_work_time_final)) /
+                (minutes_per_day if employee_ho else 480)
+            )
+            half_ph_worktime_part = round((1 - half_ph_leave) * (minutes_per_day if employee_ho else 480))
+            ph_date = min(1, half_ph_leave)
+        elif employee_ho and total_work_time_final > 0:
+            ph_date = min(1, max(0, 1 - total_work_time_final / minutes_per_day))
+
+    return ph_date, half_ph_worktime_part
+
+
+def process_off_shift(shift, shift_name):
+    total_off = 0.0
+    if shift is not None:
+        if shift_name == 'OFF':
+            total_off = 1.0
+        elif '/OFF' in shift_name or 'OFF/' in shift_name:
+            total_off = 0.5
+    return total_off
+
+
+def process_up_shift(shift, shift_name, list_up_leaves, max_late_early, employee_ho, minutes_per_day):
+    total_up = 0.0
+    up_by_leave = 0
+
+    if shift is not None:
+        if not list_up_leaves:
+            if shift_name == 'UP':
+                total_up = 1.0
+            elif '/UP' in shift_name or 'UP/' in shift_name:
+                total_up = 0.5
+        else:
+            for leave_item in list_up_leaves:
+                uptime = min(max_late_early, max(leave_item['minutes'], leave_item['time_minute']))
+                if uptime > 0:
+                    up_by_leave = int(uptime)
+                    absent_morning = leave_item['absent_morning']
+                    absent_afternoon = leave_item['absent_afternoon']
+            total_up = up_by_leave / (minutes_per_day if employee_ho else 480)
+    
+    return total_up, up_by_leave
+
+
+def calculate_worktime_with_inout_standard():
+    process_missing_attendance()
+    process_worktime_ho()
+    process_late_early_leave()
+    process_overtime_leave()
+    process_increase_leave()
+    process_leave_with_pay()
+    process_annual_leave()
+    process_casual_leave()
+    process_business_leave()
+    process_child_mode()
+    process_working_out_leave_ho()
+    process_cl_by_shiftname()
+    process_al_by_shiftname()
+    process_personal_holiday()
+    process_off_shift()
+    process_up_shift()
