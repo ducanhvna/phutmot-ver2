@@ -33,6 +33,7 @@ class CoupleInout:
         self.holidayWorkTime = 0
         self.nightHolidayWorkTime = 0
 
+
 def find_in_in_couple(list_attempt):
     result = []
     stack = []
@@ -847,7 +848,7 @@ def process_increase_leave(scheduling_record, hr_leaves):
         if is_probationary:
             total_increase_probationary += max(leave_item['minutes'], leave_item['time_minute'])
 
-    return total_increase_date, total_increase_probationary
+    return total_increase_date, total_increase_probationary, shift_name, minutes_per_day
 
 
 def is_paid_leave(leave, shift_start_datetime, shift_end_datetime):
