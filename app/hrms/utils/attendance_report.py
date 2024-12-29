@@ -918,7 +918,7 @@ def process_worktime_ho(scheduling_record, date, shift_start_datetime, shift_end
 
     if 'attendance_attempt_1' in globals():
         list_couple_before_explanation = find_in_out_couple(attempt_with_inout_array)
-        list_couple_in_in_before_explanation = find_in_in_couple(attempt_with_inout_array)
+        scheduling_record['list_couple_in_in_before_explanation'] = find_in_in_couple(attempt_with_inout_array)
         scheduling_record['list_couple_out_in_before_explanation'] = get_list_couple_out_in(list_couple_before_explanation)
 
     if date is not None and shift_start_datetime is not None and shift_end_datetime is not None:
@@ -950,7 +950,7 @@ def process_worktime_ho(scheduling_record, date, shift_start_datetime, shift_end
     check_last_in_out()
     if 'attendance_attempt_1' in globals():
         list_couple_before_explanation_private = find_in_out_couple(attempt_with_inout_array)
-        list_couple_out_in_before_explanation_private = get_list_couple_out_in(list_couple_before_explanation_private)
+        scheduling_record['list_couple_out_in_before_explanation_private'] = get_list_couple_out_in(list_couple_before_explanation_private)
 
     check_last_in_out()
     for explaination_item in [e for e in list_explanations if e.reason == '1' and e.attendance_missing_from is not None and e.attendance_missing_to is not None]:
