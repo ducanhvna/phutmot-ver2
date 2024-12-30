@@ -192,6 +192,39 @@
         </div>
       </div>
     </div>
+    <!-- Danh sach giai trinh area -->
+    <div class="col-md-8">
+      <div class="card  card-plain">
+        <div class="card-header">
+          <h4 class="card-title">Danh sách giải trình</h4>
+          <p class="category">Danh sách giải trình nhân viên từ ngày - đến ngày</p>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table tablesorter " id="">
+              <thead class=" text-primary">
+                <tr>
+                  <th>Từ ngày</th>
+                  <th>Tới ngày</th>
+                  <th>Loại giải trình</th>
+                  <th class="text-center">Lý do</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in explainationrecords %}
+                <tr>
+                  <td>{{ item.request_date_from }}</td>
+                  <td>{{ item.request_date_to }}</td>
+                  <td>{{ item.holiday_status_id }}</td>
+                  <td class="text-center">{{ item.reasons }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock content %}
