@@ -1,6 +1,6 @@
 from django import template
 from django.shortcuts import render
-from django.template import loader, TemplateDoesNotExist
+from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from hrms.models import Attendance, Scheduling, Employee, Shifts, Leave
@@ -70,36 +70,35 @@ def pages(request):
 
 def timesheet(request):
     context = {}
-
+    # All resource paths end in .html.
+    # Pick out the html file name from the url. And load that template.
     try:
+        # Lấy tham số từ query string
+        # code = request.GET.get('code', None)
+        # month = request.GET.get('month', None)
+        # year = request.GET.get('year', None)
+
+        # if not code:
+        #     return HttpResponse("Code is required", status=400)
+
+        # # Lấy tháng và năm hiện tại nếu không được cung cấp
+        # if not month:
+        #     month = datetime.now().month
+        # else:
+        #     month = int(month)
+        # if not year:
+        #     year = datetime.now().year
+        # else:
+        #     year = int(year)
         load_template = request.path.split('/')[-1]
 
         if load_template == 'admin':
             return HttpResponseRedirect(reverse('admin:index'))
         context['segment'] = load_template
-
-        # Lấy tham số từ query string
-        code = request.GET.get('code', None)
-        month = request.GET.get('month', None)
-        year = request.GET.get('year', None)
-
-        if not code:
-            return HttpResponse("Code is required", status=400)
-
-        # Lấy tháng và năm hiện tại nếu không được cung cấp
-        if not month:
-            month = datetime.now().month
-        else:
-            month = int(month)
-        if not year:
-            year = datetime.now().year
-        else:
-            year = int(year)
-
-        # Lấy đối tượng Attendance dựa trên mã code và ngày đầu tiên của tháng
-        attendances = Attendance.objects.filter(code=f'{code}', start_date__year=year, start_date__month=month)
-        attendance = attendances[0]
-        start_date = attendance.start_date
+        # first_day_of_month = datetime.now().replace(day=1)
+        # Lấy đối tượng Attendance
+        attendance = Attendance.objects.get(pk=554)
+        start_date = attendance.start_date + timedelta(days=1)
         employee = Employee.objects.get(time_keeping_code=attendance.code, start_date=start_date)
         shifts = Shifts.objects.filter(company_code='IDJ')
         scheduling = Scheduling.objects.get(employee_code=employee.employee_code, start_date=start_date)
@@ -125,12 +124,13 @@ def timesheet(request):
             for record in leave.leave_records
         ]
         calendar_data = get_calendar_data()
-
+        # Sau đó bạn có thể đưa scheduling_records vào context
         context['schedulingrecords'] = scheduling_records
         context['calendar_data'] = calendar_data
         context['attendance'] = attendance
         context['employee'] = employee
         context['scheduling'] = scheduling
+        # context['schedulingrecords'] = json.loads(scheduling.scheduling_records)
         context['shifts'] = shifts
         context['leave'] = leave
         context['leaverecords'] = leave_records
@@ -138,12 +138,12 @@ def timesheet(request):
         html_template = loader.get_template('home/timesheet.html')
         return HttpResponse(html_template.render(context, request))
 
-    except TemplateDoesNotExist:
+    except template.TemplateDoesNotExist:
+
         html_template = loader.get_template('home/page-404.html')
         return HttpResponse(html_template.render(context, request))
 
-    except Exception as e:
-        print(e)  # Debugging purpose
+    except Exception:
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
 
