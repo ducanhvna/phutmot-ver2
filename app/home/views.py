@@ -130,7 +130,8 @@ def timesheet(request):
                 'request_date_from': record['request_date_from'],
                 'request_date_to': record['request_date_to'],
                 'employee_code': record['employee_code'],
-                'reasons': record['reasons'],
+                'invalid_type': record['invalid_type'],
+                'reason': record['reason'],
                 'remarks': record['remarks']
             }
             for record in explaination.explaination_records
