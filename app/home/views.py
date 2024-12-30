@@ -97,7 +97,7 @@ def timesheet(request):
             year = int(year)
 
         # Lấy đối tượng Attendance dựa trên mã code và ngày đầu tiên của tháng
-        attendances = Attendance.objects.get(code=f'{code}', start_date__year=year, start_date__month=month)
+        attendances = Attendance.objects.filter(code=f'{code}', start_date__year=year, start_date__month=month)
         attendance = attendances[0]
         start_date = attendance.start_date
         employee = Employee.objects.get(time_keeping_code=attendance.code, start_date=start_date)
