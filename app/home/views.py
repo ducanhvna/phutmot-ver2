@@ -10,10 +10,10 @@ import calendar
 from django.http import JsonResponse
 
 
-def get_calendar_data():
+def get_calendar_data(month=None, year=None):
     today = datetime.today()
-    current_year = today.year
-    current_month = today.month
+    current_year = today.year if not year else year
+    current_month = today.month if not month else month
     _, num_days_in_month = calendar.monthrange(current_year, current_month)  # Lấy số ngày trong tháng hiện tại
 
     calendar_data = []
