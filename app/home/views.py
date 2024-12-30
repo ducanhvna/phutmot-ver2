@@ -98,7 +98,7 @@ def timesheet(request):
         # first_day_of_month = datetime.now().replace(day=1)
         # Lấy đối tượng Attendance
         last_month = datetime(year=year, month=month, day=1) - timedelta(days=1)
-        attendance = Attendance.objects.get(code=f'{2630}', start_date__month=last_moth.month, start_date__year=last_month.year)
+        attendance = Attendance.objects.get(code=f'{2630}', start_date__month=last_month.month, start_date__year=last_month.year)
         start_date = attendance.start_date + timedelta(days=1)
         employee = Employee.objects.get(time_keeping_code=attendance.code, start_date=start_date)
         shifts = Shifts.objects.filter(company_code='IDJ')
