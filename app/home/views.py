@@ -74,7 +74,7 @@ def pages(request):
 
 def timesheet(request):
     context = {}
-    
+
     try:
         load_template = request.path.split('/')[-1]
 
