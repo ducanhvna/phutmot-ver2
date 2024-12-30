@@ -10,9 +10,6 @@ import calendar
 from django.http import JsonResponse
 
 
-def get_first_day_of_month(year, month):
-    return datetime(year, month, 1)
-
 
 def get_calendar_data():
     today = datetime.today()
@@ -100,12 +97,11 @@ def timesheet(request):
         else:
             year = int(year)
 
-        # Lấy ngày đầu tiên của tháng
-        start_date = get_first_day_of_month(year, month)
 
         # Lấy đối tượng Attendance dựa trên mã code và ngày đầu tiên của tháng
-        attendances = Attendance.objects.filter(code=f'{code}', start_date__year=year, start_date__month=month)
+        attendances = Attendance.objects.get(code=f'{code}', start_date__year=year, start_date__month=month)
         attendance = attendances[0]
+        start_date = attendance.start_date
         employee = Employee.objects.get(time_keeping_code=attendance.code, start_date=start_date)
         shifts = Shifts.objects.filter(company_code='IDJ')
         scheduling = Scheduling.objects.get(employee_code=employee.employee_code, start_date=start_date)
