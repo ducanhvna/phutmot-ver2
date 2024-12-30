@@ -104,7 +104,7 @@ def timesheet(request):
         shifts = Shifts.objects.filter(company_code='IDJ')
         scheduling = Scheduling.objects.get(employee_code=employee.employee_code, start_date=start_date)
         leave = Leave.objects.get(employee_code=employee.employee_code, start_date=start_date)
-        # explaination = Explaination.objects.get(employee_code=employee.employee_code, start_date=start_date)
+        explaination = Explaination.objects.get(employee_code=employee.employee_code, start_date=start_date)
         scheduling_records = [
             {
                 'date': record['date'],
@@ -125,17 +125,17 @@ def timesheet(request):
             }
             for record in leave.leave_records
         ]
-        # explaination_records = [
-        #     {
-        #         'request_date_from': record['request_date_from'],
-        #         'request_date_to': record['request_date_to'],
-        #         'employee_code': record['employee_code'],
-        #         'invalid_type': record['invalid_type'],
-        #         'reason': record['reason'],
-        #         'remarks': record['remarks']
-        #     }
-        #     for record in explaination.explaination_records
-        # ]
+        explaination_records = [
+            {
+                'attendance_missing_from': record['attendance_missing_from'],
+                'attendance_missing_to': record['attendance_missing_to'],
+                'employee_code': record['employee_code'],
+                'invalid_type': record['invalid_type'],
+                'reason': record['reason'],
+                'remarks': record['remarks']
+            }
+            for record in explaination.explaination_records
+        ]
         calendar_data = get_calendar_data(year=year, month=month)
         # Sau đó bạn có thể đưa scheduling_records vào context
         context['schedulingrecords'] = scheduling_records
@@ -147,7 +147,7 @@ def timesheet(request):
         context['shifts'] = shifts
         context['leave'] = leave
         context['leaverecords'] = leave_records
-        # context['explainationrecords'] = explaination_records
+        context['explainationrecords'] = explaination_records
 
         html_template = loader.get_template('home/timesheet.html')
         return HttpResponse(html_template.render(context, request))
