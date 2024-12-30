@@ -19,6 +19,15 @@ class Command(BaseCommand):
     help = 'Download data from Odoo and import into Django'
 
     def handle(self, *args, **kwargs):
+        # Get the first day of the current month
+        first_day_of_month = datetime.now().replace(day=1)
+        self.download(first_day_of_month)
+        # Lấy ngày đầu tiên của tháng trước
+        first_day_of_last_month = first_day_of_month - timedelta(days=1)
+        first_day_of_last_month = datetime(first_day_of_last_month.year, first_day_of_last_month.month, 1)
+        self.download(first_day_of_last_month)
+
+    def download(self, first_day_of_month):
         # Define your Odoo connection parameters
         url = 'https://hrm.mandalahotel.com.vn'
         db = 'apechrm_product_v3'
@@ -28,8 +37,6 @@ class Command(BaseCommand):
         common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
         uid = common.authenticate(db, username, password, {})
         models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
-        # Get the first day of the current month
-        first_day_of_month = datetime.now().replace(day=1)
 
         # Calculate the last day of the current month
         if first_day_of_month.month == 12:
