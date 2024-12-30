@@ -1,6 +1,6 @@
 from django import template
 from django.shortcuts import render
-from django.template import loader
+from django.template import loader, TemplateDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from hrms.models import Attendance, Scheduling, Employee, Shifts, Leave
@@ -8,6 +8,10 @@ from datetime import datetime, timedelta
 import json
 import calendar
 from django.http import JsonResponse
+
+
+def get_first_day_of_month(year, month):
+    return datetime(year, month, 1)
 
 
 def get_calendar_data():
@@ -147,6 +151,7 @@ def timesheet(request):
         print(e)  # Debugging purpose
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
+
 
 def get_details(request):
     date = request.GET.get('date')
