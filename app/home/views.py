@@ -79,7 +79,7 @@ def timesheet(request):
         if load_template == 'admin':
             return HttpResponseRedirect(reverse('admin:index'))
         context['segment'] = load_template
-        first_day_of_month = datetime.now().replace(day=1)
+        # first_day_of_month = datetime.now().replace(day=1)
         # Lấy đối tượng Attendance
         attendance = Attendance.objects.get(pk=554)
         start_date = attendance.start_date + timedelta(days=1)
