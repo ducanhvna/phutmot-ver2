@@ -148,6 +148,8 @@ def timesheet(request):
         context['leave'] = leave
         context['leaverecords'] = leave_records
         context['explainationrecords'] = explaination_records
+        context['month'] = month
+        context['year'] = year
 
         html_template = loader.get_template('home/timesheet.html')
         return HttpResponse(html_template.render(context, request))

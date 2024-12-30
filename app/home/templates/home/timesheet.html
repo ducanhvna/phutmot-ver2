@@ -77,7 +77,7 @@
       <div class="card ">
         <div class="calendar">
           {% for day in calendar_data %}
-          <div class="day" data-date="{{ day.date }}" style="grid-column: {{ day.day_of_week }}; grid-row-start: {{ day.row_start }}"
+          <div class="day" data-date="{{ year }}{{ month }}-{{ day.date }}" style="grid-column: {{ day.day_of_week }}; grid-row-start: {{ day.row_start }}"
             onclick="openModal(this)">
             <div class="date">{{ day.date }}</div>
             <div class="order-count">{{ day.order_count }}</div>
