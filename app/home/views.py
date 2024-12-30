@@ -10,7 +10,6 @@ import calendar
 from django.http import JsonResponse
 
 
-
 def get_calendar_data():
     today = datetime.today()
     current_year = today.year
@@ -96,7 +95,6 @@ def timesheet(request):
             year = datetime.now().year
         else:
             year = int(year)
-
 
         # Lấy đối tượng Attendance dựa trên mã code và ngày đầu tiên của tháng
         attendances = Attendance.objects.get(code=f'{code}', start_date__year=year, start_date__month=month)
