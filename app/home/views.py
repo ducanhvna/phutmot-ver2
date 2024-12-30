@@ -124,7 +124,7 @@ def timesheet(request):
             }
             for record in leave.leave_records
         ]
-        calendar_data = get_calendar_data()
+        calendar_data = get_calendar_data(year=year, month=month)
         # Sau đó bạn có thể đưa scheduling_records vào context
         context['schedulingrecords'] = scheduling_records
         context['calendar_data'] = calendar_data
