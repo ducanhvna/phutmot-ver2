@@ -97,7 +97,7 @@ def timesheet(request):
         context['segment'] = load_template
         # first_day_of_month = datetime.now().replace(day=1)
         # Lấy đối tượng Attendance
-        attendance = Attendance.objects.get(code=f'{code}', start_date__month=month-1 if month>1 else 12, start_date__year=year if month>1 else year-1)
+        attendance = Attendance.objects.get(code=f'{2630}', start_date__month=(month-1 if month>1 else 12), start_date__year=(year if month>1 else year-1))
         start_date = attendance.start_date + timedelta(days=1)
         employee = Employee.objects.get(time_keeping_code=attendance.code, start_date=start_date)
         shifts = Shifts.objects.filter(company_code='IDJ')
