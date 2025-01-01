@@ -1268,8 +1268,13 @@ def process_annual_leave(scheduling_record):
     return total_al_date, number_al_date
 
 
-def process_casual_leave(scheduling_record, list_cl_leaves):
+def process_casual_leave(scheduling_record):
     is_probationary = scheduling_record['is_probationary']
+    hr_leaves = scheduling_record['hr_leaves']
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    shift_end_datetime = scheduling_record['shift_end_datetime']
+    scheduling_record['list_cl_leaves'] = list(filter(lambda leave: check_leave_valid_type1('nghỉ bù', leave, shift_start_datetime, shift_end_datetime), hr_leaves))
+    list_cl_leaves = scheduling_record['list_cl_leaves']
     number_cl_date = 0
     total_cl_date = 0
     total_cl_probationary = 0
