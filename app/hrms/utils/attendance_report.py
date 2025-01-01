@@ -80,7 +80,7 @@ def get_list_couple_out_in(list_couple_io, scheduling_record):
     result = []
     shift_start_datetime = scheduling_record['shift_start_datetime']
     shift_end_datetime = scheduling_record['shift_end_datetime']
-    include_late_early=False
+    include_late_early = False
     if shift_start_datetime and shift_end_datetime and list_couple_io:
         if shift_start_datetime < list_couple_io[0].itemIn.attempt and include_late_early:
             couple = CoupleInout(
