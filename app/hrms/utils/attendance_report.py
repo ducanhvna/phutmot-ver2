@@ -1157,7 +1157,7 @@ def process_leave_with_pay(scheduling_record):
     shift_start_datetime = scheduling_record['shift_start_datetime']
     total_shift_worktime_calculate = scheduling_record['total_shift_worktime_calculate']
     shift_name = scheduling_record['shift_name']
-    minutes_per_day = scheduling_record['minutes_per_day']
+    minutes_per_day = scheduling_record['main_contract']['minutes_per_day'] if 'minutes_per_day' in scheduling_record['main_contract'] else False
     total_ncl_date = 0
     total_ncl_hieu_hi_date = 0
 
