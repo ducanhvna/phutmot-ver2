@@ -983,30 +983,30 @@ def process_late_early_leave(scheduling_record):
             if employee_ho:
                 if list_couple:
                     if kidmod == KidMode.SBEGIN30SEND30:
-                        lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, list_couple[0].itemIn.attempt)
-                        earlyOutTime = calculate_worktime_without_inout(list_couple[-1].itemOut.attempt, kidModeStage2Datetime)
+                        lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, list_couple[0].itemIn.attempt, scheduling_record)
+                        earlyOutTime = calculate_worktime_without_inout(list_couple[-1].itemOut.attempt, kidModeStage2Datetime, scheduling_record)
                     elif kidmod == KidMode.SBEGIN60:
-                        lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, list_couple[0].itemIn.attempt)
-                        earlyOutTime = calculate_worktime_without_inout(list_couple[-1].itemOut.attempt, shiftEndDateTime)
+                        lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, list_couple[0].itemIn.attempt, scheduling_record)
+                        earlyOutTime = calculate_worktime_without_inout(list_couple[-1].itemOut.attempt, shiftEndDateTime, scheduling_record)
                     elif kidmod == KidMode.SEND60:
-                        earlyOutTime = calculate_worktime_without_inout(list_couple[-1].itemOut.attempt, kidModeStage2Datetime)
-                        lateinTime = calculate_worktime_without_inout(shiftStartDateTime, list_couple[0].itemIn.attempt)
+                        earlyOutTime = calculate_worktime_without_inout(list_couple[-1].itemOut.attempt, kidModeStage2Datetime, scheduling_record)
+                        lateinTime = calculate_worktime_without_inout(shiftStartDateTime, list_couple[0].itemIn.attempt, scheduling_record)
                     else:
-                        lateinTime = calculate_worktime_without_inout(shiftStartDateTime, list_couple[0].itemIn.attempt)
-                        earlyOutTime = calculate_worktime_without_inout(list_couple[-1].itemOut.attempt, shiftEndDateTime)
+                        lateinTime = calculate_worktime_without_inout(shiftStartDateTime, list_couple[0].itemIn.attempt, scheduling_record)
+                        earlyOutTime = calculate_worktime_without_inout(list_couple[-1].itemOut.attempt, shiftEndDateTime, scheduling_record)
             else:
                 if kidmod == KidMode.SBEGIN30SEND30:
-                    lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, real_timein)
-                    earlyOutTime = calculate_worktime_without_inout(real_timeout, kidModeStage2Datetime)
+                    lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, real_timein, scheduling_record)
+                    earlyOutTime = calculate_worktime_without_inout(real_timeout, kidModeStage2Datetime, scheduling_record)
                 elif kidmod == KidMode.SBEGIN60:
                     lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, real_timein)
-                    earlyOutTime = calculate_worktime_without_inout(real_timeout, shiftEndDateTime)
+                    earlyOutTime = calculate_worktime_without_inout(real_timeout, shiftEndDateTime, scheduling_record)
                 elif kidmod == KidMode.SEND60:
-                    earlyOutTime = calculate_worktime_without_inout(real_timeout, kidModeStage2Datetime)
-                    lateinTime = calculate_worktime_without_inout(shiftStartDateTime, real_timein)
+                    earlyOutTime = calculate_worktime_without_inout(real_timeout, kidModeStage2Datetime, scheduling_record)
+                    lateinTime = calculate_worktime_without_inout(shiftStartDateTime, real_timein, scheduling_record)
                 else:
-                    lateinTime = calculate_worktime_without_inout(shiftStartDateTime, real_timein)
-                    earlyOutTime = calculate_worktime_without_inout(real_timeout, shiftEndDateTime)
+                    lateinTime = calculate_worktime_without_inout(shiftStartDateTime, real_timein, scheduling_record)
+                    earlyOutTime = calculate_worktime_without_inout(real_timeout, shiftEndDateTime, scheduling_record)
 
         if shift_name and shift:
             if '/OFF' in shift_name or 'OFF/' in shift_name:
