@@ -55,7 +55,7 @@ def find_in_in_couple(list_attempt):
     return result
 
 
-def find_in_out_couple(list_attempt):
+def find_in_out_couple(list_attempt, scheduling_record):
     result = []
     stack = []
 
@@ -64,10 +64,10 @@ def find_in_out_couple(list_attempt):
             stack.append(item)
         elif item.inout == InoutMode.Out and stack:
             couple = CoupleInout(itemIn=stack.pop(0), itemOut=item)
-            couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
-            couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
-            couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
-            couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
+            couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
+            couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
+            couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
             result.append(couple)
 
     if not result and len(list_attempt) > 1:
@@ -333,24 +333,24 @@ def calculate_night_holiday_without_inout(realTimein, realTimeout, scheduling_re
 
 
 def check_last_in_out(scheduling_record):
-    attemptWithInoutArray = scheduling_record['attemptWithInoutArray']
+    attempt_with_inout_array = scheduling_record['attempt_with_inout_array']
     list_addItem_out = scheduling_record['list_addItem_out']
-    attemptWithInoutArray.sort(key=lambda x: x.attempt)
+    attempt_with_inout_array.sort(key=lambda x: x.attempt)
 
-    if attemptWithInoutArray:
-        if attemptWithInoutArray[-1].inout != InoutMode.Out:
-            addItem = AttendanceAttemptInOut(attempt=attemptWithInoutArray[-1].attempt)
+    if attempt_with_inout_array:
+        if attempt_with_inout_array[-1].inout != InoutMode.Out:
+            addItem = AttendanceAttemptInOut(attempt=attempt_with_inout_array[-1].attempt)
             addItem.inout = InoutMode.Out
 
-            for in_out_addItem_before in [item for item in list_addItem_out if item.attempt <= attemptWithInoutArray[-1].attempt]:
+            for in_out_addItem_before in [item for item in list_addItem_out if item.attempt <= attempt_with_inout_array[-1].attempt]:
                 in_out_addItem_before.inout = InoutMode.NoneMode
 
             list_addItem_out.append(addItem)
-            attemptWithInoutArray.append(addItem)
+            attempt_with_inout_array.append(addItem)
 
-            add_in_item = AttendanceAttemptInOut(attempt=attemptWithInoutArray[-1].attempt + timedelta(milliseconds=10))
+            add_in_item = AttendanceAttemptInOut(attempt=attempt_with_inout_array[-1].attempt + timedelta(milliseconds=10))
             add_in_item.inout = InoutMode.In
-            attemptWithInoutArray.append(add_in_item)
+            attempt_with_inout_array.append(add_in_item)
 
 
 def calculate_night_worktime_custom(scheduling_record, realTimein, realTimeout, nightStageStart, nightStageEnd):
@@ -460,7 +460,7 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
 
 
 def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHoursWithNext, diffHoursWithPrev):
-    attemptWithInoutArray = []
+    attempt_with_inout_array = []
     attendanceAttemptArray = []
     if scheduling_record['shift_start_datetime'] is not None and scheduling_record['shift_end_datetime'] is not None:
         additionTrans = []
@@ -486,20 +486,20 @@ def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHour
             additem.inout = InoutMode.In if tran['in_out'] in ['I', 'i'] else InoutMode.Out if tran['in_out'] in ['O', 'o'] else InoutMode.NoneMode
             additionTrans.append(additem)
 
-        attemptWithInoutArray = list(set(additionTrans + attemptWithInoutArray))
+        attempt_with_inout_array = list(set(additionTrans + attempt_with_inout_array))
 
         attendanceAttemptArray = list(set(
             [e['time_dt'] for e in listitemTrans if e['time_dt'] not in attendanceAttemptArray and e['time_dt'].replace(second=0) not in attendanceAttemptArray] + attendanceAttemptArray
         ))
-        attemptWithInoutArray.sort(key=lambda a: a.attempt)
-    scheduling_record['attemptWithInoutArray'] = attemptWithInoutArray
+        attempt_with_inout_array.sort(key=lambda a: a.attempt)
+    scheduling_record['attempt_with_inout_array'] = attempt_with_inout_array
     scheduling_record['attendanceAttemptArray'] = attendanceAttemptArray
     scheduling_record["attendanceAttempt1"] = attendanceAttemptArray[0] if len(attendanceAttemptArray) > 0 else None
     return scheduling_record
 
 
 def process_missing_attendance(scheduling_record):
-    attemptWithInoutArray = scheduling_record['attemptWithInoutArray']
+    attempt_with_inout_array = scheduling_record['attempt_with_inout_array']
     attendanceAttemptArray = scheduling_record['attendanceAttemptArray']
     list_addItem_out = []
     hrLeaves = scheduling_record['leave_records']
@@ -564,11 +564,11 @@ def process_missing_attendance(scheduling_record):
                         attendanceMissingFrom += timedelta(days=1)
                     add_to_attempt_array(attendanceMissingFrom, InoutMode.In)
 
-        attemptWithInoutArray = list(set(additionTrans + attemptWithInoutArray))
-        attemptWithInoutArray.sort(key=lambda a: a.attempt)
+        attempt_with_inout_array = list(set(additionTrans + attempt_with_inout_array))
+        attempt_with_inout_array.sort(key=lambda a: a.attempt)
     scheduling_record['list_addItem_out'] = list_addItem_out
     attendanceAttemptArray.sort()
-    return attemptWithInoutArray, attendanceAttemptArray
+    return attempt_with_inout_array, attendanceAttemptArray
 
 
 def find_attendance_hue4_time_mode(scheduling_record):
@@ -996,7 +996,7 @@ def process_worktime_ho(scheduling_record):
     shift_start_datetime = scheduling_record['shift_start_datetime']
     shift_end_datetime = scheduling_record['shift_end_datetime']
     list_explanations = scheduling_record['list_explanations']
-    attempt_with_inout_array = scheduling_record['attemptWithInoutArray']
+    attempt_with_inout_array = scheduling_record['attempt_with_inout_array']
     hr_leaves = scheduling_record['leave_records']
     list_add_item_out = scheduling_record['list_add_item_out']
     list_late_in_leaves = scheduling_record['list_late_in_leaves']
@@ -1013,7 +1013,7 @@ def process_worktime_ho(scheduling_record):
     check_last_in_out(scheduling_record)
 
     if 'attendanceAttempt1' in scheduling_record:
-        list_couple_before_explanation = find_in_out_couple(attempt_with_inout_array)
+        list_couple_before_explanation = find_in_out_couple(attempt_with_inout_array, scheduling_record)
         scheduling_record['list_couple_in_in_before_explanation'] = find_in_in_couple(attempt_with_inout_array)
         scheduling_record['list_couple_out_in_before_explanation'] = get_list_couple_out_in(list_couple_before_explanation)
 
@@ -1045,7 +1045,7 @@ def process_worktime_ho(scheduling_record):
 
     check_last_in_out(scheduling_record)
     if 'attendanceAttempt1' in scheduling_record:
-        list_couple_before_explanation_private = find_in_out_couple(attempt_with_inout_array)
+        list_couple_before_explanation_private = find_in_out_couple(attempt_with_inout_array, scheduling_record)
         scheduling_record['list_couple_out_in_before_explanation_private'] = get_list_couple_out_in(list_couple_before_explanation_private)
 
     check_last_in_out(scheduling_record)
@@ -1053,7 +1053,7 @@ def process_worktime_ho(scheduling_record):
         process_explanation_item_ho(explaination_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
     if 'attendanceAttempt1' in scheduling_record:
-        list_couple_after_explanation_private = find_in_out_couple(attempt_with_inout_array)
+        list_couple_after_explanation_private = find_in_out_couple(attempt_with_inout_array, scheduling_record)
         scheduling_record['list_couple_out_in_after_explanation_private'] = get_list_couple_out_in(list_couple_after_explanation_private)
         scheduling_record['list_couple_after_explanation_private'] = list_couple_after_explanation_private
 
