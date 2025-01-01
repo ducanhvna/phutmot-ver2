@@ -34,7 +34,7 @@ class CoupleInout:
         self.nightHolidayWorkTime = 0
 
 
-def find_in_in_couple(list_attempt):
+def find_in_in_couple(list_attempt, scheduling_record):
     result = []
     stack = []
 
@@ -43,10 +43,10 @@ def find_in_in_couple(list_attempt):
             stack.append(item)
         elif stack:
             couple = CoupleInout(itemIn=stack.pop(0), itemOut=item)
-            couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
-            couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
-            couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
-            couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
+            couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
+            couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
+            couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
             result.append(couple)
 
     if not result and len(list_attempt) > 1:
@@ -76,9 +76,11 @@ def find_in_out_couple(list_attempt, scheduling_record):
     return result
 
 
-def get_list_couple_out_in(list_couple_io, shift_start_datetime, shift_end_datetime, include_late_early=False):
+def get_list_couple_out_in(list_couple_io, scheduling_record):
     result = []
-
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    shift_end_datetime = scheduling_record['shift_end_datetime']
+    include_late_early=False
     if shift_start_datetime and shift_end_datetime and list_couple_io:
         if shift_start_datetime < list_couple_io[0].itemIn.attempt and include_late_early:
             couple = CoupleInout(
@@ -1219,8 +1221,8 @@ def process_worktime_ho(scheduling_record):
 
     if 'attendanceAttempt1' in scheduling_record:
         list_couple_before_explanation = find_in_out_couple(attempt_with_inout_array, scheduling_record)
-        scheduling_record['list_couple_in_in_before_explanation'] = find_in_in_couple(attempt_with_inout_array)
-        scheduling_record['list_couple_out_in_before_explanation'] = get_list_couple_out_in(list_couple_before_explanation)
+        scheduling_record['list_couple_in_in_before_explanation'] = find_in_in_couple(attempt_with_inout_array, scheduling_record)
+        scheduling_record['list_couple_out_in_before_explanation'] = get_list_couple_out_in(list_couple_before_explanation, scheduling_record)
 
     if date is not None and shift_start_datetime is not None and shift_end_datetime is not None:
         for explaination_item in [e for e in list_explanations if e.reason == '2' and e.attendance_missing_from is not None and e.attendance_missing_to is not None and ((e.attendance_missing_from.day == date.day and e.attendance_missing_from.month == date.month) or (e.attendance_missing_to.day == date.day and e.attendance_missing_to.month == date.month))]:
