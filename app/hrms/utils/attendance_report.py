@@ -983,7 +983,7 @@ def check_leave_valid_type1(type_name, element, shift_start_datetime, shift_end_
     return result
 
 
-def process_worktime_ho(scheduling_record, by_hue_shift, stage1_worktime_temp, stage2_worktime_temp, hue_stage1_end, hue_stage2_start, employee_code, employee_ho, total_shift_work_time_calculate, minutes_per_day):
+def process_worktime_ho(scheduling_record, by_hue_shift, stage1_worktime_temp, stage2_worktime_temp, hue_stage1_end, hue_stage2_start, employee_ho, total_shift_work_time_calculate, minutes_per_day):
     rest_start_datetime = scheduling_record['rest_start_datetime']
     rest_end_datetime = scheduling_record['rest_end_datetime']
     rest_start_datetime = scheduling_record['rest_start_datetime']
@@ -998,6 +998,7 @@ def process_worktime_ho(scheduling_record, by_hue_shift, stage1_worktime_temp, s
     list_add_item_out = scheduling_record['list_add_item_out']
     list_late_in_leaves = scheduling_record['list_late_in_leaves']
     list_early_out_leaves = scheduling_record['list_early_out_leaves']
+    employee_code = scheduling_record.employee_code
     check_last_in_out()
 
     if 'attendance_attempt_1' in globals():
