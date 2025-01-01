@@ -205,12 +205,12 @@ def process_explanation_item_ho(scheduling_record, explaination_item):
 
 
 def calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_record):
-    isNightStageFist = scheduling_record['isNightStageFist']
-    isNightStageLast = scheduling_record['isNightStageLast']
-    nightStagefistStart = scheduling_record['nightStagefistStart']
-    nightStagefistEnd = scheduling_record['nightStagefistEnd']
-    nightStagelastStart = scheduling_record['nightStagelastStart']
-    nightStagelastEnd = scheduling_record['nightStagelastEnd']
+    is_night_stage_fist = scheduling_record['is_night_stage_fist']
+    is_night_stage_last = scheduling_record['is_night_stage_last']
+    night_stage_fist_start = scheduling_record['night_stage_fist_start']
+    night_stage_fist_end = scheduling_record['night_stage_fist_end']
+    night_stage_last_start = scheduling_record['night_stage_last_start']
+    night_stage_last_end = scheduling_record['night_stage_last_end']
     restStartDateTime = scheduling_record['rest_start_datetime']
     restEndDateTime = scheduling_record['rest_end_datetime']
     shift = scheduling_record['shift_name']
@@ -219,23 +219,23 @@ def calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_r
         stage_fist_worktime = 0
         stage_last_worktime = 0
 
-        if isNightStageFist:
-            stageStart = restStartDateTime if restStartDateTime < nightStagefistEnd else nightStagefistEnd
-            current_program = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > nightStagefistStart else nightStagefistStart)
+        if is_night_stage_fist:
+            stageStart = restStartDateTime if restStartDateTime < night_stage_fist_end else night_stage_fist_end
+            current_program = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > night_stage_fist_start else night_stage_fist_start)
             stage_fist = max(0, current_program.total_seconds() // 60)
 
-            stageEnd = restEndDateTime if restEndDateTime > nightStagefistStart else nightStagefistStart
-            current_program = (realTimeout.replace(second=0) if realTimeout < nightStagefistEnd else nightStagefistEnd) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
+            stageEnd = restEndDateTime if restEndDateTime > night_stage_fist_start else night_stage_fist_start
+            current_program = (realTimeout.replace(second=0) if realTimeout < night_stage_fist_end else night_stage_fist_end) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
             stage_second = max(0, current_program.total_seconds() // 60)
             stage_fist_worktime = stage_fist + stage_second
 
-        if isNightStageLast:
-            stageStart = restStartDateTime if restStartDateTime < nightStagelastEnd else nightStagelastEnd
-            current_program = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > nightStagelastStart else nightStagelastStart)
+        if is_night_stage_last:
+            stageStart = restStartDateTime if restStartDateTime < night_stage_last_end else night_stage_last_end
+            current_program = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > night_stage_last_start else night_stage_last_start)
             stage_fist = max(0, current_program.total_seconds() // 60)
 
-            stageEnd = restEndDateTime if restEndDateTime > nightStagelastStart else nightStagelastStart
-            current_program = (realTimeout.replace(second=0) if realTimeout < nightStagelastEnd else nightStagelastEnd) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
+            stageEnd = restEndDateTime if restEndDateTime > night_stage_last_start else night_stage_last_start
+            current_program = (realTimeout.replace(second=0) if realTimeout < night_stage_last_end else night_stage_last_end) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
             stage_second = max(0, current_program.total_seconds() // 60)
             stage_last_worktime = stage_fist + stage_second
 
@@ -410,6 +410,74 @@ def get_list_early_out_leaves(scheduling_record):
     return list_early_out_leaves
 
 
+def check_is_night_stage_fist(scheduling_record):
+    scheduling_record['is_night_stage_fist'] = scheduling_record['night_stage_fist_start'] is not None and scheduling_record['night_stage_fist_end'] is not None
+
+
+def check_is_night_stage_last(scheduling_record):
+    scheduling_record['is_night_stage_last'] = scheduling_record['night_stage_last_start'] is not None and scheduling_record['night_stage_last_end'] is not None
+
+
+def calculate_night_stage_fist_start(scheduling_record):
+    result = None
+    shift = scheduling_record['shift']
+    shift_end_datetime = scheduling_record['shift_end_datetime']
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    date = scheduling_record['date']
+    if date is not None and shift is not None:
+        fist_night_start = date.replace(hour=22, minute=0, second=0) - timedelta(days=1)
+        fist_night_end = date.replace(hour=6, minute=0, second=0)
+
+        if not fist_night_start > shift_end_datetime and not fist_night_end < shift_start_datetime:
+            result = shift_start_datetime if fist_night_start < shift_start_datetime else fist_night_start
+    scheduling_record['night_stage_fist_start'] = result
+
+
+def calculate_night_stage_fist_end(scheduling_record):
+    result = None
+    shift = scheduling_record['shift']
+    shift_end_datetime = scheduling_record['shift_end_datetime']
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    date = scheduling_record['date']
+    if date is not None and shift is not None:
+        fist_night_start = date.replace(hour=22, minute=0, second=0) - timedelta(days=1)
+        fist_night_end = date.replace(hour=6, minute=0, second=0)
+
+        if not fist_night_start > shift_end_datetime and not fist_night_end < shift_start_datetime:
+            result = shift_end_datetime if fist_night_end > shift_end_datetime else fist_night_end
+    scheduling_record['night_stage_fist_end'] = result
+
+
+def calculate_night_stage_last_start(scheduling_record):
+    result = None
+    shift = scheduling_record['shift']
+    shift_end_datetime = scheduling_record['shift_end_datetime']
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    date = scheduling_record['date']
+    if date is not None and shift is not None:
+        last_night_start = date.replace(hour=22, minute=0, second=0)
+        last_night_end = date.replace(hour=6, minute=0, second=0) + timedelta(days=1)
+
+        if not last_night_start > shift_end_datetime and not last_night_end < shift_start_datetime:
+            result = shift_start_datetime if last_night_start < shift_start_datetime else last_night_start
+    scheduling_record['night_stage_last_start'] = result
+
+
+def calculate_night_stage_last_end(scheduling_record):
+    result = None
+    shift = scheduling_record['shift']
+    shift_end_datetime = scheduling_record['shift_end_datetime']
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    date = scheduling_record['date']
+    if date is not None and shift is not None:
+        last_night_start = date.replace(hour=22, minute=0, second=0)
+        last_night_end = date.replace(hour=6, minute=0, second=0) + timedelta(days=1)
+
+        if not last_night_start > shift_end_datetime and not last_night_end < shift_start_datetime:
+            result = shift_end_datetime if last_night_end > shift_end_datetime else last_night_end
+    scheduling_record['night_stage_last_end'] = result
+
+
 def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, profile):
     merged_shift = {shift.name.replace('/', '_'): shift for shift in shifts}
 
@@ -443,6 +511,12 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
             rest_start_datetime = scheduling['rest_start_datetime']
             shift_start_datetime = scheduling['shift_start_datetime']
             shift_end_datetime = scheduling['shift_end_datetime']
+            calculate_night_stage_fist_end(scheduling)
+            calculate_night_stage_fist_start(scheduling)
+            calculate_night_stage_last_start(scheduling)
+            calculate_night_stage_last_end(scheduling)
+            check_is_night_stage_fist(scheduling)
+            check_is_night_stage_last(scheduling)
             if shift_name is not None:
                 if '/' in shift_name and 'PH' in shift_name:
                     main_shift_start_datetime = shift_start_datetime
