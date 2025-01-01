@@ -420,7 +420,7 @@ def check_is_night_stage_last(scheduling_record):
 
 def calculate_night_stage_fist_start(scheduling_record):
     result = None
-    shift = scheduling_record['shift']
+    shift = scheduling_record['shift_name']
     shift_end_datetime = scheduling_record['shift_end_datetime']
     shift_start_datetime = scheduling_record['shift_start_datetime']
     date = scheduling_record['date']
@@ -435,7 +435,7 @@ def calculate_night_stage_fist_start(scheduling_record):
 
 def calculate_night_stage_fist_end(scheduling_record):
     result = None
-    shift = scheduling_record['shift']
+    shift = scheduling_record['shift_name']
     shift_end_datetime = scheduling_record['shift_end_datetime']
     shift_start_datetime = scheduling_record['shift_start_datetime']
     date = scheduling_record['date']
@@ -450,7 +450,7 @@ def calculate_night_stage_fist_end(scheduling_record):
 
 def calculate_night_stage_last_start(scheduling_record):
     result = None
-    shift = scheduling_record['shift']
+    shift = scheduling_record['shift_name']
     shift_end_datetime = scheduling_record['shift_end_datetime']
     shift_start_datetime = scheduling_record['shift_start_datetime']
     date = scheduling_record['date']
@@ -465,7 +465,7 @@ def calculate_night_stage_last_start(scheduling_record):
 
 def calculate_night_stage_last_end(scheduling_record):
     result = None
-    shift = scheduling_record['shift']
+    shift = scheduling_record['shift_name']
     shift_end_datetime = scheduling_record['shift_end_datetime']
     shift_start_datetime = scheduling_record['shift_start_datetime']
     date = scheduling_record['date']
