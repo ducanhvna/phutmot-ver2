@@ -11,8 +11,7 @@ logger = logging.getLogger(__name__)
 def calculate_scheduling(attendance_id):
     # Import cục bộ để tránh import vòng lặp
     from .models import Attendance, Scheduling, Employee, Shifts, Leave
-    from .utils.attendance_report import (add_attempt_more_than_limit, mergedTimeToScheduling,
-        find_attendance_hue4_time_mode, collect_data_to_schedulings, calculate_worktime_with_inout_standard)
+    from .utils.attendance_report import add_attempt_more_than_limit, mergedTimeToScheduling, find_attendance_hue4_time_mode, collect_data_to_schedulings, calculate_worktime_with_inout_standard
     from home.models import UserProfile
 
     try:
