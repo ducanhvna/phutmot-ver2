@@ -552,8 +552,8 @@ def find_attendance_hue4_time_mode(scheduling_record):
                 tempStart1End = next((e for e in reversed(attendanceAttemptArray) if e > HueStage1Start and e < attendanceAttemptArray[beforeRestEndEndIndex]), None)
                 tempStart2Start = next((e for e in attendanceAttemptArray if e < HueStage2End and e > attendanceAttemptArray[beforeRestEndEndIndex]), None)
 
-                stage1WorktimeTemp = calculate_night_worktime_custom(scheduling_record, HueStage1Start, attendanceAttemptArray[beforeRestEndEndIndex], shiftStartDateTime, restStartDateTime) + (calculate_night_worktime_custom(tempStart2Start, HueStage2End, restEndDateTime, shiftEndDateTime) if tempStart2Start else 0)
-                stage2WorktimeTemp = (calculate_night_worktime_custom(scheduling_record, HueStage1Start, tempStart1End, restEndDateTime, shiftEndDateTime) if tempStart1End else 0) + calculate_night_worktime_custom(attendanceAttemptArray[beforeRestEndEndIndex], HueStage2End, restEndDateTime, shiftEndDateTime)
+                stage1WorktimeTemp = calculate_night_worktime_custom(scheduling_record, HueStage1Start, attendanceAttemptArray[beforeRestEndEndIndex], shiftStartDateTime, restStartDateTime) + (calculate_night_worktime_custom(scheduling_record, tempStart2Start, HueStage2End, restEndDateTime, shiftEndDateTime) if tempStart2Start else 0)
+                stage2WorktimeTemp = (calculate_night_worktime_custom(scheduling_record, HueStage1Start, tempStart1End, restEndDateTime, shiftEndDateTime) if tempStart1End else 0) + calculate_night_worktime_custom(scheduling_record, attendanceAttemptArray[beforeRestEndEndIndex], HueStage2End, restEndDateTime, shiftEndDateTime)
 
                 if stage1WorktimeTemp > stage2WorktimeTemp:
                     HueStage1End = attendanceAttemptArray[beforeRestEndEndIndex]
