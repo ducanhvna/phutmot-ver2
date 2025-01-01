@@ -438,7 +438,7 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
             shift_name = scheduling['shift_name']
             rest_start_datetime = scheduling['rest_start_datetime']
             shift_start_datetime = scheduling['shift_start_datetime']
-            rest_end_datetime = scheduling['rest_end_datetime']
+            shift_end_datetime = scheduling['shift_end_datetime']
             if shift_name is not None:
                 if '/' in shift_name and 'PH' in shift_name:
                     main_shift_start_datetime = shift_start_datetime
