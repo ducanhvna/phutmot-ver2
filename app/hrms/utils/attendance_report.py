@@ -206,7 +206,7 @@ def process_explanation_item_ho(scheduling_record, explaination_item):
             attempt_with_inout_array.append(item)
 
 
-def calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_record):
+def calculate_night_worktime_without_inout(real_timein, real_timeout, scheduling_record):
     is_night_stage_fist = scheduling_record['is_night_stage_fist']
     is_night_stage_last = scheduling_record['is_night_stage_last']
     night_stage_fist_start = scheduling_record['night_stage_fist_start']
@@ -223,21 +223,21 @@ def calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_r
 
         if is_night_stage_fist:
             stageStart = restStartDateTime if restStartDateTime < night_stage_fist_end else night_stage_fist_end
-            current_program = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > night_stage_fist_start else night_stage_fist_start)
+            current_program = (real_timeout.replace(second=0) if real_timeout < stageStart else stageStart) - (real_timein.replace(second=0) if real_timein > night_stage_fist_start else night_stage_fist_start)
             stage_fist = max(0, current_program.total_seconds() // 60)
 
             stageEnd = restEndDateTime if restEndDateTime > night_stage_fist_start else night_stage_fist_start
-            current_program = (realTimeout.replace(second=0) if realTimeout < night_stage_fist_end else night_stage_fist_end) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
+            current_program = (real_timeout.replace(second=0) if real_timeout < night_stage_fist_end else night_stage_fist_end) - (real_timein.replace(second=0) if real_timein > stageEnd else stageEnd)
             stage_second = max(0, current_program.total_seconds() // 60)
             stage_fist_worktime = stage_fist + stage_second
 
         if is_night_stage_last:
             stageStart = restStartDateTime if restStartDateTime < night_stage_last_end else night_stage_last_end
-            current_program = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > night_stage_last_start else night_stage_last_start)
+            current_program = (real_timeout.replace(second=0) if real_timeout < stageStart else stageStart) - (real_timein.replace(second=0) if real_timein > night_stage_last_start else night_stage_last_start)
             stage_fist = max(0, current_program.total_seconds() // 60)
 
             stageEnd = restEndDateTime if restEndDateTime > night_stage_last_start else night_stage_last_start
-            current_program = (realTimeout.replace(second=0) if realTimeout < night_stage_last_end else night_stage_last_end) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
+            current_program = (real_timeout.replace(second=0) if real_timeout < night_stage_last_end else night_stage_last_end) - (real_timein.replace(second=0) if real_timein > stageEnd else stageEnd)
             stage_second = max(0, current_program.total_seconds() // 60)
             stage_last_worktime = stage_fist + stage_second
 
@@ -246,20 +246,20 @@ def calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_r
     return int(result)
 
 
-def calculate_worktime_without_inout(realTimein, realTimeout, scheduling_record):
+def calculate_worktime_without_inout(real_timein, real_timeout, scheduling_record):
     result = 0
     restStartDateTime = scheduling_record['rest_start_datetime']
     restEndDateTime = scheduling_record['rest_end_datetime']
     shiftStartDateTime = scheduling_record['shift_start_datetime']
     shiftEndDateTime = scheduling_record['shift_end_datetime']
-    realTimein = realTimein.replace(second=0)
-    realTimeout = realTimeout.replace(second=0)
+    real_timein = real_timein.replace(second=0)
+    real_timeout = real_timeout.replace(second=0)
 
     # if shift:
-    currentProgram = (realTimeout if realTimeout < restStartDateTime else restStartDateTime) - (realTimein if realTimein > shiftStartDateTime else shiftStartDateTime)
+    currentProgram = (real_timeout if real_timeout < restStartDateTime else restStartDateTime) - (real_timein if real_timein > shiftStartDateTime else shiftStartDateTime)
     stageFist = max(0, currentProgram.total_seconds() // 60)
 
-    currentProgram = (realTimeout if realTimeout < shiftEndDateTime else shiftEndDateTime) - (realTimein if realTimein > restEndDateTime else restEndDateTime)
+    currentProgram = (real_timeout if real_timeout < shiftEndDateTime else shiftEndDateTime) - (real_timein if real_timein > restEndDateTime else restEndDateTime)
     stageSecond = max(0, currentProgram.total_seconds() // 60)
 
     result = stageFist + stageSecond
@@ -267,7 +267,7 @@ def calculate_worktime_without_inout(realTimein, realTimeout, scheduling_record)
     return int(result)
 
 
-def calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling_record):
+def calculate_holiday_worktime_without_inout(real_timein, real_timeout, scheduling_record):
     holiday_start_datetime = scheduling_record['holiday_start_datetime']
     is_holiday = scheduling_record['is_holiday']
     shift_name = scheduling_record['shift_name']
@@ -282,18 +282,18 @@ def calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling
     if (shift and is_holiday and (calculate_worktime_without_inout(holiday_start_datetime, holiday_end_datetime) > 0 or 'PH' in shift_name)):
 
         stageStart = restStartDateTime if restStartDateTime < holiday_end_datetime else holiday_end_datetime
-        current_program = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > holiday_start_datetime else holiday_start_datetime)
+        current_program = (real_timeout.replace(second=0) if real_timeout < stageStart else stageStart) - (real_timein.replace(second=0) if real_timein > holiday_start_datetime else holiday_start_datetime)
         stage_fist = max(0, int(current_program.total_seconds() // 60))
 
         stageEnd = restEndDateTime if restEndDateTime > holiday_start_datetime else holiday_start_datetime
-        current_program = (realTimeout if realTimeout < holiday_end_datetime else holiday_end_datetime) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
+        current_program = (real_timeout if real_timeout < holiday_end_datetime else holiday_end_datetime) - (real_timein.replace(second=0) if real_timein > stageEnd else stageEnd)
         stage_second = max(0, int(current_program.total_seconds() // 60))
 
         result = stage_fist + stage_second
     return result
 
 
-def calculate_night_holiday_without_inout(realTimein, realTimeout, scheduling_record):
+def calculate_night_holiday_without_inout(real_timein, real_timeout, scheduling_record):
     holiday_night_stage_fist_start_datetime = scheduling_record['holiday_night_stage_fist_start_datetime']
     holiday_night_stage_fist_end_datetime = scheduling_record['holiday_night_stage_fist_end_datetime']
     holiday_night_stage_last_start_datetime = scheduling_record['holiday_night_stage_last_start_datetime']
@@ -308,11 +308,11 @@ def calculate_night_holiday_without_inout(realTimein, realTimeout, scheduling_re
 
         if shift and holiday_night_stage_fist_end_datetime:
             stageStart = restStartDateTime if restStartDateTime < holiday_night_stage_fist_end_datetime else holiday_night_stage_fist_end_datetime
-            currentProgram = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > holiday_night_stage_fist_start_datetime else holiday_night_stage_fist_start_datetime)
+            currentProgram = (real_timeout.replace(second=0) if real_timeout < stageStart else stageStart) - (real_timein.replace(second=0) if real_timein > holiday_night_stage_fist_start_datetime else holiday_night_stage_fist_start_datetime)
             stageFist = max(0, int(currentProgram.total_seconds() // 60))
 
             stageEnd = restEndDateTime if restEndDateTime > holiday_night_stage_fist_start_datetime else holiday_night_stage_fist_start_datetime
-            currentProgram = (realTimeout.replace(second=0) if realTimeout < holiday_night_stage_fist_end_datetime else holiday_night_stage_fist_end_datetime) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
+            currentProgram = (real_timeout.replace(second=0) if real_timeout < holiday_night_stage_fist_end_datetime else holiday_night_stage_fist_end_datetime) - (real_timein.replace(second=0) if real_timein > stageEnd else stageEnd)
             stageSecond = max(0, int(currentProgram.total_seconds() // 60))
 
             stageFistWorktime = stageFist + stageSecond
@@ -321,11 +321,11 @@ def calculate_night_holiday_without_inout(realTimein, realTimeout, scheduling_re
 
         if shift and holiday_night_stage_last_end_datetime:
             stageStart = restStartDateTime if restStartDateTime < holiday_night_stage_last_end_datetime else holiday_night_stage_last_end_datetime
-            currentProgram = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > holiday_night_stage_last_start_datetime else holiday_night_stage_last_start_datetime)
+            currentProgram = (real_timeout.replace(second=0) if real_timeout < stageStart else stageStart) - (real_timein.replace(second=0) if real_timein > holiday_night_stage_last_start_datetime else holiday_night_stage_last_start_datetime)
             stageFist = max(0, int(currentProgram.total_seconds() // 60))
 
             stageEnd = restEndDateTime if restEndDateTime > holiday_night_stage_last_start_datetime else holiday_night_stage_last_start_datetime
-            currentProgram = (realTimeout.replace(second=0) if realTimeout < holiday_night_stage_last_end_datetime else holiday_night_stage_last_end_datetime) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
+            currentProgram = (real_timeout.replace(second=0) if real_timeout < holiday_night_stage_last_end_datetime else holiday_night_stage_last_end_datetime) - (real_timein.replace(second=0) if real_timein > stageEnd else stageEnd)
             stageSecond = max(0, int(currentProgram.total_seconds() // 60))
 
             stageLastWorktime = stageFist + stageSecond
@@ -358,7 +358,7 @@ def check_last_in_out(scheduling_record):
             attempt_with_inout_array.append(add_in_item)
 
 
-def calculate_night_worktime_custom(scheduling_record, realTimein, realTimeout, nightStageStart, nightStageEnd):
+def calculate_night_worktime_custom(scheduling_record, real_timein, real_timeout, nightStageStart, nightStageEnd):
     restStartDateTime = scheduling_record['rest_start_datetime']
     restEndDateTime = scheduling_record['rest_end_datetime']
     # Đặt giây của thời gian bằng 0
@@ -369,12 +369,12 @@ def calculate_night_worktime_custom(scheduling_record, realTimein, realTimeout, 
     # if shift:
     # Tính toán thời gian bắt đầu giai đoạn
     stageStart = restStartDateTime if restStartDateTime < nightStageEnd else nightStageEnd
-    currentProgram = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > nightStageStart else nightStageStart)
+    currentProgram = (real_timeout.replace(second=0) if real_timeout < stageStart else stageStart) - (real_timein.replace(second=0) if real_timein > nightStageStart else nightStageStart)
     stageFist = max(0, currentProgram.total_seconds() // 60)
 
     # Tính toán thời gian kết thúc giai đoạn
     stageEnd = restEndDateTime if restEndDateTime > nightStageStart else nightStageStart
-    currentProgram = (realTimeout.replace(second=0) if realTimeout < nightStageEnd else nightStageEnd) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
+    currentProgram = (real_timeout.replace(second=0) if real_timeout < nightStageEnd else nightStageEnd) - (real_timein.replace(second=0) if real_timein > stageEnd else stageEnd)
     stageSecond = max(0, currentProgram.total_seconds() // 60)
 
     stageFistWorktime = stageFist + stageSecond
@@ -889,7 +889,7 @@ def find_attendance_hue4_time_mode(scheduling_record):
 
 def process_worktime(scheduling_record):
     global totalWorkTime, nightWorkTime, holidayWorkTime, nightHolidayWorkTime
-    global realTimein, realTimeout
+    global real_timein, real_timeout
     global stage1WorktimeTemp, stage2WorktimeTemp
     global selectOffStage, stage1Off, stage2Off, missing_checkin_break
     global totalShiftWorkTime_calculate, real_late_in_minute, real_ealry_out_minute
@@ -907,14 +907,14 @@ def process_worktime(scheduling_record):
 
     if attendanceAttempt1:
         find_attendance_hue4_time_mode(scheduling_record)
-        realTimein = attendanceAttempt1
-        realTimeout = attendanceAttemptArray[-1]
+        real_timein = attendanceAttempt1
+        real_timeout = attendanceAttemptArray[-1]
 
         for item in attendanceAttemptArray:
-            if realTimein > item:
-                realTimein = item
-            if realTimeout < item:
-                realTimeout = item
+            if real_timein > item:
+                real_timein = item
+            if real_timeout < item:
+                real_timeout = item
 
         if shift_name and shift:
             if '/OFF' not in shift_name and 'OFF/' not in shift_name:
@@ -923,29 +923,29 @@ def process_worktime(scheduling_record):
                     if HueStage1End and HueStage2Start:
                         pass
                     elif HueStage1End or HueStage2Start:
-                        totalWorkTime = calculate_worktime_without_inout(realTimein, realTimeout)
+                        totalWorkTime = calculate_worktime_without_inout(real_timein, real_timeout)
                         missing_checkin_break = True
                     else:
                         missing_checkin_break = True
                 else:
-                    totalWorkTime = calculate_worktime_without_inout(realTimein, realTimeout)
+                    totalWorkTime = calculate_worktime_without_inout(real_timein, real_timeout)
             else:
-                stage1Off = calculate_night_worktime_custom(scheduling_record, realTimein, realTimeout, shiftStartDateTime, restStartDateTime)
+                stage1Off = calculate_night_worktime_custom(scheduling_record, real_timein, real_timeout, shiftStartDateTime, restStartDateTime)
                 stage1Off = min(stage1Off, 240)
-                stage2Off = calculate_night_worktime_custom(scheduling_record, realTimein, realTimeout, restEndDateTime, shiftEndDateTime)
+                stage2Off = calculate_night_worktime_custom(scheduling_record, real_timein, real_timeout, restEndDateTime, shiftEndDateTime)
                 stage2Off = min(stage2Off, 240)
                 totalWorkTime = max(stage2Off, stage1Off)
                 selectOffStage = 2 if stage2Off > stage1Off else 1
 
         if totalShiftWorkTime_calculate > 0:
-            if realTimein and shiftStartDateTime:
-                real_late_in_minute = calculate_worktime_without_inout(shiftStartDateTime, realTimein)
-            if realTimeout and shiftEndDateTime:
-                real_ealry_out_minute = calculate_worktime_without_inout(realTimeout, shiftEndDateTime)
+            if real_timein and shiftStartDateTime:
+                real_late_in_minute = calculate_worktime_without_inout(shiftStartDateTime, real_timein)
+            if real_timeout and shiftEndDateTime:
+                real_ealry_out_minute = calculate_worktime_without_inout(real_timeout, shiftEndDateTime)
 
-        nightWorkTime = calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_record)
-        holidayWorkTime = calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling_record)
-        nightHolidayWorkTime = calculate_night_holiday_without_inout(realTimein, realTimeout, scheduling_record)
+        nightWorkTime = calculate_night_worktime_without_inout(real_timein, real_timeout, scheduling_record)
+        holidayWorkTime = calculate_holiday_worktime_without_inout(real_timein, real_timeout, scheduling_record)
+        nightHolidayWorkTime = calculate_night_holiday_without_inout(real_timein, real_timeout, scheduling_record)
     else:
         totalWorkTime = 0
         nightWorkTime = 0
@@ -953,20 +953,21 @@ def process_worktime(scheduling_record):
 
 
 def process_late_early_leave(scheduling_record):
-    global lateIn_private, lateIn_by_work, lateIn_by_private_num, earlyOut_private
-    global earlyOut_by_work, realTimein, realTimeout, convert_overtime
-    global employeeHo, listCouple, kidmod, shiftStartDateTime
+    global real_timein, real_timeout, convert_overtime
+    global employeeHo, listCouple, kidmod
     global kidModeStage1EndDatetime, kidModeStage2Datetime, shiftEndDateTime
     global totalWorkTime, lateinTime, earlyOutTime, shift_name, shift
     global listLateInLeaves, maxLateEarly, _hrLeaves
-
+    shiftStartDateTime = scheduling_record['shift_start_datetime']
+    real_timeout = scheduling_record['real_timeout']
+    real_timein = scheduling_record['real_timein']
     lateIn_private = 0
     lateIn_by_work = 0
     lateIn_by_private_num = 0
     earlyOut_private = 0
     earlyOut_by_work = 0
 
-    if realTimein and shiftStartDateTime:
+    if real_timein and shiftStartDateTime:
         if convert_overtime:
             lateinTime = 0
             earlyOutTime = 0
@@ -987,17 +988,17 @@ def process_late_early_leave(scheduling_record):
                         earlyOutTime = calculate_worktime_without_inout(listCouple[-1].itemOut.attempt, shiftEndDateTime)
             else:
                 if kidmod == KidMode.SBEGIN30SEND30:
-                    lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, realTimein)
-                    earlyOutTime = calculate_worktime_without_inout(realTimeout, kidModeStage2Datetime)
+                    lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, real_timein)
+                    earlyOutTime = calculate_worktime_without_inout(real_timeout, kidModeStage2Datetime)
                 elif kidmod == KidMode.SBEGIN60:
-                    lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, realTimein)
-                    earlyOutTime = calculate_worktime_without_inout(realTimeout, shiftEndDateTime)
+                    lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, real_timein)
+                    earlyOutTime = calculate_worktime_without_inout(real_timeout, shiftEndDateTime)
                 elif kidmod == KidMode.SEND60:
-                    earlyOutTime = calculate_worktime_without_inout(realTimeout, kidModeStage2Datetime)
-                    lateinTime = calculate_worktime_without_inout(shiftStartDateTime, realTimein)
+                    earlyOutTime = calculate_worktime_without_inout(real_timeout, kidModeStage2Datetime)
+                    lateinTime = calculate_worktime_without_inout(shiftStartDateTime, real_timein)
                 else:
-                    lateinTime = calculate_worktime_without_inout(shiftStartDateTime, realTimein)
-                    earlyOutTime = calculate_worktime_without_inout(realTimeout, shiftEndDateTime)
+                    lateinTime = calculate_worktime_without_inout(shiftStartDateTime, real_timein)
+                    earlyOutTime = calculate_worktime_without_inout(real_timeout, shiftEndDateTime)
 
         if shift_name and shift:
             if '/OFF' in shift_name or 'OFF/' in shift_name:
@@ -1011,7 +1012,7 @@ def process_late_early_leave(scheduling_record):
                 lateinTime = lateinTime - 240 if lateinTime > 240 else lateinTime
 
         for leaveItem in listLateInLeaves:
-            if realTimein > shiftStartDateTime:
+            if real_timein > shiftStartDateTime:
                 if leaveItem['for_reasons'] == '1':
                     lateIn_private += min(maxLateEarly, max(leaveItem['minutes'], leaveItem['time_minute']))
                     lateIn_by_private_num += 1
@@ -1020,7 +1021,7 @@ def process_late_early_leave(scheduling_record):
 
         listEarlyOutLeave = [element for element in _hrLeaves if 'về sớm' in element['holidayStatusName'].lower() and 'đi muộn' not in element['holidayStatusName'].lower()]
         for leaveItem in listEarlyOutLeave:
-            if realTimeout < shiftEndDateTime:
+            if real_timeout < shiftEndDateTime:
                 if leaveItem['for_reasons'] == '1':
                     earlyOut_private += min(maxLateEarly, max(leaveItem['minutes'], leaveItem['time_minute']))
                 else:
@@ -1328,7 +1329,16 @@ def process_worktime_ho(scheduling_record):
         list_couple_before_explanation_private = find_in_out_couple(attempt_with_inout_array, scheduling_record)
         scheduling_record['list_couple_out_in_before_explanation_private'] = get_list_couple_out_in(list_couple_before_explanation_private, scheduling_record)
         scheduling_record['list_couple_before_explanation_private'] = list_couple_before_explanation_private
+        if list_couple_before_explanation_private:
+            real_timein_couple = next((element for element in list_couple_before_explanation_private if element.itemOut.attempt > shift_start_datetime), None)
+            real_timein = real_timein_couple.itemIn.attempt if real_timein_couple else None
 
+            real_timeout_couple = next((element for element in reversed(list_couple_before_explanation_private) if element.itemIn.attempt < shift_end_datetime), None)
+            real_timeout = real_timein
+            if real_timeout_couple:
+                real_timeout = real_timein if real_timein_couple is None else real_timeout_couple.itemOut.attempt
+            scheduling_record['real_timein'] = real_timein
+            scheduling_record['real_timeout'] = real_timeout
     check_last_in_out(scheduling_record)
     for explaination_item in [e for e in list_explanations if e['reason'] == '1' and e['attendance_missing_from'] and e['attendance_missing_to']]:
         process_explanation_item_ho(scheduling_record, explaination_item)
