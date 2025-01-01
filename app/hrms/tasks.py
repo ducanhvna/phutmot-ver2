@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 def calculate_scheduling(attendance_id):
     # Import cục bộ để tránh import vòng lặp
     from .models import Attendance, Scheduling, Employee, Shifts, Leave
-    from .utils.attendance_report import add_attempt_more_than_limit, mergedTimeToScheduling, process_missing_attendance, find_attendance_hue4_time_mode, collect_data_to_schedulings
+    from .utils.attendance_report import (add_attempt_more_than_limit, mergedTimeToScheduling,
+        find_attendance_hue4_time_mode, collect_data_to_schedulings, calculate_worktime_with_inout_standard)
     from home.models import UserProfile
 
     try:
@@ -33,9 +34,9 @@ def calculate_scheduling(attendance_id):
         mergedTimeToScheduling(scheduling.scheduling_records, shifts, employee, leave, profile)
         for sched in scheduling.scheduling_records:
             add_attempt_more_than_limit(attendance.attendance_records, sched, 6, 6)
-            process_missing_attendance(leave.leave_records, sched)
+            # process_missing_attendance(sched)
             find_attendance_hue4_time_mode(sched)
-
+            calculate_worktime_with_inout_standard(sched)
         # Tính toán và cập nhật Scheduling tương ứng
         # scheduling, created = Scheduling.objects.get_or_create(attendance=attendance)
 

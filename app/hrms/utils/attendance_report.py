@@ -392,6 +392,7 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, profile):
                 hour=shift.start_work_time.hour, minute=shift.start_rest_time.minute)
             scheduling['restEndDateTime'] = date.replace(
                 hour=shift.end_work_time.hour, minute=shift.end_rest_time.minute)
+            scheduling['leave_records'] = leave.leave_records
 
 
 def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHoursWithNext, diffHoursWithPrev):
@@ -433,10 +434,11 @@ def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHour
     return scheduling_record
 
 
-def process_missing_attendance(hrLeaves, scheduling_record):
+def process_missing_attendance(scheduling_record):
     attemptWithInoutArray = scheduling_record['attemptWithInoutArray']
     attendanceAttemptArray = scheduling_record['attendanceAttemptArray']
     list_addItem_out = []
+    hrLeaves = scheduling_record['leave_records']
 
     # Chuẩn hóa tên trạng thái ngày nghỉ
     for e in hrLeaves:
@@ -1300,7 +1302,7 @@ def process_up_shift(shift, shift_name, list_up_leaves, max_late_early, employee
 
 
 def calculate_worktime_with_inout_standard(scheduling_record):
-    process_missing_attendance()
+    process_missing_attendance(scheduling_record)
     process_worktime_ho()
     process_late_early_leave()
     process_overtime_leave()
