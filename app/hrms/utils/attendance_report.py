@@ -181,27 +181,27 @@ def process_explanation_item_ho(scheduling_record, explaination_item):
     list_add_item_out = scheduling_record['list_add_item_out']
 
     for item in attempt_with_inout_array:
-        if not item.attempt > explaination_item.attendance_missing_to and not item.attempt < explaination_item.attendance_missing_from:
+        if not item.attempt > explaination_item['attendance_missing_to'] and not item.attempt < explaination_item['attendance_missing_from']:
             item.inout = InoutMode.In
 
     if shift_start_datetime is not None:
-        if not shift_start_datetime > explaination_item.attendance_missing_to and not shift_start_datetime < explaination_item.attendance_missing_from:
+        if not shift_start_datetime > explaination_item['attendance_missing_to'] and not shift_start_datetime < explaination_item['attendance_missing_from']:
             item = AttendanceAttemptInOut(attempt=shift_start_datetime, inout=InoutMode.In)
             attempt_with_inout_array.append(item)
 
-        if rest_start_datetime is not None and not rest_start_datetime > explaination_item.attendance_missing_to and not rest_start_datetime < explaination_item.attendance_missing_from:
+        if rest_start_datetime is not None and not rest_start_datetime > explaination_item['attendance_missing_to'] and not rest_start_datetime < explaination_item['attendance_missing_from']:
             item = AttendanceAttemptInOut(attempt=rest_start_datetime, inout=InoutMode.Out)
             for in_out_add_item_before in [i for i in list_add_item_out if not i.attempt > item.attempt]:
                 in_out_add_item_before.inout = InoutMode.NoneMode
             attempt_with_inout_array.append(item)
 
-        if shift_end_datetime is not None and not shift_end_datetime > explaination_item.attendance_missing_to and not shift_end_datetime < explaination_item.attendance_missing_from:
+        if shift_end_datetime is not None and not shift_end_datetime > explaination_item['attendance_missing_to'] and not shift_end_datetime < explaination_item['attendance_missing_from']:
             item = AttendanceAttemptInOut(attempt=shift_end_datetime, inout=InoutMode.Out)
             for in_out_add_item_before in [i for i in list_add_item_out if not i.attempt > item.attempt]:
                 in_out_add_item_before.inout = InoutMode.NoneMode
             attempt_with_inout_array.append(item)
 
-        if rest_end_datetime is not None and not rest_end_datetime > explaination_item.attendance_missing_to and not rest_end_datetime < explaination_item.attendance_missing_from:
+        if rest_end_datetime is not None and not rest_end_datetime > explaination_item['attendance_missing_to'] and not rest_end_datetime < explaination_item['attendance_missing_from']:
             item = AttendanceAttemptInOut(attempt=rest_end_datetime, inout=InoutMode.In)
             attempt_with_inout_array.append(item)
 
@@ -924,7 +924,7 @@ def process_worktime(scheduling_record):
         nightHolidayWorkTime = 0
 
 
-def process_late_early_leave():
+def process_late_early_leave(scheduling_record):
     global lateIn_private, lateIn_by_work, lateIn_by_private_num, earlyOut_private
     global earlyOut_by_work, realTimein, realTimeout, convert_overtime
     global employeeHo, listCouple, kidmod, shiftStartDateTime
@@ -1008,7 +1008,8 @@ def is_overtime_leave(leave, shift_start_datetime):
     return c1 and c2 and c3 and c4 and c5
 
 
-def process_overtime_leave(scheduling_record, hr_leaves):
+def process_overtime_leave(scheduling_record):
+    hr_leaves = scheduling_record['hr_leaves']
     shift_start_datetime = scheduling_record['shift_start_datetime']
     is_probationary = scheduling_record['is_probationary']
     is_holiday = scheduling_record['is_holiday']
@@ -1065,7 +1066,8 @@ def is_increase_leave(leave, shift_start_datetime, shift_end_datetime):
     return c1 and c2 and c3 and c4 and c5
 
 
-def process_increase_leave(scheduling_record, hr_leaves):
+def process_increase_leave(scheduling_record):
+    hr_leaves = scheduling_record['hr_leaves']
     date = scheduling_record['date']
     shift_end_datetime = scheduling_record['shift_end_datetime']
     shift_start_datetime = scheduling_record['shift_start_datetime']
@@ -1107,7 +1109,8 @@ def is_paid_leave(leave, shift_start_datetime, shift_end_datetime):
     return c1 and c2 and c3 and c4 and c5
 
 
-def process_leave_with_pay(scheduling_record, hr_leaves):
+def process_leave_with_pay(scheduling_record):
+    hr_leaves = scheduling_record['hr_leaves']
     date = scheduling_record['date']
     shift_end_datetime = scheduling_record['shift_end_datetime']
     shift_start_datetime = scheduling_record['shift_start_datetime']
@@ -1149,7 +1152,8 @@ def process_leave_with_pay(scheduling_record, hr_leaves):
     return total_ncl_date, total_ncl_hieu_hi_date, minutes_per_day, shift_name
 
 
-def process_annual_leave(scheduling_record, list_al_leaves):
+def process_annual_leave(scheduling_record):
+    list_al_leaves = scheduling_record['list_al_leaves']
     total_al_date = 0
     number_al_date = 0
 
@@ -1225,29 +1229,29 @@ def process_worktime_ho(scheduling_record):
         scheduling_record['list_couple_out_in_before_explanation'] = get_list_couple_out_in(list_couple_before_explanation, scheduling_record)
 
     if date is not None and shift_start_datetime is not None and shift_end_datetime is not None:
-        for explaination_item in [e for e in list_explanations if e['reason'] == '2' and e.attendance_missing_from is not None and e.attendance_missing_to is not None and ((e.attendance_missing_from.day == date.day and e.attendance_missing_from.month == date.month) or (e.attendance_missing_to.day == date.day and e.attendance_missing_to.month == date.month))]:
+        for explaination_item in [e for e in list_explanations if e['reason'] == '2' and e['attendance_missing_from'] is not None and e['attendance_missing_to'] is not None and ((e['attendance_missing_from'].day == date.day and e['attendance_missing_from'].month == date.month) or (e['attendance_missing_to'].day == date.day and e['attendance_missing_to'].month == date.month))]:
             process_explanation_item_ho(scheduling_record, explaination_item)
 
     check_last_in_out(scheduling_record)
-    list_workingout_leaves = [element for element in hr_leaves if element.attendance_missing_from is not None and element.attendance_missing_to is not None and ((element.attendance_missing_from.day == date.day and element.attendance_missing_from.month == date.month) or (element.attendance_missing_to.day == date.day and element.attendance_missing_to.month == date.month)) and 'ra ngoài' in element.holiday_status_name.lower()]
+    list_workingout_leaves = [element for element in hr_leaves if element['attendance_missing_from'] is not None and element['attendance_missing_to'] is not None and ((element['attendance_missing_from'].day == date.day and element['attendance_missing_from'].month == date.month) or (element['attendance_missing_to'].day == date.day and element['attendance_missing_to'].month == date.month)) and 'ra ngoài' in element.holiday_status_name.lower()]
 
-    for leave_item in [element for element in list_workingout_leaves if element.for_reasons == '2' and element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
+    for leave_item in [element for element in list_workingout_leaves if element.for_reasons == '2' and element['attendance_missing_from'] is not None and element['attendance_missing_to'] is not None]:
         process_leave_item_ho(leave_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
     for leave_item in [element for element in list_late_in_leaves if element.for_reasons == '2' and element.request_date_from is not None and element.request_date_from.day != shift_start_datetime.day]:
-        leave_item.attendance_missing_from = shift_start_datetime
-        leave_item.attendance_missing_to = shift_start_datetime + timedelta(minutes=leave_item.minutes)
+        leave_item['attendance_missing_from'] = shift_start_datetime
+        leave_item['attendance_missing_to'] = shift_start_datetime + timedelta(minutes=leave_item.minutes)
         if rest_start_datetime is not None and rest_end_datetime is not None:
-            if leave_item.attendance_missing_to > rest_start_datetime:
-                leave_item.attendance_missing_to += rest_end_datetime - rest_start_datetime
+            if leave_item['attendance_missing_to'] > rest_start_datetime:
+                leave_item['attendance_missing_to'] += rest_end_datetime - rest_start_datetime
         process_leave_item_ho(leave_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
     for leave_item in [element for element in list_early_out_leaves if element.for_reasons == '2' and element.request_date_from is not None and element.request_date_from.day != shift_start_datetime.day]:
-        leave_item.attendance_missing_to = shift_end_datetime
-        leave_item.attendance_missing_from = shift_end_datetime - timedelta(minutes=leave_item.minutes)
+        leave_item['attendance_missing_to'] = shift_end_datetime
+        leave_item['attendance_missing_from'] = shift_end_datetime - timedelta(minutes=leave_item.minutes)
         if rest_start_datetime is not None and rest_end_datetime is not None:
-            if leave_item.attendance_missing_from < rest_end_datetime:
-                leave_item.attendance_missing_from += rest_start_datetime - rest_end_datetime
+            if leave_item['attendance_missing_from'] < rest_end_datetime:
+                leave_item['attendance_missing_from'] += rest_start_datetime - rest_end_datetime
         process_leave_item_ho(leave_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
     check_last_in_out(scheduling_record)
@@ -1256,7 +1260,7 @@ def process_worktime_ho(scheduling_record):
         scheduling_record['list_couple_out_in_before_explanation_private'] = get_list_couple_out_in(list_couple_before_explanation_private)
 
     check_last_in_out(scheduling_record)
-    for explaination_item in [e for e in list_explanations if e['reason'] == '1' and e.attendance_missing_from is not None and e.attendance_missing_to is not None]:
+    for explaination_item in [e for e in list_explanations if e['reason'] == '1' and e['attendance_missing_from'] is not None and e['attendance_missing_to'] is not None]:
         process_explanation_item_ho(explaination_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
     if 'attendanceAttempt1' in scheduling_record:
@@ -1264,7 +1268,7 @@ def process_worktime_ho(scheduling_record):
         scheduling_record['list_couple_out_in_after_explanation_private'] = get_list_couple_out_in(list_couple_after_explanation_private)
         scheduling_record['list_couple_after_explanation_private'] = list_couple_after_explanation_private
 
-    for leave_item in [element for element in list_workingout_leaves if element.for_reasons == '1' and element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
+    for leave_item in [element for element in list_workingout_leaves if element.for_reasons == '1' and element['attendance_missing_from'] is not None and element['attendance_missing_to'] is not None]:
         process_leave_item_ho(scheduling_record, leave_item)
 
 
@@ -1328,7 +1332,7 @@ def process_explanation(list_explanations, scheduling_record, employee_ho, list_
     out_by_work = scheduling_record['out_by_work']
     listexplainations_private = [element for element in list_explanations if element['reason'] == '1']
 
-    for explaination_item in [element for element in listexplainations_private if element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
+    for explaination_item in [element for element in listexplainations_private if element['attendance_missing_from'] is not None and element['attendance_missing_to'] is not None]:
         if employee_ho:
             in_time_leave = 0
             for couple in list_couple_before_explanation_private:
@@ -1336,18 +1340,18 @@ def process_explanation(list_explanations, scheduling_record, employee_ho, list_
                     scheduling_record,
                     couple.itemIn.attempt,
                     couple.itemOut.attempt,
-                    explaination_item.attendance_missing_from,
-                    explaination_item.attendance_missing_to
+                    explaination_item['attendance_missing_from'],
+                    explaination_item['attendance_missing_to']
                 )
             out_time = calculate_worktime_without_inout(
-                explaination_item.attendance_missing_from,
-                explaination_item.attendance_missing_to
+                explaination_item['attendance_missing_from'],
+                explaination_item['attendance_missing_to']
             ) - in_time_leave
             out_by_private += out_time
         else:
             out_time = calculate_worktime_without_inout(
-                explaination_item.attendance_missing_from,
-                explaination_item.attendance_missing_to
+                explaination_item['attendance_missing_from'],
+                explaination_item['attendance_missing_to']
             )
             out_by_private += out_time
             if real_time_in is not None and real_time_out is not None:
@@ -1356,8 +1360,8 @@ def process_explanation(list_explanations, scheduling_record, employee_ho, list_
                         scheduling_record,
                         real_time_in,
                         real_time_out,
-                        explaination_item.attendance_missing_from,
-                        explaination_item.attendance_missing_to
+                        explaination_item['attendance_missing_from'],
+                        explaination_item['attendance_missing_to']
                     )
                 elif kid_mode_stage1_datetime is not None and kid_mode_stage1_end_datetime is not None and kid_mode_stage2_datetime is not None and kid_mode_stage2_end_datetime is not None:
                     if early_out_mid + late_in_mid == 0:
@@ -1367,38 +1371,38 @@ def process_explanation(list_explanations, scheduling_record, employee_ho, list_
                                 scheduling_record,
                                 real_time_in,
                                 real_time_out,
-                                explaination_item.attendance_missing_from,
-                                explaination_item.attendance_missing_to
+                                explaination_item['attendance_missing_from'],
+                                explaination_item['attendance_missing_to']
                             ) - calculate_night_worktime_custom(
                                 scheduling_record,
                                 kid_mode_stage1_datetime,
                                 kid_mode_stage1_end_datetime,
-                                explaination_item.attendance_missing_from,
-                                explaination_item.attendance_missing_to
+                                explaination_item['attendance_missing_from'],
+                                explaination_item['attendance_missing_to']
                             ) - calculate_night_worktime_custom(
                                 scheduling_record,
                                 kid_mode_stage2_datetime,
                                 kid_mode_stage2_end_datetime,
-                                explaination_item.attendance_missing_from,
-                                explaination_item.attendance_missing_to
+                                explaination_item['attendance_missing_from'],
+                                explaination_item['attendance_missing_to']
                             )
                         )
 
     listexplainations_work = [element for element in list_explanations if element['reason'] == '2']
 
-    for explaination_item in [element for element in listexplainations_work if element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
+    for explaination_item in [element for element in listexplainations_work if element['attendance_missing_from'] is not None and element['attendance_missing_to'] is not None]:
         in_time_leave = 0
         for couple in list_couple_before_explanation_private:
             in_time_leave += calculate_night_worktime_custom(
                 scheduling_record,
                 couple.itemIn.attempt,
                 couple.itemOut.attempt,
-                explaination_item.attendance_missing_from,
-                explaination_item.attendance_missing_to
+                explaination_item['attendance_missing_from'],
+                explaination_item['attendance_missing_to']
             )
         out_time = max(0, calculate_worktime_without_inout(
-            explaination_item.attendance_missing_from,
-            explaination_item.attendance_missing_to
+            explaination_item['attendance_missing_from'],
+            explaination_item['attendance_missing_to']
         ) - in_time_leave)
         out_by_work += out_time
     return out_by_work
@@ -1586,11 +1590,11 @@ def process_up_shift(shift, shift_name, list_up_leaves, max_late_early, employee
 def calculate_worktime_with_inout_standard(scheduling_record):
     process_missing_attendance(scheduling_record)
     process_worktime_ho(scheduling_record)
-    process_late_early_leave()
-    process_overtime_leave()
-    process_increase_leave()
-    process_leave_with_pay()
-    process_annual_leave()
+    process_late_early_leave(scheduling_record)
+    process_overtime_leave(scheduling_record)
+    process_increase_leave(scheduling_record)
+    process_leave_with_pay(scheduling_record)
+    process_annual_leave(scheduling_record)
     process_casual_leave()
     process_business_leave()
     process_child_mode()
