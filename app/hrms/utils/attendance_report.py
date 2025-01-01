@@ -1102,7 +1102,7 @@ def is_increase_leave(leave, shift_start_datetime, shift_end_datetime):
     c1 = True if leave.get('request_date_from') else False
     c2 = True if leave.get('request_date_to') else False
     c3 = not leave['request_date_from'].replace(hour=0, minute=0, second=0) > shift_end_datetime
-    c4 = not leave['request_date_to'].replace(hour=23, minute=59, second=59, milliseconds=999) < shift_start_datetime
+    c4 = not leave['request_date_to'].replace(hour=23, minute=59, second=59) < shift_start_datetime
     c5 = 'phát sinh tăng' in f"{leave['holiday_status_id']}".lower()
     return c1 and c2 and c3 and c4 and c5
 
@@ -1145,7 +1145,7 @@ def is_paid_leave(leave, shift_start_datetime, shift_end_datetime):
     c1 = True if leave.get('request_date_from') else False
     c2 = True if leave.get('request_date_to') else False
     c3 = not leave['request_date_from'].replace(hour=0, minute=0, second=0) > shift_end_datetime
-    c4 = not leave['request_date_to'].replace(hour=23, minute=59, second=59, milliseconds=999) < shift_start_datetime
+    c4 = not leave['request_date_to'].replace(hour=23, minute=59, second=59) < shift_start_datetime
     c5 = 'có tính lương' in f"{leave['holiday_status_id']}".lower()
     return c1 and c2 and c3 and c4 and c5
 
