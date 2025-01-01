@@ -34,6 +34,65 @@ class CoupleInout:
         self.nightHolidayWorkTime = 0
 
 
+def check_leave_valid_type1(type_name, element, shift_start_datetime, shift_end_datetime):
+    result = False
+    c1 = True if element['request_date_from'] else False
+    c2 = True if ['request_date_to'] else False
+    if c1 and c2:
+        try:
+            c3 = not element['request_date_from'].replace(hour=0, minute=0, second=0, microsecond=0) > shift_end_datetime
+            c4 = not element['request_date_to'].replace(hour=23, minute=59, second=59, microsecond=999999) < shift_start_datetime
+            c5 = type_name in element['holiday_status_name'].lower()
+        except Exception as ex:
+            print('check_leave_valid_type1: ', ex)
+            c3 = False
+            c4 = False
+            c5 = False
+        result = c3 and c4 and c5
+    return result
+
+
+def check_leave_valid_type2(type_name, element, date):
+    result = False
+    c1 = True if ['attendance_missing_from'] else False
+    c2 = True if ['attendance_missing_to'] else False
+    if c1 and c2:
+        try:
+            c3 = not element['request_date_from'].day == date.day
+            c4 = not element['request_date_to'].month == date.month
+            c5 = type_name in element['holiday_status_name'].lower()
+        except Exception as ex:
+            print('check_leave_valid_type1: ', ex)
+            c3 = False
+            c4 = False
+            c5 = False
+        result = c3 and c4 and c5
+    return result
+
+
+def check_explaination_valid_type2(element, date, reason=None, type_name=None):
+    result = False
+    c1 = True if ['invalid_date'] else False
+    c2 = True if ['attendance_missing_to'] else False
+    c5 = True
+    c6 = True
+    if c1 and c2:
+        try:
+            c3 = not element['invalid_date'].day == date.day
+            c4 = not element['invalid_date'].month == date.month
+            if type_name:
+                c5 = type_name in element['invalid_type'].lower()
+            if reason:
+                c6 = reason in element['reason'].lower()
+        except Exception as ex:
+            print('check_explaination_valid_type2: ', ex)
+            c3 = False
+            c4 = False
+            c5 = False
+        result = c3 and c4 and c5 and c6
+    return result
+
+
 def find_in_in_couple(list_attempt, scheduling_record):
     result = []
     stack = []
@@ -1194,6 +1253,10 @@ def process_leave_with_pay(scheduling_record):
 
 
 def process_annual_leave(scheduling_record):
+    hr_leaves = scheduling_record['hr_leaves']
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    shift_end_datetime = scheduling_record['shift_end_datetime']
+    scheduling_record['list_al_leaves'] = list(filter(lambda leave: check_leave_valid_type1('nghỉ phép năm', leave, shift_start_datetime, shift_end_datetime), hr_leaves))
     list_al_leaves = scheduling_record['list_al_leaves']
     total_al_date = 0
     number_al_date = 0
@@ -1218,65 +1281,6 @@ def process_casual_leave(scheduling_record, list_cl_leaves):
             total_cl_probationary += max(leave_item['minutes'], leave_item['time_minute'])
 
     return total_cl_date, number_cl_date, total_cl_probationary
-
-
-def check_leave_valid_type1(type_name, element, shift_start_datetime, shift_end_datetime):
-    result = False
-    c1 = True if element['request_date_from'] else False
-    c2 = True if ['request_date_to'] else False
-    if c1 and c2:
-        try:
-            c3 = not element['request_date_from'].replace(hour=0, minute=0, second=0, microsecond=0) > shift_end_datetime
-            c4 = not element['request_date_to'].replace(hour=23, minute=59, second=59, microsecond=999999) < shift_start_datetime
-            c5 = type_name in element['holiday_status_name'].lower()
-        except Exception as ex:
-            print('check_leave_valid_type1: ', ex)
-            c3 = False
-            c4 = False
-            c5 = False
-        result = c3 and c4 and c5
-    return result
-
-
-def check_leave_valid_type2(type_name, element, date):
-    result = False
-    c1 = True if ['attendance_missing_from'] else False
-    c2 = True if ['attendance_missing_to'] else False
-    if c1 and c2:
-        try:
-            c3 = not element['request_date_from'].day == date.day
-            c4 = not element['request_date_to'].month == date.month
-            c5 = type_name in element['holiday_status_name'].lower()
-        except Exception as ex:
-            print('check_leave_valid_type1: ', ex)
-            c3 = False
-            c4 = False
-            c5 = False
-        result = c3 and c4 and c5
-    return result
-
-
-def check_explaination_valid_type2(element, date, reason=None, type_name=None):
-    result = False
-    c1 = True if ['invalid_date'] else False
-    c2 = True if ['attendance_missing_to'] else False
-    c5 = True
-    c6 = True
-    if c1 and c2:
-        try:
-            c3 = not element['invalid_date'].day == date.day
-            c4 = not element['invalid_date'].month == date.month
-            if type_name:
-                c5 = type_name in element['invalid_type'].lower()
-            if reason:
-                c6 = reason in element['reason'].lower()
-        except Exception as ex:
-            print('check_explaination_valid_type2: ', ex)
-            c3 = False
-            c4 = False
-            c5 = False
-        result = c3 and c4 and c5 and c6
-    return result
 
 
 def process_worktime_ho(scheduling_record):
