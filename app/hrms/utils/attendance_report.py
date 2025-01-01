@@ -659,7 +659,7 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
             scheduling['stage2_worktime_temp'] = 0
             scheduling['hue_stage1_end'] = None
             scheduling['hue_stage2_start'] = None
-            scheduling['total_shift_work_time_calculate'] = 0
+            scheduling['total_shift_worktime_calculate'] = 0
             scheduling['list_couple_after_explanation_private'] = []
             shift_name = scheduling['shift_name']
             rest_start_datetime = scheduling['rest_start_datetime']
@@ -690,11 +690,11 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
                     scheduling['half_stage1_worktime_calculate'] = calculate_worktime_without_inout(shift_start_datetime, rest_start_datetime, scheduling)
 
                 if 370 <= temp_worktime_cal <= 375:
-                    scheduling['total_shift_work_time_calculate'] = 371
+                    scheduling['total_shift_worktime_calculate'] = 371
                 elif 441 <= temp_worktime_cal <= 443:
-                    scheduling['total_shift_work_time_calculate'] = 442
+                    scheduling['total_shift_worktime_calculate'] = 442
                 else:
-                    scheduling['total_shift_work_time_calculate'] = round(temp_worktime_cal / 5) * 5
+                    scheduling['total_shift_worktime_calculate'] = round(temp_worktime_cal / 5) * 5
 
 
 def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHoursWithNext, diffHoursWithPrev):
@@ -1110,7 +1110,7 @@ def process_increase_leave(scheduling_record):
     date = scheduling_record['date']
     shift_end_datetime = scheduling_record['shift_end_datetime']
     shift_start_datetime = scheduling_record['shift_start_datetime']
-    total_shift_work_time_calculate = scheduling_record['total_shift_work_time_calculate']
+    total_shift_worktime_calculate = scheduling_record['total_shift_worktime_calculate']
     shift_name = scheduling_record['shift_name']
     minutes_per_day = scheduling_record['minutes_per_day']
     is_probationary = scheduling_record['is_probationary']
@@ -1124,13 +1124,13 @@ def process_increase_leave(scheduling_record):
 
     for leave_item in list_increase_leaves:
         total_increase_date += min(
-            total_shift_work_time_calculate,
-            # total_shift_work_time_calculate == 0 and
+            total_shift_worktime_calculate,
+            # total_shift_worktime_calculate == 0 and
             # shift_name not in ['OFF', 'UP', '-'] and
             # shift_name and
             # len(shift_name) > 1 and
             # '/' not in shift_name and
-            # minutes_per_day or total_shift_work_time_calculate,
+            # minutes_per_day or total_shift_worktime_calculate,
             max(leave_item['minutes'], leave_item['time_minute'])
         )
         if is_probationary:
@@ -1153,7 +1153,7 @@ def process_leave_with_pay(scheduling_record):
     date = scheduling_record['date']
     shift_end_datetime = scheduling_record['shift_end_datetime']
     shift_start_datetime = scheduling_record['shift_start_datetime']
-    total_shift_work_time_calculate = scheduling_record['total_shift_work_time_calculate']
+    total_shift_worktime_calculate = scheduling_record['total_shift_worktime_calculate']
     shift_name = scheduling_record['shift_name']
     minutes_per_day = scheduling_record['minutes_per_day']
     total_ncl_date = 0
@@ -1166,25 +1166,25 @@ def process_leave_with_pay(scheduling_record):
 
     for leave_item in list_paided_leaves:
         total_ncl_date = min(
-            total_shift_work_time_calculate,
-            # total_shift_work_time_calculate == 0 and
+            total_shift_worktime_calculate,
+            # total_shift_worktime_calculate == 0 and
             # shift_name not in ['OFF', 'UP', '-'] and
             # shift_name and
             # len(shift_name) > 1 and
             # '/' not in shift_name and
-            # minutes_per_day or total_shift_work_time_calculate,
+            # minutes_per_day or total_shift_worktime_calculate,
             total_ncl_date + max(leave_item['minutes'], leave_item['time_minute'])
         )
 
         if 'hiếu hỉ' in leave_item['holiday_status_name'].lower():
             total_ncl_hieu_hi_date = min(
-                total_shift_work_time_calculate,
-                # total_shift_work_time_calculate == 0 and
+                total_shift_worktime_calculate,
+                # total_shift_worktime_calculate == 0 and
                 # shift_name not in ['OFF', 'UP', '-'] and
                 # shift_name and
                 # len(shift_name) > 1 and
                 # '/' not in shift_name and
-                # minutes_per_day or total_shift_work_time_calculate,
+                # minutes_per_day or total_shift_worktime_calculate,
                 max(leave_item['minutes'], leave_item['time_minute']) - leave_item['used_minute']
             )
 
@@ -1299,7 +1299,7 @@ def process_worktime_ho(scheduling_record):
     # hue_stage2_start = scheduling_record['hue_stage2_start']
     # employee_ho = scheduling_record['main_info']['employee_ho'] if 'employee_ho' in scheduling_record['main_info'] else False
     # minutes_per_day = scheduling_record['main_contract']['minutes_per_day'] if 'minutes_per_day' in scheduling_record['main_contract'] else False
-    # total_shift_work_time_calculate = scheduling_record['total_shift_work_time_calculate']
+    # total_shift_worktime_calculate = scheduling_record['total_shift_worktime_calculate']
     # employee_code = scheduling_record.employee_code
     check_last_in_out(scheduling_record)
 
@@ -1374,7 +1374,7 @@ def is_business_leave(leave, shift_end_datetime, shift_start_datetime):
     return c1 and c2 and c3 and c4 and c5
 
 
-def process_business_leave(hr_leaves, date, shift_end_datetime, shift_start_datetime, total_shift_work_time_calculate, shift_name, minutes_per_day, late_in_time):
+def process_business_leave(hr_leaves, date, shift_end_datetime, shift_start_datetime, total_shift_worktime_calculate, shift_name, minutes_per_day, late_in_time):
     time_business_trip = 0
     if not date or not shift_end_datetime or not shift_start_datetime:
         list_business_leaves = []
@@ -1386,7 +1386,7 @@ def process_business_leave(hr_leaves, date, shift_end_datetime, shift_start_date
 
     for leave_item in list_business_leaves:
         time_business_trip = min((
-            total_shift_work_time_calculate == 0 and shift_name not in ['OFF', 'UP', '-'] and shift_name and len(shift_name) > 1 and '/' not in shift_name and minutes_per_day or total_shift_work_time_calculate),
+            total_shift_worktime_calculate == 0 and shift_name not in ['OFF', 'UP', '-'] and shift_name and len(shift_name) > 1 and '/' not in shift_name and minutes_per_day or total_shift_worktime_calculate),
             time_business_trip + max(leave_item['minutes'], leave_item['time_minute']))
 
         if time_business_trip > late_in_time and time_business_trip > 0:
