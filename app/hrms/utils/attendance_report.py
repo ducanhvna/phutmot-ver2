@@ -266,10 +266,10 @@ def calculate_worktime_without_inout(realTimein, realTimeout, scheduling_record)
 
 
 def calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling_record):
-    holidayStartDatetime = scheduling_record['holidayStartDatetime']
+    holiday_start_datetime = scheduling_record['holiday_start_datetime']
     isHoliday = scheduling_record['isHoliday']
     shiftName = scheduling_record['shiftName']
-    holidayEndDatetime = scheduling_record['holidayEndDatetime']
+    holiday_end_datetime = scheduling_record['holiday_end_datetime']
     restStartDateTime = scheduling_record['rest_start_datetime']
     restEndDateTime = scheduling_record['rest_end_datetime']
     shift = scheduling_record['shift_name']
@@ -277,14 +277,14 @@ def calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling
     # shiftEndDateTime = scheduling_record['shift_end_datetime']
 
     result = 0
-    if (shift is not None and isHoliday and (calculate_worktime_without_inout(holidayStartDatetime, holidayEndDatetime) > 0 or 'PH' in shiftName)):
+    if (shift is not None and isHoliday and (calculate_worktime_without_inout(holiday_start_datetime, holiday_end_datetime) > 0 or 'PH' in shiftName)):
 
-        stageStart = restStartDateTime if restStartDateTime < holidayEndDatetime else holidayEndDatetime
-        current_program = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > holidayStartDatetime else holidayStartDatetime)
+        stageStart = restStartDateTime if restStartDateTime < holiday_end_datetime else holiday_end_datetime
+        current_program = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > holiday_start_datetime else holiday_start_datetime)
         stage_fist = max(0, int(current_program.total_seconds() // 60))
 
-        stageEnd = restEndDateTime if restEndDateTime > holidayStartDatetime else holidayStartDatetime
-        current_program = (realTimeout if realTimeout < holidayEndDatetime else holidayEndDatetime) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
+        stageEnd = restEndDateTime if restEndDateTime > holiday_start_datetime else holiday_start_datetime
+        current_program = (realTimeout if realTimeout < holiday_end_datetime else holiday_end_datetime) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
         stage_second = max(0, int(current_program.total_seconds() // 60))
 
         result = stage_fist + stage_second
@@ -292,10 +292,10 @@ def calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling
 
 
 def calculate_night_holiday_without_inout(realTimein, realTimeout, scheduling_record):
-    holidayNightStageFistStartDatetime = scheduling_record['holidayNightStageFistStartDatetime']
-    holidayNightStageFistEndDatetime = scheduling_record['holidayNightStageFistEndDatetime']
-    holidayNightStageLastStartDatetime = scheduling_record['holidayNightStageLastStartDatetime']
-    holidayNightStageLastEndDatetime = scheduling_record['holidayNightStageLastEndDatetime']
+    holiday_night_stage_fist_start_datetime = scheduling_record['holiday_night_stage_fist_start_datetime']
+    holiday_night_stage_fist_end_datetime = scheduling_record['holiday_night_stage_fist_end_datetime']
+    holiday_night_stage_last_start_datetime = scheduling_record['holiday_night_stage_last_start_datetime']
+    holiday_night_stage_last_end_datetime = scheduling_record['holiday_night_stage_last_end_datetime']
     restStartDateTime = scheduling_record['rest_start_datetime']
     restEndDateTime = scheduling_record['rest_end_datetime']
     shift = scheduling_record['shift_name']
@@ -304,26 +304,26 @@ def calculate_night_holiday_without_inout(realTimein, realTimeout, scheduling_re
         stageFistWorktime = 0
         stageLastWorktime = 0
 
-        if shift is not None and holidayNightStageFistEndDatetime is not None:
-            stageStart = restStartDateTime if restStartDateTime < holidayNightStageFistEndDatetime else holidayNightStageFistEndDatetime
-            currentProgram = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > holidayNightStageFistStartDatetime else holidayNightStageFistStartDatetime)
+        if shift is not None and holiday_night_stage_fist_end_datetime is not None:
+            stageStart = restStartDateTime if restStartDateTime < holiday_night_stage_fist_end_datetime else holiday_night_stage_fist_end_datetime
+            currentProgram = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > holiday_night_stage_fist_start_datetime else holiday_night_stage_fist_start_datetime)
             stageFist = max(0, int(currentProgram.total_seconds() // 60))
 
-            stageEnd = restEndDateTime if restEndDateTime > holidayNightStageFistStartDatetime else holidayNightStageFistStartDatetime
-            currentProgram = (realTimeout.replace(second=0) if realTimeout < holidayNightStageFistEndDatetime else holidayNightStageFistEndDatetime) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
+            stageEnd = restEndDateTime if restEndDateTime > holiday_night_stage_fist_start_datetime else holiday_night_stage_fist_start_datetime
+            currentProgram = (realTimeout.replace(second=0) if realTimeout < holiday_night_stage_fist_end_datetime else holiday_night_stage_fist_end_datetime) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
             stageSecond = max(0, int(currentProgram.total_seconds() // 60))
 
             stageFistWorktime = stageFist + stageSecond
         else:
             stageFistWorktime = 0
 
-        if shift is not None and holidayNightStageLastEndDatetime is not None:
-            stageStart = restStartDateTime if restStartDateTime < holidayNightStageLastEndDatetime else holidayNightStageLastEndDatetime
-            currentProgram = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > holidayNightStageLastStartDatetime else holidayNightStageLastStartDatetime)
+        if shift is not None and holiday_night_stage_last_end_datetime is not None:
+            stageStart = restStartDateTime if restStartDateTime < holiday_night_stage_last_end_datetime else holiday_night_stage_last_end_datetime
+            currentProgram = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > holiday_night_stage_last_start_datetime else holiday_night_stage_last_start_datetime)
             stageFist = max(0, int(currentProgram.total_seconds() // 60))
 
-            stageEnd = restEndDateTime if restEndDateTime > holidayNightStageLastStartDatetime else holidayNightStageLastStartDatetime
-            currentProgram = (realTimeout.replace(second=0) if realTimeout < holidayNightStageLastEndDatetime else holidayNightStageLastEndDatetime) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
+            stageEnd = restEndDateTime if restEndDateTime > holiday_night_stage_last_start_datetime else holiday_night_stage_last_start_datetime
+            currentProgram = (realTimeout.replace(second=0) if realTimeout < holiday_night_stage_last_end_datetime else holiday_night_stage_last_end_datetime) - (realTimein.replace(second=0) if realTimein > stageEnd else stageEnd)
             stageSecond = max(0, int(currentProgram.total_seconds() // 60))
 
             stageLastWorktime = stageFist + stageSecond
