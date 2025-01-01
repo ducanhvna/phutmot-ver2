@@ -1010,7 +1010,7 @@ def process_worktime_ho(scheduling_record):
     # minutes_per_day = scheduling_record['main_contract']['minutes_per_day'] if 'minutes_per_day' in scheduling_record['main_contract'] else False
     # total_shift_work_time_calculate = scheduling_record['total_shift_work_time_calculate']
     # employee_code = scheduling_record.employee_code
-    check_last_in_out()
+    check_last_in_out(scheduling_record)
 
     if 'attendanceAttempt1' in scheduling_record:
         list_couple_before_explanation = find_in_out_couple(attempt_with_inout_array)
@@ -1021,7 +1021,7 @@ def process_worktime_ho(scheduling_record):
         for explaination_item in [e for e in list_explanations if e.reason == '2' and e.attendance_missing_from is not None and e.attendance_missing_to is not None and ((e.attendance_missing_from.day == date.day and e.attendance_missing_from.month == date.month) or (e.attendance_missing_to.day == date.day and e.attendance_missing_to.month == date.month))]:
             process_explanation_item_ho(scheduling_record, explaination_item)
 
-    check_last_in_out()
+    check_last_in_out(scheduling_record)
     list_workingout_leaves = [element for element in hr_leaves if element.attendance_missing_from is not None and element.attendance_missing_to is not None and ((element.attendance_missing_from.day == date.day and element.attendance_missing_from.month == date.month) or (element.attendance_missing_to.day == date.day and element.attendance_missing_to.month == date.month)) and 'ra ngoài' in element.holiday_status_name.lower()]
 
     for leave_item in [element for element in list_workingout_leaves if element.for_reasons == '2' and element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
@@ -1043,12 +1043,12 @@ def process_worktime_ho(scheduling_record):
                 leave_item.attendance_missing_from += rest_start_datetime - rest_end_datetime
         process_leave_item_ho(leave_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
-    check_last_in_out()
+    check_last_in_out(scheduling_record)
     if 'attendanceAttempt1' in scheduling_record:
         list_couple_before_explanation_private = find_in_out_couple(attempt_with_inout_array)
         scheduling_record['list_couple_out_in_before_explanation_private'] = get_list_couple_out_in(list_couple_before_explanation_private)
 
-    check_last_in_out()
+    check_last_in_out(scheduling_record)
     for explaination_item in [e for e in list_explanations if e.reason == '1' and e.attendance_missing_from is not None and e.attendance_missing_to is not None]:
         process_explanation_item_ho(explaination_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
