@@ -1197,13 +1197,31 @@ def process_casual_leave(scheduling_record, list_cl_leaves):
 
 def check_leave_valid_type1(type_name, element, shift_start_datetime, shift_end_datetime):
     result = False
-    c1 = element['request_date_from'] is not None
-    c2 = element['request_date_to'] is not None
+    c1 = True if element['request_date_from'] else False
+    c2 = True if ['request_date_to']  else False
     if c1 and c2:
         try:
             c3 = not element['request_date_from'].replace(hour=0, minute=0, second=0, microsecond=0) > shift_end_datetime
             c4 = not element['request_date_to'].replace(hour=23, minute=59, second=59, microsecond=999999) < shift_start_datetime
-            c5 = 'đi muộn' in element['holiday_status_name'].lower()
+            c5 = type_name in element['holiday_status_name'].lower()
+        except Exception as ex:
+            print('check_leave_valid_type1: ', ex)
+            c3 = False
+            c4 = False
+            c5 = False
+        result = c3 and c4 and c5
+    return result
+
+
+def check_leave_valid_type2(type_name, element, date):
+    result = False
+    c1 = True if ['attendance_missing_from'] else False
+    c2 = True if ['attendance_missing_to'] else False
+    if c1 and c2:
+        try:
+            c3 = not element['request_date_from'].day == date.day
+            c4 = not element['request_date_to'].month == date.month
+            c5 = type_name in element['holiday_status_name'].lower()
         except Exception as ex:
             print('check_leave_valid_type1: ', ex)
             c3 = False
@@ -1249,9 +1267,9 @@ def process_worktime_ho(scheduling_record):
             process_explanation_item_ho(scheduling_record, explaination_item)
 
     check_last_in_out(scheduling_record)
-    list_workingout_leaves = [element for element in hr_leaves if element['attendance_missing_from'] is not None and element['attendance_missing_to'] is not None and ((element['attendance_missing_from'].day == date.day and element['attendance_missing_from'].month == date.month) or (element['attendance_missing_to'].day == date.day and element['attendance_missing_to'].month == date.month)) and 'ra ngoài' in element.holiday_status_name.lower()]
+    list_workingout_leaves = [element for element in hr_leaves if check_leave_valid_type2('ra ngoài', element, date)]
 
-    for leave_item in [element for element in list_workingout_leaves if element['for_reasons'] == '2' and element['attendance_missing_from'] is not None and element['attendance_missing_to'] is not None]:
+    for leave_item in [element for element in list_workingout_leaves if element['for_reasons'] == '2']:
         process_leave_item_ho(leave_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
     for leave_item in [element for element in list_late_in_leaves if element['for_reasons'] == '2' and element['request_date_from'] is not None and element['request_date_from'].day != shift_start_datetime.day]:
