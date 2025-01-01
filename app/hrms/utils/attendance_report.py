@@ -1225,7 +1225,7 @@ def process_worktime_ho(scheduling_record):
         scheduling_record['list_couple_out_in_before_explanation'] = get_list_couple_out_in(list_couple_before_explanation, scheduling_record)
 
     if date is not None and shift_start_datetime is not None and shift_end_datetime is not None:
-        for explaination_item in [e for e in list_explanations if e.reason == '2' and e.attendance_missing_from is not None and e.attendance_missing_to is not None and ((e.attendance_missing_from.day == date.day and e.attendance_missing_from.month == date.month) or (e.attendance_missing_to.day == date.day and e.attendance_missing_to.month == date.month))]:
+        for explaination_item in [e for e in list_explanations if e['reason'] == '2' and e.attendance_missing_from is not None and e.attendance_missing_to is not None and ((e.attendance_missing_from.day == date.day and e.attendance_missing_from.month == date.month) or (e.attendance_missing_to.day == date.day and e.attendance_missing_to.month == date.month))]:
             process_explanation_item_ho(scheduling_record, explaination_item)
 
     check_last_in_out(scheduling_record)
@@ -1256,7 +1256,7 @@ def process_worktime_ho(scheduling_record):
         scheduling_record['list_couple_out_in_before_explanation_private'] = get_list_couple_out_in(list_couple_before_explanation_private)
 
     check_last_in_out(scheduling_record)
-    for explaination_item in [e for e in list_explanations if e.reason == '1' and e.attendance_missing_from is not None and e.attendance_missing_to is not None]:
+    for explaination_item in [e for e in list_explanations if e['reason'] == '1' and e.attendance_missing_from is not None and e.attendance_missing_to is not None]:
         process_explanation_item_ho(explaination_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
     if 'attendanceAttempt1' in scheduling_record:
@@ -1326,7 +1326,7 @@ def process_explanation(list_explanations, scheduling_record, employee_ho, list_
     out_by_private = scheduling_record['out_by_private']
     out_by_private_attendance = scheduling_record['out_by_private_attendance']
     out_by_work = scheduling_record['out_by_work']
-    listexplainations_private = [element for element in list_explanations if element.reason == '1']
+    listexplainations_private = [element for element in list_explanations if element['reason'] == '1']
 
     for explaination_item in [element for element in listexplainations_private if element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
         if employee_ho:
@@ -1384,7 +1384,7 @@ def process_explanation(list_explanations, scheduling_record, employee_ho, list_
                             )
                         )
 
-    listexplainations_work = [element for element in list_explanations if element.reason == '2']
+    listexplainations_work = [element for element in list_explanations if element['reason'] == '2']
 
     for explaination_item in [element for element in listexplainations_work if element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
         in_time_leave = 0
