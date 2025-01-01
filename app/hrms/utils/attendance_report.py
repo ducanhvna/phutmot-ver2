@@ -599,6 +599,7 @@ def check_is_holiday(scheduling_record):
 
 
 def process_leave_records(leave, scheduling_record):
+    scheduling_record['kidmod'] = KidMode.NONE
     scheduling_record['convert_overtime'] = False
     for leave_item in leave.leave_records:
         try:
@@ -954,10 +955,14 @@ def process_worktime(scheduling_record):
 
 
 def process_late_early_leave(scheduling_record):
-    global kidmod
     global kidModeStage1EndDatetime, kidModeStage2Datetime, shiftEndDateTime
-    global totalWorkTime, lateinTime, earlyOutTime, shift_name, shift
-    global listLateInLeaves, maxLateEarly, _hrLeaves
+    global totalWorkTime, lateinTime, earlyOutTime
+    global maxLateEarly
+    list_late_in_leaves = scheduling_record['list_late_in_leaves']
+    _hrLeaves = scheduling_record['hr_leaves']
+    shift = scheduling_record['shift']
+    shift_name = scheduling_record['shift_name']
+    kidmod = scheduling_record['kidmod']
     shiftStartDateTime = scheduling_record['shift_start_datetime']
     real_timeout = scheduling_record['real_timeout']
     real_timein = scheduling_record['real_timein']
@@ -1014,7 +1019,7 @@ def process_late_early_leave(scheduling_record):
                 earlyOutTime = earlyOutTime - 240 if earlyOutTime > 240 else earlyOutTime
                 lateinTime = lateinTime - 240 if lateinTime > 240 else lateinTime
 
-        for leaveItem in listLateInLeaves:
+        for leaveItem in list_late_in_leaves:
             if real_timein > shiftStartDateTime:
                 if leaveItem['for_reasons'] == '1':
                     lateIn_private += min(maxLateEarly, max(leaveItem['minutes'], leaveItem['time_minute']))
