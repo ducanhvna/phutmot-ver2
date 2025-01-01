@@ -603,6 +603,7 @@ def process_leave_records(leave, scheduling_record):
     scheduling_record['convert_overtime'] = False
     for leave_item in leave.leave_records:
         try:
+            leave_item['holidayStatusName'] = leave_item['holiday_status_id'][0] if leave_item['holiday_status_id'][1] else ''
             if leave_item['attendance_missing_to']:
                 leave_item['attendance_missing_to'] = datetime.strptime(leave_item['attendance_missing_to'], "%Y-%m-%d %H:%M:%S")
             if leave_item['attendance_missing_from']:
