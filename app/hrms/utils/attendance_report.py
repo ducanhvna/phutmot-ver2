@@ -1349,7 +1349,7 @@ def process_worktime_ho(scheduling_record):
         list_couple_after_explanation_private = find_in_out_couple(attempt_with_inout_array, scheduling_record)
         scheduling_record['list_couple_out_in_after_explanation_private'] = get_list_couple_out_in(list_couple_after_explanation_private, scheduling_record)
         scheduling_record['list_couple_after_explanation_private'] = list_couple_after_explanation_private
-    
+
     for leave_item in [element for element in list_workingout_leaves if element['for_reasons'] == '1' and element['attendance_missing_from'] and element['attendance_missing_to']]:
         process_leave_item_ho(scheduling_record, leave_item)
 
