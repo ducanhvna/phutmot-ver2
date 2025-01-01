@@ -652,32 +652,6 @@ def find_attendance_hue4_time_mode(scheduling_record):
     scheduling_record["stage2WorktimeTemp"] = stage2WorktimeTemp
 
 
-# Ví dụ sử dụng (giả định các biến đã được định nghĩa trước đó)
-attendanceAttempt1 = datetime(2024, 12, 28, 8, 0)
-attendanceAttemptArray = [
-    datetime(2024, 12, 28, 8, 0),
-    datetime(2024, 12, 28, 12, 0),
-    datetime(2024, 12, 28, 13, 0),
-    datetime(2024, 12, 28, 18, 0)
-]
-by_hue_shift = False
-stage1WorktimeTemp = 120
-stage2WorktimeTemp = 60
-HueStage1End = None
-HueStage2Start = None
-shiftStartDateTime = datetime(2024, 12, 28, 8, 0)
-restStartDateTime = datetime(2024, 12, 28, 12, 0)
-restEndDateTime = datetime(2024, 12, 28, 13, 0)
-shiftEndDateTime = datetime(2024, 12, 28, 18, 0)
-totalShiftWorkTime_calculate = 480
-real_late_in_minute = 0
-real_ealry_out_minute = 0
-totalWorkTime = 0
-nightWorkTime = 0
-holidayWorkTime = 0
-nightHolidayWorkTime = 0
-
-
 def process_worktime(scheduling_record):
     global totalWorkTime, nightWorkTime, holidayWorkTime, nightHolidayWorkTime
     global realTimein, realTimeout
@@ -1038,7 +1012,7 @@ def process_worktime_ho(scheduling_record):
     # employee_code = scheduling_record.employee_code
     check_last_in_out()
 
-    if 'attendance_attempt_1' in globals():
+    if 'attendanceAttempt1' in scheduling_record:
         list_couple_before_explanation = find_in_out_couple(attempt_with_inout_array)
         scheduling_record['list_couple_in_in_before_explanation'] = find_in_in_couple(attempt_with_inout_array)
         scheduling_record['list_couple_out_in_before_explanation'] = get_list_couple_out_in(list_couple_before_explanation)
@@ -1070,7 +1044,7 @@ def process_worktime_ho(scheduling_record):
         process_leave_item_ho(leave_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
     check_last_in_out()
-    if 'attendance_attempt_1' in globals():
+    if 'attendanceAttempt1' in scheduling_record:
         list_couple_before_explanation_private = find_in_out_couple(attempt_with_inout_array)
         scheduling_record['list_couple_out_in_before_explanation_private'] = get_list_couple_out_in(list_couple_before_explanation_private)
 
@@ -1078,7 +1052,7 @@ def process_worktime_ho(scheduling_record):
     for explaination_item in [e for e in list_explanations if e.reason == '1' and e.attendance_missing_from is not None and e.attendance_missing_to is not None]:
         process_explanation_item_ho(explaination_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
-    if 'attendance_attempt_1' in globals():
+    if 'attendanceAttempt1' in scheduling_record:
         list_couple_after_explanation_private = find_in_out_couple(attempt_with_inout_array)
         scheduling_record['list_couple_out_in_after_explanation_private'] = get_list_couple_out_in(list_couple_after_explanation_private)
         scheduling_record['list_couple_after_explanation_private'] = list_couple_after_explanation_private
