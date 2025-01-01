@@ -1291,7 +1291,7 @@ def process_worktime_ho(scheduling_record):
     check_last_in_out(scheduling_record)
     if 'attendanceAttempt1' in scheduling_record:
         list_couple_before_explanation_private = find_in_out_couple(attempt_with_inout_array, scheduling_record)
-        scheduling_record['list_couple_out_in_before_explanation_private'] = get_list_couple_out_in(list_couple_before_explanation_private)
+        scheduling_record['list_couple_out_in_before_explanation_private'] = get_list_couple_out_in(list_couple_before_explanation_private, scheduling_record)
 
     check_last_in_out(scheduling_record)
     for explaination_item in [e for e in list_explanations if e['reason'] == '1' and e['attendance_missing_from'] and e['attendance_missing_to']]:
@@ -1299,7 +1299,7 @@ def process_worktime_ho(scheduling_record):
 
     if 'attendanceAttempt1' in scheduling_record:
         list_couple_after_explanation_private = find_in_out_couple(attempt_with_inout_array, scheduling_record)
-        scheduling_record['list_couple_out_in_after_explanation_private'] = get_list_couple_out_in(list_couple_after_explanation_private)
+        scheduling_record['list_couple_out_in_after_explanation_private'] = get_list_couple_out_in(list_couple_after_explanation_private, scheduling_record)
         scheduling_record['list_couple_after_explanation_private'] = list_couple_after_explanation_private
 
     for leave_item in [element for element in list_workingout_leaves if element['for_reasons'] == '1' and element['attendance_missing_from'] and element['attendance_missing_to']]:
