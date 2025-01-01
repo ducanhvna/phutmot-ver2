@@ -618,12 +618,12 @@ def process_explaination_records(explanation, scheduling_record):
     for explanation_item in explanation.explaination_records:
         try:
             if explanation_item['attendance_missing_to']:
-                explanation_item['attendance_missing_to'] = datetime.strptime(leave_item['attendance_missing_to'], "%Y-%m-%d %H:%M:%S")
+                explanation_item['attendance_missing_to'] = datetime.strptime(explanation_item['attendance_missing_to'], "%Y-%m-%d %H:%M:%S")
             if explanation_item['attendance_missing_from']:
-                explanation_item['attendance_missing_from'] = datetime.strptime(leave_item['attendance_missing_from'], "%Y-%m-%d %H:%M:%S")
+                explanation_item['attendance_missing_from'] = datetime.strptime(explanation_item['attendance_missing_from'], "%Y-%m-%d %H:%M:%S")
         except Exception as ex:
             print('process_explaination_records: ', ex)
-    scheduling['list_explanations'] = explanation.explaination_records
+    scheduling_record['list_explanations'] = explanation.explaination_records
 
 
 def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, profile):
