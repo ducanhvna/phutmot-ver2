@@ -599,6 +599,7 @@ def check_is_holiday(scheduling_record):
 
 
 def process_leave_records(leave, scheduling_record):
+    scheduling_record['convert_overtime'] = False
     for leave_item in leave.leave_records:
         try:
             if leave_item['attendance_missing_to']:
@@ -960,7 +961,7 @@ def process_late_early_leave(scheduling_record):
     shiftStartDateTime = scheduling_record['shift_start_datetime']
     real_timeout = scheduling_record['real_timeout']
     real_timein = scheduling_record['real_timein']
-    convert_overtime = scheduling_record['main_contract']['convert_overtime']
+    convert_overtime = scheduling_record['convert_overtime']
     employee_ho = scheduling_record['main_info']['employee_ho'] if 'employee_ho' in scheduling_record['main_info'] else False
     list_couple = scheduling_record['list_couple']
     lateIn_private = 0
@@ -1068,9 +1069,9 @@ def process_overtime_leave(scheduling_record):
         overtime_wage_by_leave += leave_item['multiplied_wage_amount']
 
         if leave_item['convert_overtime']:
-            convert_overtime = leave_item['convert_overtime']
-            if convert_overtime:
-                total_work_time = 0
+            scheduling_record['convert_overtime'] = leave_item['convert_overtime']
+            if scheduling_record['convert_overtime']:
+                scheduling_record['total_work_time'] = 0
 
         if 'phát sinh tăng' in leave_item['reasons'].lower():
             total_increase_date += max(leave_item['minutes'], leave_item['time_minute']) * max(0, leave_item['multiplier_work_time'])
@@ -1675,8 +1676,8 @@ def process_up_shift(shift, shift_name, list_up_leaves, max_late_early, employee
 def calculate_worktime_with_inout_standard(scheduling_record):
     process_missing_attendance(scheduling_record)
     process_worktime_ho(scheduling_record)
-    process_late_early_leave(scheduling_record)
     process_overtime_leave(scheduling_record)
+    process_late_early_leave(scheduling_record)
     process_increase_leave(scheduling_record)
     process_leave_with_pay(scheduling_record)
     process_annual_leave(scheduling_record)
