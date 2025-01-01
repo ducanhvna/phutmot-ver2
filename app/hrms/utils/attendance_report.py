@@ -435,6 +435,7 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
             scheduling['hue_stage1_end'] = None
             scheduling['hue_stage2_start'] = None
             scheduling['total_shift_worktime_calculate'] = 0
+            scheduling['list_couple_after_explanation_private'] = []
             shift_name = scheduling['shift_name']
             rest_start_datetime = scheduling['rest_start_datetime']
             shift_start_datetime = scheduling['shift_start_datetime']
@@ -1080,6 +1081,7 @@ def process_worktime_ho(scheduling_record):
     if 'attendance_attempt_1' in globals():
         list_couple_after_explanation_private = find_in_out_couple(attempt_with_inout_array)
         scheduling_record['list_couple_out_in_after_explanation_private'] = get_list_couple_out_in(list_couple_after_explanation_private)
+        scheduling_record['list_couple_after_explanation_private'] = list_couple_after_explanation_private
 
     for leave_item in [element for element in list_workingout_leaves if element.for_reasons == '1' and element.attendance_missing_from is not None and element.attendance_missing_to is not None]:
         process_leave_item_ho(scheduling_record, leave_item)
