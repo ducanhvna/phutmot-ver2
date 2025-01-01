@@ -428,6 +428,32 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
             scheduling['list_add_item_out'] = []
             scheduling['list_early_out_leaves'] = get_list_early_out_leaves(scheduling)
             scheduling['list_late_in_leaves'] = get_list_late_in_leaves(scheduling)
+            scheduling['main_contract'] = employee.main_contract
+            scheduling['main_info'] = employee.info
+            scheduling['stage1_worktime_temp'] = 0
+            scheduling['stage2_worktime_temp'] = 0
+            scheduling['hue_stage1_end'] = None
+            scheduling['hue_stage2_start'] = None
+            scheduling['total_shift_worktime_calculate'] = 0
+            shift_name = scheduling['shift_name'] 
+            rest_start_datetime = scheduling['restStartDateTime']
+            if shift_name is not None:
+                if '/' in shift_name and 'PH' in shift_name:
+                    main_shift_start_datetime = shift_start_datetime
+                    main_shift_end_datetime = shift_end_datetime
+                    main_rest_start_datetime = rest_start_datetime
+                    temp_worktime_cal = calculate_worktime_without_inout(main_shift_start_datetime, main_shift_end_datetime, scheduling)
+                    scheduling['half_stage1_worktime_calculate'] = calculate_worktime_without_inout(main_shift_start_datetime, main_rest_start_datetime, scheduling)
+                else:
+                    temp_worktime_cal = calculate_worktime_without_inout(shift_start_datetime, shift_end_datetime, scheduling)
+                    scheduling['half_stage1_worktime_calculate'] = calculate_worktime_without_inout(shift_start_datetime, rest_start_datetime, scheduling)
+
+                if 370 <= temp_worktime_cal <= 375:
+                    scheduling['total_shift_worktime_calculate'] = 371
+                elif 441 <= temp_worktime_cal <= 443:
+                    scheduling['total_shift_worktime_calculate'] = 442
+                else:
+                    scheduling['total_shift_worktime_calculate'] = round(temp_worktime_cal / 5) * 5
 
 
 def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHoursWithNext, diffHoursWithPrev):
@@ -983,7 +1009,7 @@ def check_leave_valid_type1(type_name, element, shift_start_datetime, shift_end_
     return result
 
 
-def process_worktime_ho(scheduling_record, by_hue_shift, stage1_worktime_temp, stage2_worktime_temp, hue_stage1_end, hue_stage2_start, employee_ho, total_shift_work_time_calculate, minutes_per_day):
+def process_worktime_ho(scheduling_record):
     rest_start_datetime = scheduling_record['rest_start_datetime']
     rest_end_datetime = scheduling_record['rest_end_datetime']
     rest_start_datetime = scheduling_record['rest_start_datetime']
@@ -998,6 +1024,14 @@ def process_worktime_ho(scheduling_record, by_hue_shift, stage1_worktime_temp, s
     list_add_item_out = scheduling_record['list_add_item_out']
     list_late_in_leaves = scheduling_record['list_late_in_leaves']
     list_early_out_leaves = scheduling_record['list_early_out_leaves']
+    by_hue_shift = scheduling_record['main_contract']['by_hue_shift'] if 'by_hue_shift' in scheduling_record['main_contract'] else False
+    stage1_worktime_temp = scheduling_record['stage1_worktime_temp']
+    stage2_worktime_temp = scheduling_record['stage2_worktime_temp']
+    hue_stage1_end = scheduling_record['hue_stage1_end']
+    hue_stage2_start = scheduling_record['hue_stage2_start']
+    employee_ho = scheduling_record['main_info']['employee_ho'] if 'employee_ho' in scheduling_record['main_info'] else False
+    minutes_per_day = scheduling_record['main_contract']['minutes_per_day'] if 'minutes_per_day' in scheduling_record['main_contract'] else False
+    total_shift_work_time_calculate = scheduling_record['total_shift_work_time_calculate']
     employee_code = scheduling_record.employee_code
     check_last_in_out()
 
