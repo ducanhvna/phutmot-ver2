@@ -204,7 +204,7 @@ def process_explanation_item_ho(scheduling_record, explaination_item):
             attempt_with_inout_array.append(item)
 
 
-def calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_record, shift):
+def calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_record):
     isNightStageFist = scheduling_record['isNightStageFist']
     isNightStageLast = scheduling_record['isNightStageLast']
     nightStagefistStart = scheduling_record['nightStagefistStart']
@@ -213,6 +213,7 @@ def calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_r
     nightStagelastEnd = scheduling_record['nightStagelastEnd']
     restStartDateTime = scheduling_record['rest_start_datetime']
     restEndDateTime = scheduling_record['rest_end_datetime']
+    shift = scheduling_record['shift_name']
     result = 0
     if shift is not None:
         stage_fist_worktime = 0
@@ -264,13 +265,14 @@ def calculate_worktime_without_inout(realTimein, realTimeout, scheduling_record)
     return int(result)
 
 
-def calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling_record, shift):
+def calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling_record):
     holidayStartDatetime = scheduling_record['holidayStartDatetime']
     isHoliday = scheduling_record['isHoliday']
     shiftName = scheduling_record['shiftName']
     holidayEndDatetime = scheduling_record['holidayEndDatetime']
     restStartDateTime = scheduling_record['rest_start_datetime']
     restEndDateTime = scheduling_record['rest_end_datetime']
+    shift = scheduling_record['shift_name']
     # shiftStartDateTime = scheduling_record['shift_start_datetime']
     # shiftEndDateTime = scheduling_record['shift_end_datetime']
 
@@ -289,13 +291,14 @@ def calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling
     return result
 
 
-def calculate_night_holiday_without_inout(realTimein, realTimeout, scheduling_record, shift):
+def calculate_night_holiday_without_inout(realTimein, realTimeout, scheduling_record):
     holidayNightStageFistStartDatetime = scheduling_record['holidayNightStageFistStartDatetime']
     holidayNightStageFistEndDatetime = scheduling_record['holidayNightStageFistEndDatetime']
     holidayNightStageLastStartDatetime = scheduling_record['holidayNightStageLastStartDatetime']
     holidayNightStageLastEndDatetime = scheduling_record['holidayNightStageLastEndDatetime']
     restStartDateTime = scheduling_record['rest_start_datetime']
     restEndDateTime = scheduling_record['rest_end_datetime']
+    shift = scheduling_record['shift_name']
     result = 0
     if shift is not None:
         stageFistWorktime = 0
@@ -708,9 +711,9 @@ def process_worktime(scheduling_record):
             if realTimeout is not None and shiftEndDateTime is not None:
                 real_ealry_out_minute = calculate_worktime_without_inout(realTimeout, shiftEndDateTime)
 
-        nightWorkTime = calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_record, shift)
-        holidayWorkTime = calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling_record, shift)
-        nightHolidayWorkTime = calculate_night_holiday_without_inout(realTimein, realTimeout, scheduling_record, shift)
+        nightWorkTime = calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_record)
+        holidayWorkTime = calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling_record)
+        nightHolidayWorkTime = calculate_night_holiday_without_inout(realTimein, realTimeout, scheduling_record)
     else:
         totalWorkTime = 0
         nightWorkTime = 0
