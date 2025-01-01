@@ -953,14 +953,15 @@ def process_worktime(scheduling_record):
 
 
 def process_late_early_leave(scheduling_record):
-    global real_timein, real_timeout, convert_overtime
-    global employeeHo, listCouple, kidmod
+    global listCouple, kidmod
     global kidModeStage1EndDatetime, kidModeStage2Datetime, shiftEndDateTime
     global totalWorkTime, lateinTime, earlyOutTime, shift_name, shift
     global listLateInLeaves, maxLateEarly, _hrLeaves
     shiftStartDateTime = scheduling_record['shift_start_datetime']
     real_timeout = scheduling_record['real_timeout']
     real_timein = scheduling_record['real_timein']
+    convert_overtime = scheduling_record['main_contract']['convert_overtime']
+    employee_ho = scheduling_record['main_info']['employee_ho'] if 'employee_ho' in scheduling_record['main_info'] else False
     lateIn_private = 0
     lateIn_by_work = 0
     lateIn_by_private_num = 0
@@ -972,7 +973,7 @@ def process_late_early_leave(scheduling_record):
             lateinTime = 0
             earlyOutTime = 0
         else:
-            if employeeHo:
+            if employee_ho:
                 if listCouple:
                     if kidmod == KidMode.SBEGIN30SEND30:
                         lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, listCouple[0].itemIn.attempt)
