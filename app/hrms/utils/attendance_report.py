@@ -1043,7 +1043,7 @@ def is_overtime_leave(leave, shift_start_datetime):
 def process_overtime_leave(scheduling_record):
     hr_leaves = scheduling_record['hr_leaves']
     shift_start_datetime = scheduling_record['shift_start_datetime']
-    is_probationary = scheduling_record['is_probationary']
+    is_probationary = scheduling_record['main_contract']['is_probationary']
     is_holiday = scheduling_record['is_holiday']
     holiday_start_datetime = scheduling_record['holiday_start_datetime']
     holiday_end_datetime = scheduling_record['holiday_end_datetime']
