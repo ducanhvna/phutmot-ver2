@@ -377,6 +377,36 @@ def calculate_night_worktime_custom(scheduling_record, realTimein, realTimeout, 
     return int(stageFistWorktime)
 
 
+def get_list_late_in_leaves(scheduling_record):
+    _hrLeaves = scheduling_record['leave_records']
+    shift_start_datetime = scheduling_record['shiftStartDateTime']
+    shift_end_datetime = scheduling_record['shiftEndDateTime']
+    list_late_in_leaves = [
+        element for element in _hrLeaves if check_leave_valid_type1('đi muộn', element, shift_start_datetime, shift_end_datetime)
+        # element.request_date_from is not None
+        # and element.request_date_to is not None
+        # and not element.request_date_from.replace(hour=0, minute=0, second=0, microsecond=0) > shift_end_datetime
+        # and not element.request_date_to.replace(hour=23, minute=59, second=59, microsecond=999999) < shift_start_datetime
+        # and 'đi muộn' in element['holiday_status_name'].lower()
+    ]
+    return list_late_in_leaves
+
+
+def get_list_early_out_leaves(scheduling_record):
+    _hrLeaves = scheduling_record['leave_records']
+    shift_start_datetime = scheduling_record['shiftStartDateTime']
+    shift_end_datetime = scheduling_record['shiftEndDateTime']
+    list_early_out_leaves = [
+        element for element in _hrLeaves if check_leave_valid_type1('về sớm', element, shift_start_datetime, shift_end_datetime)
+        # element.request_date_from is not None
+        # and element.request_date_to is not None
+        # and not element.request_date_from.replace(hour=0, minute=0, second=0, microsecond=0) > shift_end_datetime
+        # and not element.request_date_to.replace(hour=23, minute=59, second=59, microsecond=999999) < shift_start_datetime
+        # and 'đi muộn' in element['holiday_status_name'].lower()
+    ]
+    return list_early_out_leaves
+
+
 def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, profile):
     merged_shift = {shift.name.replace('/', '_'): shift for shift in shifts}
 
@@ -396,6 +426,8 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
             scheduling['date'] = date
             scheduling['list_explanations'] = explanation.explaination_records
             scheduling['list_add_item_out'] = []
+            scheduling['list_early_out_leaves'] = get_list_early_out_leaves(scheduling)
+            scheduling['list_late_in_leaves'] = get_list_late_in_leaves(scheduling)
 
 
 def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHoursWithNext, diffHoursWithPrev):
@@ -951,22 +983,7 @@ def check_leave_valid_type1(type_name, element, shift_start_datetime, shift_end_
     return result
 
 
-def get_list_late_in_leaves(scheduling_record):
-    _hrLeaves = scheduling_record['leave_records']
-    shift_start_datetime = scheduling_record['shiftStartDateTime']
-    shift_end_datetime = scheduling_record['shiftEndDateTime']
-    list_late_in_leaves = [
-        element for element in _hrLeaves if check_leave_valid_type1('đi muộn', element, shift_start_datetime, shift_end_datetime)
-        # element.request_date_from is not None
-        # and element.request_date_to is not None
-        # and not element.request_date_from.replace(hour=0, minute=0, second=0, microsecond=0) > shift_end_datetime
-        # and not element.request_date_to.replace(hour=23, minute=59, second=59, microsecond=999999) < shift_start_datetime
-        # and 'đi muộn' in element['holiday_status_name'].lower()
-    ]
-    return list_late_in_leaves
-
-
-def process_worktime_ho(scheduling_record, list_early_out_leaves, by_hue_shift, stage1_worktime_temp, stage2_worktime_temp, hue_stage1_end, hue_stage2_start, employee_code, employee_ho, total_shift_work_time_calculate, minutes_per_day):
+def process_worktime_ho(scheduling_record, by_hue_shift, stage1_worktime_temp, stage2_worktime_temp, hue_stage1_end, hue_stage2_start, employee_code, employee_ho, total_shift_work_time_calculate, minutes_per_day):
     rest_start_datetime = scheduling_record['rest_start_datetime']
     rest_end_datetime = scheduling_record['rest_end_datetime']
     rest_start_datetime = scheduling_record['rest_start_datetime']
@@ -979,7 +996,8 @@ def process_worktime_ho(scheduling_record, list_early_out_leaves, by_hue_shift, 
     attempt_with_inout_array = scheduling_record['attemptWithInoutArray']
     hr_leaves = scheduling_record['leave_records']
     list_add_item_out = scheduling_record['list_add_item_out']
-    list_late_in_leaves = get_list_late_in_leaves(hr_leaves)
+    list_late_in_leaves = scheduling_record['list_late_in_leaves']
+    list_early_out_leaves = scheduling_record['list_early_out_leaves']
     check_last_in_out()
 
     if 'attendance_attempt_1' in globals():
