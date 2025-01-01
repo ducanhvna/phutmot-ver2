@@ -695,8 +695,8 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
                     scheduling['total_shift_worktime_calculate'] = 442
                 else:
                     scheduling['total_shift_worktime_calculate'] = round(temp_worktime_cal / 5) * 5
-                if scheduling_record['main_contract']:
-                    scheduling['is_probationary'] = not ('chính thức' in f"{scheduling_record['main_contract']['contract_type_id']}".lower())
+                if scheduling['main_contract']:
+                    scheduling['is_probationary'] = not ('chính thức' in f"{scheduling['main_contract']['contract_type_id']}".lower())
 
 
 def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHoursWithNext, diffHoursWithPrev):
