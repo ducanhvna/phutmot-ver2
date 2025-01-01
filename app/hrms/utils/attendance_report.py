@@ -659,7 +659,7 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
             scheduling['stage2_worktime_temp'] = 0
             scheduling['hue_stage1_end'] = None
             scheduling['hue_stage2_start'] = None
-            scheduling['total_shift_worktime_calculate'] = 0
+            scheduling['total_shift_work_time_calculate'] = 0
             scheduling['list_couple_after_explanation_private'] = []
             shift_name = scheduling['shift_name']
             rest_start_datetime = scheduling['rest_start_datetime']
@@ -690,11 +690,11 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
                     scheduling['half_stage1_worktime_calculate'] = calculate_worktime_without_inout(shift_start_datetime, rest_start_datetime, scheduling)
 
                 if 370 <= temp_worktime_cal <= 375:
-                    scheduling['total_shift_worktime_calculate'] = 371
+                    scheduling['total_shift_work_time_calculate'] = 371
                 elif 441 <= temp_worktime_cal <= 443:
-                    scheduling['total_shift_worktime_calculate'] = 442
+                    scheduling['total_shift_work_time_calculate'] = 442
                 else:
-                    scheduling['total_shift_worktime_calculate'] = round(temp_worktime_cal / 5) * 5
+                    scheduling['total_shift_work_time_calculate'] = round(temp_worktime_cal / 5) * 5
 
 
 def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHoursWithNext, diffHoursWithPrev):
