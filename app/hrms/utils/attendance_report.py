@@ -1385,15 +1385,15 @@ def is_business_leave(leave, shift_end_datetime, shift_start_datetime):
     return c1 and c2 and c3 and c4 and c5
 
 
-def process_business_leave(hr_leaves, date, shift_end_datetime, shift_start_datetime, total_shift_worktime_calculate, shift_name, minutes_per_day, late_in_time):
+def process_business_leave(scheduling_record):
+    is_probationary = scheduling_record['is_probationary']
+    hr_leaves = scheduling_record['hr_leaves']
+    shift_name = scheduling_record['shift_name']
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    shift_end_datetime = scheduling_record['shift_end_datetime']
+    scheduling_record['list_business_leaves'] = list(filter(lambda leave: check_leave_valid_type1('công tác', leave, shift_start_datetime, shift_end_datetime), hr_leaves))
+    list_cl_leaves = scheduling_record['list_business_leaves']
     time_business_trip = 0
-    if not date or not shift_end_datetime or not shift_start_datetime:
-        list_business_leaves = []
-    else:
-        list_business_leaves = list(filter(
-            lambda leave: is_business_leave(leave, shift_end_datetime, shift_start_datetime),
-            hr_leaves
-        ))
 
     for leave_item in list_business_leaves:
         time_business_trip = min((
