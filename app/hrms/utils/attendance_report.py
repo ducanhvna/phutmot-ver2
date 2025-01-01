@@ -614,6 +614,18 @@ def process_leave_records(leave, scheduling_record):
     scheduling_record['hr_leaves'] = leave.leave_records
 
 
+def process_explaination_records(explanation, scheduling_record):
+    for explanation_item in explanation.explaination_records:
+        try:
+            if explanation_item['attendance_missing_to']:
+                explanation_item['attendance_missing_to'] = datetime.strptime(leave_item['attendance_missing_to'], "%Y-%m-%d %H:%M:%S")
+            if explanation_item['attendance_missing_from']:
+                explanation_item['attendance_missing_from'] = datetime.strptime(leave_item['attendance_missing_from'], "%Y-%m-%d %H:%M:%S")
+        except Exception as ex:
+            print('process_explaination_records: ', ex)
+    scheduling['list_explanations'] = explanation.explaination_records
+
+
 def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, profile):
     merged_shift = {shift.name.replace('/', '_'): shift for shift in shifts}
 
@@ -634,7 +646,7 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
                 hour=shift.end_work_time.hour, minute=shift.end_rest_time.minute)
             process_leave_records(leave, scheduling)
             scheduling['date'] = date
-            scheduling['list_explanations'] = explanation.explaination_records
+            process_explaination_records(explanation, scheduling)
             scheduling['list_add_item_out'] = []
             scheduling['list_early_out_leaves'] = get_list_early_out_leaves(scheduling)
             scheduling['list_late_in_leaves'] = get_list_late_in_leaves(scheduling)
@@ -1228,6 +1240,29 @@ def check_leave_valid_type2(type_name, element, date):
             c4 = False
             c5 = False
         result = c3 and c4 and c5
+    return result
+
+
+def check_explaination_valid_type2(element, date, reason = None, type_name = None):
+    result = False
+    c1 = True if ['attendance_missing_from'] else False
+    c2 = True if ['attendance_missing_to'] else False
+    c5 = True
+    c6 = True
+    if c1 and c2:
+        try:
+            c3 = not element['request_date_from'].day == date.day
+            c4 = not element['request_date_to'].month == date.month
+            if type_name:
+                c5 = type_name in element['invalid_type'].lower()
+            if reason:
+                c6 = reason in element['reason'].lower()
+        except Exception as ex:
+            print('check_explaination_valid_type2: ', ex)
+            c3 = False
+            c4 = False
+            c5 = False
+        result = c3 and c4 and c5 and c6
     return result
 
 
