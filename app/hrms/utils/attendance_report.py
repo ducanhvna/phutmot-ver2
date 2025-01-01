@@ -211,8 +211,8 @@ def calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_r
     nightStagefistEnd = scheduling_record['nightStagefistEnd']
     nightStagelastStart = scheduling_record['nightStagelastStart']
     nightStagelastEnd = scheduling_record['nightStagelastEnd']
-    restStartDateTime = scheduling_record['restStartDateTime']
-    restEndDateTime = scheduling_record['restEndDateTime']
+    restStartDateTime = scheduling_record['rest_start_datetime']
+    restEndDateTime = scheduling_record['rest_end_datetime']
     result = 0
     if shift is not None:
         stage_fist_worktime = 0
@@ -245,10 +245,10 @@ def calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_r
 
 def calculate_worktime_without_inout(realTimein, realTimeout, scheduling_record):
     result = 0
-    restStartDateTime = scheduling_record['restStartDateTime']
-    restEndDateTime = scheduling_record['restEndDateTime']
-    shiftStartDateTime = scheduling_record['shiftStartDateTime']
-    shiftEndDateTime = scheduling_record['shiftEndDateTime']
+    restStartDateTime = scheduling_record['rest_start_datetime']
+    restEndDateTime = scheduling_record['rest_end_datetime']
+    shiftStartDateTime = scheduling_record['shift_start_datetime']
+    shiftEndDateTime = scheduling_record['shift_end_datetime']
     realTimein = realTimein.replace(second=0)
     realTimeout = realTimeout.replace(second=0)
 
@@ -269,10 +269,10 @@ def calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling
     isHoliday = scheduling_record['isHoliday']
     shiftName = scheduling_record['shiftName']
     holidayEndDatetime = scheduling_record['holidayEndDatetime']
-    restStartDateTime = scheduling_record['restStartDateTime']
-    restEndDateTime = scheduling_record['restEndDateTime']
-    # shiftStartDateTime = scheduling_record['shiftStartDateTime']
-    # shiftEndDateTime = scheduling_record['shiftEndDateTime']
+    restStartDateTime = scheduling_record['rest_start_datetime']
+    restEndDateTime = scheduling_record['rest_end_datetime']
+    # shiftStartDateTime = scheduling_record['shift_start_datetime']
+    # shiftEndDateTime = scheduling_record['shift_end_datetime']
 
     result = 0
     if (shift is not None and isHoliday and (calculate_worktime_without_inout(holidayStartDatetime, holidayEndDatetime) > 0 or 'PH' in shiftName)):
@@ -294,8 +294,8 @@ def calculate_night_holiday_without_inout(realTimein, realTimeout, scheduling_re
     holidayNightStageFistEndDatetime = scheduling_record['holidayNightStageFistEndDatetime']
     holidayNightStageLastStartDatetime = scheduling_record['holidayNightStageLastStartDatetime']
     holidayNightStageLastEndDatetime = scheduling_record['holidayNightStageLastEndDatetime']
-    restStartDateTime = scheduling_record['restStartDateTime']
-    restEndDateTime = scheduling_record['restEndDateTime']
+    restStartDateTime = scheduling_record['rest_start_datetime']
+    restEndDateTime = scheduling_record['rest_end_datetime']
     result = 0
     if shift is not None:
         stageFistWorktime = 0
@@ -354,8 +354,8 @@ def check_last_in_out(scheduling_record):
 
 
 def calculate_night_worktime_custom(scheduling_record, realTimein, realTimeout, nightStageStart, nightStageEnd):
-    restStartDateTime = scheduling_record['restStartDateTime']
-    restEndDateTime = scheduling_record['restEndDateTime']
+    restStartDateTime = scheduling_record['rest_start_datetime']
+    restEndDateTime = scheduling_record['rest_end_datetime']
     # Đặt giây của thời gian bằng 0
     nightStageStart = nightStageStart.replace(second=0)
     nightStageEnd = nightStageEnd.replace(second=0)
@@ -379,8 +379,8 @@ def calculate_night_worktime_custom(scheduling_record, realTimein, realTimeout, 
 
 def get_list_late_in_leaves(scheduling_record):
     _hrLeaves = scheduling_record['leave_records']
-    shift_start_datetime = scheduling_record['shiftStartDateTime']
-    shift_end_datetime = scheduling_record['shiftEndDateTime']
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    shift_end_datetime = scheduling_record['shift_end_datetime']
     list_late_in_leaves = [
         element for element in _hrLeaves if check_leave_valid_type1('đi muộn', element, shift_start_datetime, shift_end_datetime)
         # element.request_date_from is not None
@@ -394,8 +394,8 @@ def get_list_late_in_leaves(scheduling_record):
 
 def get_list_early_out_leaves(scheduling_record):
     _hrLeaves = scheduling_record['leave_records']
-    shift_start_datetime = scheduling_record['shiftStartDateTime']
-    shift_end_datetime = scheduling_record['shiftEndDateTime']
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    shift_end_datetime = scheduling_record['shift_end_datetime']
     list_early_out_leaves = [
         element for element in _hrLeaves if check_leave_valid_type1('về sớm', element, shift_start_datetime, shift_end_datetime)
         # element.request_date_from is not None
@@ -414,13 +414,13 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
         if scheduling['shift_name'].replace('/', '_') in merged_shift:
             shift = merged_shift[scheduling['shift_name'].replace('/', '_')]
             date = datetime.strptime(scheduling['date'], "%Y-%m-%d")
-            scheduling['shiftStartDateTime'] = date.replace(
+            scheduling['shift_start_datetime'] = date.replace(
                 hour=shift.start_work_time.hour, minute=shift.start_work_time.minute)
-            scheduling['shiftEndDateTime'] = date.replace(
+            scheduling['shift_end_datetime'] = date.replace(
                 hour=shift.end_work_time.hour, minute=shift.end_work_time.minute)
-            scheduling['restStartDateTime'] = date.replace(
+            scheduling['rest_start_datetime'] = date.replace(
                 hour=shift.start_work_time.hour, minute=shift.start_rest_time.minute)
-            scheduling['restEndDateTime'] = date.replace(
+            scheduling['rest_end_datetime'] = date.replace(
                 hour=shift.end_work_time.hour, minute=shift.end_rest_time.minute)
             scheduling['leave_records'] = leave.leave_records
             scheduling['date'] = date
@@ -436,9 +436,9 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
             scheduling['hue_stage2_start'] = None
             scheduling['total_shift_worktime_calculate'] = 0
             shift_name = scheduling['shift_name']
-            rest_start_datetime = scheduling['restStartDateTime']
-            shift_start_datetime = scheduling['shiftStartDateTime']
-            shift_end_datetime = scheduling['restEndDateTime']
+            rest_start_datetime = scheduling['rest_start_datetime']
+            shift_start_datetime = scheduling['shift_start_datetime']
+            rest_end_datetime = scheduling['rest_end_datetime']
             if shift_name is not None:
                 if '/' in shift_name and 'PH' in shift_name:
                     main_shift_start_datetime = shift_start_datetime
@@ -461,10 +461,10 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
 def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHoursWithNext, diffHoursWithPrev):
     attemptWithInoutArray = []
     attendanceAttemptArray = []
-    if scheduling_record["shiftStartDateTime"] is not None and scheduling_record["shiftEndDateTime"] is not None:
+    if scheduling_record['shift_start_datetime'] is not None and scheduling_record['shift_end_datetime'] is not None:
         additionTrans = []
-        shift_start = scheduling_record["shiftStartDateTime"]
-        shift_end = scheduling_record["shiftEndDateTime"]
+        shift_start = scheduling_record['shift_start_datetime']
+        shift_end = scheduling_record['shift_end_datetime']
         # Chuyển đổi tất cả thời gian sang định dạng datetime một lần
         for e in listAttendanceTrans:
             e['time_dt'] = datetime.strptime(e['time'], "%Y-%m-%d %H:%M:%S")
@@ -513,8 +513,8 @@ def process_missing_attendance(scheduling_record):
         if 'thiếu chấm công' in f"{element['holidayStatusName']}".lower()
     ]
 
-    shiftStartDateTime = scheduling_record["shiftStartDateTime"]
-    shiftEndDateTime = scheduling_record["shiftEndDateTime"]
+    shiftStartDateTime = scheduling_record['shift_start_datetime']
+    shiftEndDateTime = scheduling_record['shift_end_datetime']
 
     if shiftStartDateTime is not None:
         additionTrans = []
@@ -572,10 +572,10 @@ def process_missing_attendance(scheduling_record):
 
 def find_attendance_hue4_time_mode(scheduling_record):
     attendanceAttemptArray = scheduling_record['attendanceAttemptArray']
-    restStartDateTime = scheduling_record['restStartDateTime']
-    restEndDateTime = scheduling_record['restEndDateTime']
-    shiftStartDateTime = scheduling_record['shiftStartDateTime']
-    shiftEndDateTime = scheduling_record['shiftEndDateTime']
+    restStartDateTime = scheduling_record['rest_start_datetime']
+    restEndDateTime = scheduling_record['rest_end_datetime']
+    shiftStartDateTime = scheduling_record['shift_start_datetime']
+    shiftEndDateTime = scheduling_record['shift_end_datetime']
     attendanceAttemptArray.sort()
 
     beforeRestEndStartIndex = -1
@@ -690,10 +690,10 @@ def process_worktime(scheduling_record):
     shift = scheduling_record['shift_name']
     HueStage2Start = scheduling_record['HueStage2Start']
     HueStage1End = scheduling_record['HueStage1End']
-    restStartDateTime = scheduling_record['restStartDateTime']
-    restEndDateTime = scheduling_record['restEndDateTime']
-    shiftStartDateTime = scheduling_record['shiftStartDateTime']
-    shiftEndDateTime = scheduling_record['shiftEndDateTime']
+    restStartDateTime = scheduling_record['rest_start_datetime']
+    restEndDateTime = scheduling_record['rest_end_datetime']
+    shiftStartDateTime = scheduling_record['shift_start_datetime']
+    shiftEndDateTime = scheduling_record['shift_end_datetime']
 
     if attendanceAttempt1 is not None:
         find_attendance_hue4_time_mode(scheduling_record)
@@ -1014,12 +1014,12 @@ def check_leave_valid_type1(type_name, element, shift_start_datetime, shift_end_
 def process_worktime_ho(scheduling_record):
     rest_start_datetime = scheduling_record['rest_start_datetime']
     rest_end_datetime = scheduling_record['rest_end_datetime']
-    rest_start_datetime = scheduling_record['rest_start_datetime']
+    # rest_start_datetime = scheduling_record['rest_start_datetime']
     list_couple_after_explanation_private = scheduling_record['list_couple_after_explanation_private']
     find_attendance_hue4_time_mode(scheduling_record)
     date = scheduling_record['date']
-    shift_start_datetime = scheduling_record['shiftStartDateTime']
-    shift_end_datetime = scheduling_record['shiftEndDateTime']
+    shift_start_datetime = scheduling_record['shift_start_datetime']
+    shift_end_datetime = scheduling_record['shift_end_datetime']
     list_explanations = scheduling_record['list_explanations']
     attempt_with_inout_array = scheduling_record['attemptWithInoutArray']
     hr_leaves = scheduling_record['leave_records']
