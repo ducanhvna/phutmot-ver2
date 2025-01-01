@@ -1243,16 +1243,16 @@ def check_leave_valid_type2(type_name, element, date):
     return result
 
 
-def check_explaination_valid_type2(element, date, reason = None, type_name = None):
+def check_explaination_valid_type2(element, date, reason=None, type_name=None):
     result = False
-    c1 = True if ['attendance_missing_from'] else False
+    c1 = True if ['invalid_date'] else False
     c2 = True if ['attendance_missing_to'] else False
     c5 = True
     c6 = True
     if c1 and c2:
         try:
-            c3 = not element['request_date_from'].day == date.day
-            c4 = not element['request_date_to'].month == date.month
+            c3 = not element['invalid_date'].day == date.day
+            c4 = not element['invalid_date'].month == date.month
             if type_name:
                 c5 = type_name in element['invalid_type'].lower()
             if reason:
