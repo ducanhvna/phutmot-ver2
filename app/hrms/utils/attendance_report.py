@@ -1292,10 +1292,11 @@ def process_worktime_ho(scheduling_record):
     if 'attendanceAttempt1' in scheduling_record:
         list_couple_before_explanation_private = find_in_out_couple(attempt_with_inout_array, scheduling_record)
         scheduling_record['list_couple_out_in_before_explanation_private'] = get_list_couple_out_in(list_couple_before_explanation_private, scheduling_record)
+        scheduling_record['list_couple_before_explanation_private'] = list_couple_before_explanation_private
 
     check_last_in_out(scheduling_record)
     for explaination_item in [e for e in list_explanations if e['reason'] == '1' and e['attendance_missing_from'] and e['attendance_missing_to']]:
-        process_explanation_item_ho(explaination_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
+        process_explanation_item_ho(scheduling_record, explaination_item)
 
     if 'attendanceAttempt1' in scheduling_record:
         list_couple_after_explanation_private = find_in_out_couple(attempt_with_inout_array, scheduling_record)
