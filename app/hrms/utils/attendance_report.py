@@ -955,7 +955,7 @@ def process_worktime(scheduling_record):
 
 
 def process_late_early_leave(scheduling_record):
-    global kidModeStage1EndDatetime, kidModeStage2Datetime, shiftEndDateTime
+    global kidModeStage1EndDatetime, kidModeStage2Datetime
     global totalWorkTime, lateinTime, earlyOutTime
     global maxLateEarly
     list_late_in_leaves = scheduling_record['list_late_in_leaves']
@@ -964,6 +964,7 @@ def process_late_early_leave(scheduling_record):
     shift_name = scheduling_record['shift_name']
     kidmod = scheduling_record['kidmod']
     shiftStartDateTime = scheduling_record['shift_start_datetime']
+    shiftEndDateTime = scheduling_record['shift_end_datetime']
     real_timeout = scheduling_record['real_timeout']
     real_timein = scheduling_record['real_timein']
     convert_overtime = scheduling_record['convert_overtime']
