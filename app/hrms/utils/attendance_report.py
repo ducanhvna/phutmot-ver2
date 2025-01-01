@@ -570,7 +570,6 @@ def calculate_holiday_end_datetime(scheduling_record):
         is_holiday = scheduling_record['is_holiday']
         shift_end_datetime = scheduling_record['shift_end_datetime']
         holiday_calendar = scheduling_record['holiday_calendar']
-        date = scheduling_record['date']
         if is_holiday and shift_end_datetime is not None:
             max_datetime = max(holiday_calendar, key=lambda x: x['date_to'])['date_to']
             result = shift_end_datetime if shift_end_datetime < max_datetime else max_datetime
@@ -578,11 +577,10 @@ def calculate_holiday_end_datetime(scheduling_record):
         print('calculate_holiday_end_datetime: ', ex)
     scheduling_record['holiday_end_datetime'] = result
 
-    
+
 def check_is_holiday(scheduling_record):
     result = False
     try:
-        shift = scheduling_record['shift_name']
         shift_end_datetime = scheduling_record['shift_end_datetime']
         shift_start_datetime = scheduling_record['shift_start_datetime']
         date = scheduling_record['date']
