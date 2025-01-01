@@ -395,7 +395,7 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
             scheduling['leave_records'] = leave.leave_records
             scheduling['date'] = date
             scheduling['list_explanations'] = explanation.explaination_records
-            scheduling_record['list_add_item_out'] = []
+            scheduling['list_add_item_out'] = []
 
 
 def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHoursWithNext, diffHoursWithPrev):
@@ -933,14 +933,35 @@ def process_casual_leave(scheduling_record, list_cl_leaves):
     return total_cl_date, number_cl_date, total_cl_probationary
 
 
-def get_list_late_in_leaves(_hrLeaves):
+def check_leave_valid_type1(type_name, element, shift_start_datetime, shift_end_datetime):
+    result = False
+    c1 = element['request_date_from'] is not None
+    c2 = element['request_date_to'] is not None
+    if c1 and c2:
+        try:
+            c3 = not element['request_date_from'].replace(hour=0, minute=0, second=0, microsecond=0) > shift_end_datetime
+            c4 = not element['request_date_to'].replace(hour=23, minute=59, second=59, microsecond=999999) < shift_start_datetime
+            c5 = 'đi muộn' in element['holiday_status_name'].lower()
+        except Exception as ex:
+            print('check_leave_valid_type1: ', ex)
+            c3 = False
+            c4 = False
+            c5 = False
+        result = c3 and c4 and c5
+    return result
+
+
+def get_list_late_in_leaves(scheduling_record):
+    _hrLeaves = scheduling_record['leave_records']
+    shift_start_datetime = scheduling_record['shiftStartDateTime']
+    shift_end_datetime = scheduling_record['shiftEndDateTime']
     list_late_in_leaves = [
-        element for element in _hrLeaves
-        if element.request_date_from is not None
-        and element.request_date_to is not None
-        and not element.request_date_from.replace(hour=0, minute=0, second=0, microsecond=0) > shift_end_datetime
-        and not element.request_date_to.replace(hour=23, minute=59, second=59, microsecond=999999) < shift_start_datetime
-        and 'đi muộn' in element['holiday_status_name'].lower()
+        element for element in _hrLeaves if check_leave_valid_type1('đi muộn', element, shift_start_datetime, shift_end_datetime)
+        # element.request_date_from is not None
+        # and element.request_date_to is not None
+        # and not element.request_date_from.replace(hour=0, minute=0, second=0, microsecond=0) > shift_end_datetime
+        # and not element.request_date_to.replace(hour=23, minute=59, second=59, microsecond=999999) < shift_start_datetime
+        # and 'đi muộn' in element['holiday_status_name'].lower()
     ]
     return list_late_in_leaves
 
