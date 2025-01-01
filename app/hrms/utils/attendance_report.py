@@ -267,8 +267,8 @@ def calculate_worktime_without_inout(realTimein, realTimeout, scheduling_record)
 
 def calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling_record):
     holiday_start_datetime = scheduling_record['holiday_start_datetime']
-    isHoliday = scheduling_record['isHoliday']
-    shiftName = scheduling_record['shiftName']
+    is_holiday = scheduling_record['is_holiday']
+    shiftName = scheduling_record['shift_name']
     holiday_end_datetime = scheduling_record['holiday_end_datetime']
     restStartDateTime = scheduling_record['rest_start_datetime']
     restEndDateTime = scheduling_record['rest_end_datetime']
@@ -277,7 +277,7 @@ def calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling
     # shiftEndDateTime = scheduling_record['shift_end_datetime']
 
     result = 0
-    if (shift is not None and isHoliday and (calculate_worktime_without_inout(holiday_start_datetime, holiday_end_datetime) > 0 or 'PH' in shiftName)):
+    if (shift is not None and is_holiday and (calculate_worktime_without_inout(holiday_start_datetime, holiday_end_datetime) > 0 or 'PH' in shiftName)):
 
         stageStart = restStartDateTime if restStartDateTime < holiday_end_datetime else holiday_end_datetime
         current_program = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > holiday_start_datetime else holiday_start_datetime)
