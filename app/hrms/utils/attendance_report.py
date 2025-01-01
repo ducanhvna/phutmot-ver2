@@ -1029,7 +1029,7 @@ def process_late_early_leave(scheduling_record):
                 else:
                     lateIn_by_work += min(maxLateEarly, max(lateinTime, max(leaveItem['minutes'], leaveItem['time_minute'])))
 
-        listEarlyOutLeave = [element for element in _hrLeaves if 'về sớm' in f"{element['holidayStatusName'].lower()}" and 'đi muộn' not in f"{element['holidayStatusName'].lower()}"]
+        listEarlyOutLeave = [element for element in _hrLeaves if 'về sớm' in f"{element['holidayStatusName']}".lower() and 'đi muộn' not in f"{element['holidayStatusName']}".lower()]
         for leaveItem in listEarlyOutLeave:
             if real_timeout < shiftEndDateTime:
                 if leaveItem['for_reasons'] == '1':
