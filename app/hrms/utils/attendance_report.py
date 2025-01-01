@@ -377,7 +377,7 @@ def calculate_night_worktime_custom(scheduling_record, realTimein, realTimeout, 
     return int(stageFistWorktime)
 
 
-def mergedTimeToScheduling(schedulings, shifts, employee, leave, profile):
+def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, profile):
     merged_shift = {shift.name.replace('/', '_'): shift for shift in shifts}
 
     for scheduling in schedulings:
@@ -393,6 +393,9 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, profile):
             scheduling['restEndDateTime'] = date.replace(
                 hour=shift.end_work_time.hour, minute=shift.end_rest_time.minute)
             scheduling['leave_records'] = leave.leave_records
+            scheduling['date'] = date
+            scheduling['list_explanations'] = explanation.explaination_records
+            scheduling_record['list_add_item_out'] = []
 
 
 def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHoursWithNext, diffHoursWithPrev):
@@ -930,12 +933,32 @@ def process_casual_leave(scheduling_record, list_cl_leaves):
     return total_cl_date, number_cl_date, total_cl_probationary
 
 
-def process_worktime_ho(scheduling_record, date, shift_start_datetime, shift_end_datetime, list_explanations, attempt_with_inout_array, list_add_item_out, hr_leaves, list_late_in_leaves, list_early_out_leaves, by_hue_shift, stage1_worktime_temp, stage2_worktime_temp, hue_stage1_end, hue_stage2_start, employee_code, employee_ho, total_shift_work_time_calculate, minutes_per_day):
+def get_list_late_in_leaves(_hrLeaves):
+    list_late_in_leaves = [
+        element for element in _hrLeaves
+        if element.request_date_from is not None
+        and element.request_date_to is not None
+        and not element.request_date_from.replace(hour=0, minute=0, second=0, microsecond=0) > shift_end_datetime
+        and not element.request_date_to.replace(hour=23, minute=59, second=59, microsecond=999999) < shift_start_datetime
+        and 'đi muộn' in element['holiday_status_name'].lower()
+    ]
+    return list_late_in_leaves
+
+
+def process_worktime_ho(scheduling_record, list_early_out_leaves, by_hue_shift, stage1_worktime_temp, stage2_worktime_temp, hue_stage1_end, hue_stage2_start, employee_code, employee_ho, total_shift_work_time_calculate, minutes_per_day):
     rest_start_datetime = scheduling_record['rest_start_datetime']
     rest_end_datetime = scheduling_record['rest_end_datetime']
     rest_start_datetime = scheduling_record['rest_start_datetime']
     list_couple_after_explanation_private = scheduling_record['list_couple_after_explanation_private']
-    find_attendance_hue4_time_mode()
+    find_attendance_hue4_time_mode(scheduling_record)
+    date = scheduling_record['date']
+    shift_start_datetime = scheduling_record['shiftStartDateTime']
+    shift_end_datetime = scheduling_record['shiftEndDateTime']
+    list_explanations = scheduling_record['list_explanations']
+    attempt_with_inout_array = scheduling_record['attemptWithInoutArray']
+    hr_leaves = scheduling_record['leave_records']
+    list_add_item_out = scheduling_record['list_add_item_out']
+    list_late_in_leaves = get_list_late_in_leaves(hr_leaves)
     check_last_in_out()
 
     if 'attendance_attempt_1' in globals():
@@ -1303,7 +1326,7 @@ def process_up_shift(shift, shift_name, list_up_leaves, max_late_early, employee
 
 def calculate_worktime_with_inout_standard(scheduling_record):
     process_missing_attendance(scheduling_record)
-    process_worktime_ho()
+    process_worktime_ho(scheduling_record)
     process_late_early_leave()
     process_overtime_leave()
     process_increase_leave()
