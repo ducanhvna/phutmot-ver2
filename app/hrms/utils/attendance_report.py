@@ -435,8 +435,10 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
             scheduling['hue_stage1_end'] = None
             scheduling['hue_stage2_start'] = None
             scheduling['total_shift_worktime_calculate'] = 0
-            shift_name = scheduling['shift_name'] 
+            shift_name = scheduling['shift_name']
             rest_start_datetime = scheduling['restStartDateTime']
+            shift_start_datetime = scheduling['shiftStartDateTime']
+            shift_end_datetime = scheduling['restEndDateTime']
             if shift_name is not None:
                 if '/' in shift_name and 'PH' in shift_name:
                     main_shift_start_datetime = shift_start_datetime
@@ -1024,15 +1026,15 @@ def process_worktime_ho(scheduling_record):
     list_add_item_out = scheduling_record['list_add_item_out']
     list_late_in_leaves = scheduling_record['list_late_in_leaves']
     list_early_out_leaves = scheduling_record['list_early_out_leaves']
-    by_hue_shift = scheduling_record['main_contract']['by_hue_shift'] if 'by_hue_shift' in scheduling_record['main_contract'] else False
-    stage1_worktime_temp = scheduling_record['stage1_worktime_temp']
-    stage2_worktime_temp = scheduling_record['stage2_worktime_temp']
-    hue_stage1_end = scheduling_record['hue_stage1_end']
-    hue_stage2_start = scheduling_record['hue_stage2_start']
-    employee_ho = scheduling_record['main_info']['employee_ho'] if 'employee_ho' in scheduling_record['main_info'] else False
-    minutes_per_day = scheduling_record['main_contract']['minutes_per_day'] if 'minutes_per_day' in scheduling_record['main_contract'] else False
-    total_shift_work_time_calculate = scheduling_record['total_shift_work_time_calculate']
-    employee_code = scheduling_record.employee_code
+    # by_hue_shift = scheduling_record['main_contract']['by_hue_shift'] if 'by_hue_shift' in scheduling_record['main_contract'] else False
+    # stage1_worktime_temp = scheduling_record['stage1_worktime_temp']
+    # stage2_worktime_temp = scheduling_record['stage2_worktime_temp']
+    # hue_stage1_end = scheduling_record['hue_stage1_end']
+    # hue_stage2_start = scheduling_record['hue_stage2_start']
+    # employee_ho = scheduling_record['main_info']['employee_ho'] if 'employee_ho' in scheduling_record['main_info'] else False
+    # minutes_per_day = scheduling_record['main_contract']['minutes_per_day'] if 'minutes_per_day' in scheduling_record['main_contract'] else False
+    # total_shift_work_time_calculate = scheduling_record['total_shift_work_time_calculate']
+    # employee_code = scheduling_record.employee_code
     check_last_in_out()
 
     if 'attendance_attempt_1' in globals():
