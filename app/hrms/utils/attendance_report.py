@@ -478,6 +478,126 @@ def calculate_night_stage_last_end(scheduling_record):
     scheduling_record['night_stage_last_end'] = result
 
 
+def calculate_holiday_night_stage_last_end_datetime(scheduling_record):
+    result = None
+    try:
+        is_holiday = scheduling_record['is_holiday']
+        is_night_stage_last = scheduling_record['is_night_stage_last']
+        holiday_end_datetime = scheduling_record['holiday_end_datetime']
+        holiday_start_datetime = scheduling_record['holiday_start_datetime']
+        night_stage_last_end = scheduling_record['night_stage_last_end']
+        night_stage_last_start = scheduling_record['night_stage_last_start']
+        if is_night_stage_last and is_holiday:
+            if not night_stage_last_start > holiday_end_datetime and \
+               not night_stage_last_end < holiday_start_datetime:
+                result = holiday_end_datetime if night_stage_last_end > holiday_end_datetime else night_stage_last_end
+    except Exception as ex:
+        print('calculate_holiday_night_stage_last_end_datetime: ', ex)
+    scheduling_record['holiday_night_stage_last_end_datetime'] = result
+
+
+def calculate_holiday_night_stage_last_start_datetime(scheduling_record):
+    result = None
+    try:
+        is_holiday = scheduling_record['is_holiday']
+        is_night_stage_last = scheduling_record['is_night_stage_last']
+        holiday_end_datetime = scheduling_record['holiday_end_datetime']
+        holiday_start_datetime = scheduling_record['holiday_start_datetime']
+        night_stage_last_end = scheduling_record['night_stage_last_end']
+        night_stage_last_start = scheduling_record['night_stage_last_start']
+        if is_night_stage_last and is_holiday:
+            if not night_stage_last_start > holiday_end_datetime and \
+               not night_stage_last_end < holiday_start_datetime:
+                result = holiday_start_datetime if night_stage_last_start < holiday_start_datetime else night_stage_last_start
+    except Exception as ex:
+        print('calculate_holiday_night_stage_last_start_datetime: ', ex)
+    scheduling_record['holiday_night_stage_last_start_datetime'] = result
+
+
+def calculate_holiday_night_stage_fist_start_datetime(scheduling_record):
+    result = None
+    try:
+        is_holiday = scheduling_record['is_holiday']
+        is_night_stage_fist = scheduling_record['is_night_stage_fist']
+        holiday_end_datetime = scheduling_record['holiday_end_datetime']
+        holiday_start_datetime = scheduling_record['holiday_start_datetime']
+        night_stage_fist_end = scheduling_record['night_stage_fist_end']
+        night_stage_fist_start = scheduling_record['night_stage_fist_start']
+        if is_night_stage_fist and is_holiday:
+            if not night_stage_fist_start > holiday_end_datetime and \
+               not night_stage_fist_end < holiday_start_datetime:
+                result = holiday_start_datetime if night_stage_fist_start < holiday_start_datetime else night_stage_fist_start
+    except Exception as ex:
+        print('calculate_holiday_night_stage_fist_start_datetime: ', ex)
+    scheduling_record['holiday_night_stage_fist_start_datetime'] = result
+
+
+def calculate_holiday_night_stage_fist_end_datetime(scheduling_record):
+    result = None
+    try:
+        is_holiday = scheduling_record['is_holiday']
+        is_night_stage_fist = scheduling_record['is_night_stage_fist']
+        holiday_end_datetime = scheduling_record['holiday_end_datetime']
+        holiday_start_datetime = scheduling_record['holiday_start_datetime']
+        night_stage_fist_end = scheduling_record['night_stage_fist_end']
+        night_stage_fist_start = scheduling_record['night_stage_fist_start']
+        if is_night_stage_fist and is_holiday:
+            if not night_stage_fist_start > holiday_end_datetime and \
+               not night_stage_fist_end < holiday_start_datetime:
+                result = holiday_end_datetime if night_stage_fist_end > holiday_end_datetime else night_stage_fist_end
+    except Exception as ex:
+        print('calculate_holiday_night_stage_fist_end_datetime: ', ex)
+    scheduling_record['holiday_night_stage_fist_end_datetime'] = result
+
+
+def calculate_holiday_start_datetime(scheduling_record):
+    result = None
+    try:
+        is_holiday = scheduling_record['is_holiday']
+        shift_start_datetime = scheduling_record['shift_start_datetime']
+        holiday_calendar = scheduling_record['holiday_calendar']
+        if is_holiday and shift_start_datetime is not None:
+            min_datetime = min(holiday_calendar, key=lambda x: x['date_from'])['date_from']
+            result = shift_start_datetime if shift_start_datetime > min_datetime else min_datetime
+    except Exception as ex:
+        print('calculate_holiday_start_datetime: ', ex)
+    scheduling_record['holiday_start_datetime'] = result
+
+
+def calculate_holiday_end_datetime(scheduling_record):
+    result = None
+    try:
+        is_holiday = scheduling_record['is_holiday']
+        shift_end_datetime = scheduling_record['shift_end_datetime']
+        holiday_calendar = scheduling_record['holiday_calendar']
+        date = scheduling_record['date']
+        if is_holiday and shift_end_datetime is not None:
+            max_datetime = max(holiday_calendar, key=lambda x: x['date_to'])['date_to']
+            result = shift_end_datetime if shift_end_datetime < max_datetime else max_datetime
+    except Exception as ex:
+        print('calculate_holiday_end_datetime: ', ex)
+    scheduling_record['holiday_end_datetime'] = result
+
+    
+def check_is_holiday(scheduling_record):
+    result = False
+    try:
+        shift = scheduling_record['shift_name']
+        shift_end_datetime = scheduling_record['shift_end_datetime']
+        shift_start_datetime = scheduling_record['shift_start_datetime']
+        date = scheduling_record['date']
+        holiday_calendar = scheduling_record['holiday_calendar']
+        if date is not None and shift_end_datetime is not None and shift_start_datetime is not None:
+            for holiday in holiday_calendar:
+                if not holiday['date_from'].replace(hour=0, minute=0, second=0) > shift_end_datetime and \
+                   not holiday['date_to'].replace(hour=0, minute=0, second=0) < shift_start_datetime:
+                    result = True
+                    break
+    except Exception as ex:
+        print('check_is_holiday: ', ex)
+    scheduling_record['is_holiday'] = result
+
+
 def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, profile):
     merged_shift = {shift.name.replace('/', '_'): shift for shift in shifts}
 
@@ -517,6 +637,13 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
             calculate_night_stage_last_end(scheduling)
             check_is_night_stage_fist(scheduling)
             check_is_night_stage_last(scheduling)
+            check_is_holiday(scheduling)
+            calculate_holiday_end_datetime(scheduling)
+            calculate_holiday_start_datetime(scheduling)
+            calculate_holiday_night_stage_fist_end_datetime(scheduling)
+            calculate_holiday_night_stage_fist_start_datetime(scheduling)
+            calculate_holiday_night_stage_last_start_datetime(scheduling)
+            calculate_holiday_night_stage_last_end_datetime(scheduling)
             if shift_name is not None:
                 if '/' in shift_name and 'PH' in shift_name:
                     main_shift_start_datetime = shift_start_datetime
