@@ -695,6 +695,8 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
                     scheduling['total_shift_worktime_calculate'] = 442
                 else:
                     scheduling['total_shift_worktime_calculate'] = round(temp_worktime_cal / 5) * 5
+                if scheduling_record['main_contract']:
+                    scheduling['is_probationary'] = not ('chính thức' in f"{scheduling_record['main_contract']['contract_type_id']}".lower())
 
 
 def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHoursWithNext, diffHoursWithPrev):
@@ -1112,7 +1114,7 @@ def process_increase_leave(scheduling_record):
     shift_start_datetime = scheduling_record['shift_start_datetime']
     total_shift_worktime_calculate = scheduling_record['total_shift_worktime_calculate']
     shift_name = scheduling_record['shift_name']
-    minutes_per_day = scheduling_record['minutes_per_day']
+    minutes_per_day = scheduling_record['main_contract']['minutes_per_day'] if 'minutes_per_day' in scheduling_record['main_contract'] else False
     is_probationary = scheduling_record['is_probationary']
     total_increase_date = 0
     total_increase_probationary = 0
