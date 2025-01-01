@@ -213,7 +213,7 @@ def calculate_night_worktime_without_inout(realTimein, realTimeout, scheduling_r
     night_stage_last_end = scheduling_record['night_stage_last_end']
     restStartDateTime = scheduling_record['rest_start_datetime']
     restEndDateTime = scheduling_record['rest_end_datetime']
-    shift = scheduling_record['shift_name']
+    shift = scheduling_record['shift']
     result = 0
     if shift is not None:
         stage_fist_worktime = 0
@@ -268,16 +268,16 @@ def calculate_worktime_without_inout(realTimein, realTimeout, scheduling_record)
 def calculate_holiday_worktime_without_inout(realTimein, realTimeout, scheduling_record):
     holiday_start_datetime = scheduling_record['holiday_start_datetime']
     is_holiday = scheduling_record['is_holiday']
-    shiftName = scheduling_record['shift_name']
+    shift_name = scheduling_record['shift_name']
     holiday_end_datetime = scheduling_record['holiday_end_datetime']
     restStartDateTime = scheduling_record['rest_start_datetime']
     restEndDateTime = scheduling_record['rest_end_datetime']
-    shift = scheduling_record['shift_name']
+    shift = scheduling_record['shift']
     # shiftStartDateTime = scheduling_record['shift_start_datetime']
     # shiftEndDateTime = scheduling_record['shift_end_datetime']
 
     result = 0
-    if (shift is not None and is_holiday and (calculate_worktime_without_inout(holiday_start_datetime, holiday_end_datetime) > 0 or 'PH' in shiftName)):
+    if (shift is not None and is_holiday and (calculate_worktime_without_inout(holiday_start_datetime, holiday_end_datetime) > 0 or 'PH' in shift_name)):
 
         stageStart = restStartDateTime if restStartDateTime < holiday_end_datetime else holiday_end_datetime
         current_program = (realTimeout.replace(second=0) if realTimeout < stageStart else stageStart) - (realTimein.replace(second=0) if realTimein > holiday_start_datetime else holiday_start_datetime)
@@ -298,7 +298,7 @@ def calculate_night_holiday_without_inout(realTimein, realTimeout, scheduling_re
     holiday_night_stage_last_end_datetime = scheduling_record['holiday_night_stage_last_end_datetime']
     restStartDateTime = scheduling_record['rest_start_datetime']
     restEndDateTime = scheduling_record['rest_end_datetime']
-    shift = scheduling_record['shift_name']
+    shift = scheduling_record['shift']
     result = 0
     if shift is not None:
         stageFistWorktime = 0
@@ -420,7 +420,7 @@ def check_is_night_stage_last(scheduling_record):
 
 def calculate_night_stage_fist_start(scheduling_record):
     result = None
-    shift = scheduling_record['shift_name']
+    shift = scheduling_record['shift']
     shift_end_datetime = scheduling_record['shift_end_datetime']
     shift_start_datetime = scheduling_record['shift_start_datetime']
     date = scheduling_record['date']
@@ -435,7 +435,7 @@ def calculate_night_stage_fist_start(scheduling_record):
 
 def calculate_night_stage_fist_end(scheduling_record):
     result = None
-    shift = scheduling_record['shift_name']
+    shift = scheduling_record['shift']
     shift_end_datetime = scheduling_record['shift_end_datetime']
     shift_start_datetime = scheduling_record['shift_start_datetime']
     date = scheduling_record['date']
@@ -450,7 +450,7 @@ def calculate_night_stage_fist_end(scheduling_record):
 
 def calculate_night_stage_last_start(scheduling_record):
     result = None
-    shift = scheduling_record['shift_name']
+    shift = scheduling_record['shift']
     shift_end_datetime = scheduling_record['shift_end_datetime']
     shift_start_datetime = scheduling_record['shift_start_datetime']
     date = scheduling_record['date']
@@ -465,7 +465,7 @@ def calculate_night_stage_last_start(scheduling_record):
 
 def calculate_night_stage_last_end(scheduling_record):
     result = None
-    shift = scheduling_record['shift_name']
+    shift = scheduling_record['shift']
     shift_end_datetime = scheduling_record['shift_end_datetime']
     shift_start_datetime = scheduling_record['shift_start_datetime']
     date = scheduling_record['date']
@@ -601,7 +601,10 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
 
     for scheduling in schedulings:
         if scheduling['shift_name'].replace('/', '_') in merged_shift:
-            shift = merged_shift[scheduling['shift_name'].replace('/', '_')]
+            shift = None
+            if scheduling['shift_name'].replace('/', '_') in merged_shift:
+                shift = merged_shift[scheduling['shift_name'].replace('/', '_')]
+            scheduling['shift'] = shift
             date = datetime.strptime(scheduling['date'], "%Y-%m-%d")
             scheduling['shift_start_datetime'] = date.replace(
                 hour=shift.start_work_time.hour, minute=shift.start_work_time.minute)
@@ -863,8 +866,8 @@ def process_worktime(scheduling_record):
     global by_hue_shift
     attendanceAttempt1 = scheduling_record['attendanceAttempt1']
     attendanceAttemptArray = scheduling_record['attendanceAttemptArray']
-    shiftName = scheduling_record['shift_name']
-    shift = scheduling_record['shift_name']
+    shift_name = scheduling_record['shift_name']
+    shift = scheduling_record['shift']
     HueStage2Start = scheduling_record['HueStage2Start']
     HueStage1End = scheduling_record['HueStage1End']
     restStartDateTime = scheduling_record['rest_start_datetime']
@@ -883,8 +886,8 @@ def process_worktime(scheduling_record):
             if realTimeout < item:
                 realTimeout = item
 
-        if shiftName is not None and shift is not None:
-            if '/OFF' not in shiftName and 'OFF/' not in shiftName:
+        if shift_name is not None and shift is not None:
+            if '/OFF' not in shift_name and 'OFF/' not in shift_name:
                 if by_hue_shift:
                     totalWorkTime = stage1WorktimeTemp + stage2WorktimeTemp
                     if HueStage1End is not None and HueStage2Start is not None:
@@ -924,7 +927,7 @@ def process_late_early_leave():
     global earlyOut_by_work, realTimein, realTimeout, convert_overtime
     global employeeHo, listCouple, kidmod, shiftStartDateTime
     global kidModeStage1EndDatetime, kidModeStage2Datetime, shiftEndDateTime
-    global totalWorkTime, lateinTime, earlyOutTime, shiftName, shift
+    global totalWorkTime, lateinTime, earlyOutTime, shift_name, shift
     global listLateInLeaves, maxLateEarly, _hrLeaves
 
     lateIn_private = 0
@@ -966,8 +969,8 @@ def process_late_early_leave():
                     lateinTime = calculate_worktime_without_inout(shiftStartDateTime, realTimein)
                     earlyOutTime = calculate_worktime_without_inout(realTimeout, shiftEndDateTime)
 
-        if shiftName is not None and shift is not None:
-            if '/OFF' in shiftName or 'OFF/' in shiftName:
+        if shift_name is not None and shift is not None:
+            if '/OFF' in shift_name or 'OFF/' in shift_name:
                 if (lateinTime + totalWorkTime) >= 240:
                     earlyOutTime = 0 if earlyOutTime > lateinTime else earlyOutTime
 
