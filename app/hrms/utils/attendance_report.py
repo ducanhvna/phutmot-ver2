@@ -599,7 +599,6 @@ def check_is_holiday(scheduling_record):
 
 
 def process_leave_records(leave, scheduling_record):
-    results = []
     for leave_item in leave.leave_records:
         try:
             if leave_item['attendance_missing_to']:
