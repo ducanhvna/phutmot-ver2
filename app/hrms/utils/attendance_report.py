@@ -383,30 +383,30 @@ def calculate_night_worktime_custom(scheduling_record, realTimein, realTimeout, 
 
 
 def get_list_late_in_leaves(scheduling_record):
-    _hrLeaves = scheduling_record['leave_records']
+    _hrLeaves = scheduling_record['hr_leaves']
     shift_start_datetime = scheduling_record['shift_start_datetime']
     shift_end_datetime = scheduling_record['shift_end_datetime']
     list_late_in_leaves = [
         element for element in _hrLeaves if check_leave_valid_type1('đi muộn', element, shift_start_datetime, shift_end_datetime)
-        # element.request_date_from is not None
-        # and element.request_date_to is not None
-        # and not element.request_date_from.replace(hour=0, minute=0, second=0, microsecond=0) > shift_end_datetime
-        # and not element.request_date_to.replace(hour=23, minute=59, second=59, microsecond=999999) < shift_start_datetime
+        # element['request_date_from'] is not None
+        # and element['request_date_to'] is not None
+        # and not element['request_date_from'].replace(hour=0, minute=0, second=0, microsecond=0) > shift_end_datetime
+        # and not element['request_date_to'].replace(hour=23, minute=59, second=59, microsecond=999999) < shift_start_datetime
         # and 'đi muộn' in element['holiday_status_name'].lower()
     ]
     return list_late_in_leaves
 
 
 def get_list_early_out_leaves(scheduling_record):
-    _hrLeaves = scheduling_record['leave_records']
+    _hrLeaves = scheduling_record['hr_leaves']
     shift_start_datetime = scheduling_record['shift_start_datetime']
     shift_end_datetime = scheduling_record['shift_end_datetime']
     list_early_out_leaves = [
         element for element in _hrLeaves if check_leave_valid_type1('về sớm', element, shift_start_datetime, shift_end_datetime)
-        # element.request_date_from is not None
-        # and element.request_date_to is not None
-        # and not element.request_date_from.replace(hour=0, minute=0, second=0, microsecond=0) > shift_end_datetime
-        # and not element.request_date_to.replace(hour=23, minute=59, second=59, microsecond=999999) < shift_start_datetime
+        # element['request_date_from'] is not None
+        # and element['request_date_to'] is not None
+        # and not element['request_date_from'].replace(hour=0, minute=0, second=0, microsecond=0) > shift_end_datetime
+        # and not element['request_date_to'].replace(hour=23, minute=59, second=59, microsecond=999999) < shift_start_datetime
         # and 'đi muộn' in element['holiday_status_name'].lower()
     ]
     return list_early_out_leaves
@@ -598,6 +598,23 @@ def check_is_holiday(scheduling_record):
     scheduling_record['is_holiday'] = result
 
 
+def process_leave_records(leave, scheduling_record):
+    results = []
+    for leave_item in leave.leave_records:
+        try:
+            if leave_item['attendance_missing_to']:
+                leave_item['attendance_missing_to'] = datetime.strptime(leave_item['attendance_missing_to'], "%Y-%m-%d %H:%M:%S")
+            if leave_item['attendance_missing_from']:
+                leave_item['attendance_missing_from'] = datetime.strptime(leave_item['attendance_missing_from'], "%Y-%m-%d %H:%M:%S")
+            if leave_item['request_date_from']:
+                leave_item['request_date_from'] = datetime.strptime(leave_item['request_date_from'], "%Y-%m-%d")
+            if leave_item['request_date_to']:
+                leave_item['request_date_to'] = datetime.strptime(leave_item['request_date_to'], "%Y-%m-%d")
+        except Exception as ex:
+            print('process_leave_records: ', ex)
+    scheduling_record['hr_leaves'] = leave.leave_records
+
+
 def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, profile):
     merged_shift = {shift.name.replace('/', '_'): shift for shift in shifts}
 
@@ -616,7 +633,7 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
                 hour=shift.start_work_time.hour, minute=shift.start_rest_time.minute)
             scheduling['rest_end_datetime'] = date.replace(
                 hour=shift.end_work_time.hour, minute=shift.end_rest_time.minute)
-            scheduling['leave_records'] = leave.leave_records
+            process_leave_records(leave.leave_records, scheduling)
             scheduling['date'] = date
             scheduling['list_explanations'] = explanation.explaination_records
             scheduling['list_add_item_out'] = []
@@ -709,7 +726,7 @@ def process_missing_attendance(scheduling_record):
     attempt_with_inout_array = scheduling_record['attempt_with_inout_array']
     attendanceAttemptArray = scheduling_record['attendanceAttemptArray']
     list_addItem_out = []
-    hrLeaves = scheduling_record['leave_records']
+    hrLeaves = scheduling_record['hr_leaves']
 
     # Chuẩn hóa tên trạng thái ngày nghỉ
     for e in hrLeaves:
@@ -1000,8 +1017,8 @@ def process_late_early_leave(scheduling_record):
 
 
 def is_overtime_leave(leave, shift_start_datetime):
-    c1 = not leave.get('request_date_from') is None
-    c2 = not leave.get('request_date_to') is None
+    c1 = True if leave.get('request_date_from') else False
+    c2 = True if leave.get('request_date_to') else False
     c3 = leave['request_date_from'].day == shift_start_datetime.day
     c4 = leave['request_date_from'].month == shift_start_datetime.month
     c5 = 'tăng ca' in leave['holiday_status_name'].lower()
@@ -1027,7 +1044,7 @@ def process_overtime_leave(scheduling_record):
     total_increase_date = 0
     total_increase_probationary = 0
 
-    if shift_start_datetime is None:
+    if not shift_start_datetime:
         return
 
     list_overtime_leaves = list(filter(lambda leave: is_overtime_leave(leave, shift_start_datetime), hr_leaves))
@@ -1058,8 +1075,8 @@ def process_overtime_leave(scheduling_record):
 
 
 def is_increase_leave(leave, shift_start_datetime, shift_end_datetime):
-    c1 = not leave.get('request_date_from') is None
-    c2 = not leave.get('request_date_to') is None
+    c1 = True if leave.get('request_date_from') else False
+    c2 = True if leave.get('request_date_to') else False
     c3 = not leave['request_date_from'].replace(hour=0, minute=0, second=0).is_after(shift_end_datetime)
     c4 = not leave['request_date_to'].replace(hour=23, minute=59, second=59).is_before(shift_start_datetime)
     c5 = 'phát sinh tăng' in leave['holiday_status_name'].lower()
@@ -1078,7 +1095,7 @@ def process_increase_leave(scheduling_record):
     total_increase_date = 0
     total_increase_probationary = 0
 
-    if date is None or shift_end_datetime is None or shift_start_datetime is None:
+    if not date or not shift_end_datetime or not shift_start_datetime:
         list_increase_leaves = []
     else:
         list_increase_leaves = list(filter(lambda leave: is_increase_leave(leave, shift_start_datetime, shift_end_datetime), hr_leaves))
@@ -1101,8 +1118,8 @@ def process_increase_leave(scheduling_record):
 
 
 def is_paid_leave(leave, shift_start_datetime, shift_end_datetime):
-    c1 = not leave.get('request_date_from') is None
-    c2 = not leave.get('request_date_to') is None
+    c1 = True if leave.get('request_date_from') else False
+    c2 = True if leave.get('request_date_to') else False
     c3 = not leave['request_date_from'].replace(hour=0, minute=0, second=0).is_after(shift_end_datetime)
     c4 = not leave['request_date_to'].replace(hour=23, minute=59, second=59).is_before(shift_start_datetime)
     c5 = 'có tính lương' in leave['holiday_status_name'].lower()
@@ -1120,7 +1137,7 @@ def process_leave_with_pay(scheduling_record):
     total_ncl_date = 0
     total_ncl_hieu_hi_date = 0
 
-    if date is None or shift_end_datetime is None or shift_start_datetime is None:
+    if not date or not shift_end_datetime or not shift_start_datetime:
         list_paided_leaves = []
     else:
         list_paided_leaves = list(filter(lambda leave: is_paid_leave(leave, shift_start_datetime, shift_end_datetime), hr_leaves))
@@ -1208,7 +1225,7 @@ def process_worktime_ho(scheduling_record):
     shift_end_datetime = scheduling_record['shift_end_datetime']
     list_explanations = scheduling_record['list_explanations']
     attempt_with_inout_array = scheduling_record['attempt_with_inout_array']
-    hr_leaves = scheduling_record['leave_records']
+    hr_leaves = scheduling_record['hr_leaves']
     list_add_item_out = scheduling_record['list_add_item_out']
     list_late_in_leaves = scheduling_record['list_late_in_leaves']
     list_early_out_leaves = scheduling_record['list_early_out_leaves']
@@ -1235,10 +1252,10 @@ def process_worktime_ho(scheduling_record):
     check_last_in_out(scheduling_record)
     list_workingout_leaves = [element for element in hr_leaves if element['attendance_missing_from'] is not None and element['attendance_missing_to'] is not None and ((element['attendance_missing_from'].day == date.day and element['attendance_missing_from'].month == date.month) or (element['attendance_missing_to'].day == date.day and element['attendance_missing_to'].month == date.month)) and 'ra ngoài' in element.holiday_status_name.lower()]
 
-    for leave_item in [element for element in list_workingout_leaves if element.for_reasons == '2' and element['attendance_missing_from'] is not None and element['attendance_missing_to'] is not None]:
+    for leave_item in [element for element in list_workingout_leaves if element['for_reasons'] == '2' and element['attendance_missing_from'] is not None and element['attendance_missing_to'] is not None]:
         process_leave_item_ho(leave_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
-    for leave_item in [element for element in list_late_in_leaves if element.for_reasons == '2' and element.request_date_from is not None and element.request_date_from.day != shift_start_datetime.day]:
+    for leave_item in [element for element in list_late_in_leaves if element['for_reasons'] == '2' and element['request_date_from'] is not None and element['request_date_from'].day != shift_start_datetime.day]:
         leave_item['attendance_missing_from'] = shift_start_datetime
         leave_item['attendance_missing_to'] = shift_start_datetime + timedelta(minutes=leave_item.minutes)
         if rest_start_datetime is not None and rest_end_datetime is not None:
@@ -1246,7 +1263,7 @@ def process_worktime_ho(scheduling_record):
                 leave_item['attendance_missing_to'] += rest_end_datetime - rest_start_datetime
         process_leave_item_ho(leave_item, attempt_with_inout_array, shift_start_datetime, rest_start_datetime, shift_end_datetime, rest_end_datetime, list_add_item_out)
 
-    for leave_item in [element for element in list_early_out_leaves if element.for_reasons == '2' and element.request_date_from is not None and element.request_date_from.day != shift_start_datetime.day]:
+    for leave_item in [element for element in list_early_out_leaves if element['for_reasons'] == '2' and element['request_date_from'] is not None and element['request_date_from'].day != shift_start_datetime.day]:
         leave_item['attendance_missing_to'] = shift_end_datetime
         leave_item['attendance_missing_from'] = shift_end_datetime - timedelta(minutes=leave_item.minutes)
         if rest_start_datetime is not None and rest_end_datetime is not None:
@@ -1268,7 +1285,7 @@ def process_worktime_ho(scheduling_record):
         scheduling_record['list_couple_out_in_after_explanation_private'] = get_list_couple_out_in(list_couple_after_explanation_private)
         scheduling_record['list_couple_after_explanation_private'] = list_couple_after_explanation_private
 
-    for leave_item in [element for element in list_workingout_leaves if element.for_reasons == '1' and element['attendance_missing_from'] is not None and element['attendance_missing_to'] is not None]:
+    for leave_item in [element for element in list_workingout_leaves if element['for_reasons'] == '1' and element['attendance_missing_from'] is not None and element['attendance_missing_to'] is not None]:
         process_leave_item_ho(scheduling_record, leave_item)
 
 
@@ -1283,7 +1300,7 @@ def is_business_leave(leave, shift_end_datetime, shift_start_datetime):
 
 def process_business_leave(hr_leaves, date, shift_end_datetime, shift_start_datetime, total_shift_work_time_calculate, shift_name, minutes_per_day, late_in_time):
     time_business_trip = 0
-    if date is None or shift_end_datetime is None or shift_start_datetime is None:
+    if not date or not shift_end_datetime or not shift_start_datetime:
         list_business_leaves = []
     else:
         list_business_leaves = list(filter(
