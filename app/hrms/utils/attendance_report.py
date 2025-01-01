@@ -953,7 +953,7 @@ def process_worktime(scheduling_record):
 
 
 def process_late_early_leave(scheduling_record):
-    global listCouple, kidmod
+    global kidmod
     global kidModeStage1EndDatetime, kidModeStage2Datetime, shiftEndDateTime
     global totalWorkTime, lateinTime, earlyOutTime, shift_name, shift
     global listLateInLeaves, maxLateEarly, _hrLeaves
@@ -962,6 +962,7 @@ def process_late_early_leave(scheduling_record):
     real_timein = scheduling_record['real_timein']
     convert_overtime = scheduling_record['main_contract']['convert_overtime']
     employee_ho = scheduling_record['main_info']['employee_ho'] if 'employee_ho' in scheduling_record['main_info'] else False
+    list_couple = scheduling_record['list_couple']
     lateIn_private = 0
     lateIn_by_work = 0
     lateIn_by_private_num = 0
@@ -974,19 +975,19 @@ def process_late_early_leave(scheduling_record):
             earlyOutTime = 0
         else:
             if employee_ho:
-                if listCouple:
+                if list_couple:
                     if kidmod == KidMode.SBEGIN30SEND30:
-                        lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, listCouple[0].itemIn.attempt)
-                        earlyOutTime = calculate_worktime_without_inout(listCouple[-1].itemOut.attempt, kidModeStage2Datetime)
+                        lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, list_couple[0].itemIn.attempt)
+                        earlyOutTime = calculate_worktime_without_inout(list_couple[-1].itemOut.attempt, kidModeStage2Datetime)
                     elif kidmod == KidMode.SBEGIN60:
-                        lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, listCouple[0].itemIn.attempt)
-                        earlyOutTime = calculate_worktime_without_inout(listCouple[-1].itemOut.attempt, shiftEndDateTime)
+                        lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, list_couple[0].itemIn.attempt)
+                        earlyOutTime = calculate_worktime_without_inout(list_couple[-1].itemOut.attempt, shiftEndDateTime)
                     elif kidmod == KidMode.SEND60:
-                        earlyOutTime = calculate_worktime_without_inout(listCouple[-1].itemOut.attempt, kidModeStage2Datetime)
-                        lateinTime = calculate_worktime_without_inout(shiftStartDateTime, listCouple[0].itemIn.attempt)
+                        earlyOutTime = calculate_worktime_without_inout(list_couple[-1].itemOut.attempt, kidModeStage2Datetime)
+                        lateinTime = calculate_worktime_without_inout(shiftStartDateTime, list_couple[0].itemIn.attempt)
                     else:
-                        lateinTime = calculate_worktime_without_inout(shiftStartDateTime, listCouple[0].itemIn.attempt)
-                        earlyOutTime = calculate_worktime_without_inout(listCouple[-1].itemOut.attempt, shiftEndDateTime)
+                        lateinTime = calculate_worktime_without_inout(shiftStartDateTime, list_couple[0].itemIn.attempt)
+                        earlyOutTime = calculate_worktime_without_inout(list_couple[-1].itemOut.attempt, shiftEndDateTime)
             else:
                 if kidmod == KidMode.SBEGIN30SEND30:
                     lateinTime = calculate_worktime_without_inout(kidModeStage1EndDatetime, real_timein)
@@ -1348,9 +1349,12 @@ def process_worktime_ho(scheduling_record):
         list_couple_after_explanation_private = find_in_out_couple(attempt_with_inout_array, scheduling_record)
         scheduling_record['list_couple_out_in_after_explanation_private'] = get_list_couple_out_in(list_couple_after_explanation_private, scheduling_record)
         scheduling_record['list_couple_after_explanation_private'] = list_couple_after_explanation_private
-
+    
     for leave_item in [element for element in list_workingout_leaves if element['for_reasons'] == '1' and element['attendance_missing_from'] and element['attendance_missing_to']]:
         process_leave_item_ho(scheduling_record, leave_item)
+
+    scheduling_record['list_couple'] = find_in_out_couple(attempt_with_inout_array)
+    scheduling_record['list_couple_out_in'] = get_list_couple_out_in(scheduling_record['list_couple'])
 
 
 def is_business_leave(leave, shift_end_datetime, shift_start_datetime):
