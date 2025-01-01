@@ -1101,8 +1101,8 @@ def process_overtime_leave(scheduling_record):
 def is_increase_leave(leave, shift_start_datetime, shift_end_datetime):
     c1 = True if leave.get('request_date_from') else False
     c2 = True if leave.get('request_date_to') else False
-    c3 = not leave['request_date_from'].replace(hour=0, minute=0, second=0).is_after(shift_end_datetime)
-    c4 = not leave['request_date_to'].replace(hour=23, minute=59, second=59).is_before(shift_start_datetime)
+    c3 = not leave['request_date_from'].replace(hour=0, minute=0, second=0) > shift_end_datetime
+    c4 = not leave['request_date_to'].replace(hour=23, minute=59, second=59, milliseconds=9999) < shift_start_datetime
     c5 = 'phát sinh tăng' in f"{leave['holiday_status_id']}".lower()
     return c1 and c2 and c3 and c4 and c5
 
@@ -1690,15 +1690,15 @@ def calculate_worktime_with_inout_standard(scheduling_record):
     process_increase_leave(scheduling_record)
     process_leave_with_pay(scheduling_record)
     process_annual_leave(scheduling_record)
-    process_casual_leave()
-    process_business_leave()
-    process_child_mode()
-    process_working_out_leave_ho()
-    process_cl_by_shiftname()
-    process_al_by_shiftname()
-    process_personal_holiday()
-    process_off_shift()
-    process_up_shift()
+    process_casual_leave(scheduling_record)
+    process_business_leave(scheduling_record)
+    process_child_mode(scheduling_record)
+    process_working_out_leave_ho(scheduling_record)
+    process_cl_by_shiftname(scheduling_record)
+    process_al_by_shiftname(scheduling_record)
+    process_personal_holiday(scheduling_record)
+    process_off_shift(scheduling_record)
+    process_up_shift(scheduling_record)
 
 
 def collect_data_to_schedulings(scheduling_object):
