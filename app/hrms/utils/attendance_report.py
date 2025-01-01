@@ -569,11 +569,11 @@ def find_attendance_hue4_time_mode(scheduling_record):
         if not HueStage2End > HueStage2Start:
             HueStage2Start = None
     if HueStage1Start is not None and HueStage1End is not None and shiftStartDateTime is not None and restStartDateTime is not None:
-        stage1WorktimeTemp = calculate_night_worktime_custom(HueStage1Start, HueStage1End, shiftStartDateTime, restStartDateTime)
+        stage1WorktimeTemp = calculate_night_worktime_custom(scheduling_record, HueStage1Start, HueStage1End, shiftStartDateTime, restStartDateTime)
     else:
         stage1WorktimeTemp = 0
     if HueStage2Start is not None and HueStage2End is not None and shiftEndDateTime is not None and restEndDateTime is not None:
-        stage2WorktimeTemp = calculate_night_worktime_custom(HueStage2Start, HueStage2End, restEndDateTime, shiftEndDateTime)
+        stage2WorktimeTemp = calculate_night_worktime_custom(scheduling_record, HueStage2Start, HueStage2End, restEndDateTime, shiftEndDateTime)
     else:
         stage2WorktimeTemp = 0
     check_last_in_out(scheduling_record=scheduling_record)
@@ -655,9 +655,9 @@ def process_worktime(scheduling_record):
                 else:
                     totalWorkTime = calculate_worktime_without_inout(realTimein, realTimeout)
             else:
-                stage1Off = calculate_night_worktime_custom(realTimein, realTimeout, shiftStartDateTime, restStartDateTime)
+                stage1Off = calculate_night_worktime_custom(scheduling_record, realTimein, realTimeout, shiftStartDateTime, restStartDateTime)
                 stage1Off = min(stage1Off, 240)
-                stage2Off = calculate_night_worktime_custom(realTimein, realTimeout, restEndDateTime, shiftEndDateTime)
+                stage2Off = calculate_night_worktime_custom(scheduling_record, realTimein, realTimeout, restEndDateTime, shiftEndDateTime)
                 stage2Off = min(stage2Off, 240)
                 totalWorkTime = max(stage2Off, stage1Off)
                 selectOffStage = 2 if stage2Off > stage1Off else 1
@@ -1049,6 +1049,7 @@ def process_explanation(list_explanations, scheduling_record, employee_ho, list_
             in_time_leave = 0
             for couple in list_couple_before_explanation_private:
                 in_time_leave += calculate_night_worktime_custom(
+                    scheduling_record,
                     couple.itemIn.attempt,
                     couple.itemOut.attempt,
                     explaination_item.attendance_missing_from,
@@ -1068,6 +1069,7 @@ def process_explanation(list_explanations, scheduling_record, employee_ho, list_
             if real_time_in is not None and real_time_out is not None:
                 if kidmod == 'None':
                     out_by_private_attendance += calculate_night_worktime_custom(
+                        scheduling_record,
                         real_time_in,
                         real_time_out,
                         explaination_item.attendance_missing_from,
@@ -1078,16 +1080,19 @@ def process_explanation(list_explanations, scheduling_record, employee_ho, list_
                         out_by_private_attendance = max(
                             0,
                             calculate_night_worktime_custom(
+                                scheduling_record,
                                 real_time_in,
                                 real_time_out,
                                 explaination_item.attendance_missing_from,
                                 explaination_item.attendance_missing_to
                             ) - calculate_night_worktime_custom(
+                                scheduling_record,
                                 kid_mode_stage1_datetime,
                                 kid_mode_stage1_end_datetime,
                                 explaination_item.attendance_missing_from,
                                 explaination_item.attendance_missing_to
                             ) - calculate_night_worktime_custom(
+                                scheduling_record,
                                 kid_mode_stage2_datetime,
                                 kid_mode_stage2_end_datetime,
                                 explaination_item.attendance_missing_from,
@@ -1101,6 +1106,7 @@ def process_explanation(list_explanations, scheduling_record, employee_ho, list_
         in_time_leave = 0
         for couple in list_couple_before_explanation_private:
             in_time_leave += calculate_night_worktime_custom(
+                scheduling_record,
                 couple.itemIn.attempt,
                 couple.itemOut.attempt,
                 explaination_item.attendance_missing_from,
@@ -1114,7 +1120,7 @@ def process_explanation(list_explanations, scheduling_record, employee_ho, list_
     return out_by_work
 
 
-def process_working_out_leave(hr_leaves, scheduling_record, date, real_time_in, real_time_out, kidmod, early_out_mid, late_in_mid, kid_mode_stage1_datetime, kid_mode_stage1_end_datetime, kid_mode_stage2_datetime, kid_mode_stage2_end_datetime, calculate_night_worktime_custom, calculate_worktime_without_inout):
+def process_working_out_leave(hr_leaves, scheduling_record, date, real_time_in, real_time_out, kidmod, early_out_mid, late_in_mid, kid_mode_stage1_datetime, kid_mode_stage1_end_datetime, kid_mode_stage2_datetime, kid_mode_stage2_end_datetime, calculate_worktime_without_inout):
     out_by_work_attendance = scheduling_record['out_by_work_attendance']
     out_by_work = scheduling_record['out_by_work']
     out_by_private_attendance = scheduling_record['out_by_private_attendance']
@@ -1141,6 +1147,7 @@ def process_working_out_leave(hr_leaves, scheduling_record, date, real_time_in, 
             if real_time_in is not None and real_time_out is not None:
                 if kidmod == 'None':
                     out_by_private_attendance += calculate_night_worktime_custom(
+                        scheduling_record,
                         real_time_in,
                         real_time_out,
                         leave_item['attendance_missing_from'],
@@ -1150,16 +1157,19 @@ def process_working_out_leave(hr_leaves, scheduling_record, date, real_time_in, 
                     out_by_private_attendance = max(
                         0,
                         calculate_night_worktime_custom(
+                            scheduling_record,
                             real_time_in,
                             real_time_out,
                             leave_item['attendance_missing_from'],
                             leave_item['attendance_missing_to']
                         ) - calculate_night_worktime_custom(
+                            scheduling_record,
                             kid_mode_stage1_datetime,
                             kid_mode_stage1_end_datetime,
                             leave_item['attendance_missing_from'],
                             leave_item['attendance_missing_to']
                         ) - calculate_night_worktime_custom(
+                            scheduling_record,
                             kid_mode_stage2_datetime,
                             kid_mode_stage2_end_datetime,
                             leave_item['attendance_missing_from'],
@@ -1170,6 +1180,7 @@ def process_working_out_leave(hr_leaves, scheduling_record, date, real_time_in, 
             out_by_work += out_time
             if real_time_in is not None and real_time_out is not None and kidmod != 'None':
                 out_by_work_attendance += calculate_night_worktime_custom(
+                    scheduling_record,
                     real_time_in,
                     real_time_out,
                     leave_item['attendance_missing_from'],
@@ -1177,7 +1188,7 @@ def process_working_out_leave(hr_leaves, scheduling_record, date, real_time_in, 
                 )
 
 
-def process_working_out_leave_ho(hr_leaves, scheduling_record, date, list_couple_before_explanation_private, calculate_night_worktime_custom, calculate_worktime_without_inout, process_explanation):
+def process_working_out_leave_ho(hr_leaves, scheduling_record, date, list_couple_before_explanation_private, calculate_worktime_without_inout, process_explanation):
     out_by_private = scheduling_record['out_by_private']
     out_by_work = scheduling_record['out_by_work']
     list_workingout_leaves = [
@@ -1195,6 +1206,7 @@ def process_working_out_leave_ho(hr_leaves, scheduling_record, date, list_couple
     for leave_item in list_workingout_leaves:
         in_time_leave = sum([
             calculate_night_worktime_custom(
+                scheduling_record,
                 couple.itemIn.attempt,
                 couple.itemOut.attempt,
                 leave_item['attendance_missing_from'],
