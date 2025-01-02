@@ -11,7 +11,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("authentication.urls")),  # Auth routes - login / register
     path('', include('home.urls')),
-    path('', include('hrms.urls')),
     path("upload/", image_upload, name="upload"),
     path("telegram/webhook/", TelegramBotView.as_view(), name="telegram_webhook"),
     re_path(r'^ws/', include(websocket_urlpatterns)),

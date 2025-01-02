@@ -3,5 +3,5 @@ from . import views
 
 
 urlpatterns = [
-    re_path('hrms/createtask/', views.taskcreate, name='task_create'),
+    re_path('createtask/', views.taskcreate, name='task_create2'),
 ]
