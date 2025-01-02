@@ -1434,7 +1434,21 @@ def process_child_mode(attendance_attempt1, scheduling_record, real_time_in, rea
     return kidmod_work_time, late_in_mid, early_out_mid
 
 
-def process_explanation(list_explanations, scheduling_record, employee_ho, list_couple_before_explanation_private, real_time_in, real_time_out, kidmod, kid_mode_stage1_datetime, kid_mode_stage1_end_datetime, kid_mode_stage2_datetime, kid_mode_stage2_end_datetime, early_out_mid, late_in_mid):
+def process_explanation(
+    list_explanations,
+    scheduling_record,
+    employee_ho,
+    list_couple_before_explanation_private,
+    real_time_in,
+    real_time_out,
+    kidmod,
+    kid_mode_stage1_datetime,
+    kid_mode_stage1_end_datetime,
+    kid_mode_stage2_datetime,
+    kid_mode_stage2_end_datetime,
+    early_out_mid,
+    late_in_mid,
+):
     out_by_private = scheduling_record['out_by_private']
     out_by_private_attendance = scheduling_record['out_by_private_attendance']
     out_by_work = scheduling_record['out_by_work']
