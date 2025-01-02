@@ -1,12 +1,10 @@
 {% extends "layouts/base-fullscreen.html" %}
 
-{% block title %} Register {% endblock %} 
+{% block title %} Create Task {% endblock %} 
 
-<!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}{% endblock stylesheets %}
 
 {% block content %}
-
     <div class="content">
         <div class="container">
             <div class="row pt-5">
@@ -14,57 +12,75 @@
                     <div class="card">
                         <div class="card-header text-center py-4">
                             <h4 class="title">
-                                Sign UP home - templdates - hrms -templdate
+                                Create Task
                             </h4>
                         </div>
                         <div class="card-body px-5 py-3">
-                            <form>
-                                <div class="row">
-                                    <div class="col-md-12 px-md-1">
-                                        <div class="form-group">
-                                            <label>Username</label>
-                                            <input type="text" class="form-control" placeholder="Username"
-                                                    value="michael23">
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-12 px-md-1">
-                                        <div class="form-group">
-                                            <label>Email</label>
-                                            <input type="email" class="form-control" placeholder="email"
-                                                    value="example@gmail.com">
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-12 px-md-1">
-                                        <div class="form-group">
-                                            <label>Password</label>
-                                            <input type="password" class="form-control" placeholder="password"
-                                                    value="example@gmail.com">
-                                        </div>
-                                    </div>
+                            <form id="taskForm">
+                                <div class="form-group">
+                                    <label for="name">Name</label>
+                                    <input type="text" class="form-control" id="name" required>
                                 </div>
-
+                                <div class="form-group">
+                                    <label for="project">Project</label>
+                                    <select class="form-control" id="project">
+                                        {% for project in projects %}
+                                            <option value="{{ project.id }}">{{ project.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="stage">Stage</label>
+                                    <input type="text" class="form-control" id="stage" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="start_date">Start Date</label>
+                                    <input type="datetime-local" class="form-control" id="start_date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="deadline">Deadline</label>
+                                    <input type="datetime-local" class="form-control" id="deadline" required>
+                                </div>
+                                <div class="text-center">
+                                    <button type="button" class="btn btn-fill btn-primary" onclick="createTask()">Create Task</button>
+                                </div>
                             </form>
-                        </div>
-                        <div class="card-footer text-center">
-                            <button type="submit" class="btn btn-fill btn-primary">Register</button>
-
-                            <br /><br />
-                            
-                            <p>
-                                Have an account? <a href="/login.html" class="text-primary">Login</a>
-                            </p> 
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
-
     </div>
-
 {% endblock content %}
 
-<!-- Specific Page JS goes HERE  -->
-{% block javascripts %}{% endblock javascripts %}
+{% block javascripts %}
+<script>
+    function createTask() {
+        const form = document.getElementById('taskForm');
+        const formData = {
+            name: form.name.value,
+            project_id: form.project.value,
+            stage: form.stage.value,
+            start_date: form.start_date.value,
+            deadline: form.deadline.value
+        };
+
+        fetch('{% url "hrms:api_create_task" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(`Task Created Successfully! Task ID: ${data.task_id}`);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to create task.');
+        });
+    }
+</script>
+{% endblock javascripts %}
