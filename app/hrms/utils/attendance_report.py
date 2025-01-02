@@ -1410,10 +1410,17 @@ def process_business_leave(scheduling_record):
     return time_business_trip, late_in_time
 
 
-def process_child_mode(attendance_attempt1, scheduling_record, real_time_in, real_time_out, employee_ho, list_couple, out_by_private_attendance, out_by_work_attendance, select_off_stage, kidmod, kidmode_worktime_without_inout, kidmod_early_out_mid, kidmod_late_in_mid):
+def process_child_mode(scheduling_record, select_off_stage, kidmod, kidmode_worktime_without_inout, kidmod_early_out_mid, kidmod_late_in_mid):
+    attendance_attempt1 = scheduling_record['attendanceAttempt1']
     kidmod_work_time = 0
+    real_time_out = scheduling_record['real_timeout']
+    real_time_in = scheduling_record['real_timein']
     late_in_mid = scheduling_record['late_in_mid']
     early_out_mid = scheduling_record['early_out_mid']
+    employee_ho = scheduling_record['main_info']['employee_ho'] if 'employee_ho' in scheduling_record['main_info'] else False
+    list_couple = scheduling_record['list_couple']
+    out_by_private_attendance = scheduling_record['out_by_private_attendance']
+    out_by_work_attendance = scheduling_record['out_by_work_attendance']
     if attendance_attempt1 and real_time_in and real_time_out:
         if employee_ho:
             kidmod_work_time = 0
