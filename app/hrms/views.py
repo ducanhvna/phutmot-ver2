@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import xmlrpc.client
 import json
+from dateutil.parser import parse
 
 ODOO_URL = "http://odoo17:8069"
 ODOO_DB = "odoo"
@@ -44,10 +45,10 @@ class TaskCreateAPIView(View):
 
         task_id = models.execute_kw(db, uid, password, 'project.task', 'create', [{
             'name': data['name'],
-            'project_id': data['project_id'],
-            'stage_id': data['stage'],
-            'date_start': data['start_date'],
-            'date_deadline': data['deadline'],
+            # 'project_id': data['project_id'],
+            # 'stage_id': data['stage'],
+            # 'date_start': data['start_date'],
+            'date_deadline': parse(data['deadline']).strftime('%Y-%m-%d %H:%M:%S'),
         }])
 
         return JsonResponse({'task_id': task_id})
