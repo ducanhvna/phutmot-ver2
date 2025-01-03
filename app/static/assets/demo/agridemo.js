@@ -424,7 +424,7 @@ demo = {
 
       var chart_labels = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
       var chart_data = [100, 70, 90, 70, 85, 60, 75, 60, 90, 80, 110, 100];
-      var big_data = Array.from({length: 100}, () => Math.floor(Math.random() * 100) + 50);
+      var big_data = Array.from({length: 112}, () => Math.floor(Math.random() * 100) + 50);
 
       var ctx = document.getElementById("charthrms").getContext('2d');
 
@@ -459,14 +459,14 @@ demo = {
       };
 
       var myChartData = new Chart(ctx, config);
-      var start_index = 0;
+      var start_index = 100;
 
       function updateChartData() {
           chart_data = big_data.slice(start_index, start_index + 12);
-          if (start_index + 12 >= big_data.length) {
-              start_index = 0;
+          if (start_index - 1 < 0) {
+              start_index = 100;
           } else {
-              start_index += 1;
+              start_index -= 1;
           }
           myChartData.data.datasets[0].data = chart_data;
           myChartData.update();
