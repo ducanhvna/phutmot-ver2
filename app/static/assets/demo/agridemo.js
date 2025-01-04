@@ -472,10 +472,12 @@ demo = {
       function updateChartData() {
           chart_data = big_data.slice(start_index, start_index + 12);
           chart_labels = timeArray.slice(start_index, start_index + 12);
-          if (start_index - 1 < 0) {
-              start_index = 100;
+          document.getElementById("time-range").innerHTML = chart_labels=[0] + " - " + chart_labels[11]
+          
+          if (start_index + 12 >= big_data.length) {
+            start_index = 0;
           } else {
-              start_index -= 1;
+            start_index += 1;
           }
           myChartData.data.datasets[0].data = chart_data;
           myChartData.data.labels = chart_labels;
