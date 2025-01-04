@@ -422,9 +422,17 @@ demo = {
     });
 
 
-      var chart_labels = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+      // Mảng chứa thời gian bao gồm 112 phần tử
+      var currentDate = new Date();
+      var timeArray = Array.from({ length: 112 }, (_, i) => {
+        var date = new Date(currentDate);
+        date.setMonth(currentDate.getMonth() - (111 - i));
+        return date.toISOString().slice(0, 7).replace('-', '/');
+      });
+
+      var chart_labels = timeArray.slice(-12);
       var chart_data = [100, 70, 90, 70, 85, 60, 75, 60, 90, 80, 110, 100];
-      var big_data = Array.from({length: 112}, () => Math.floor(Math.random() * 100) + 50);
+      var big_data = Array.from({ length: 112 }, () => Math.floor(Math.random() * 100) + 50);
 
       var ctx = document.getElementById("charthrms").getContext('2d');
 
@@ -463,12 +471,14 @@ demo = {
 
       function updateChartData() {
           chart_data = big_data.slice(start_index, start_index + 12);
+          chart_labels = timeArray.slice(start_index, start_index + 12);
           if (start_index - 1 < 0) {
               start_index = 100;
           } else {
               start_index -= 1;
           }
           myChartData.data.datasets[0].data = chart_data;
+          myChartData.data.labels = chart_labels;
           myChartData.update();
       }
 
@@ -496,15 +506,14 @@ demo = {
           data.labels = chart_labels;
           myChartData.update();
       });
-      
 
-    var ctx = document.getElementById("CountryChart").getContext("2d");
+      var ctx = document.getElementById("CountryChart").getContext("2d");
 
-    var gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
+      var gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
 
-    gradientStroke.addColorStop(1, 'rgba(29,140,248,0.2)');
-    gradientStroke.addColorStop(0.4, 'rgba(29,140,248,0.0)');
-    gradientStroke.addColorStop(0, 'rgba(29,140,248,0)'); //blue colors
+      gradientStroke.addColorStop(1, 'rgba(29,140,248,0.2)');
+      gradientStroke.addColorStop(0.4, 'rgba(29,140,248,0.0)');
+      gradientStroke.addColorStop(0, 'rgba(29,140,248,0)'); //blue colors
 
 
     var myChart = new Chart(ctx, {
