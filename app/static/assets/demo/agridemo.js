@@ -435,7 +435,7 @@ demo = {
       var big_data = Array.from({ length: 112 }, () => Math.floor(Math.random() * 100) + 50);
 
       var ctx = document.getElementById("charthrms").getContext('2d');
-
+      var date_range_project = document.getElementById("time-range")
       var gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
       gradientStroke.addColorStop(1, 'rgba(72,72,176,0.1)');
       gradientStroke.addColorStop(0.4, 'rgba(72,72,176,0.0)');
@@ -472,8 +472,8 @@ demo = {
       function updateChartData() {
           chart_data = big_data.slice(start_index, start_index + 12);
           chart_labels = timeArray.slice(start_index, start_index + 12);
-          document.getElementById("time-range").innerHTML = chart_labels[0] + " - " + chart_labels[11]
-          
+          date_range_project.innerHTML = chart_labels[0] + " - " + chart_labels[11]
+          date_range_project.value = chart_labels[0] + " - " + chart_labels[11]
           if (start_index + 12 >= big_data.length) {
             start_index = 0;
           } else {
