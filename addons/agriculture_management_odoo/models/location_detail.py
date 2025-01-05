@@ -53,6 +53,11 @@ class LocationDetail(models.Model):
                                      required=True, tracking=True,
                                      help='Describe the type of farming area',
                                      string='Location Type')
+    district_id = fields.Many2one('res.country.district', string='Huyện', domain="[('state_id', '=', state_id)]")
+    ward_id = fields.Many2one('res.country.ward', string='Xã', domain="[('district_id', '=', district_id)]")
+    state_id = fields.Many2one("res.country.state", string='Tỉnh', ondelete='restrict',
+                               domain="[('country_id', '=', country_id)]")
+    country_id = fields.Many2one('res.country', default=241, string='Quốc gia', ondelete='restrict')
     note = fields.Text(string='Note', tracking=True,
                        help='If any description for the location, mention here')
     company_id = fields.Many2one(
