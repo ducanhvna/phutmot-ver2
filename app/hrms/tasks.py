@@ -45,3 +45,9 @@ def calculate_scheduling(attendance_id):
 
     except Attendance.DoesNotExist:
         logger.error(f"Attendance with id {attendance_id} does not exist.")
+
+
+@shared_task
+def check_apec_hrms_update():
+    print("Tác vụ chạy định kỳ mỗi 30 giây check_apec_hrms_update")
+    # Thực hiện công việc của bạn tại đây
