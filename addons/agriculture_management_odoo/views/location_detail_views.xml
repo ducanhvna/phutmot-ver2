@@ -27,6 +27,7 @@
                     <group>
                         <group>
                             <field name="location_address"/>
+                            <field name="country_id"/>
                             <field name="state_id"/>
                             <field name="district_id"/>
                             <field name="ward_id"/>
