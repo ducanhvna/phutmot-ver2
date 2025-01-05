@@ -11,7 +11,7 @@ app.autodiscover_tasks()
 # Cấu hình Beat Schedule
 app.conf.beat_schedule = {
     'my-scheduled-task': {
-        'task': 'hrms.tasks.check_apec_hrms_update',
+        'task': 'dashboard.tasks.check_apec_hrms_update',
         'schedule': 30.0,  # 30 giây một lần
     },
 }
