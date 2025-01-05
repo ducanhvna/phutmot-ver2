@@ -62,6 +62,7 @@ services:
     depends_on:
       - web
       - redis
+    restart: always
     networks:
       - backend
       - backdjango
@@ -79,6 +80,7 @@ services:
     depends_on:
       - web
       - redis
+    restart: always
     networks:
       - backend
       - backdjango
