@@ -56,11 +56,12 @@ INSTALLED_APPS = [
     # Your apps
     # 'django_cuser',
     "bot_manager",
+    'rest_framework',
+    'rest_framework_simplejwt',
     "authentication",
     "home",
     "hrms",
-    'rest_framework',
-    'rest_framework_simplejwt',
+    'dashboard'
 ]
 
 REST_FRAMEWORK = {
