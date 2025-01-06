@@ -1,28 +1,26 @@
-from django.utils import timezone
-from fleet.models import Fleet
+from fleet.models import Vehicle
 from collections import defaultdict
 import xmlrpc.client
 from datetime import datetime, timedelta
 
 
 class Trip():
-    def __init__(self, first_day_of_month = None):
+    def __init__(self, first_day_of_month=None):
         # Define your Odoo connection parameters
         if not first_day_of_month:
             first_day_of_month = datetime.now().replace(day=1)
 
         # Lấy ngày đầu tiên của tháng trước
         self.first_day_of_last_month = first_day_of_month - timedelta(days=1)
-        self.first_day_of_last_month = datetime(first_day_of_last_month.year, first_day_of_last_month.month, 1)
+        self.first_day_of_last_month = datetime(self.first_day_of_last_month.year, self.first_day_of_last_month.month, 1)
 
         self.url = 'https://vantaihahai.com'
         self.db = 'fleet'
         self.username = 'admin'
         self.password = 'admin'
-        common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
-        uid = common.authenticate(db, username, password, {})
-        self.models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
-        self.download()
+        common = xmlrpc.client.ServerProxy(f'{self.url}/xmlrpc/2/common')
+        self.uid = common.authenticate(self.db, self.username, self.password, {})
+        self.models = xmlrpc.client.ServerProxy(f'{self.url}/xmlrpc/2/object')
         super(Trip, self).__init__()
 
     def download(self):
@@ -48,9 +46,9 @@ class Trip():
         merged_array = []
         while (len_data == LIMIT_SIZE) or (index == 0):
             ids = self.models.execute_kw(
-                db,
-                uid,
-                password,
+                self.db,
+                self.uid,
+                self.password,
                 "fleet.trip",
                 "search",
                 [
@@ -76,9 +74,9 @@ class Trip():
         for ids_chunk in ids_chunks:
             # Fetch data from Odoo
             list_attendance_trans = self.models.execute_kw(
-                db,
-                uid,
-                password,
+                self.db,
+                self.uid,
+                self.password,
                 "hr.attendance.trans",
                 "read",
                 [ids_chunk],
@@ -97,12 +95,10 @@ class Trip():
 
     def save_to_django(self, grouped_data, start_date, end_date):
         for code, records in grouped_data.items():
-            attendance, created = Attendance.objects.get_or_create(
+            attendance, created = Vehicle.objects.get_or_create(
                 code=code,
                 start_date=datetime.strptime(start_date, "%Y-%m-%d"),
                 end_date=datetime.strptime(end_date, "%Y-%m-%d"),
             )
             attendance.attendance_records = records
             attendance.save()
-    
-
