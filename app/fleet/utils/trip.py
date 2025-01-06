@@ -70,7 +70,25 @@ class Trip():
                 start_date=datetime.strptime(start_date, "%Y-%m-%d"),
                 end_date=datetime.strptime(end_date, "%Y-%m-%d"),
             )
-            vehicle.other_profile = {"trips": records}
+            if 'trips' not in vehicle.other_profile:
+                vehicle.other_profile['trips'] = []
+
+            existing_trips = vehicle.other_profile['trips']
+            updated_trips = []
+
+            # Update existing trips or add new ones
+            for record in records:
+                found = False
+                for index, trip in enumerate(existing_trips):
+                    if trip['id'] == record['id']:
+                        existing_trips[index] = record  # Replace the old trip
+                        found = True
+                        break
+                if not found:
+                    updated_trips.append(record)  # Add new trip if not found
+
+            # Extend with new trips
+            vehicle.other_profile['trips'].extend(updated_trips)
             vehicle.save()
 
     def download_data(self, model_name, fields, start_str, end_str):
