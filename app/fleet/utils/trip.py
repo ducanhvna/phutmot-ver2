@@ -9,9 +9,10 @@ class Trip():
         # Define your Odoo connection parameters
         if not first_day_of_month:
             first_day_of_month = datetime.now().replace(day=1)
+        self.first_day_of_month = first_day_of_month
 
         # Lấy ngày đầu tiên của tháng trước
-        self.first_day_of_last_month = first_day_of_month - timedelta(days=1)
+        self.first_day_of_last_month = self.first_day_of_month - timedelta(days=1)
         self.first_day_of_last_month = datetime(self.first_day_of_last_month.year, self.first_day_of_last_month.month, 1)
 
         self.url = 'https://vantaihahai.com'
