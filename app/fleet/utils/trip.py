@@ -78,7 +78,7 @@ class Trip():
         index = 0
         len_data = 0
         merged_array = []
-        if model_name == 'hr.employee':
+        if model_name == 'fleet.trip':
             domain = [[
                 ("schedule_date", ">=", start_str),
                 ("schedule_date", "<=", end_str),
