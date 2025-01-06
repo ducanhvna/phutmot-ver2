@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "home",
     "hrms",
     "fleet",
+    "griculture",
     'dashboard'
 ]
 
