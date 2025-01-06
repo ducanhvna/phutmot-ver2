@@ -40,7 +40,7 @@ class Trip():
         print(f"Start date: {start_str}")
         print(f"End date: {end_str}")
 
-        fields = ['id', 'equipment_id.license_plate', 'equipment_id.name', 'schedule_date', 'location_id', 'location_dest_id', 'write_date']
+        fields = ['id', 'equipment_id', 'schedule_date', 'location_id', 'location_dest_id', 'write_date']
         LIMIT_SIZE = 300
         index = 0
         len_data = 0
@@ -56,7 +56,8 @@ class Trip():
                     [
                         ("schedule_date", ">=", start_str),
                         ("schedule_date", "<=", end_str),
-                        ("schedule_date", "!=", False)
+                        ("schedule_date", "!=", False),
+                        ("equipment_id", "!=", False)
                     ]
                 ],
                 {"offset": index * LIMIT_SIZE, "limit": LIMIT_SIZE},
@@ -89,8 +90,8 @@ class Trip():
         # Group data by employee_code
         grouped_data = defaultdict(list)
         for record in merged_data:
-            grouped_data[record["name"]].append(record)
-            print(f"{record['name']} -- {len(grouped_data[record['name']])}")
+            grouped_data[record["equipment_id"][1]].append(record)
+            print(f"{record['equipment_id'][1]} -- {len(grouped_data[record['name']])}")
 
         # Save data to Django
         self.save_to_django(grouped_data, start_str, end_str)
