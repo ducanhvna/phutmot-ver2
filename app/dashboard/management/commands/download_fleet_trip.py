@@ -12,7 +12,7 @@ class Command(BaseCommand):
         max_write_date_trip = None
         first_day_of_month = datetime.now().replace(day=1)
         trip = Trip(first_day_of_month)
-        fleet_dashboard = Fleet.objects.get_or_create(
+        fleet_dashboard, created = Fleet.objects.get_or_create(
             company_code="VANTAIHAHAI",
             start_date=first_day_of_month,
             end_date=trip.last_day_of_month,
