@@ -19,7 +19,7 @@ class Trip():
             next_month = self.first_day_of_month.replace(year=self.first_day_of_month.year + 1, month=1, day=1)
         else:
             next_month = self.first_day_of_month.replace(month=self.first_day_of_month.month + 1, day=1)
-        self.max_write_date_trip = max_write_date_trip
+
         self.last_day_of_month = next_month - timedelta(days=1)
         self.url = 'https://vantaihahai.com'
         self.db = 'fleet'
@@ -31,6 +31,7 @@ class Trip():
         super(Trip, self).__init__()
 
     def download(self, max_write_date_trip=None):
+        self.max_write_date_trip = max_write_date_trip
         # Format the dates
         start_str = (self.first_day_of_month - timedelta(days=1)).strftime('%Y-%m-%d')
         end_str = (self.last_day_of_month + timedelta(days=1)).strftime('%Y-%m-%d')
@@ -84,6 +85,8 @@ class Trip():
                 ("schedule_date", "!=", False),
                 ("equipment_id", "!=", False)
             ]]
+            if self.max_write_date_trip:
+                domain.append((("write_date", ">", self.max_write_date_trip.strftime("%Y-%m-%d %H:%M:%S"))))
         else:
             raise ValueError("Invalid model name")
 
