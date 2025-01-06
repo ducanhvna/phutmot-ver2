@@ -40,7 +40,7 @@ class Trip():
         print(f"Start date: {start_str}")
         print(f"End date: {end_str}")
 
-        fields = ['id', 'name', 'day', 'time', 'in_out', 'write_date']
+        fields = ['id', 'equipment_id.license_plate', 'equipment_id.name', 'schedule_date', 'location_id', 'location_dest_id', 'write_date']
         LIMIT_SIZE = 300
         index = 0
         len_data = 0
@@ -54,8 +54,9 @@ class Trip():
                 "search",
                 [
                     [
-                        ("day", ">=", start_str),
-                        ("day", "<=", end_str)
+                        ("schedule_date", ">=", start_str),
+                        ("schedule_date", "<=", end_str),
+                        ("schedule_date", "!=", False)
                     ]
                 ],
                 {"offset": index * LIMIT_SIZE, "limit": LIMIT_SIZE},
@@ -78,7 +79,7 @@ class Trip():
                 self.db,
                 self.uid,
                 self.password,
-                "hr.attendance.trans",
+                "fleet.trip",
                 "read",
                 [ids_chunk],
                 {"fields": fields},
@@ -95,11 +96,11 @@ class Trip():
         self.save_to_django(grouped_data, start_str, end_str)
 
     def save_to_django(self, grouped_data, start_date, end_date):
-        for code, records in grouped_data.items():
-            attendance, created = Vehicle.objects.get_or_create(
-                code=code,
+        for license_place, records in grouped_data.items():
+            vehicle, created = Vehicle.objects.get_or_create(
+                license_place=license_place,
                 start_date=datetime.strptime(start_date, "%Y-%m-%d"),
                 end_date=datetime.strptime(end_date, "%Y-%m-%d"),
             )
-            attendance.attendance_records = records
-            attendance.save()
+            vehicle.other_profile = {"trips": records}
+            vehicle.save()
