@@ -349,18 +349,61 @@ demo = {
       }
     };
 
+    // var ctx = document.getElementById("chartLinePurple").getContext("2d");
+
+    // var gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
+
+    // gradientStroke.addColorStop(1, 'rgba(72,72,176,0.2)');
+    // gradientStroke.addColorStop(0.2, 'rgba(72,72,176,0.0)');
+    // gradientStroke.addColorStop(0, 'rgba(119,52,169,0)'); //purple colors
+
+    // var data = {
+    //   labels: ['JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
+    //   datasets: [{
+    //     label: "Data",
+    //     fill: true,
+    //     backgroundColor: gradientStroke,
+    //     borderColor: '#d048b6',
+    //     borderWidth: 2,
+    //     borderDash: [],
+    //     borderDashOffset: 0.0,
+    //     pointBackgroundColor: '#d048b6',
+    //     pointBorderColor: 'rgba(255,255,255,0)',
+    //     pointHoverBackgroundColor: '#d048b6',
+    //     pointBorderWidth: 20,
+    //     pointHoverRadius: 4,
+    //     pointHoverBorderWidth: 15,
+    //     pointRadius: 4,
+    //     data: [80, 100, 70, 80, 120, 80],
+    //   }]
+    // };
+
+    // var myChart = new Chart(ctx, {
+    //   type: 'line',
+    //   data: data,
+    //   options: gradientChartOptionsConfigurationWithTooltipPurple
+    // });
     var ctx = document.getElementById("chartLinePurple").getContext("2d");
 
     var gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
 
     gradientStroke.addColorStop(1, 'rgba(72,72,176,0.2)');
     gradientStroke.addColorStop(0.2, 'rgba(72,72,176,0.0)');
-    gradientStroke.addColorStop(0, 'rgba(119,52,169,0)'); //purple colors
+    gradientStroke.addColorStop(0, 'rgba(119,52,169,0)'); // purple colors
+
+    // Generate labels for each minute (example for 10 minutes)
+    var labels = [];
+    for (let i = 0; i < 10; i++) {
+      labels.push(`Min ${i + 1}`);
+    }
+
+    // Initial sample data for each minute
+    var dataValues = [80, 85, 90, 95, 100, 105, 110, 115, 120, 125];
 
     var data = {
-      labels: ['JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
+      labels: labels,
       datasets: [{
-        label: "Data",
+        label: "Stock Prices",
         fill: true,
         backgroundColor: gradientStroke,
         borderColor: '#d048b6',
@@ -374,52 +417,192 @@ demo = {
         pointHoverRadius: 4,
         pointHoverBorderWidth: 15,
         pointRadius: 4,
-        data: [80, 100, 70, 80, 120, 80],
+        data: dataValues,
       }]
     };
 
-    var myChart = new Chart(ctx, {
+    // Create the chart using Chart.js (assuming you have included Chart.js in your project)
+    var chart = new Chart(ctx, {
       type: 'line',
       data: data,
-      options: gradientChartOptionsConfigurationWithTooltipPurple
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            ticks: {
+              autoSkip: false
+            }
+          }
+        }
+      }
     });
 
+    // Function to fetch sample stock prices (replacing this with real API call in real scenarios)
+    function fetchStockPrices() {
+      // Sample JSON string with new data
+      const sampleJson = `{
+        "prices": [90, 95, 100, 105, 110, 115, 120, 125, 130, 135]
+      }`;
 
-    var ctxGreen = document.getElementById("chartLineGreen").getContext("2d");
+      const data = JSON.parse(sampleJson);
+      return data.prices;
+    }
 
-    var gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
+    // Function to update chart data
+    function updateChartData() {
+      const prices = fetchStockPrices();
 
-    gradientStroke.addColorStop(1, 'rgba(66,134,121,0.15)');
-    gradientStroke.addColorStop(0.4, 'rgba(66,134,121,0.0)'); //green colors
-    gradientStroke.addColorStop(0, 'rgba(66,134,121,0)'); //green colors
+      // Update chart data
+      chart.data.datasets[0].data = prices;
+      chart.update();
+    }
+
+    // Update chart data periodically (e.g., every 5 seconds)
+    setInterval(updateChartData, 5000); // Update every 5 seconds
+
+    var ctx = document.getElementById("chartLineGreen").getContext("2d");
+
+    var gradientStrokeBlue = ctx.createLinearGradient(0, 230, 0, 50);
+    gradientStrokeBlue.addColorStop(1, 'rgba(66, 134, 244, 0.2)');
+    gradientStrokeBlue.addColorStop(0.2, 'rgba(66, 134, 244, 0.0)');
+    gradientStrokeBlue.addColorStop(0, 'rgba(66, 134, 244, 0)'); // blue colors
+
+    var gradientStrokeRed = ctx.createLinearGradient(0, 230, 0, 50);
+    gradientStrokeRed.addColorStop(1, 'rgba(244, 66, 66, 0.2)');
+    gradientStrokeRed.addColorStop(0.2, 'rgba(244, 66, 66, 0.0)');
+    gradientStrokeRed.addColorStop(0, 'rgba(244, 66, 66, 0)'); // red colors
+
+    // Example data
+    var labels = Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`);
+    var startTimes = [8, 8.5, 9, 8, 8, 9, 8, 8.5, 9, 8, 8, 9, 8, 8.5, 9, 8, 8, 9, 8, 8.5, 9, 8, 8, 9, 8, 8.5, 9, 8, 8, 9, 8];
+    var endTimes = [17, 17.5, 18, 17, 17, 18, 17, 17.5, 18, 17, 17, 18, 17, 17.5, 18, 17, 17, 18, 17, 17.5, 18, 17, 17, 18, 17, 17.5, 18, 17, 17, 18, 17];
 
     var data = {
-      labels: ['JUL', 'AUG', 'SEP', 'OCT', 'NOV'],
-      datasets: [{
-        label: "My First dataset",
-        fill: true,
-        backgroundColor: gradientStroke,
-        borderColor: '#00d6b4',
-        borderWidth: 2,
-        borderDash: [],
-        borderDashOffset: 0.0,
-        pointBackgroundColor: '#00d6b4',
-        pointBorderColor: 'rgba(255,255,255,0)',
-        pointHoverBackgroundColor: '#00d6b4',
-        pointBorderWidth: 20,
-        pointHoverRadius: 4,
-        pointHoverBorderWidth: 15,
-        pointRadius: 4,
-        data: [90, 27, 60, 12, 80],
-      }]
+      labels: labels,
+      datasets: [
+        {
+          label: "Start Time",
+          fill: true,
+          backgroundColor: gradientStrokeBlue,
+          borderColor: '#4286f4',
+          borderWidth: 2,
+          pointBackgroundColor: '#4286f4',
+          pointBorderColor: 'rgba(255,255,255,0)',
+          pointHoverBackgroundColor: '#4286f4',
+          pointBorderWidth: 20,
+          pointHoverRadius: 4,
+          pointHoverBorderWidth: 15,
+          pointRadius: 4,
+          data: startTimes,
+        },
+        {
+          label: "End Time",
+          fill: true,
+          backgroundColor: gradientStrokeRed,
+          borderColor: '#f44242',
+          borderWidth: 2,
+          pointBackgroundColor: '#f44242',
+          pointBorderColor: 'rgba(255,255,255,0)',
+          pointHoverBackgroundColor: '#f44242',
+          pointBorderWidth: 20,
+          pointHoverRadius: 4,
+          pointHoverBorderWidth: 15,
+          pointRadius: 4,
+          data: endTimes,
+        }
+      ]
     };
 
-    var myChart = new Chart(ctxGreen, {
+    // Create the chart using Chart.js
+    var chart = new Chart(ctx, {
       type: 'line',
       data: data,
-      options: gradientChartOptionsConfigurationWithTooltipGreen
-
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Day of the Month'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Time (Hours)'
+            },
+            ticks: {
+              beginAtZero: true,
+              max: 24
+            }
+          }
+        }
+      }
     });
+
+    // Function to fetch sample work times (replace this with real API call in real scenarios)
+    function fetchWorkTimes() {
+      // Sample JSON string with new data
+      const sampleJson = `{
+    "startTimes": [8, 8.5, 9, 8, 8, 9, 8, 8.5, 9, 8, 8, 9, 8, 8.5, 9, 8, 8, 9, 8, 8.5, 9, 8, 8, 9, 8, 8.5, 9, 8, 8, 9, 8],
+    "endTimes": [17, 17.5, 18, 17, 17, 18, 17, 17.5, 18, 17, 17, 18, 17, 17.5, 18, 17, 17, 18, 17, 17.5, 18, 17, 17, 18, 17, 17.5, 18, 17, 17, 18, 17]
+  }`;
+
+      const data = JSON.parse(sampleJson);
+      return data;
+    }
+
+    // Function to update chart data
+    function updateChartData() {
+      const workTimes = fetchWorkTimes();
+
+      // Update chart data
+      chart.data.datasets[0].data = workTimes.startTimes;
+      chart.data.datasets[1].data = workTimes.endTimes;
+      chart.update();
+    }
+
+    // Update chart data periodically (e.g., every hour)
+    setInterval(updateChartData, 3600000); // Update every 1 hour
+
+
+    // var ctxGreen = document.getElementById("chartLineGreen").getContext("2d");
+
+    // var gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
+
+    // gradientStroke.addColorStop(1, 'rgba(66,134,121,0.15)');
+    // gradientStroke.addColorStop(0.4, 'rgba(66,134,121,0.0)'); //green colors
+    // gradientStroke.addColorStop(0, 'rgba(66,134,121,0)'); //green colors
+
+    // var data = {
+    //   labels: ['JUL', 'AUG', 'SEP', 'OCT', 'NOV'],
+    //   datasets: [{
+    //     label: "My First dataset",
+    //     fill: true,
+    //     backgroundColor: gradientStroke,
+    //     borderColor: '#00d6b4',
+    //     borderWidth: 2,
+    //     borderDash: [],
+    //     borderDashOffset: 0.0,
+    //     pointBackgroundColor: '#00d6b4',
+    //     pointBorderColor: 'rgba(255,255,255,0)',
+    //     pointHoverBackgroundColor: '#00d6b4',
+    //     pointBorderWidth: 20,
+    //     pointHoverRadius: 4,
+    //     pointHoverBorderWidth: 15,
+    //     pointRadius: 4,
+    //     data: [90, 27, 60, 12, 80],
+    //   }]
+    // };
+
+    // var myChart = new Chart(ctxGreen, {
+    //   type: 'line',
+    //   data: data,
+    //   options: gradientChartOptionsConfigurationWithTooltipGreen
+
+    // });
 
 
 
