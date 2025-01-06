@@ -20,7 +20,7 @@ class Command(BaseCommand):
         )
         info = fleet_dashboard.info
         if info and (info != {}):
-            max_write_date_trip = ["max_write_date_trip"]
+            max_write_date_trip = info["max_write_date_trip"]
         new_write_date = trip.download(max_write_date_trip)
         fleet_dashboard.info["max_write_date_trip"] = (
             new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
