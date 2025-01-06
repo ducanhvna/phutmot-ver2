@@ -24,13 +24,13 @@ class Trip():
         self.models = xmlrpc.client.ServerProxy(f'{self.url}/xmlrpc/2/object')
         super(Trip, self).__init__()
 
-    def download(self):
+    def download(self, max_write_date_trip=None):
         # Calculate the last day of the current month
         if self.first_day_of_month.month == 12:
             next_month = self.first_day_of_month.replace(year=self.first_day_of_month.year + 1, month=1, day=1)
         else:
             next_month = self.first_day_of_month.replace(month=self.first_day_of_month.month + 1, day=1)
-
+        self.max_write_date_trip = max_write_date_trip
         last_day_of_month = next_month - timedelta(days=1)
 
         # Format the dates
@@ -45,6 +45,14 @@ class Trip():
         index = 0
         len_data = 0
         merged_array = []
+        domain = [
+            ("schedule_date", ">=", start_str),
+            ("schedule_date", "<=", end_str),
+            ("schedule_date", "!=", False),
+            ("equipment_id", "!=", False)
+        ]
+        if self.max_write_date_trip:
+            domain.append(('write_date', '>', self.max_write_date_trip))
         while (len_data == LIMIT_SIZE) or (index == 0):
             ids = self.models.execute_kw(
                 self.db,
@@ -53,12 +61,7 @@ class Trip():
                 "fleet.trip",
                 "search",
                 [
-                    [
-                        ("schedule_date", ">=", start_str),
-                        ("schedule_date", "<=", end_str),
-                        ("schedule_date", "!=", False),
-                        ("equipment_id", "!=", False)
-                    ]
+                    domain
                 ],
                 {"offset": index * LIMIT_SIZE, "limit": LIMIT_SIZE},
             )
@@ -95,6 +98,20 @@ class Trip():
 
         # Save data to Django
         self.save_to_django(grouped_data, start_str, end_str)
+        # Extract write_date values
+        write_dates = [
+            datetime.strptime(record["write_date"], "%Y-%m-%d %H:%M:%S")
+            for record in merged_data
+            if record.get("write_date")
+        ]
+
+        # Get the maximum write_date or None if the list is empty
+        max_write_date = max(write_dates, default=None)
+
+        # Now max_write_date contains the maximum write_date or None if there are no dates
+        print(f"Maximum write_date: {max_write_date}")
+
+        return max_write_date
 
     def save_to_django(self, grouped_data, start_date, end_date):
         for license_place, records in grouped_data.items():
