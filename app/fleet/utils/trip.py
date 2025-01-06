@@ -31,11 +31,11 @@ class Trip():
         else:
             next_month = self.first_day_of_month.replace(month=self.first_day_of_month.month + 1, day=1)
         self.max_write_date_trip = max_write_date_trip
-        last_day_of_month = next_month - timedelta(days=1)
+        self.last_day_of_month = next_month - timedelta(days=1)
 
         # Format the dates
         start_str = (self.first_day_of_month - timedelta(days=1)).strftime('%Y-%m-%d')
-        end_str = (last_day_of_month + timedelta(days=1)).strftime('%Y-%m-%d')
+        end_str = (self.last_day_of_month + timedelta(days=1)).strftime('%Y-%m-%d')
 
         print(f"Start date: {start_str}")
         print(f"End date: {end_str}")
