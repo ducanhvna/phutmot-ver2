@@ -104,7 +104,7 @@ class Trip():
                 ("equipment_id", "!=", False)
             ]]
             if self.max_write_date_trip:
-                domain.append((("write_date", ">", self.max_write_date_trip)))
+                domain[0].append((("write_date", ">", self.max_write_date_trip)))
         else:
             raise ValueError("Invalid model name")
 
