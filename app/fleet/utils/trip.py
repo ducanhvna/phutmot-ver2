@@ -91,7 +91,7 @@ class Trip():
         grouped_data = defaultdict(list)
         for record in merged_data:
             grouped_data[record["equipment_id"][1]].append(record)
-            print(f"{record['equipment_id'][1]} -- {len(grouped_data[record['name']])}")
+            print(f"{record['equipment_id'][1]} -- {len(grouped_data[record['equipment_id'][0]])}")
 
         # Save data to Django
         self.save_to_django(grouped_data, start_str, end_str)
