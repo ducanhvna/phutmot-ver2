@@ -131,11 +131,11 @@ class Trip():
         merged_array = []
         if model_name == 'hr.employee':
             domain = [[
-            ("schedule_date", ">=", start_str),
-            ("schedule_date", "<=", end_str),
-            ("schedule_date", "!=", False),
-            ("equipment_id", "!=", False)
-        ]]
+                ("schedule_date", ">=", start_str),
+                ("schedule_date", "<=", end_str),
+                ("schedule_date", "!=", False),
+                ("equipment_id", "!=", False)
+            ]]
         else:
             raise ValueError("Invalid model name")
 
