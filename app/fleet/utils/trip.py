@@ -41,54 +41,55 @@ class Trip():
         print(f"End date: {end_str}")
 
         fields = ['id', 'equipment_id', 'schedule_date', 'location_id', 'location_dest_id', 'write_date']
-        LIMIT_SIZE = 300
-        index = 0
-        len_data = 0
-        merged_array = []
-        domain = [
-            ("schedule_date", ">=", start_str),
-            ("schedule_date", "<=", end_str),
-            ("schedule_date", "!=", False),
-            ("equipment_id", "!=", False)
-        ]
-        if self.max_write_date_trip:
-            domain.append(('write_date', '>', self.max_write_date_trip))
-        while (len_data == LIMIT_SIZE) or (index == 0):
-            ids = self.models.execute_kw(
-                self.db,
-                self.uid,
-                self.password,
-                "fleet.trip",
-                "search",
-                [
-                    domain
-                ],
-                {"offset": index * LIMIT_SIZE, "limit": LIMIT_SIZE},
-            )
-            len_data = len(ids)
-            print(ids)
-            merged_array = list(set(merged_array) | set(ids))
-            index = index + 1
+        merged_data = self.download_data('fleet.trip', fields, start_str, end_str)
+        # LIMIT_SIZE = 300
+        # index = 0
+        # len_data = 0
+        # merged_array = []
+        # domain = [
+        #     ("schedule_date", ">=", start_str),
+        #     ("schedule_date", "<=", end_str),
+        #     ("schedule_date", "!=", False),
+        #     ("equipment_id", "!=", False)
+        # ]
+        # if self.max_write_date_trip:
+        #     domain.append(('write_date', '>', self.max_write_date_trip))
+        # while (len_data == LIMIT_SIZE) or (index == 0):
+        #     ids = self.models.execute_kw(
+        #         self.db,
+        #         self.uid,
+        #         self.password,
+        #         "fleet.trip",
+        #         "search",
+        #         [
+        #             domain
+        #         ],
+        #         {"offset": index * LIMIT_SIZE, "limit": LIMIT_SIZE},
+        #     )
+        #     len_data = len(ids)
+        #     print(ids)
+        #     merged_array = list(set(merged_array) | set(ids))
+        #     index = index + 1
 
-        # Split ids into chunks of 200
-        ids_chunks = [
-            merged_array[i:i + 200] for i in range(0, len(merged_array), 200)
-        ]
-        print(ids_chunks)
-        merged_data = []
+        # # Split ids into chunks of 200
+        # ids_chunks = [
+        #     merged_array[i:i + 200] for i in range(0, len(merged_array), 200)
+        # ]
+        # print(ids_chunks)
+        # merged_data = []
 
-        for ids_chunk in ids_chunks:
-            # Fetch data from Odoo
-            list_attendance_trans = self.models.execute_kw(
-                self.db,
-                self.uid,
-                self.password,
-                "fleet.trip",
-                "read",
-                [ids_chunk],
-                {"fields": fields},
-            )
-            merged_data.extend(list_attendance_trans)
+        # for ids_chunk in ids_chunks:
+        #     # Fetch data from Odoo
+        #     list_attendance_trans = self.models.execute_kw(
+        #         self.db,
+        #         self.uid,
+        #         self.password,
+        #         "fleet.trip",
+        #         "read",
+        #         [ids_chunk],
+        #         {"fields": fields},
+        #     )
+        #     merged_data.extend(list_attendance_trans)
 
         # Group data by employee_code
         grouped_data = defaultdict(list)
@@ -122,3 +123,53 @@ class Trip():
             )
             vehicle.other_profile = {"trips": records}
             vehicle.save()
+
+    def download_data(self, model_name, fields, start_str, end_str):
+        LIMIT_SIZE = 300
+        index = 0
+        len_data = 0
+        merged_array = []
+        if model_name == 'hr.employee':
+            domain = [[
+            ("schedule_date", ">=", start_str),
+            ("schedule_date", "<=", end_str),
+            ("schedule_date", "!=", False),
+            ("equipment_id", "!=", False)
+        ]]
+        else:
+            raise ValueError("Invalid model name")
+
+        while (len_data == LIMIT_SIZE) or (index == 0):
+            ids = self.models.execute_kw(
+                self.db,
+                self.uid,
+                self.password,
+                model_name,
+                'search',
+                domain,
+                {'offset': index * LIMIT_SIZE, 'limit': LIMIT_SIZE},
+            )
+            len_data = len(ids)
+            print(ids)
+            merged_array = list(set(merged_array) | set(ids))
+            index += 1
+
+        # Split ids into chunks of 200
+        ids_chunks = [merged_array[i:i + 200] for i in range(0, len(merged_array), 200)]
+        print(ids_chunks)
+        merged_data = []
+
+        for ids_chunk in ids_chunks:
+            # Fetch data from Odoo
+            data_chunk = self.models.execute_kw(
+                self.db,
+                self.uid,
+                self.password,
+                model_name,
+                'read',
+                [ids_chunk],
+                {'fields': fields},
+            )
+            merged_data.extend(data_chunk)
+
+        return merged_data
