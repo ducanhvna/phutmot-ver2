@@ -14,7 +14,13 @@ class Trip():
         # Lấy ngày đầu tiên của tháng trước
         self.first_day_of_last_month = self.first_day_of_month - timedelta(days=1)
         self.first_day_of_last_month = datetime(self.first_day_of_last_month.year, self.first_day_of_last_month.month, 1)
-
+        # Calculate the last day of the current month
+        if self.first_day_of_month.month == 12:
+            next_month = self.first_day_of_month.replace(year=self.first_day_of_month.year + 1, month=1, day=1)
+        else:
+            next_month = self.first_day_of_month.replace(month=self.first_day_of_month.month + 1, day=1)
+        self.max_write_date_trip = max_write_date_trip
+        self.last_day_of_month = next_month - timedelta(days=1)
         self.url = 'https://vantaihahai.com'
         self.db = 'fleet'
         self.username = 'admin'
@@ -25,14 +31,6 @@ class Trip():
         super(Trip, self).__init__()
 
     def download(self, max_write_date_trip=None):
-        # Calculate the last day of the current month
-        if self.first_day_of_month.month == 12:
-            next_month = self.first_day_of_month.replace(year=self.first_day_of_month.year + 1, month=1, day=1)
-        else:
-            next_month = self.first_day_of_month.replace(month=self.first_day_of_month.month + 1, day=1)
-        self.max_write_date_trip = max_write_date_trip
-        self.last_day_of_month = next_month - timedelta(days=1)
-
         # Format the dates
         start_str = (self.first_day_of_month - timedelta(days=1)).strftime('%Y-%m-%d')
         end_str = (self.last_day_of_month + timedelta(days=1)).strftime('%Y-%m-%d')
@@ -42,56 +40,6 @@ class Trip():
 
         fields = ['id', 'equipment_id', 'schedule_date', 'location_id', 'location_dest_id', 'write_date']
         merged_data = self.download_data('fleet.trip', fields, start_str, end_str)
-        # LIMIT_SIZE = 300
-        # index = 0
-        # len_data = 0
-        # merged_array = []
-        # domain = [
-        #     ("schedule_date", ">=", start_str),
-        #     ("schedule_date", "<=", end_str),
-        #     ("schedule_date", "!=", False),
-        #     ("equipment_id", "!=", False)
-        # ]
-        # if self.max_write_date_trip:
-        #     domain.append(('write_date', '>', self.max_write_date_trip))
-        # while (len_data == LIMIT_SIZE) or (index == 0):
-        #     ids = self.models.execute_kw(
-        #         self.db,
-        #         self.uid,
-        #         self.password,
-        #         "fleet.trip",
-        #         "search",
-        #         [
-        #             domain
-        #         ],
-        #         {"offset": index * LIMIT_SIZE, "limit": LIMIT_SIZE},
-        #     )
-        #     len_data = len(ids)
-        #     print(ids)
-        #     merged_array = list(set(merged_array) | set(ids))
-        #     index = index + 1
-
-        # # Split ids into chunks of 200
-        # ids_chunks = [
-        #     merged_array[i:i + 200] for i in range(0, len(merged_array), 200)
-        # ]
-        # print(ids_chunks)
-        # merged_data = []
-
-        # for ids_chunk in ids_chunks:
-        #     # Fetch data from Odoo
-        #     list_attendance_trans = self.models.execute_kw(
-        #         self.db,
-        #         self.uid,
-        #         self.password,
-        #         "fleet.trip",
-        #         "read",
-        #         [ids_chunk],
-        #         {"fields": fields},
-        #     )
-        #     merged_data.extend(list_attendance_trans)
-
-        # Group data by employee_code
         grouped_data = defaultdict(list)
         for record in merged_data:
             grouped_data[record["equipment_id"][1]].append(record)
