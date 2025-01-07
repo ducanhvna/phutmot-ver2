@@ -156,7 +156,7 @@ class LeaveService():
                 end_date=datetime.strptime(end_date, "%Y-%m-%d"),
                 defaults={"leave_records": []},
             )
-
+            existing_leaves = leave.leave_records
             updated_leaves = []
             # Update existing leaves or add new ones
             for record in records:
