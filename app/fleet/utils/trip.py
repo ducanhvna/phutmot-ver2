@@ -1,6 +1,7 @@
 from fleet.models import Vehicle
 from collections import defaultdict
 import xmlrpc.client
+from dashboard.models import Fleet
 from datetime import datetime, timedelta
 
 
@@ -142,3 +143,45 @@ class Trip():
             merged_data.extend(data_chunk)
 
         return merged_data
+
+
+class FleetDashboard():
+    def update(self):
+        # Get the first day of the current month
+        max_write_date_trip = None
+        first_day_of_month = datetime.now().replace(day=1)
+        trip = Trip(first_day_of_month)
+        fleet_dashboard, created = Fleet.objects.get_or_create(
+            company_code="VANTAIHAHAI",
+            start_date=first_day_of_month,
+            end_date=trip.last_day_of_month,
+            defaults={"info": {}},
+        )
+        info = fleet_dashboard.info
+        if info and (info != {}):
+            max_write_date_trip = info["max_write_date_trip"]
+        new_write_date = trip.download(max_write_date_trip)
+        fleet_dashboard.info["max_write_date_trip"] = (
+            new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
+        )
+        today_trips, latest_trips = self.get_today_task()
+        fleet_dashboard.info['today_trips'] = today_trips
+        fleet_dashboard.info['latest_trips'] = latest_trips
+        fleet_dashboard.save()
+
+    def get_today_task(self):
+        first_day_of_month = datetime.now().replace(day=1)
+        last_day_of_last_month = first_day_of_month - timedelta(days=1)
+        list_vehicle = Vehicle.objects.filter(
+            start_date=last_day_of_last_month.date()
+        )
+        today_trip = []
+        latest_trip = []
+        for vehicle in list_vehicle:
+            # print(vehicle)
+            trips = vehicle.other_profile.get('trips', [])
+            today_trip.extend(trips)
+            max_trip = max(trips, key=lambda x: x['id']) if trips else None
+            if max_trip:
+                latest_trip.append(max_trip)
+        return today_trip, latest_trip
