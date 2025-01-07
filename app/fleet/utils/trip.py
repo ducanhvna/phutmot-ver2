@@ -3,6 +3,8 @@ from collections import defaultdict
 import xmlrpc.client
 from dashboard.models import Fleet
 from datetime import datetime, timedelta
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 
 class Trip():
@@ -168,6 +170,15 @@ class FleetDashboard():
         fleet_dashboard.info['today_trips'] = today_trips
         fleet_dashboard.info['latest_trips'] = latest_trips
         fleet_dashboard.save()
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "broadcast",
+            {
+                "type": "chat_message",
+                "message": f"This is a broadcast message",
+                "latest_trips": [],
+            },
+        )
 
     def get_today_task(self):
         first_day_of_month = datetime.now().replace(day=1)

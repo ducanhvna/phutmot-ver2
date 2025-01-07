@@ -149,6 +149,7 @@
                 <div class="card ">
                     <div class="card-header">
                         <h4 class="card-title"> Trạng thái mới nhất</h4>
+                        <div id="latest-trips-container"></div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -206,6 +207,39 @@
         demo.initDashboardPageCharts();
 
     });
+</script>
+
+<script>
+    // Tạo kết nối WebSocket
+    const socket = new WebSocket('wss://hinosoft.com/ws/broadcast/');
+
+    // Khi kết nối WebSocket mở
+    socket.onopen = function(e) {
+        console.log('WebSocket connection established.');
+    };
+
+    // Khi nhận được thông điệp từ server
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const message = data.message;
+        const latestTrips = data.latest_trips;
+        
+        // Cập nhật nội dung trên trang
+        document.getElementById('latest-trips-container').innerHTML = `
+            <p>${message}</p>
+            <p>Latest Trips: ${latestTrips}</p>
+        `;
+    };
+
+    // Khi kết nối WebSocket đóng
+    socket.onclose = function(e) {
+        console.log('WebSocket connection closed.');
+    };
+
+    // Khi có lỗi kết nối WebSocket
+    socket.onerror = function(error) {
+        console.log('WebSocket error: ', error);
+    };
 </script>
 
 {% endblock javascripts %}
