@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import json
 import calendar
 from django.http import JsonResponse
+from dashboard.models import Fleet
 
 
 def get_calendar_data(month=None, year=None):
@@ -38,7 +39,38 @@ def get_calendar_data(month=None, year=None):
 
 
 def index(request):
-    context = {'segment': 'index'}
+    first_day_of_month = datetime.now().replace(day=1)
+    fleet_dashboard = Fleet.objects.get(start_date=first_day_of_month.date())
+    today_trips = []
+    for item in fleet_dashboard.info['today_trips']:
+        start_location = item['location_id'][1] if item['location_id'] else '<chưa xác định>'
+        dest_location = item['location_dest_id'][1] if item['location_dest_id'] else '<chưa xác định>'
+        today_trips.append(
+            {
+                "start_location": start_location,
+                "dest_location": dest_location,
+                "schedule_date": item["schedule_date"],
+            }
+        )
+
+    latest_trips = []
+    for item in fleet_dashboard.info['latest_trips']:
+        equipment = item['equipment_id'][1] if item['equipment_id'] else '<chưa xác định>'
+        start_location = item['location_id'][1] if item['location_id'] else '<chưa xác định>'
+        dest_location = item['location_dest_id'][1] if item['location_dest_id'] else '<chưa xác định>'
+        latest_trips.append(
+            {
+                "equipment": equipment,
+                "start_location": start_location,
+                "dest_location": dest_location,
+                "schedule_date": item["schedule_date"],
+            }
+        )
+    context = {
+        "segment": "index",
+        "today_trips": today_trips,
+        "latest_trips": latest_trips,
+    }
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
 
