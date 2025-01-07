@@ -150,13 +150,13 @@ class LeaveService():
 
     def save_to_django(self, grouped_data, start_date, end_date):
         for employee_code, records in grouped_data.items():
-            leave, created = Leave.objects.get_or_create(
+            hrleave, created = Leave.objects.get_or_create(
                 employee_code=employee_code,
                 start_date=datetime.strptime(start_date, "%Y-%m-%d"),
                 end_date=datetime.strptime(end_date, "%Y-%m-%d"),
                 defaults={"leave_records": []},
             )
-            existing_leaves = leave.leave_records if leave.leave_records else []
+            existing_leaves = hrleave.leave_records if hrleave.leave_records else []
             # updated_leaves = []
             # Update existing leaves or add new ones
             for _, leave in enumerate(existing_leaves):
@@ -168,5 +168,5 @@ class LeaveService():
                 if not found:
                     records.append(leave)  # Add new leave if not found
             # records = records.extend(updated_leaves)
-            leave.leave_records = records
-            leave.save()
+            hrleave.leave_records = records
+            hrleave.save()
