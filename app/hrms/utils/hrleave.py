@@ -87,7 +87,6 @@ class LeaveService():
 
         return merged_data
 
-
     def download(self, max_write_date_leave):
         self.max_write_date_leave = max_write_date_leave
         # Format the dates
