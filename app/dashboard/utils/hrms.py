@@ -44,9 +44,9 @@ class HrmsDashboard():
 
     def get_today_task(self):
         first_day_of_month = datetime.now().replace(day=1)
-        last_day_of_last_month = first_day_of_month - timedelta(days=1)
+        # last_day_of_last_month = first_day_of_month - timedelta(days=1)
         list_leaves = Leave.objects.filter(
-            start_date=last_day_of_last_month.date()
+            start_date=first_day_of_month.date()
         )
         today_leave = []
         latest_leave = []
