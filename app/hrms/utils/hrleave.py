@@ -159,15 +159,14 @@ class LeaveService():
             existing_leaves = leave.leave_records if leave.leave_records else []
             updated_leaves = []
             # Update existing leaves or add new ones
-            for record in records:
+            for _, leave in enumerate(existing_leaves):
                 found = False
-                for index, leave in enumerate(existing_leaves):
+                for record in records:
                     if leave['id'] == record['id']:
-                        existing_leaves[index] = record  # Replace the old leave
                         found = True
                         break
                 if not found:
-                    updated_leaves.append(record)  # Add new leave if not found
-            leave.leave_records = existing_leaves.extend(updated_leaves)
-            # leave.leave_records = records
+                    updated_leaves.append(leave)  # Add new leave if not found
+            records = records.extend(updated_leaves)
+            leave.leave_records = records
             leave.save()
