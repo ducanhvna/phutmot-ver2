@@ -63,7 +63,7 @@ def index(request):
                 "equipment": equipment,
                 "start_location": start_location,
                 "dest_location": dest_location,
-                "schedule_date": item["schedule_date"],
+                "write_date": item["write_date"],
             }
         )
     context = {

@@ -2,6 +2,7 @@
 
 import logging
 from celery import shared_task
+from fleet.utils.trip import FleetDashboard
 # from datetime import timedelta
 
 logger = logging.getLogger(__name__)
@@ -11,4 +12,6 @@ logger = logging.getLogger(__name__)
 def check_apec_hrms_update():
     logger.info("Create attendance check apecinput")
     print("Tác vụ chạy định kỳ mỗi 30 giây check_apec_hrms_update")
+    fleet_dashboard = FleetDashboard()
+    fleet_dashboard.update()
     # Thực hiện công việc của bạn tại đây
