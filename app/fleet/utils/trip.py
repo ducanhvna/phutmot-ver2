@@ -175,7 +175,7 @@ class FleetDashboard():
             "broadcast",
             {
                 "type": "chat_message",
-                "message": f"This is a broadcast message",
+                "message": "This is a broadcast message",
                 "latest_trips": [],
             },
         )
