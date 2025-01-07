@@ -56,6 +56,6 @@ class HrmsDashboard():
             leave_records = leave.leave_records
             # today_leave.extend(leaves)
             max_leave = max(leave_records, key=lambda x: x['id']) if leave_records else None
-        if max_leave:
-            latest_leave.append(max_leave)
+            if max_leave:
+                latest_leave.append(max_leave)
         return today_leave, latest_leave
