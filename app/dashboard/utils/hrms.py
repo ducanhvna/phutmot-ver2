@@ -14,6 +14,7 @@ class HrmsDashboard():
         max_write_date_leave = None
         if not first_day_of_month:
             first_day_of_month = datetime.now().replace(day=1)
+        self.first_day_of_month = first_day_of_month
         leave = LeaveService(first_day_of_month)
         hrms_dashboard, created = Hrms.objects.get_or_create(
             company_code="APEC",
@@ -43,10 +44,10 @@ class HrmsDashboard():
         )
 
     def get_today_task(self):
-        first_day_of_month = datetime.now().replace(day=1)
+        # first_day_of_month = datetime.now().replace(day=1)
         # last_day_of_last_month = first_day_of_month - timedelta(days=1)
         list_leaves = Leave.objects.filter(
-            start_date=first_day_of_month.date()
+            start_date=self.first_day_of_month.date()
         )
         today_leave = []
         latest_leave = []
