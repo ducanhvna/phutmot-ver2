@@ -85,7 +85,7 @@ class ApecShiftService():
             'minutes_working_not_reduced',
             'write_date'
         ]
-        shift_merged_data = self.download_data(models, db, uid, password, "shifts", shift_fields)
+        shift_merged_data = self.download_data("shifts", shift_fields)
         # Group data by employee_code
         shift_grouped_data = {}
         for record in shift_merged_data:
@@ -181,8 +181,8 @@ class ApecShiftService():
 
         return merged_data
 
-    def save_to_django(self, grouped_data): 
-        company, _= Company.objects.get_or_create(
+    def save_to_django(self, grouped_data):
+        company, _ = Company.objects.get_or_create(
             company_code='APEC',
             company_name='APEC GROUP',
             defaults={'info': {"max_write_date": None}}
