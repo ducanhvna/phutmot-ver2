@@ -14,4 +14,8 @@ app.conf.beat_schedule = {
         'task': 'dashboard.tasks.check_apec_hrms_update',
         'schedule': 30.0,  # 30 giây một lần
     },
+    'hrm-scheduled-task': {  # Task mới
+        'task': 'dashboard.tasks.update_apec_hrm',
+        'schedule': 60.0,  # 1 phút một lần
+    },
 }
