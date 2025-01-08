@@ -784,54 +784,137 @@ demo = {
     //   },
     //   options: gradientBarChartConfiguration
     // });
-    var ctx = document.getElementById("CountryChart").getContext("2d");
+    // var ctx = document.getElementById("CountryChart").getContext("2d");
 
-    var gradientStrokeBlue = ctx.createLinearGradient(0, 230, 0, 50);
-    gradientStrokeBlue.addColorStop(1, 'rgba(29,140,248,0.2)');
-    gradientStrokeBlue.addColorStop(0.4, 'rgba(29,140,248,0.0)');
-    gradientStrokeBlue.addColorStop(0, 'rgba(29,140,248,0)'); // blue
+    // var gradientStrokeBlue = ctx.createLinearGradient(0, 230, 0, 50);
+    // gradientStrokeBlue.addColorStop(1, 'rgba(29,140,248,0.2)');
+    // gradientStrokeBlue.addColorStop(0.4, 'rgba(29,140,248,0.0)');
+    // gradientStrokeBlue.addColorStop(0, 'rgba(29,140,248,0)'); // blue
 
-    var gradientStrokeRed = ctx.createLinearGradient(0, 230, 0, 50);
-    gradientStrokeRed.addColorStop(1, 'rgba(248,29,29,0.2)');
-    gradientStrokeRed.addColorStop(0.4, 'rgba(248,29,29,0.0)');
-    gradientStrokeRed.addColorStop(0, 'rgba(248,29,29,0)'); // red
+    // var gradientStrokeRed = ctx.createLinearGradient(0, 230, 0, 50);
+    // gradientStrokeRed.addColorStop(1, 'rgba(248,29,29,0.2)');
+    // gradientStrokeRed.addColorStop(0.4, 'rgba(248,29,29,0.0)');
+    // gradientStrokeRed.addColorStop(0, 'rgba(248,29,29,0)'); // red
 
-    var myChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['USA', 'GER', 'AUS', 'UK', 'RO', 'BR'],
+    // var myChart = new Chart(ctx, {
+    //   type: 'bar',
+    //   data: {
+    //     labels: ['USA', 'GER', 'AUS', 'UK', 'RO', 'BR'],
+    //     datasets: [{
+    //       label: "Blue",
+    //       backgroundColor: gradientStrokeBlue,
+    //       borderColor: '#1f8ef1',
+    //       borderWidth: 2,
+    //       data: [53, 20, 10, 80, 100, 45],
+    //     }, {
+    //       label: "Red",
+    //       backgroundColor: gradientStrokeRed,
+    //       borderColor: '#f81d1d',
+    //       borderWidth: 2,
+    //       data: [30, 40, 25, 60, 90, 35],
+    //     }]
+    //   },
+    //   options: {
+    //     responsive: true,
+    //     legend: {
+    //       display: true,
+    //     },
+    //     scales: {
+    //       xAxes: [{
+    //         barPercentage: 0.8,
+    //         categoryPercentage: 0.4,
+    //       }],
+    //       yAxes: [{
+    //         ticks: {
+    //           beginAtZero: true
+    //         }
+    //       }]
+    //     }
+    //   }
+    // });
+//     var currentCompanyIndex = 0;
+// var companies = [];
+
+    function fetchDataLateEarly() {
+      fetch('/api/get_details')
+        .then(response => response.json())
+        .then(data => {
+          companies = Object.keys(data['total_worktime']);
+          updateChartLateEarly(data);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function updateChartLateEarly(data) {
+      if (companies.length === 0) return;
+
+      var company = companies[currentCompanyIndex];
+      currentCompanyIndex = (currentCompanyIndex + 1) % companies.length;
+
+      var ctx = document.getElementById("CountryChart").getContext("2d");
+
+      var gradientStrokeBlue = ctx.createLinearGradient(0, 230, 0, 50);
+      gradientStrokeBlue.addColorStop(1, 'rgba(29,140,248,0.2)');
+      gradientStrokeBlue.addColorStop(0.4, 'rgba(29,140,248,0.0)');
+      gradientStrokeBlue.addColorStop(0, 'rgba(29,140,248,0)'); // blue
+
+      var gradientStrokeRed = ctx.createLinearGradient(0, 230, 0, 50);
+      gradientStrokeRed.addColorStop(1, 'rgba(248,29,29,0.2)');
+      gradientStrokeRed.addColorStop(0.4, 'rgba(248,29,29,0.0)');
+      gradientStrokeRed.addColorStop(0, 'rgba(248,29,29,0)'); // red
+
+      // Get the number of days in the current month
+      var date = new Date();
+      var year = date.getFullYear();
+      var month = date.getMonth() + 1; // JavaScript months are 0-11
+      var daysInMonth = new Date(year, month, 0).getDate();
+
+      // Generate labels based on the number of days
+      var labels = Array.from({ length: daysInMonth }, (_, i) => `Day ${i + 1}`);
+
+      var chartData = {
+        labels: labels,
         datasets: [{
-          label: "Blue",
+          label: "In Time",
           backgroundColor: gradientStrokeBlue,
           borderColor: '#1f8ef1',
           borderWidth: 2,
-          data: [53, 20, 10, 80, 100, 45],
+          data: data.in_time[company],
         }, {
-          label: "Red",
+          label: "Late/Early",
           backgroundColor: gradientStrokeRed,
           borderColor: '#f81d1d',
           borderWidth: 2,
-          data: [30, 40, 25, 60, 90, 35],
+          data: data.late_early[company],
         }]
-      },
-      options: {
-        responsive: true,
-        legend: {
-          display: true,
-        },
-        scales: {
-          xAxes: [{
-            barPercentage: 0.8,
-            categoryPercentage: 0.4,
-          }],
-          yAxes: [{
-            ticks: {
-              beginAtZero: true
-            }
-          }]
+      };
+
+      var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: chartData,
+        options: {
+          responsive: true,
+          legend: {
+            display: true,
+          },
+          scales: {
+            xAxes: [{
+              barPercentage: 0.8,
+              categoryPercentage: 0.4,
+            }],
+            yAxes: [{
+              ticks: {
+                beginAtZero: true
+              }
+            }]
+          }
         }
-      }
-    });
+      });
+    }
+
+    // Fetch data and update chart every 20 seconds
+    fetchDataLateEarly();
+    setInterval(fetchDataLateEarly, 20000); // 20 seconds interval
 
 
   },
