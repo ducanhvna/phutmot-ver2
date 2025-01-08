@@ -214,6 +214,10 @@ class AttendanceReportService():
                         break
                 if not found:
                     records.append(report)  # Add new leave if not found
-            self.group_by_company(records)
             scheduling.scheduling_records = records
             scheduling.save()
+
+        for scheduling in Scheduling.objects.filter(start_date=datetime.strptime(start_date, "$Y-%m-%d")):
+            records = scheduling.scheduling_records
+            self.group_by_company(records)
+
