@@ -9,8 +9,8 @@ from home.utils.shift_service import ApecShiftService
 import xmlrpc.client
 from dashboard.models import Hrms
 from datetime import datetime, timedelta
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
+# from asgiref.sync import async_to_sync
+# from channels.layers import get_channel_layer
 
 
 class HrmsDashboard():
@@ -85,15 +85,15 @@ class HrmsDashboard():
         )
 
         hrms_dashboard.save()
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            "broadcast",
-            {
-                "type": "chat_message",
-                "message": "This is a broadcast message",
-                "latest_leaves": [],
-            },
-        )
+        # channel_layer = get_channel_layer()
+        # async_to_sync(channel_layer.group_send)(
+        #     "broadcast",
+        #     {
+        #         "type": "chat_message",
+        #         "message": "This is a broadcast message",
+        #         "latest_leaves": [],
+        #     },
+        # )
         if not self.company_merged_data:
             self.company_merged_data = explaination.company_merged_data
 

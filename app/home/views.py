@@ -5,6 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from hrms.models import Attendance, Scheduling, Employee, Shifts, Leave, Explaination
 from datetime import datetime, timedelta
+from dashboard.models import Hrms
 import json
 import calendar
 from django.http import JsonResponse
@@ -197,12 +198,16 @@ def timesheet(request):
 
 
 def get_details(request):
-    date = request.GET.get('date')
-    # Thay thế bằng logic để lấy dữ liệu thực tế của bạn
-    data = {
-        'date': date,
-        'order_count': 5,
-        'work_hours': "8h",
-        'salary': "$100"
-    }
+    # date = request.GET.get('date')
+    try:
+        # Lấy đối tượng hrms_dashboard với tháng hiện tại
+        # first_day_of_month = datetime.strptime(date, "%Y-%m-%d").replace(day=1)
+        first_day_of_month = datetime.now().replace(day=1)
+        hrms_dashboard = Hrms.objects.get(company_code="APEC", start_date=first_day_of_month)
+
+        # Truyền giá trị của grouped_total_worktime_by_company vào biến data
+        data = hrms_dashboard.info.get('grouped_total_worktime_by_company', {})
+    except Hrms.DoesNotExist:
+        data = {}
+    
     return JsonResponse(data)

@@ -383,60 +383,145 @@ demo = {
     //   data: data,
     //   options: gradientChartOptionsConfigurationWithTooltipPurple
     // });
-    var ctx = document.getElementById("chartLinePurple").getContext("2d");
+    // var ctx = document.getElementById("chartLinePurple").getContext("2d");
 
-    var gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
+    // var gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
 
-    gradientStroke.addColorStop(1, 'rgba(72,72,176,0.2)');
-    gradientStroke.addColorStop(0.2, 'rgba(72,72,176,0.0)');
-    gradientStroke.addColorStop(0, 'rgba(119,52,169,0)'); // purple colors
+    // gradientStroke.addColorStop(1, 'rgba(72,72,176,0.2)');
+    // gradientStroke.addColorStop(0.2, 'rgba(72,72,176,0.0)');
+    // gradientStroke.addColorStop(0, 'rgba(119,52,169,0)'); // purple colors
 
-    // Generate labels for each minute (example for 10 minutes)
-    var labels = [];
-    for (let i = 0; i < 10; i++) {
-      labels.push(`Min ${i + 1}`);
+    // // Generate labels for each minute (example for 10 minutes)
+    // var labels = [];
+    // for (let i = 0; i < 10; i++) {
+    //   labels.push(`Min ${i + 1}`);
+    // }
+
+    // // Initial sample data for each minute
+    // var dataValues = [80, 85, 90, 95, 100, 105, 110, 115, 120, 125];
+
+    // var data = {
+    //   labels: labels,
+    //   datasets: [{
+    //     label: "Stock Prices",
+    //     fill: true,
+    //     backgroundColor: gradientStroke,
+    //     borderColor: '#d048b6',
+    //     borderWidth: 2,
+    //     borderDash: [],
+    //     borderDashOffset: 0.0,
+    //     pointBackgroundColor: '#d048b6',
+    //     pointBorderColor: 'rgba(255,255,255,0)',
+    //     pointHoverBackgroundColor: '#d048b6',
+    //     pointBorderWidth: 20,
+    //     pointHoverRadius: 4,
+    //     pointHoverBorderWidth: 15,
+    //     pointRadius: 4,
+    //     data: dataValues,
+    //   }]
+    // };
+
+    // // Create the chart using Chart.js (assuming you have included Chart.js in your project)
+    // var chart = new Chart(ctx, {
+    //   type: 'line',
+    //   data: data,
+    //   options: {
+    //     responsive: true,
+    //     maintainAspectRatio: false,
+    //     scales: {
+    //       x: {
+    //         ticks: {
+    //           autoSkip: false
+    //         }
+    //       }
+    //     }
+    //   }
+    // });
+    var currentCompanyIndex = 0;
+    var companies = [];
+
+    function fetchData() {
+      fetch('/api/get_details')
+        .then(response => response.json())
+        .then(data => {
+          companies = Object.keys(data);
+          updateChart(data);
+        })
+        .catch(error => console.error('Error:', error));
     }
 
-    // Initial sample data for each minute
-    var dataValues = [80, 85, 90, 95, 100, 105, 110, 115, 120, 125];
+    function updateChart(data) {
+      if (companies.length === 0) return;
 
-    var data = {
-      labels: labels,
-      datasets: [{
-        label: "Stock Prices",
-        fill: true,
-        backgroundColor: gradientStroke,
-        borderColor: '#d048b6',
-        borderWidth: 2,
-        borderDash: [],
-        borderDashOffset: 0.0,
-        pointBackgroundColor: '#d048b6',
-        pointBorderColor: 'rgba(255,255,255,0)',
-        pointHoverBackgroundColor: '#d048b6',
-        pointBorderWidth: 20,
-        pointHoverRadius: 4,
-        pointHoverBorderWidth: 15,
-        pointRadius: 4,
-        data: dataValues,
-      }]
-    };
+      var company = companies[currentCompanyIndex];
+      var ctx = document.getElementById("chartLinePurple").getContext("2d");
 
-    // Create the chart using Chart.js (assuming you have included Chart.js in your project)
-    var chart = new Chart(ctx, {
-      type: 'line',
-      data: data,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            ticks: {
-              autoSkip: false
-            }
+      var gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
+      gradientStroke.addColorStop(1, 'rgba(72,72,176,0.2)');
+      gradientStroke.addColorStop(0.2, 'rgba(72,72,176,0.0)');
+      gradientStroke.addColorStop(0, 'rgba(119,52,169,0)'); // purple colors
+
+      var labels = Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`);
+      var dataValues = data[company] || [];
+
+      var chartData = {
+        labels: labels,
+        datasets: [{
+          label: company,
+          fill: true,
+          backgroundColor: gradientStroke,
+          borderColor: '#d048b6',
+          borderWidth: 2,
+          borderDash: [],
+          borderDashOffset: 0.0,
+          pointBackgroundColor: '#d048b6',
+          pointBorderColor: 'rgba(255,255,255,0)',
+          pointHoverBackgroundColor: '#d048b6',
+          pointBorderWidth: 20,
+          pointHoverRadius: 4,
+          pointHoverBorderWidth: 15,
+          pointRadius: 4,
+          data: dataValues,
+        }]
+      };
+
+      var myChart = new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+          responsive: true,
+          legend: {
+            display: true,
+          },
+          scales: {
+            xAxes: [{
+              ticks: {
+                autoSkip: true,
+                maxTicksLimit: 31
+              }
+            }],
+            yAxes: [{
+              ticks: {
+                beginAtZero: true
+              }
+            }]
           }
         }
-      }
-    });
+      });
+
+      currentCompanyIndex = (currentCompanyIndex + 1) % companies.length;
+    }
+
+    // Gọi hàm fetchData ban đầu
+    fetchData();
+
+    // Thiết lập interval để cập nhật biểu đồ mỗi 20 giây
+    setInterval(() => {
+      fetch('/api/get_details')
+        .then(response => response.json())
+        .then(data => updateChart(data))
+        .catch(error => console.error('Error:', error));
+    }, 20000);
 
     // Function to fetch sample stock prices (replacing this with real API call in real scenarios)
     function fetchStockPrices() {
