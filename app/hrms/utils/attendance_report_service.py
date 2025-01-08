@@ -187,15 +187,16 @@ class AttendanceReportService():
 
         return max_write_date
 
-    def group_by_company(self, merged_data):
-        # companies = defaultdict(lambda: [0] * (self.last_day_of_month.day))
-        for record in merged_data:
-            company = record["company"]
-            date = datetime.strptime(record["date"], "%Y-%m-%d").day - 1
-            total_work_time = record.get("actual_total_work_time", 0)
-            if company not in self.grouped_total_worktime_by_company:
-                self.grouped_total_worktime_by_company[company] = [0] * (self.last_day_of_month.day)
-            self.grouped_total_worktime_by_company[company][date] += total_work_time // 60
+    def group_by_company(self):
+        for scheduling in Scheduling.objects.filter(start_date=datetime.strptime(start_date, "$Y-%m-%d")):
+            merged_data = scheduling.scheduling_records
+            for record in merged_data:
+                company = record["company"]
+                date = datetime.strptime(record["date"], "%Y-%m-%d").day - 1
+                total_work_time = record.get("actual_total_work_time", 0)
+                if company not in self.grouped_total_worktime_by_company:
+                    self.grouped_total_worktime_by_company[company] = [0] * (self.last_day_of_month.day)
+                self.grouped_total_worktime_by_company[company][date] += total_work_time // 60
 
     def save_to_django(self, grouped_data, start_date, end_date):
         for employee_code, records in grouped_data.items():
@@ -217,7 +218,4 @@ class AttendanceReportService():
             scheduling.scheduling_records = records
             scheduling.save()
 
-        for scheduling in Scheduling.objects.filter(start_date=datetime.strptime(start_date, "$Y-%m-%d")):
-            records = scheduling.scheduling_records
-            self.group_by_company(records)
-
+        self.group_by_company()
