@@ -94,7 +94,7 @@ class ApecShiftService():
         # Save data to Django
         self.save_to_django(shift_grouped_data)
 
-    def download_data(self, models, db, uid, password, model_name, fields, limit=300):
+    def download_data(self, model_name, fields, limit=300):
         LIMIT_SIZE = limit
         index = 0
         len_data = 0
@@ -145,10 +145,10 @@ class ApecShiftService():
             raise ValueError("Invalid model name")
 
         while (len_data == LIMIT_SIZE) or (index == 0):
-            ids = models.execute_kw(
-                db,
-                uid,
-                password,
+            ids = self.models.execute_kw(
+                self.db,
+                self.uid,
+                self.password,
                 model_name,
                 "search",
                 domain,
@@ -168,10 +168,10 @@ class ApecShiftService():
 
         for ids_chunk in ids_chunks:
             # Fetch data from Odoo
-            data_chunk = models.execute_kw(
-                db,
-                uid,
-                password,
+            data_chunk = self.models.execute_kw(
+                self.db,
+                self.uid,
+                self.password,
                 model_name,
                 "read",
                 [ids_chunk],
@@ -182,14 +182,14 @@ class ApecShiftService():
         return merged_data
 
     def save_to_django(self, grouped_data): 
-        company, _=Company.objects.get_or_create(
+        company, _= Company.objects.get_or_create(
             company_code='APEC',
             company_name='APEC GROUP',
-            defaults={'info':{"max_write_date":None}}
+            defaults={'info': {"max_write_date": None}}
         )
         company.info['companies'] = self.company_merged_data
         company.save()
-    
+
         for company_info, record in grouped_data.items():
             try:
                 shifts, created = Shifts.objects.get_or_create(
