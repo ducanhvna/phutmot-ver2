@@ -34,7 +34,7 @@ class HrmsDashboard():
         today_leaves, latest_leaves = self.get_today_task()
         hrms_dashboard.info['today_leaves'] = today_leaves
         hrms_dashboard.info['latest_leaves'] = latest_leaves
-    
+
         attendance_trans = AttendanceTransService(first_day_of_month)
         new_write_date = attendance_trans.download(max_write_date_trans)
         hrms_dashboard.info["max_write_date_trans"] = (
