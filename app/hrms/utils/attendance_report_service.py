@@ -197,8 +197,6 @@ class AttendanceReportService():
                 self.grouped_total_worktime_by_company[company] = [0] * (self.last_day_of_month.day)
             self.grouped_total_worktime_by_company[company][date] += total_work_time // 60
 
-        return companies
-
     def save_to_django(self, grouped_data, start_date, end_date):
         for employee_code, records in grouped_data.items():
             scheduling, created = Scheduling.objects.get_or_create(
