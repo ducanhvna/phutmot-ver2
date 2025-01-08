@@ -194,7 +194,7 @@ class AttendanceReportService():
             company = record["company"]
             date = datetime.strptime(record["date"], "%Y-%m-%d").day - 1
             total_work_time = record.get(field_name, 0)
-            if not company in companies:
+            if company not in companies:
                 companies[companies] = [0] * (self.last_day_of_month.day)
             companies[company][date] += total_work_time
 
