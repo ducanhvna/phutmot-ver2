@@ -166,12 +166,12 @@ class AttendanceReportService():
         merged_data = self.download_data("hr.apec.attendance.report", fields, start_str, end_str)
         # Group data by employee_code
         grouped_data = defaultdict(list)
-        self.grouped_total_worktime_by_company = self.group_by_company("actual_total_work_time", merged_data)
         for record in merged_data:
             grouped_data[record["employee_code"]].append(record)
             print(f"{record['employee_code']} -- {len(grouped_data[record['employee_code']])}")
 
         # Save data to Django
+        self.grouped_total_worktime_by_company = {}
         self.save_to_django(grouped_data, start_str, end_str)
         write_dates = [
             datetime.strptime(record["write_date"], "%Y-%m-%d %H:%M:%S")
@@ -187,16 +187,15 @@ class AttendanceReportService():
 
         return max_write_date
 
-    def group_by_company(self, field_name, merged_data):
+    def group_by_company(self, merged_data):
         # companies = defaultdict(lambda: [0] * (self.last_day_of_month.day))
-        companies = {}
         for record in merged_data:
             company = record["company"]
             date = datetime.strptime(record["date"], "%Y-%m-%d").day - 1
-            total_work_time = record.get(field_name, 0)
-            if company not in companies:
-                companies[company] = [0] * (self.last_day_of_month.day)
-            companies[company][date] += total_work_time
+            total_work_time = record.get("actual_total_work_time", 0)
+            if company not in self.grouped_total_worktime_by_company:
+                self.grouped_total_worktime_by_company[company] = [0] * (self.last_day_of_month.day)
+            self.grouped_total_worktime_by_company[company][date] += total_work_time // 60
 
         return companies
 
@@ -217,5 +216,6 @@ class AttendanceReportService():
                         break
                 if not found:
                     records.append(report)  # Add new leave if not found
+            self.group_by_company(records)
             scheduling.scheduling_records = records
             scheduling.save()
