@@ -202,7 +202,8 @@ def get_details(request):
     try:
         # Lấy đối tượng hrms_dashboard với tháng hiện tại
         # first_day_of_month = datetime.strptime(date, "%Y-%m-%d").replace(day=1)
-        first_day_of_month = datetime.now().replace(day=1)
+        last_day_of_last_month = datetime.now().replace(day=1) - timedelta(days=1)
+        first_day_of_month = last_day_of_last_month.replace(day=1)
         hrms_dashboard = Hrms.objects.get(company_code="APEC", start_date=first_day_of_month)
 
         # Truyền giá trị của grouped_total_worktime_by_company vào biến data
