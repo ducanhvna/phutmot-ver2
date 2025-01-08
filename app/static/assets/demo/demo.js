@@ -508,7 +508,10 @@ demo = {
           }
         }
       });
-
+    
+      // Cập nhật thẻ h5 với tên công ty hiện tại
+      document.getElementById('worktime_company').innerText = `Total work time for ${company}`;
+    
       currentCompanyIndex = (currentCompanyIndex + 1) % companies.length;
     }
 
@@ -522,7 +525,7 @@ demo = {
         .then(data => updateChart(data))
         .catch(error => console.error('Error:', error));
     }, 20000);
-
+    
     // Function to fetch sample stock prices (replacing this with real API call in real scenarios)
     function fetchStockPrices() {
       // Sample JSON string with new data
