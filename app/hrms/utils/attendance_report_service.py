@@ -1,4 +1,4 @@
-from hrms.models import Attendance
+from hrms.models import Scheduling
 from collections import defaultdict
 import xmlrpc.client
 from dashboard.models import Fleet
@@ -7,7 +7,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
 
-class AttendanceTransService():
+class AttendanceReportService():
     def __init__(self, first_day_of_month=None):
         # Define your Odoo connection parameters
         # Define your Odoo connection parameters
@@ -33,20 +33,17 @@ class AttendanceTransService():
             next_month = self.first_day_of_month.replace(month=self.first_day_of_month.month + 1, day=1)
 
         self.last_day_of_month = next_month - timedelta(days=1)
-        super(AttendanceTransService, self).__init__()
+        super(AttendanceReportService, self).__init__()
 
     def download_data(self, model_name, fields, start_str, end_str):
         LIMIT_SIZE = 300
         index = 0
         len_data = 0
         merged_array = []
-        if model_name == 'hr.attendance.trans':
-            domain = [[
-                ("day", ">=", start_str),
-                ("day", "<=", end_str)
-            ]]
-            if self.max_write_date_trans:
-                domain[0].append((("write_date", ">", self.max_write_date_trans)))
+        if model_name == 'hr.apec.attendance.report':
+            domain = [["&", ("date", ">=", start_str), ("date", "<=", end_str)]]
+            if self.max_write_date_reports:
+                domain[0].append((("write_date", ">", self.max_write_date_reports)))
         else:
             raise ValueError("Invalid model name")
 
@@ -85,23 +82,93 @@ class AttendanceTransService():
 
         return merged_data
 
-    def download(self, max_write_date_trans):
-        self.max_write_date_trans = max_write_date_trans
+    def download(self, max_write_date_reports):
+        self.max_write_date_reports = max_write_date_reports
         # Format the dates
-        start_str = (self.first_day_of_month - timedelta(days=1)).strftime('%Y-%m-%d')
-        end_str = (self.last_day_of_month + timedelta(days=1)).strftime('%Y-%m-%d')
+        start_str = self.first_day_of_month.strftime('%Y-%m-%d')
+        end_str = self.last_day_of_month.strftime('%Y-%m-%d')
 
         print(f"Start date: {start_str}")
         print(f"End date: {end_str}")
 
-        fields = ['id', 'name', 'day', 'time', 'in_out', 'write_date']
+        fields = [
+            "id",
+            "employee_name",
+            "date",
+            "shift_name",
+            "employee_code",
+            "company",
+            "additional_company",
+            "shift_start",
+            "shift_end",
+            "rest_start",
+            "rest_end",
+            "rest_shift",
+            "probation_completion_wage",
+            "total_shift_work_time",
+            "total_work_time",
+            "time_keeping_code",
+            "kid_time",
+            "department",
+            "attendance_attempt_1",
+            "attendance_attempt_2",
+            "minutes_working_reduced",
+            "attendance_attempt_3",
+            "attendance_attempt_4",
+            "attendance_attempt_5",
+            "attendance_attempt_6",
+            "attendance_attempt_7",
+            "attendance_attempt_8",
+            "attendance_attempt_9",
+            "attendance_attempt_10",
+            "attendance_attempt_11",
+            "attendance_attempt_12",
+            "attendance_attempt_13",
+            "attendance_attempt_14",
+            "attendance_inout_1",
+            "attendance_inout_2",
+            "attendance_inout_3",
+            "attendance_inout_4",
+            "attendance_inout_5",
+            "attendance_inout_6",
+            "attendance_inout_7",
+            "attendance_inout_8",
+            "attendance_inout_9",
+            "amount_al_reserve",
+            "amount_cl_reserve",
+            "attendance_inout_10",
+            "attendance_inout_11",
+            "attendance_inout_12",
+            "attendance_inout_13",
+            "attendance_inout_14",
+            "attendance_inout_15",
+            "actual_total_work_time",
+            "standard_working_day",
+            "attendance_attempt_15",
+            "last_attendance_attempt",
+            "attendance_inout_last",
+            "night_hours_normal",
+            "night_hours_holiday",
+            "probation_wage_rate",
+            "split_shift",
+            "missing_checkin_break",
+            "leave_early",
+            "attendance_late",
+            "night_shift",
+            "minute_worked_day_holiday",
+            "total_attendance",
+            "ot_holiday",
+            "ot_normal",
+            "write_date",
+            "locked",
+        ]
 
-        merged_data = self.download_data("hr.attendance.trans", fields, start_str, end_str)
+        merged_data = self.download_data("hr.apec.attendance.report", fields, start_str, end_str)
         # Group data by employee_code
         grouped_data = defaultdict(list)
         for record in merged_data:
-            grouped_data[record["name"]].append(record)
-            print(f"{record['name']} -- {len(grouped_data[record['name']])}")
+            grouped_data[record["employee_code"]].append(record)
+            print(f"{record['employee_code']} -- {len(grouped_data[record['employee_code']])}")
 
         # Save data to Django
         self.save_to_django(grouped_data, start_str, end_str)
@@ -120,21 +187,21 @@ class AttendanceTransService():
         return max_write_date
 
     def save_to_django(self, grouped_data, start_date, end_date):
-        for code, records in grouped_data.items():
-            attendance, created = Attendance.objects.get_or_create(
-                code=code,
+        for employee_code, records in grouped_data.items():
+            scheduling, created = Scheduling.objects.get_or_create(
+                employee_code=employee_code,
                 start_date=datetime.strptime(start_date, "%Y-%m-%d"),
                 end_date=datetime.strptime(end_date, "%Y-%m-%d"),
-                defaults={"attendance_records": []},
+                defaults={"scheduling_records": []},
             )
-            existing_trans = attendance.attendance_records if attendance.attendance_records else []
-            for _, tran in enumerate(existing_trans):
+            existing_reports = scheduling.scheduling_records if scheduling.scheduling_records else []
+            for _, report in enumerate(existing_reports):
                 found = False
                 for record in records:
-                    if tran['id'] == record['id']:
+                    if report['id'] == record['id']:
                         found = True
                         break
                 if not found:
-                    records.append(tran)  # Add new leave if not found
-            attendance.attendance_records = records
-            attendance.save()
+                    records.append(report)  # Add new leave if not found
+            scheduling.scheduling_records = records
+            scheduling.save()

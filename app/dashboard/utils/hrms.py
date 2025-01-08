@@ -1,5 +1,6 @@
 from hrms.utils.hrleave import LeaveService
 from hrms.utils.trans import AttendanceTransService
+from hrms.utils.attendance_report_service import AttendanceReportService
 # from collections import defaultdict
 from hrms.models import Leave
 import xmlrpc.client
@@ -13,6 +14,9 @@ class HrmsDashboard():
     def update(self, first_day_of_month=None):
         # Get the first day of the current month
         max_write_date_leave = None
+        max_write_date_trans = None
+        max_write_date_reports = None
+
         if not first_day_of_month:
             first_day_of_month = datetime.now().replace(day=1)
         self.first_day_of_month = first_day_of_month
@@ -27,6 +31,7 @@ class HrmsDashboard():
         if info and (info != {}):
             max_write_date_leave = info["max_write_date_leave"]
             max_write_date_trans = info.get("max_write_date_trans", None)
+            max_write_date_reports = info.get('max_write_date_reports', None)
         new_write_date = leave.download(max_write_date_leave)
         hrms_dashboard.info["max_write_date_leave"] = (
             new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
@@ -34,10 +39,17 @@ class HrmsDashboard():
         today_leaves, latest_leaves = self.get_today_task()
         hrms_dashboard.info['today_leaves'] = today_leaves
         hrms_dashboard.info['latest_leaves'] = latest_leaves
-
+        # AttendanceTransService
         attendance_trans = AttendanceTransService(first_day_of_month)
         new_write_date = attendance_trans.download(max_write_date_trans)
         hrms_dashboard.info["max_write_date_trans"] = (
+            new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
+        )
+
+        # AttendanceReportService
+        attendance_reports = AttendanceReportService(first_day_of_month)
+        new_write_date = attendance_reports.download(max_write_date_reports)
+        hrms_dashboard.info["max_write_date_reports"] = (
             new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
         )
 
