@@ -209,5 +209,5 @@ def get_details(request):
         data = hrms_dashboard.info.get('grouped_total_worktime_by_company', {})
     except Hrms.DoesNotExist:
         data = {}
-    
+
     return JsonResponse(data)
