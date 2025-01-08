@@ -18,6 +18,7 @@ def check_apec_hrms_update():
     fleet_dashboard.update()
     # Thực hiện công việc của bạn tại đây
 
+
 @shared_task
 def update_apec_hrm():
     logger.info("Create update_apec_hrm check update_apec_hrm")
