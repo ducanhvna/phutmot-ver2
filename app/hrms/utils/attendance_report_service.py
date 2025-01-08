@@ -188,7 +188,7 @@ class AttendanceReportService():
         return max_write_date
 
     def group_by_company(self, start_date):
-        for scheduling in Scheduling.objects.filter(start_date=datetime.strptime(start_date, "$Y-%m-%d")):
+        for scheduling in Scheduling.objects.filter(start_date=datetime.strptime(start_date, "%Y-%m-%d")):
             merged_data = scheduling.scheduling_records
             for record in merged_data:
                 company = record["company"]
