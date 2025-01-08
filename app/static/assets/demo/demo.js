@@ -523,10 +523,12 @@ demo = {
     setInterval(() => {
       fetch('/api/get_details')
         .then(response => response.json())
-        .then(data => updateChart(data))
+        .then(data => {
+          updateChart(data['total_worktime']);
+          updateChartLateEarly(data);
+        })
         .catch(error => console.error('Error:', error));
-    }, 20000);
-    
+    }, 20000);    
     // Function to fetch sample stock prices (replacing this with real API call in real scenarios)
     function fetchStockPrices() {
       // Sample JSON string with new data
