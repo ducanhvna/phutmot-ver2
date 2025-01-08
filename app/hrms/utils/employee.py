@@ -208,7 +208,9 @@ class EmployeeService():
                     'other_profile': []  # Lưu các record khác
                 }
             )
-            existing_employees = employee.info.extend(employee.other_profile)
+            employee_info = employee.info if employee.info else []
+            employee_other_profile = employee.other_profile if employee.other_profile else []
+            existing_employees = employee_info.extend(employee_other_profile)
             for _, epl in enumerate(existing_employees):
                 found = False
                 for record in records:
