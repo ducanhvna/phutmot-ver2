@@ -77,6 +77,8 @@ class HrmsDashboard():
             new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
         )
         hrms_dashboard.info['grouped_total_worktime_by_company'] = attendance_reports.grouped_total_worktime_by_company
+        hrms_dashboard.info['grouped_total_number_in_time_company'] = attendance_reports.grouped_total_number_in_time_company
+        hrms_dashboard.info['grouped_total_number_late_early_company'] = attendance_reports.grouped_total_number_late_early_company
         # ExplainationService
         explaination = ExplainationService(first_day_of_month, self.company_merged_data)
         new_write_date = explaination.download(max_write_date_explainations)

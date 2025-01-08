@@ -188,14 +188,26 @@ class AttendanceReportService():
         return max_write_date
 
     def group_by_company(self, start_date):
+        self.grouped_total_number_in_time_company = {}
+        self.grouped_total_number_late_early_company = {}
         for scheduling in Scheduling.objects.filter(start_date=datetime.strptime(start_date, "%Y-%m-%d")):
             merged_data = scheduling.scheduling_records
             for record in merged_data:
                 company = record["company"]
                 date = datetime.strptime(record["date"], "%Y-%m-%d").day - 1
                 total_work_time = record.get("actual_total_work_time", 0)
+                leave_early = record.get("leave_early", 0)
+                attendance_late = record.get("attendance_late", 0)
+                number_in_time = 1 if (total_work_time > 0) and (leave_early == 0) and (attendance_late == 0) else 0
+                number_late_early = 1 if (leave_early > 0) or (attendance_late > 0) else 0
                 if company not in self.grouped_total_worktime_by_company:
                     self.grouped_total_worktime_by_company[company] = [0] * (self.last_day_of_month.day)
+                if company not in self.grouped_total_number_in_time_company:
+                    self.grouped_total_number_in_time_company[company] = [0] * (self.last_day_of_month.day)
+                if company not in self.grouped_total_number_late_early_company:
+                    self.grouped_total_number_late_early_company[company] = [0] * (self.last_day_of_month.day)
+                self.grouped_total_number_late_early_company[company][date] += number_late_early
+                self.grouped_total_number_in_time_company[company][date] += number_in_time
                 self.grouped_total_worktime_by_company[company][date] += total_work_time // 60
 
     def save_to_django(self, grouped_data, start_date, end_date):

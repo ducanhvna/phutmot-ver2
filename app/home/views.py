@@ -207,7 +207,11 @@ def get_details(request):
         hrms_dashboard = Hrms.objects.get(company_code="APEC", start_date=first_day_of_month.date())
 
         # Truyền giá trị của grouped_total_worktime_by_company vào biến data
-        data = hrms_dashboard.info.get('grouped_total_worktime_by_company', {})
+        data = {
+            "total_worktime": hrms_dashboard.info.get('grouped_total_worktime_by_company', {}),
+            "in_time": hrms_dashboard.info.get('grouped_total_number_in_time_company', {}),
+            "late_early": hrms_dashboard.info.get('grouped_total_number_late_early_company', {}),
+        }
     except Hrms.DoesNotExist:
         data = {}
 

@@ -444,8 +444,8 @@ demo = {
       fetch('/api/get_details')
         .then(response => response.json())
         .then(data => {
-          companies = Object.keys(data);
-          updateChart(data);
+          companies = Object.keys(data['total_worktime']);
+          updateChart(data['total_worktime']);
         })
         .catch(error => console.error('Error:', error));
     }
