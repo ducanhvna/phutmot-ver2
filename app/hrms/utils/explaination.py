@@ -8,7 +8,7 @@ from channels.layers import get_channel_layer
 
 
 class ExplainationService():
-    def __init__(self, first_day_of_month=None):
+    def __init__(self, first_day_of_month=None, company_merged_data=None):
         # Define your Odoo connection parameters
         # Define your Odoo connection parameters
         self.url = 'https://hrm.mandalahotel.com.vn'
@@ -18,7 +18,7 @@ class ExplainationService():
         common = xmlrpc.client.ServerProxy(f'{self.url}/xmlrpc/2/common')
         self.uid = common.authenticate(self.db, self.username, self.password, {})
         self.models = xmlrpc.client.ServerProxy(f'{self.url}/xmlrpc/2/object')
-
+        self.company_merged_data = company_merged_data
         if not first_day_of_month:
             first_day_of_month = datetime.now().replace(day=1)
         self.first_day_of_month = first_day_of_month
@@ -42,18 +42,18 @@ class ExplainationService():
 
         print(f"Start date: {start_str}")
         print(f"End date: {end_str}")
-
-        company_fields = [
-            'id',
-            'name',
-            'is_ho',
-            'mis_id'
-        ]
-        company_merged_data = self.download_data("res.company", company_fields)
+        if not self.company_merged_data:
+            company_fields = [
+                'id',
+                'name',
+                'is_ho',
+                'mis_id'
+            ]
+            self.company_merged_data = self.download_data("res.company", company_fields)
 
         # Group data by company
         company_grouped_data = {}
-        for record in company_merged_data:
+        for record in self.company_merged_data:
             company_grouped_data[f'{record["id"]}'] = record
             print(f"{record['id']} -- {record['name']}")
         explaination_fields = [

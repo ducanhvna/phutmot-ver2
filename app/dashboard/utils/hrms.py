@@ -12,6 +12,10 @@ from channels.layers import get_channel_layer
 
 
 class HrmsDashboard():
+    def __init__(self, company_merged_data=None):
+        self.company_merged_data = company_merged_data
+        super(HrmsDashboard, self).__init__()
+
     def update(self, first_day_of_month=None):
         # Get the first day of the current month
         max_write_date_leave = None
@@ -55,7 +59,7 @@ class HrmsDashboard():
             new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
         )
         # ExplainationService
-        explaination = ExplainationService(first_day_of_month)
+        explaination = ExplainationService(first_day_of_month, self.company_merged_data)
         new_write_date = explaination.download(max_write_date_explainations)
         hrms_dashboard.info["max_write_date_explainations"] = (
             new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
@@ -71,6 +75,8 @@ class HrmsDashboard():
                 "latest_leaves": [],
             },
         )
+        if not self.company_merged_data:
+            self.company_merged_data = explaination.company_merged_data
 
     def get_today_task(self):
         # first_day_of_month = datetime.now().replace(day=1)
