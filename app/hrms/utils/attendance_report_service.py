@@ -189,7 +189,7 @@ class AttendanceReportService():
 
     def group_by_company(self, field_name, merged_data):
         companies = defaultdict(lambda: [0] * (self.last_day_of_month.day))
-        
+
         for record in merged_data:
             company = record["company"]
             date = datetime.strptime(record["date"], "%Y-%m-%d").day - 1
