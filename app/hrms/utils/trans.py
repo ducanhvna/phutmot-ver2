@@ -105,6 +105,19 @@ class AttendanceTransService():
 
         # Save data to Django
         self.save_to_django(grouped_data, start_str, end_str)
+        write_dates = [
+            datetime.strptime(record["write_date"], "%Y-%m-%d %H:%M:%S")
+            for record in merged_data
+            if record.get("write_date")
+        ]
+
+        # Get the maximum write_date or None if the list is empty
+        max_write_date = max(write_dates, default=None)
+
+        # Now max_write_date contains the maximum write_date or None if there are no dates
+        print(f"Maximum write_date: {max_write_date}")
+
+        return max_write_date
 
     def save_to_django(self, grouped_data, start_date, end_date):
         for code, records in grouped_data.items():
