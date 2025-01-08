@@ -212,6 +212,8 @@ class EmployeeService():
             employee_other_profile = employee.other_profile if employee.other_profile else []
             if employee.info:
                 existing_employees = employee_other_profile.append(employee.info)
+            else:
+                existing_employees = []
             existing_employees = existing_employees if existing_employees else []
             for _, epl in enumerate(existing_employees):
                 found = False
