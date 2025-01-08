@@ -1,4 +1,5 @@
 from hrms.utils.hrleave import LeaveService
+from hrms.utils.trans import AttendanceTransService
 # from collections import defaultdict
 from hrms.models import Leave
 import xmlrpc.client
@@ -25,6 +26,7 @@ class HrmsDashboard():
         info = hrms_dashboard.info
         if info and (info != {}):
             max_write_date_leave = info["max_write_date_leave"]
+            max_write_date_trans = info.get("max_write_date_trans", None)
         new_write_date = leave.download(max_write_date_leave)
         hrms_dashboard.info["max_write_date_leave"] = (
             new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
@@ -34,6 +36,12 @@ class HrmsDashboard():
         hrms_dashboard.info['latest_leaves'] = latest_leaves
         hrms_dashboard.save()
         channel_layer = get_channel_layer()
+
+        attendance_trans = AttendanceTransService(first_day_of_month)
+        new_write_date = attendance_trans.download(max_write_date_trans)
+        hrms_dashboard.info["max_write_date_trans"] = (
+            new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
+        )
         async_to_sync(channel_layer.group_send)(
             "broadcast",
             {
