@@ -5,6 +5,7 @@ from hrms.utils.attendance_report_service import AttendanceReportService
 from hrms.utils.explaination import ExplainationService
 # from collections import defaultdict
 from hrms.models import Leave
+from home.utils.shift_service import ApecShiftService
 import xmlrpc.client
 from dashboard.models import Hrms
 from datetime import datetime, timedelta
@@ -18,6 +19,8 @@ class HrmsDashboard():
         super(HrmsDashboard, self).__init__()
 
     def download_base(self):
+        comany_shift_service = ApecShiftService()
+        comany_shift_service.download_copanies()
         print("download company, shift, al, cl")
 
     def update(self, first_day_of_month=None):

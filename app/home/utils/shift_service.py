@@ -3,6 +3,7 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from hrms.models import Shifts
+from home.models import Company
 from collections import defaultdict
 import xmlrpc.client
 from datetime import datetime, timedelta, time
@@ -15,33 +16,53 @@ def float_to_time(hour_float):
     return time(hour=hours, minute=minutes)
 
 
-class Command(BaseCommand):
-    help = 'Download data from Odoo and import into Django'
-
-    def handle(self, *args, **kwargs):
+class ApecShiftService():
+    def __init__(self):
         # Define your Odoo connection parameters
-        url = 'https://hrm.mandalahotel.com.vn'
-        db = 'apechrm_product_v3'
-        username = 'admin_ho'
-        password = '43a824d3a724da2b59d059d909f13ba0c38fcb82'
+        # Define your Odoo connection parameters
+        self.url = 'https://hrm.mandalahotel.com.vn'
+        self.db = 'apechrm_product_v3'
+        self.username = 'admin_ho'
+        self.password = '43a824d3a724da2b59d059d909f13ba0c38fcb82'
+        common = xmlrpc.client.ServerProxy(f'{self.url}/xmlrpc/2/common')
+        self.uid = common.authenticate(self.db, self.username, self.password, {})
+        self.models = xmlrpc.client.ServerProxy(f'{self.url}/xmlrpc/2/object')
 
-        common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
-        uid = common.authenticate(db, username, password, {})
-        models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
+        # if not first_day_of_month:
+        #     first_day_of_month = datetime.now().replace(day=1)
+        # self.first_day_of_month = first_day_of_month
 
+        # # Lấy ngày đầu tiên của tháng trước
+        # self.first_day_of_last_month = self.first_day_of_month - timedelta(days=1)
+        # self.first_day_of_last_month = datetime(self.first_day_of_last_month.year, self.first_day_of_last_month.month, 1)
+        # # Calculate the last day of the current month
+        # if self.first_day_of_month.month == 12:
+        #     next_month = self.first_day_of_month.replace(year=self.first_day_of_month.year + 1, month=1, day=1)
+        # else:
+        #     next_month = self.first_day_of_month.replace(month=self.first_day_of_month.month + 1, day=1)
+
+        # self.last_day_of_month = next_month - timedelta(days=1)
+        super(ApecShiftService, self).__init__()
+
+    def download_copanies(self, max_write_date_companies=None):
+        self.max_write_date_companies = max_write_date_companies
         company_fields = [
             'id',
             'name',
             'is_ho',
-            'mis_id'
+            'mis_id',
+            'write_date'
         ]
-        company_merged_data = self.download_data(models, db, uid, password, "res.company", company_fields)
+        self.company_merged_data = self.download_data("res.company", company_fields)
 
         # Group data by company
-        company_grouped_data = {}
-        for record in company_merged_data:
-            company_grouped_data[f'{record["id"]}'] = record
+        self.company_grouped_data = {}
+        for record in self.company_merged_data:
+            self.company_grouped_data[f'{record["id"]}'] = record
             print(f"{record['id']} -- {record['name']}")
+
+    def download_shift(self, max_write_date_shifts=None):
+        self.max_write_date_shifts = max_write_date_shifts
         shift_fields = [
             'id',
             'name',
@@ -71,7 +92,7 @@ class Command(BaseCommand):
             shift_grouped_data[f'{record["name"]}_{record["company_id"][0]}_{record["company_id"][1]}'] = record
             print(f"{record['id']} -- {record['name']} -- {float_to_time(record['start_work_time'])}")
         # Save data to Django
-        self.save_to_django(shift_grouped_data, company_grouped_data)
+        self.save_to_django(shift_grouped_data)
 
     def download_data(self, models, db, uid, password, model_name, fields, limit=300):
         LIMIT_SIZE = limit
@@ -114,8 +135,12 @@ class Command(BaseCommand):
                     ['end_rest_time', "!=", False],
                 ]
             ]
+            if self.max_write_date_shifts:
+                domain[0].append((("write_date", ">", self.max_write_date_shifts)))
         elif model_name == "res.company":
             domain = [[]]
+            if self.max_write_date_companies:
+                domain[0].append((("write_date", ">", self.max_write_date_companies)))
         else:
             raise ValueError("Invalid model name")
 
@@ -156,12 +181,20 @@ class Command(BaseCommand):
 
         return merged_data
 
-    def save_to_django(self, grouped_data, company_grouped_data):
+    def save_to_django(self, grouped_data): 
+        company, _=Company.objects.get_or_create(
+            company_code='APEC',
+            company_name='APEC GROUP',
+            defaults={'info':{"max_write_date":None}}
+        )
+        company.info['companies'] = self.company_merged_data
+        company.save()
+    
         for company_info, record in grouped_data.items():
             try:
                 shifts, created = Shifts.objects.get_or_create(
                     name=record['name'],
-                    company_code=company_grouped_data[f"{record['company_id'][0]}"]['mis_id'],
+                    company_code=self.company_grouped_data[f"{record['company_id'][0]}"]['mis_id'],
                 )
                 shifts.start_work_time = float_to_time(record['start_work_time'])
                 shifts.end_work_time = float_to_time(record['end_work_time'])
