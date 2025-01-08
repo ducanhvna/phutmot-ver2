@@ -1,6 +1,7 @@
 from hrms.utils.hrleave import LeaveService
 from hrms.utils.trans import AttendanceTransService
 from hrms.utils.attendance_report_service import AttendanceReportService
+from hrms.utils.explaination import ExplainationService
 # from collections import defaultdict
 from hrms.models import Leave
 import xmlrpc.client
@@ -16,7 +17,7 @@ class HrmsDashboard():
         max_write_date_leave = None
         max_write_date_trans = None
         max_write_date_reports = None
-
+        max_write_date_explainations = None
         if not first_day_of_month:
             first_day_of_month = datetime.now().replace(day=1)
         self.first_day_of_month = first_day_of_month
@@ -32,6 +33,7 @@ class HrmsDashboard():
             max_write_date_leave = info["max_write_date_leave"]
             max_write_date_trans = info.get("max_write_date_trans", None)
             max_write_date_reports = info.get('max_write_date_reports', None)
+            max_write_date_explainations = info.get('max_write_date_explainations', None)
         new_write_date = leave.download(max_write_date_leave)
         hrms_dashboard.info["max_write_date_leave"] = (
             new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
@@ -50,6 +52,12 @@ class HrmsDashboard():
         attendance_reports = AttendanceReportService(first_day_of_month)
         new_write_date = attendance_reports.download(max_write_date_reports)
         hrms_dashboard.info["max_write_date_reports"] = (
+            new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
+        )
+        # ExplainationService
+        explaination = ExplainationService(first_day_of_month)
+        new_write_date = explaination.download(max_write_date_explainations)
+        hrms_dashboard.info["max_write_date_explainations"] = (
             new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
         )
 
