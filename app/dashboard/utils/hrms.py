@@ -17,6 +17,9 @@ class HrmsDashboard():
         self.company_merged_data = company_merged_data
         super(HrmsDashboard, self).__init__()
 
+    def download_base(self):
+        print("download company, shift, al, cl")
+
     def update(self, first_day_of_month=None):
         # Get the first day of the current month
         max_write_date_leave = None
@@ -28,6 +31,7 @@ class HrmsDashboard():
         if not first_day_of_month:
             first_day_of_month = datetime.now().replace(day=1)
         self.first_day_of_month = first_day_of_month
+        self.download_base()
         leave = LeaveService(first_day_of_month)
         hrms_dashboard, created = Hrms.objects.get_or_create(
             company_code="APEC",
