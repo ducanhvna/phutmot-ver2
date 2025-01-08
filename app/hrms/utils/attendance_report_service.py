@@ -166,7 +166,7 @@ class AttendanceReportService():
         merged_data = self.download_data("hr.apec.attendance.report", fields, start_str, end_str)
         # Group data by employee_code
         grouped_data = defaultdict(list)
-        self.grouped_total_worktime_by_company = self.group_by_company("total_work_time", merged_data)
+        self.grouped_total_worktime_by_company = self.group_by_company("actual_total_work_time", merged_data)
         for record in merged_data:
             grouped_data[record["employee_code"]].append(record)
             print(f"{record['employee_code']} -- {len(grouped_data[record['employee_code']])}")
@@ -188,12 +188,14 @@ class AttendanceReportService():
         return max_write_date
 
     def group_by_company(self, field_name, merged_data):
-        companies = defaultdict(lambda: [0] * (self.last_day_of_month.day))
-
+        # companies = defaultdict(lambda: [0] * (self.last_day_of_month.day))
+        companies = {}
         for record in merged_data:
             company = record["company"]
             date = datetime.strptime(record["date"], "%Y-%m-%d").day - 1
             total_work_time = record.get(field_name, 0)
+            if not company in companies:
+                companies[companies] = [0] * (self.last_day_of_month.day)
             companies[company][date] += total_work_time
 
         return companies
