@@ -1,46 +1,43 @@
-from django.core.management.base import BaseCommand
-from django.utils import timezone
 from hrms.models import Employee
 from collections import defaultdict
 import xmlrpc.client
 from datetime import datetime, timedelta
 
 
-class Command(BaseCommand):
-    help = 'Download Employee and Contract data from Odoo and import into Django'
-
-    def handle(self, *args, **kwargs):
-        # Get the first day of the current month
-        first_day_of_month = datetime.now().replace(day=1)
-        self.download(first_day_of_month)
-        # Lấy ngày đầu tiên của tháng trước
-        first_day_of_last_month = first_day_of_month - timedelta(days=1)
-        first_day_of_last_month = datetime(first_day_of_last_month.year, first_day_of_last_month.month, 1)
-        self.download(first_day_of_last_month)
-
-    def download(self, first_day_of_month):
+class EmployeeService():
+    def __init__(self, first_day_of_month=None):
         # Define your Odoo connection parameters
-        url = 'https://hrm.mandalahotel.com.vn'
-        db = 'apechrm_product_v3'
-        username = 'admin_ho'
-        password = '43a824d3a724da2b59d059d909f13ba0c38fcb82'
+        # Define your Odoo connection parameters
+        self.url = 'https://hrm.mandalahotel.com.vn'
+        self.db = 'apechrm_product_v3'
+        self.username = 'admin_ho'
+        self.password = '43a824d3a724da2b59d059d909f13ba0c38fcb82'
+        common = xmlrpc.client.ServerProxy(f'{self.url}/xmlrpc/2/common')
+        self.uid = common.authenticate(self.db, self.username, self.password, {})
+        self.models = xmlrpc.client.ServerProxy(f'{self.url}/xmlrpc/2/object')
 
-        common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
-        uid = common.authenticate(db, username, password, {})
-        models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
+        if not first_day_of_month:
+            first_day_of_month = datetime.now().replace(day=1)
+        self.first_day_of_month = first_day_of_month
 
+        # Lấy ngày đầu tiên của tháng trước
+        self.first_day_of_last_month = self.first_day_of_month - timedelta(days=1)
+        self.first_day_of_last_month = datetime(self.first_day_of_last_month.year, self.first_day_of_last_month.month, 1)
         # Calculate the last day of the current month
-        if first_day_of_month.month == 12:
-            next_month_first_day = first_day_of_month.replace(year=first_day_of_month.year + 1, month=1, day=1)
+        if self.first_day_of_month.month == 12:
+            self.next_month_first_day = self.first_day_of_month.replace(year=self.first_day_of_month.year + 1, month=1, day=1)
         else:
-            next_month_first_day = first_day_of_month.replace(month=first_day_of_month.month + 1, day=1)
+            self.next_month_first_day = self.first_day_of_month.replace(month=self.first_day_of_month.month + 1, day=1)
 
-        last_day_of_month = next_month_first_day - timedelta(days=1)
+        self.last_day_of_month = self.next_month_first_day - timedelta(days=1)
+        super(EmployeeService, self).__init__()
 
+    def download(self, max_write_date_employees):
+        self.max_write_date_employees = max_write_date_employees
         # Format the dates
-        start_str = first_day_of_month.strftime('%Y-%m-%d')
-        end_str = last_day_of_month.strftime('%Y-%m-%d')
-        nextmonthFistdayStr = next_month_first_day.strftime('%Y-%m-%d')
+        start_str = self.first_day_of_month.strftime('%Y-%m-%d')
+        end_str = self.last_day_of_month.strftime('%Y-%m-%d')
+        nextmonthFistdayStr = self.next_month_first_day.strftime('%Y-%m-%d')
 
         print(f"Start date: {start_str}")
         print(f"nextmonthFistdayStr: {nextmonthFistdayStr}")
@@ -77,7 +74,7 @@ class Command(BaseCommand):
             'write_date',
             'active'
         ]
-        employees = self.download_data(models, db, uid, password, 'hr.employee', employee_fields, start_str, nextmonthFistdayStr)
+        employees = self.download_data('hr.employee', employee_fields, start_str, nextmonthFistdayStr)
 
         # Group employee data
         grouped_employee_data = self.group_data(employees, 'code')
@@ -103,12 +100,25 @@ class Command(BaseCommand):
             'by_hue_shift',
             'write_date'
         ]
-        contracts = self.download_data(models, db, uid, password, 'hr.contract', contract_fields, start_str, nextmonthFistdayStr)
+        contracts = self.download_data('hr.contract', contract_fields, start_str, nextmonthFistdayStr)
 
         # Process data and save to Django
         self.save_to_django(grouped_employee_data, contracts, start_str, end_str)
+        write_dates = [
+            datetime.strptime(record["write_date"], "%Y-%m-%d %H:%M:%S")
+            for record in employees
+            if record.get("write_date")
+        ]
 
-    def download_data(self, models, db, uid, password, model_name, fields, start_str, nextmonthFistdayStr):
+        # Get the maximum write_date or None if the list is empty
+        max_write_date = max(write_dates, default=None)
+
+        # Now max_write_date contains the maximum write_date or None if there are no dates
+        print(f"Maximum write_date: {max_write_date}")
+
+        return max_write_date
+
+    def download_data(self, model_name, fields, start_str, nextmonthFistdayStr):
         LIMIT_SIZE = 300
         index = 0
         len_data = 0
@@ -143,10 +153,10 @@ class Command(BaseCommand):
             raise ValueError("Invalid model name")
 
         while (len_data == LIMIT_SIZE) or (index == 0):
-            ids = models.execute_kw(
-                db,
-                uid,
-                password,
+            ids = self.models.execute_kw(
+                self.db,
+                self.uid,
+                self.password,
                 model_name,
                 'search',
                 domain,
@@ -164,10 +174,10 @@ class Command(BaseCommand):
 
         for ids_chunk in ids_chunks:
             # Fetch data from Odoo
-            data_chunk = models.execute_kw(
-                db,
-                uid,
-                password,
+            data_chunk = self.models.execute_kw(
+                self.db,
+                self.uid,
+                self.password,
                 model_name,
                 'read',
                 [ids_chunk],
@@ -189,6 +199,25 @@ class Command(BaseCommand):
             contract_dict[contract['employee_code']].append(contract)
 
         for employee_code, records in grouped_employee_data.items():
+            employee, created = Employee.objects.get_or_create(
+                employee_code=employee_code,
+                start_date=datetime.strptime(start_date, "%Y-%m-%d"),
+                end_date=datetime.strptime(end_date, "%Y-%m-%d"),
+                defaults={
+                    'info': [],
+                    'other_profile': []  # Lưu các record khác
+                }
+            )
+            existing_employees = employee.info.extend(employee.other_profile)
+            for _, epl in enumerate(existing_employees):
+                found = False
+                for record in records:
+                    if epl['id'] == record['id']:
+                        found = True
+                        break
+                if not found:
+                    records.append(epl)  # Add new leave if not found
+
             # Sắp xếp các record để tìm record phù hợp
             records = sorted(records, key=lambda x: (
                 x['severance_day'] is not False,
@@ -202,19 +231,8 @@ class Command(BaseCommand):
             selected_record = records[0]
             other_records = records[1:] if len(records) > 1 else []  # Các record không phải là employee.info
 
-            employee, created = Employee.objects.get_or_create(
-                employee_code=employee_code,
-                start_date=datetime.strptime(start_date, "%Y-%m-%d"),
-                end_date=datetime.strptime(end_date, "%Y-%m-%d"),
-                defaults={
-                    'info': selected_record,
-                    'other_profile': other_records  # Lưu các record khác
-                }
-            )
-
-            if not created:
-                employee.info = selected_record
-                employee.other_profile = other_records
+            employee.info = selected_record
+            employee.other_profile = other_records
 
             # Xử lý hợp đồng
             employee_contracts = contract_dict.get(employee_code, [])

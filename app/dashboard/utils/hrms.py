@@ -1,3 +1,4 @@
+from hrms.utils.employee import EmployeeService
 from hrms.utils.hrleave import LeaveService
 from hrms.utils.trans import AttendanceTransService
 from hrms.utils.attendance_report_service import AttendanceReportService
@@ -22,6 +23,8 @@ class HrmsDashboard():
         max_write_date_trans = None
         max_write_date_reports = None
         max_write_date_explainations = None
+        max_write_date_employees = None
+
         if not first_day_of_month:
             first_day_of_month = datetime.now().replace(day=1)
         self.first_day_of_month = first_day_of_month
@@ -38,6 +41,7 @@ class HrmsDashboard():
             max_write_date_trans = info.get("max_write_date_trans", None)
             max_write_date_reports = info.get('max_write_date_reports', None)
             max_write_date_explainations = info.get('max_write_date_explainations', None)
+            max_write_date_employees = info.get('max_write_date_employees', None)
         new_write_date = leave.download(max_write_date_leave)
         hrms_dashboard.info["max_write_date_leave"] = (
             new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
@@ -45,6 +49,13 @@ class HrmsDashboard():
         today_leaves, latest_leaves = self.get_today_task()
         hrms_dashboard.info['today_leaves'] = today_leaves
         hrms_dashboard.info['latest_leaves'] = latest_leaves
+        # Employee
+        employee_service = EmployeeService(first_day_of_month)
+        new_write_date = employee_service.download(max_write_date_employees)
+        hrms_dashboard.info["max_write_date_employees"] = (
+            new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
+        )
+
         # AttendanceTransService
         attendance_trans = AttendanceTransService(first_day_of_month)
         new_write_date = attendance_trans.download(max_write_date_trans)
