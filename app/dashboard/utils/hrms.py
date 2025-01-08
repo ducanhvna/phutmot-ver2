@@ -76,6 +76,7 @@ class HrmsDashboard():
         hrms_dashboard.info["max_write_date_reports"] = (
             new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
         )
+        hrms_dashboard.info['grouped_total_worktime_by_company'] = attendance_reports.grouped_total_worktime_by_company
         # ExplainationService
         explaination = ExplainationService(first_day_of_month, self.company_merged_data)
         new_write_date = explaination.download(max_write_date_explainations)
