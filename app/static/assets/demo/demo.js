@@ -446,6 +446,7 @@ demo = {
         .then(data => {
           companies = Object.keys(data['total_worktime']);
           updateChart(data['total_worktime']);
+          updateChartLateEarly(data);
         })
         .catch(error => console.error('Error:', error));
     }
@@ -835,15 +836,15 @@ demo = {
 //     var currentCompanyIndex = 0;
 // var companies = [];
 
-    function fetchDataLateEarly() {
-      fetch('/api/get_details')
-        .then(response => response.json())
-        .then(data => {
-          companies = Object.keys(data['total_worktime']);
-          updateChartLateEarly(data);
-        })
-        .catch(error => console.error('Error:', error));
-    }
+    // function fetchDataLateEarly() {
+    //   fetch('/api/get_details')
+    //     .then(response => response.json())
+    //     .then(data => {
+    //       companies = Object.keys(data['total_worktime']);
+    //       updateChartLateEarly(data);
+    //     })
+    //     .catch(error => console.error('Error:', error));
+    // }
 
     function updateChartLateEarly(data) {
       if (companies.length === 0) return;
@@ -913,8 +914,8 @@ demo = {
     }
 
     // Fetch data and update chart every 20 seconds
-    fetchDataLateEarly();
-    setInterval(fetchDataLateEarly, 20000); // 20 seconds interval
+    // fetchDataLateEarly();
+    // setInterval(fetchDataLateEarly, 20000); // 20 seconds interval
 
 
   },
