@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def save_to_django_timesheet(self, schedule):
     # for employee_code, records in grouped_data.items():
     timesheet, created = Timesheet.objects.get_or_create(
-        employee_code=employee_code,
+        employee_code=schedule.employee_code,
         start_date=schedule.start_date,
         end_date=schedule.end_date,
         defaults={"timesheet_records": []},
