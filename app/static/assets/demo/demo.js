@@ -756,7 +756,7 @@ demo = {
     });
 
 
-    // var ctx = document.getElementById("CountryChart").getContext("2d");
+    // var ctx = document.getElementById("CountryChartDaily").getContext("2d");
 
     // var gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
 
@@ -787,54 +787,54 @@ demo = {
     //   },
     //   options: gradientBarChartConfiguration
     // });
-    // var ctx = document.getElementById("CountryChart").getContext("2d");
+    var ctx = document.getElementById("CountryChartDaily").getContext("2d");
 
-    // var gradientStrokeBlue = ctx.createLinearGradient(0, 230, 0, 50);
-    // gradientStrokeBlue.addColorStop(1, 'rgba(29,140,248,0.2)');
-    // gradientStrokeBlue.addColorStop(0.4, 'rgba(29,140,248,0.0)');
-    // gradientStrokeBlue.addColorStop(0, 'rgba(29,140,248,0)'); // blue
+    var gradientStrokeBlue = ctx.createLinearGradient(0, 230, 0, 50);
+    gradientStrokeBlue.addColorStop(1, 'rgba(29,140,248,0.2)');
+    gradientStrokeBlue.addColorStop(0.4, 'rgba(29,140,248,0.0)');
+    gradientStrokeBlue.addColorStop(0, 'rgba(29,140,248,0)'); // blue
 
-    // var gradientStrokeRed = ctx.createLinearGradient(0, 230, 0, 50);
-    // gradientStrokeRed.addColorStop(1, 'rgba(248,29,29,0.2)');
-    // gradientStrokeRed.addColorStop(0.4, 'rgba(248,29,29,0.0)');
-    // gradientStrokeRed.addColorStop(0, 'rgba(248,29,29,0)'); // red
+    var gradientStrokeRed = ctx.createLinearGradient(0, 230, 0, 50);
+    gradientStrokeRed.addColorStop(1, 'rgba(248,29,29,0.2)');
+    gradientStrokeRed.addColorStop(0.4, 'rgba(248,29,29,0.0)');
+    gradientStrokeRed.addColorStop(0, 'rgba(248,29,29,0)'); // red
 
-    // var myChart = new Chart(ctx, {
-    //   type: 'bar',
-    //   data: {
-    //     labels: ['USA', 'GER', 'AUS', 'UK', 'RO', 'BR'],
-    //     datasets: [{
-    //       label: "Blue",
-    //       backgroundColor: gradientStrokeBlue,
-    //       borderColor: '#1f8ef1',
-    //       borderWidth: 2,
-    //       data: [53, 20, 10, 80, 100, 45],
-    //     }, {
-    //       label: "Red",
-    //       backgroundColor: gradientStrokeRed,
-    //       borderColor: '#f81d1d',
-    //       borderWidth: 2,
-    //       data: [30, 40, 25, 60, 90, 35],
-    //     }]
-    //   },
-    //   options: {
-    //     responsive: true,
-    //     legend: {
-    //       display: true,
-    //     },
-    //     scales: {
-    //       xAxes: [{
-    //         barPercentage: 0.8,
-    //         categoryPercentage: 0.4,
-    //       }],
-    //       yAxes: [{
-    //         ticks: {
-    //           beginAtZero: true
-    //         }
-    //       }]
-    //     }
-    //   }
-    // });
+    var myChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['USA', 'GER', 'AUS', 'UK', 'RO', 'BR'],
+        datasets: [{
+          label: "Blue",
+          backgroundColor: gradientStrokeBlue,
+          borderColor: '#1f8ef1',
+          borderWidth: 2,
+          data: [53, 20, 10, 80, 100, 45],
+        }, {
+          label: "Red",
+          backgroundColor: gradientStrokeRed,
+          borderColor: '#f81d1d',
+          borderWidth: 2,
+          data: [30, 40, 25, 60, 90, 35],
+        }]
+      },
+      options: {
+        responsive: true,
+        legend: {
+          display: true,
+        },
+        scales: {
+          xAxes: [{
+            barPercentage: 0.8,
+            categoryPercentage: 0.4,
+          }],
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            }
+          }]
+        }
+      }
+    });
 //     var currentCompanyIndex = 0;
 // var companies = [];
 
