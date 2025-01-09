@@ -80,18 +80,18 @@ class Trip():
             updated_trips = []
 
             # Update existing trips or add new ones
-            for record in records:
-                found = False
-                for index, trip in enumerate(existing_trips):
+            for index, trip in enumerate(existing_trips):
+                for record in records:
+                    found = False        
                     if trip['id'] == record['id']:
                         existing_trips[index] = record  # Replace the old trip
                         found = True
                         break
                 if not found:
-                    updated_trips.append(record)  # Add new trip if not found
+                    records.append(trip)  # Add new trip if not found
 
             # Extend with new trips
-            vehicle.other_profile['trips'].extend(updated_trips)
+            vehicle.other_profile['trips'] = records
             vehicle.save()
 
     def download_data(self, model_name, fields, start_str, end_str):
