@@ -7,6 +7,18 @@ from datetime import timedelta
 logger = logging.getLogger(__name__)
 
 
+def save_to_django_timesheet(self, schedule):
+    # for employee_code, records in grouped_data.items():
+    timesheet, created = Timesheet.objects.get_or_create(
+        employee_code=employee_code,
+        start_date=schedule.start_date,
+        end_date=schedule.end_date,
+        defaults={"timesheet_records": []},
+    )
+    timesheet.timesheet_records = schedule.scheduling_records
+    timesheet.save()
+
+
 @shared_task
 def calculate_scheduling(attendance_id):
     # Import cục bộ để tránh import vòng lặp
@@ -36,6 +48,7 @@ def calculate_scheduling(attendance_id):
             # process_missing_attendance(sched)
             # find_attendance_hue4_time_mode(sched)
             calculate_worktime_with_inout_standard(sched)
+            save_to_django_timesheet(sched)
         # Tính toán và cập nhật Scheduling tương ứng
         # scheduling, created = Scheduling.objects.get_or_create(attendance=attendance)
 
