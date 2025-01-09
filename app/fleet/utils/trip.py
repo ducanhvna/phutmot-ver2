@@ -77,7 +77,6 @@ class Trip():
                 vehicle.other_profile['trips'] = []
 
             existing_trips = vehicle.other_profile['trips']
-            updated_trips = []
 
             # Update existing trips or add new ones
             for index, trip in enumerate(existing_trips):
