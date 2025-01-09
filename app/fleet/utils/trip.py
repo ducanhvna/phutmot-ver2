@@ -81,7 +81,7 @@ class Trip():
             # Update existing trips or add new ones
             for index, trip in enumerate(existing_trips):
                 for record in records:
-                    found = False        
+                    found = False
                     if trip['id'] == record['id']:
                         existing_trips[index] = record  # Replace the old trip
                         found = True
