@@ -13,6 +13,12 @@ class InoutMode:
     Out = "Out"
     NoneMode = "None"
 
+    @staticmethod
+    def to_string(value):
+        if value in [InoutMode.In, InoutMode.Out, InoutMode.NoneMode]:
+            return value
+        raise TypeError(f"Invalid InoutMode value: {value}")
+
 
 class KidMode(Enum):
     NONE = "None"
@@ -32,6 +38,25 @@ class CoupleInout:
         self.nightWorkTime = 0
         self.holidayWorkTime = 0
         self.nightHolidayWorkTime = 0
+
+    def to_dict(self):
+        return {
+            "itemIn": InoutMode.to_string(self.itemIn),
+            "itemOut": InoutMode.to_string(self.itemOut),
+            "atoffice_time": self.atoffice_time,
+            "nightWorkTime": self.nightWorkTime,
+            "holidayWorkTime": self.holidayWorkTime,
+            "nightHolidayWorkTime": self.nightHolidayWorkTime,
+        }
+
+
+def serialize_datetime(obj):
+    """Helper function to convert datetime and CoupleInout objects to string or dict."""
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    if isinstance(obj, CoupleInout):
+        return obj.to_dict()
+    raise TypeError(f"Type {obj.__class__.__name__} not serializable")
 
 
 def check_leave_valid_type1(type_name, element, shift_start_datetime, shift_end_datetime):

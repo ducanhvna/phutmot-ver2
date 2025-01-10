@@ -25,9 +25,9 @@ def serialize_scheduling(obj):
     return result
 
 
-def save_to_django_timesheet(schedule, start_date, end_date):
+def save_to_django_timesheet(schedule, start_date, end_date, serialize_datetime):
     # Convert scheduling_records datetime objects to strings
-    serialized_records = serialize_scheduling(schedule)
+    serialized_records = json.loads(json.dumps(serialize_scheduling(schedule), default=serialize_datetime))
 
     timesheet, created = Timesheet.objects.get_or_create(
         employee_code=schedule.employee_code,
@@ -43,7 +43,7 @@ def save_to_django_timesheet(schedule, start_date, end_date):
 def calculate_scheduling(attendance_id):
     # Import cục bộ để tránh import vòng lặp
     from .models import Attendance, Scheduling, Employee, Shifts, Leave, Explaination
-    from .utils.attendance_report import add_attempt_more_than_limit, mergedTimeToScheduling, collect_data_to_schedulings, calculate_worktime_with_inout_standard
+    from .utils.attendance_report import add_attempt_more_than_limit, mergedTimeToScheduling, serialize_datetime, calculate_worktime_with_inout_standard
     from home.models import UserProfile
 
     try:
@@ -85,7 +85,7 @@ def calculate_scheduling(attendance_id):
             # process_missing_attendance(sched)
             # find_attendance_hue4_time_mode(sched)
             calculate_worktime_with_inout_standard(sched)
-        save_to_django_timesheet(scheduling, first_day_of_month, last_day_of_month)
+        save_to_django_timesheet(scheduling, first_day_of_month, last_day_of_month, serialize_datetime)
         # Tính toán và cập nhật Scheduling tương ứng
         # scheduling, created = Scheduling.objects.get_or_create(attendance=attendance)
 
