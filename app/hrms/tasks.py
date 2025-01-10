@@ -9,18 +9,25 @@ from hrms.models import Timesheet
 logger = logging.getLogger(__name__)
 
 
-def serialize_datetime(obj):
+def serialize_scheduling(obj):
     """Helper function to convert datetime objects to string."""
-    if isinstance(obj, datetime):
-        return obj.isoformat()
-    raise TypeError(f"Type {obj.__class__.__name__} not serializable")
+    result = []
+    for scheduling in obj.timesheet_records:
+        timesheet = {
+            "out_in_after_explanation_private": scheduling.get(
+                "list_couple_out_in_after_explanation_private", []
+            ),
+            "couple_after_explanation_private": scheduling.get(
+                "list_couple_after_explanation_private", []
+            ),
+        }
+        result.append(timesheet)
+    return result
 
 
 def save_to_django_timesheet(schedule, start_date, end_date):
     # Convert scheduling_records datetime objects to strings
-    serialized_records = json.loads(
-        json.dumps(schedule.scheduling_records, default=serialize_datetime)
-    )
+    serialized_records = serialize_scheduling(schedule)
 
     timesheet, created = Timesheet.objects.get_or_create(
         employee_code=schedule.employee_code,
