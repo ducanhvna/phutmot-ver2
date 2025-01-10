@@ -14,6 +14,12 @@ def serialize_scheduling(obj):
     result = []
     for scheduling in obj.scheduling_records:
         timesheet = {
+            "date": scheduling.get("date", None),
+            "shift_start_datetime": scheduling("shift_start_datetime", None),
+            "shift_end_datetime": scheduling("shift_end_datetime", None),
+            "rest_start_datetime": scheduling("rest_start_datetime", None),
+            "rest_end_datetime": scheduling("rest_end_datetime", None),
+            'shift_name': scheduling.get('shift_name', '-'),
             "out_in_after_explanation_private": scheduling.get(
                 "list_couple_out_in_after_explanation_private", []
             ),
