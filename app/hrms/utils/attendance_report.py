@@ -146,7 +146,7 @@ def get_list_couple_out_in(list_couple_io, scheduling_record):
                 itemIn=AttendanceAttemptInOut(attempt=shift_start_datetime),
                 itemOut=AttendanceAttemptInOut(attempt=list_couple_io[0].itemIn.attempt)
             )
-            couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
             couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
             couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
             couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
@@ -157,7 +157,7 @@ def get_list_couple_out_in(list_couple_io, scheduling_record):
                 itemIn=AttendanceAttemptInOut(attempt=list_couple_io[i - 1].itemOut.attempt),
                 itemOut=AttendanceAttemptInOut(attempt=list_couple_io[i].itemIn.attempt)
             )
-            couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
             couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
             couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
             couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
@@ -168,7 +168,7 @@ def get_list_couple_out_in(list_couple_io, scheduling_record):
                 itemIn=AttendanceAttemptInOut(attempt=list_couple_io[-1].itemOut.attempt),
                 itemOut=AttendanceAttemptInOut(attempt=shift_end_datetime)
             )
-            couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
             couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
             couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
             couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
@@ -338,7 +338,7 @@ def calculate_holiday_worktime_without_inout(real_timein, real_timeout, scheduli
     # shiftEndDateTime = scheduling_record['shift_end_datetime']
 
     result = 0
-    if (shift and is_holiday and (calculate_worktime_without_inout(holiday_start_datetime, holiday_end_datetime) > 0 or 'PH' in shift_name)):
+    if (shift and is_holiday and (calculate_worktime_without_inout(holiday_start_datetime, holiday_end_datetime, scheduling_record) > 0 or 'PH' in shift_name)):
 
         stageStart = restStartDateTime if restStartDateTime < holiday_end_datetime else holiday_end_datetime
         current_program = (real_timeout.replace(second=0) if real_timeout < stageStart else stageStart) - (real_timein.replace(second=0) if real_timein > holiday_start_datetime else holiday_start_datetime)
@@ -1021,12 +1021,12 @@ def process_worktime(scheduling_record):
                     if HueStage1End and HueStage2Start:
                         pass
                     elif HueStage1End or HueStage2Start:
-                        totalWorkTime = calculate_worktime_without_inout(real_timein, real_timeout)
+                        totalWorkTime = calculate_worktime_without_inout(real_timein, real_timeout, scheduling_record)
                         missing_checkin_break = True
                     else:
                         missing_checkin_break = True
                 else:
-                    totalWorkTime = calculate_worktime_without_inout(real_timein, real_timeout)
+                    totalWorkTime = calculate_worktime_without_inout(real_timein, real_timeout, scheduling_record)
             else:
                 stage1Off = calculate_night_worktime_custom(scheduling_record, real_timein, real_timeout, shiftStartDateTime, restStartDateTime)
                 stage1Off = min(stage1Off, 240)
@@ -1037,9 +1037,9 @@ def process_worktime(scheduling_record):
 
         if totalShiftWorkTime_calculate > 0:
             if real_timein and shiftStartDateTime:
-                real_late_in_minute = calculate_worktime_without_inout(shiftStartDateTime, real_timein)
+                real_late_in_minute = calculate_worktime_without_inout(shiftStartDateTime, real_timein, scheduling_record)
             if real_timeout and shiftEndDateTime:
-                real_ealry_out_minute = calculate_worktime_without_inout(real_timeout, shiftEndDateTime)
+                real_ealry_out_minute = calculate_worktime_without_inout(real_timeout, shiftEndDateTime, scheduling_record)
 
         nightWorkTime = calculate_night_worktime_without_inout(real_timein, real_timeout, scheduling_record)
         holidayWorkTime = calculate_holiday_worktime_without_inout(real_timein, real_timeout, scheduling_record)
@@ -1185,7 +1185,7 @@ def process_overtime_leave(scheduling_record):
                 overtime_holiday_by_leave += max(leave_item['minutes'], leave_item['time_minute']) * max(0, leave_item['multiplier_work_time'])
             if is_probationary:
                 overtime_probationary += max(leave_item['minutes'], leave_item['time_minute']) * max(0, leave_item['multiplier_work_time'])
-                if is_holiday and (calculate_worktime_without_inout(holiday_start_datetime, holiday_end_datetime) > 0 or 'PH' in shift_name):
+                if is_holiday and (calculate_worktime_without_inout(holiday_start_datetime, holiday_end_datetime, scheduling_record) > 0 or 'PH' in shift_name):
                     overtime_holiday_probationary_by_leave += max(leave_item['minutes'], leave_item['time_minute']) * max(0, leave_item['multiplier_work_time'])
 
     return overtime_by_leave, overtime_holiday_by_leave, overtime_holiday_probationary_by_leave, overtime_probationary, overtime_minutes_by_leave, overtime_wage_by_leave, total_work_time, convert_overtime, total_increase_date, total_increase_probationary
@@ -1507,13 +1507,15 @@ def process_explanation(
                 )
             out_time = calculate_worktime_without_inout(
                 explaination_item['attendance_missing_from'],
-                explaination_item['attendance_missing_to']
+                explaination_item['attendance_missing_to'],
+                scheduling_record
             ) - in_time_leave
             out_by_private += out_time
         else:
             out_time = calculate_worktime_without_inout(
                 explaination_item['attendance_missing_from'],
-                explaination_item['attendance_missing_to']
+                explaination_item['attendance_missing_to'],
+                scheduling_record
             )
             out_by_private += out_time
             if real_time_in and real_time_out:
@@ -1564,7 +1566,8 @@ def process_explanation(
             )
         out_time = max(0, calculate_worktime_without_inout(
             explaination_item['attendance_missing_from'],
-            explaination_item['attendance_missing_to']
+            explaination_item['attendance_missing_to'],
+            scheduling_record
         ) - in_time_leave)
         out_by_work += out_time
     return out_by_work
@@ -1590,7 +1593,8 @@ def process_working_out_leave(hr_leaves, scheduling_record, date, real_time_in, 
     for leave_item in list_workingout_leaves:
         out_time = calculate_worktime_without_inout(
             leave_item['attendance_missing_from'],
-            leave_item['attendance_missing_to']
+            leave_item['attendance_missing_to'],
+            scheduling_record
         )
         if leave_item['for_reasons'] == '1':
             out_by_private += out_time
@@ -1665,7 +1669,8 @@ def process_working_out_leave_ho(hr_leaves, scheduling_record, date, list_couple
         ])
         out_time = max(0, calculate_worktime_without_inout(
             leave_item['attendance_missing_from'],
-            leave_item['attendance_missing_to']
+            leave_item['attendance_missing_to'],
+            scheduling_record
         ) - in_time_leave)
         if leave_item['for_reasons'] == '1':
             out_by_private += out_time

@@ -8,7 +8,7 @@ from hrms.models import Timesheet
 logger = logging.getLogger(__name__)
 
 
-def save_to_django_timesheet(self, schedule):
+def save_to_django_timesheet(schedule):
     # for employee_code, records in grouped_data.items():
     timesheet, created = Timesheet.objects.get_or_create(
         employee_code=schedule.employee_code,
