@@ -17,6 +17,8 @@ class InoutMode:
     def to_string(value):
         if value in [InoutMode.In, InoutMode.Out, InoutMode.NoneMode]:
             return value
+        elif value is None:
+            return "None"
         raise TypeError(f"Invalid InoutMode value: {value}")
 
 
