@@ -31,12 +31,24 @@ def calculate_scheduling(attendance_id):
         # Lấy đối tượng Attendance
         attendance = Attendance.objects.get(id=attendance_id)
         start_date = attendance.start_date + timedelta(days=1)
+        first_day_of_month =start_date.replace(day=1)
+        if first_day_of_month.month == 12:
+            next_month = first_day_of_month.replace(year=first_day_of_month.year + 1, month=1, day=1)
+        else:
+            next_month = first_day_of_month.replace(month=first_day_of_month.month + 1, day=1)
+
+        last_day_of_month = next_month - timedelta(days=1)
         employee = Employee.objects.get(time_keeping_code=attendance.code, start_date=start_date)
         profile = UserProfile.objects.get(employee_code=employee.employee_code)
         shifts = Shifts.objects.filter(company_code='IDJ')
         scheduling = Scheduling.objects.get(employee_code=employee.employee_code, start_date=start_date)
 
-        leave = Leave.objects.get(employee_code=employee.employee_code, start_date=start_date)
+        leave = Leave.objects.get_or_create(
+            employee_code=employee.employee_code,
+            start_date=first_day_of_month,
+            end_date=last_day_of_month,
+            defaults={"leave_records": []},
+        )
         explanation = Explaination.objects.get(employee_code=employee.employee_code, start_date=start_date)
         # Log đối tượng Attendance
         logger.info(f"Create attendance: {attendance}")
