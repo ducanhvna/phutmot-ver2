@@ -2,7 +2,7 @@
 
 import logging
 from celery import shared_task
-from datetime import timedelta, datetime
+from datetime import timedelta
 from hrms.models import Timesheet
 
 logger = logging.getLogger(__name__)
@@ -12,8 +12,8 @@ def save_to_django_timesheet(schedule, start_date, end_date):
     # for employee_code, records in grouped_data.items():
     timesheet, created = Timesheet.objects.get_or_create(
         employee_code=schedule.employee_code,
-        start_date=datetime.strptime(start_date, "%Y-%m-%d"),
-        end_date=datetime.strptime(end_date, "%Y-%m-%d"),
+        start_date=start_date,
+        end_date=end_date,
         defaults={"timesheet_records": []},
     )
     timesheet.timesheet_records = schedule.scheduling_records
