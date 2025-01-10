@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def serialize_scheduling(obj):
     """Helper function to convert datetime objects to string."""
     result = []
-    for scheduling in obj.timesheet_records:
+    for scheduling in obj.scheduling_records:
         timesheet = {
             "out_in_after_explanation_private": scheduling.get(
                 "list_couple_out_in_after_explanation_private", []
