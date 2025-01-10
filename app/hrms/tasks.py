@@ -1,22 +1,34 @@
 # hrms/tasks.py
 
 import logging
+import json
 from celery import shared_task
-from datetime import timedelta
+from datetime import timedelta, datetime
 from hrms.models import Timesheet
 
 logger = logging.getLogger(__name__)
 
 
+def serialize_datetime(obj):
+    """Helper function to convert datetime objects to string."""
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    raise TypeError(f"Type {obj.__class__.__name__} not serializable")
+
+
 def save_to_django_timesheet(schedule, start_date, end_date):
-    # for employee_code, records in grouped_data.items():
+    # Convert scheduling_records datetime objects to strings
+    serialized_records = json.loads(
+        json.dumps(schedule.scheduling_records, default=serialize_datetime)
+    )
+
     timesheet, created = Timesheet.objects.get_or_create(
         employee_code=schedule.employee_code,
         start_date=start_date,
         end_date=end_date,
         defaults={"timesheet_records": []},
     )
-    timesheet.timesheet_records = schedule.scheduling_records
+    timesheet.timesheet_records = serialized_records
     timesheet.save()
 
 
