@@ -43,13 +43,13 @@ def calculate_scheduling(attendance_id):
         shifts = Shifts.objects.filter(company_code='IDJ')
         scheduling = Scheduling.objects.get(employee_code=employee.employee_code, start_date=start_date)
 
-        leave = Leave.objects.get_or_create(
+        leave, _ = Leave.objects.get_or_create(
             employee_code=employee.employee_code,
             start_date=first_day_of_month,
             end_date=last_day_of_month,
             defaults={"leave_records": []},
         )
-        explanation = Explaination.objects.get_or_create(
+        explanation, _ = Explaination.objects.get_or_create(
             employee_code=employee.employee_code,
             start_date=first_day_of_month,
             end_date=last_day_of_month,
@@ -60,7 +60,7 @@ def calculate_scheduling(attendance_id):
         logger.info(f"Get employee: {employee}")
         logger.info(f"GET scheduling: {scheduling}")
         logger.info(f"GET leave: {leave}")
-        mergedTimeToScheduling(scheduling.scheduling_records, shifts, employee, leave, explanation, profile)
+        mergedTimeToScheduling(scheduling.scheduling_records, shifts, employee, leave.leave_records, explanation, profile)
         for sched in scheduling.scheduling_records:
             add_attempt_more_than_limit(attendance.attendance_records, sched, 6, 6)
             # process_missing_attendance(sched)

@@ -657,10 +657,11 @@ def check_is_holiday(scheduling_record):
     scheduling_record['is_holiday'] = result
 
 
-def process_leave_records(leave, scheduling_record):
+def process_leave_records(leave_records, scheduling_record):
     scheduling_record['kidmod'] = KidMode.NONE
     scheduling_record['convert_overtime'] = False
-    for leave_item in leave.leave_records:
+    print('Start process_leave_records: ', leave_records)
+    for leave_item in leave_records:
         try:
             leave_item['holidayStatusName'] = leave_item['holiday_status_id'][0] if leave_item['holiday_status_id'][1] else ''
             if leave_item['attendance_missing_to']:
@@ -673,7 +674,7 @@ def process_leave_records(leave, scheduling_record):
                 leave_item['request_date_to'] = datetime.strptime(leave_item['request_date_to'], "%Y-%m-%d")
         except Exception as ex:
             print('process_leave_records: ', ex)
-    scheduling_record['hr_leaves'] = leave.leave_records
+    scheduling_record['hr_leaves'] = leave_records
 
 
 def process_explaination_records(explanation, scheduling_record):
@@ -688,7 +689,7 @@ def process_explaination_records(explanation, scheduling_record):
     scheduling_record['list_explanations'] = explanation.explaination_records
 
 
-def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, profile):
+def mergedTimeToScheduling(schedulings, shifts, employee, leave_records, explanation, profile):
     merged_shift = {shift.name.replace('/', '_'): shift for shift in shifts}
 
     for scheduling in schedulings:
@@ -706,7 +707,7 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave, explanation, pr
                 hour=shift.start_work_time.hour, minute=shift.start_rest_time.minute)
             scheduling['rest_end_datetime'] = date.replace(
                 hour=shift.end_work_time.hour, minute=shift.end_rest_time.minute)
-            process_leave_records(leave, scheduling)
+            process_leave_records(leave_records, scheduling)
             scheduling['date'] = date
             process_explaination_records(explanation, scheduling)
             scheduling['list_add_item_out'] = []
