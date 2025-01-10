@@ -7,6 +7,14 @@ class AttendanceAttemptInOut:
         self.attempt = attempt
         self.inout = None
 
+    def to_dict(self):
+        return {
+            "attempt": self.attempt,
+            "inout": (
+                self.inout.to_dict() if isinstance(self.inout, CoupleInout) else None
+            ),
+        }
+
 
 class InoutMode:
     In = "In"
@@ -17,8 +25,8 @@ class InoutMode:
     def to_string(value):
         if value in [InoutMode.In, InoutMode.Out, InoutMode.NoneMode]:
             return value
-        elif value is None:
-            return "None"
+        elif isinstance(value, str):
+            return value
         raise TypeError(f"Invalid InoutMode value: {value}")
 
 
@@ -43,8 +51,16 @@ class CoupleInout:
 
     def to_dict(self):
         return {
-            "itemIn": InoutMode.to_string(self.itemIn),
-            "itemOut": InoutMode.to_string(self.itemOut),
+            "itemIn": (
+                self.itemIn.to_dict()
+                if isinstance(self.itemIn, AttendanceAttemptInOut)
+                else InoutMode.to_string(self.itemIn)
+            ),
+            "itemOut": (
+                self.itemOut.to_dict()
+                if isinstance(self.itemOut, AttendanceAttemptInOut)
+                else InoutMode.to_string(self.itemOut)
+            ),
             "atoffice_time": self.atoffice_time,
             "nightWorkTime": self.nightWorkTime,
             "holidayWorkTime": self.holidayWorkTime,
@@ -53,10 +69,12 @@ class CoupleInout:
 
 
 def serialize_datetime(obj):
-    """Helper function to convert datetime and CoupleInout objects to string or dict."""
+    """Helper function to convert datetime, CoupleInout, and AttendanceAttemptInOut objects to string or dict."""
     if isinstance(obj, datetime):
         return obj.isoformat()
     if isinstance(obj, CoupleInout):
+        return obj.to_dict()
+    if isinstance(obj, AttendanceAttemptInOut):
         return obj.to_dict()
     raise TypeError(f"Type {obj.__class__.__name__} not serializable")
 
