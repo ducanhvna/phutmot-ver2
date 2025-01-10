@@ -147,9 +147,9 @@ def get_list_couple_out_in(list_couple_io, scheduling_record):
                 itemOut=AttendanceAttemptInOut(attempt=list_couple_io[0].itemIn.attempt)
             )
             couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
-            couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
-            couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
-            couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
+            couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
+            couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
             result.append(couple)
 
         for i in range(1, len(list_couple_io)):
@@ -158,9 +158,9 @@ def get_list_couple_out_in(list_couple_io, scheduling_record):
                 itemOut=AttendanceAttemptInOut(attempt=list_couple_io[i].itemIn.attempt)
             )
             couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
-            couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
-            couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
-            couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
+            couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
+            couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
             result.append(couple)
 
         if shift_end_datetime > list_couple_io[-1].itemOut.attempt and include_late_early:
@@ -169,9 +169,9 @@ def get_list_couple_out_in(list_couple_io, scheduling_record):
                 itemOut=AttendanceAttemptInOut(attempt=shift_end_datetime)
             )
             couple.atoffice_time = calculate_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
-            couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
-            couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
-            couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt)
+            couple.nightWorkTime = calculate_night_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
+            couple.holidayWorkTime = calculate_holiday_worktime_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
+            couple.nightHolidayWorkTime = calculate_night_holiday_without_inout(couple.itemIn.attempt, couple.itemOut.attempt, scheduling_record)
             result.append(couple)
 
     return result
