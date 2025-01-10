@@ -66,7 +66,7 @@ def calculate_scheduling(attendance_id):
             # process_missing_attendance(sched)
             # find_attendance_hue4_time_mode(sched)
             calculate_worktime_with_inout_standard(sched)
-            save_to_django_timesheet(sched)
+        save_to_django_timesheet(scheduling)
         # Tính toán và cập nhật Scheduling tương ứng
         # scheduling, created = Scheduling.objects.get_or_create(attendance=attendance)
 
