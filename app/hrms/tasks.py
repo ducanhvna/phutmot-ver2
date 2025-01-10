@@ -3,6 +3,7 @@
 import logging
 from celery import shared_task
 from datetime import timedelta
+from hrms.models import Timesheet
 
 logger = logging.getLogger(__name__)
 

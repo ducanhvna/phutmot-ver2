@@ -15,7 +15,7 @@ class SchedulingAdmin(admin.ModelAdmin):
 
 
 @admin.register(Timesheet)
-class SchedulingAdmin(admin.ModelAdmin):
+class TimesheetAdmin(admin.ModelAdmin):
     list_display = ('employee_code', 'start_date', 'end_date', 'create_time', 'update_time')
     search_fields = ('employee_code', 'start_date', 'end_date')
 
