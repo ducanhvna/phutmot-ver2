@@ -49,7 +49,12 @@ def calculate_scheduling(attendance_id):
             end_date=last_day_of_month,
             defaults={"leave_records": []},
         )
-        explanation = Explaination.objects.get(employee_code=employee.employee_code, start_date=start_date)
+        explanation = Explaination.objects.get_or_create(
+            employee_code=employee.employee_code,
+            start_date=first_day_of_month,
+            end_date=last_day_of_month,
+            defaults={"explaination_records": []},
+        )
         # Log đối tượng Attendance
         logger.info(f"Create attendance: {attendance}")
         logger.info(f"Get employee: {employee}")
