@@ -745,6 +745,57 @@ demo = {
       ctx.fillText(i, xOffset + i * 50 - 5, canvas.height - 10);
     }
 
+    var canvas = document.getElementById('projectgantt2');
+    var ctx = canvas.getContext('2d');
+
+    // Tạo gradient cho các task
+    var gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
+    gradientStroke.addColorStop(1, 'rgba(72,72,176,0.1)');
+    gradientStroke.addColorStop(0.4, 'rgba(72,72,176,0.0)');
+    gradientStroke.addColorStop(0, 'rgba(119,52,169,0)');
+
+    var tasks = [
+      { name: "Task 1", start: 0, end: 3 },
+      { name: "Task 2", start: 2, end: 7 },
+      { name: "Task 3", start: 5, end: 10 }
+    ];
+
+    var taskHeight = 30;
+    var taskGap = 10;
+    var xOffset = 100;
+
+    ctx.font = '16px Arial';
+    ctx.textBaseline = 'middle';
+
+    tasks.forEach(function(task, index) {
+      var y = index * (taskHeight + taskGap);
+      var startX = xOffset + task.start * 50;
+      var endX = xOffset + task.end * 50;
+
+      ctx.fillStyle = gradientStroke;
+      ctx.fillRect(startX, y, endX - startX, taskHeight);
+
+      ctx.fillStyle = '#000';
+      ctx.fillText(task.name, 10, y + taskHeight / 2);
+    });
+
+    // Vẽ trục thời gian
+    ctx.beginPath();
+    ctx.moveTo(xOffset, 0);
+    ctx.lineTo(xOffset, canvas.height);
+    ctx.stroke();
+
+    for (var i = 0; i <= 10; i++) {
+      ctx.beginPath();
+      ctx.moveTo(xOffset + i * 50, 0);
+      ctx.lineTo(xOffset + i * 50, canvas.height);
+      ctx.strokeStyle = '#d3d3d3';
+      ctx.stroke();
+
+      ctx.fillStyle = '#000';
+      ctx.fillText(i, xOffset + i * 50 - 5, canvas.height - 10);
+    }
+
     var chart_labels = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
     var chart_data = [100, 70, 90, 70, 85, 60, 75, 60, 90, 80, 110, 100];
 

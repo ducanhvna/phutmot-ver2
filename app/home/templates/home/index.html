@@ -373,28 +373,22 @@
                                         <a href="javascript:void(0)">
                                         <h5 class="title">Mike Andrew</h5>
                                         </a>
-                                        <p class="description">
-                                        
-                                        </p>
+                                        <div class="card-body">
+                                            <div class="card card-chart">
+                                                <div class="card-body">
+                                                    <div class="chart-area">
+                                                        <canvas id="projectgantt2"></canvas>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     </p>
                                     <div class="card-description">
                                     
                                     </div>
                                 </div>
-                                <div class="card-footer">
-                                    <div class="button-container">
-                                    <button href="javascript:void(0)" class="btn btn-icon btn-round btn-facebook">
-                                        <i class="fab fa-facebook"></i>
-                                    </button>
-                                    <button href="javascript:void(0)" class="btn btn-icon btn-round btn-twitter">
-                                        <i class="fab fa-twitter"></i>
-                                    </button>
-                                    <button href="javascript:void(0)" class="btn btn-icon btn-round btn-google">
-                                        <i class="fab fa-google-plus"></i>
-                                    </button>
-                                    </div>
-                                </div>
+                               
                                 </div>
                             </div>
                             <div class="col-md-8">
@@ -425,19 +419,7 @@
                                     
                                     </div>
                                 </div>
-                                <div class="card-footer">
-                                    <div class="button-container">
-                                    <button href="javascript:void(0)" class="btn btn-icon btn-round btn-facebook">
-                                        <i class="fab fa-facebook"></i>
-                                    </button>
-                                    <button href="javascript:void(0)" class="btn btn-icon btn-round btn-twitter">
-                                        <i class="fab fa-twitter"></i>
-                                    </button>
-                                    <button href="javascript:void(0)" class="btn btn-icon btn-round btn-google">
-                                        <i class="fab fa-google-plus"></i>
-                                    </button>
-                                    </div>
-                                </div>
+                             
                                 </div>
                             </div>
 
@@ -447,54 +429,209 @@
             </div>
             </div>
             <div class="col-lg-6 col-md-12">
-                <div class="card ">
-                    <div class="card-header">
-                        <h4 class="card-title"> Trạng thái mới nhất</h4>
-                        <div id="latest-trips-container"></div>
+                <div class="row">
+                    <div class="card ">
+                        <div class="card-header">
+                            <h4 class="card-title"> Trạng thái mới nhất</h4>
+                            <div id="latest-trips-container"></div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table tablesorter " id="">
+                                    <thead class=" text-primary">
+                                    <tr>
+                                        <th>
+                                            Xe
+                                        </th>
+                                        <th>
+                                            Từ
+                                        </th>
+                                        <th>
+                                            Đến
+                                        </th>
+                                        <th class="text-center">
+                                            Cập nhật cuối
+                                        </th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for trip in latest_trips %}
+                                    <tr>
+                                        <td>
+                                            {{ trip.equipment }}
+                                        </td>
+                                        <td>
+                                            {{ trip.start_location }}
+                                        </td>
+                                        <td>
+                                            {{ trip.dest_location }}
+                                        </td>
+                                        <td class="text-center">
+                                            {{ trip.write_date }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table tablesorter " id="">
-                                <thead class=" text-primary">
-                                <tr>
-                                    <th>
-                                        Xe
-                                    </th>
-                                    <th>
-                                        Từ
-                                    </th>
-                                    <th>
-                                        Đến
-                                    </th>
-                                    <th class="text-center">
-                                        Cập nhật cuối
-                                    </th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for trip in latest_trips %}
-                                <tr>
-                                    <td>
-                                        {{ trip.equipment }}
-                                    </td>
-                                    <td>
-                                        {{ trip.start_location }}
-                                    </td>
-                                    <td>
-                                        {{ trip.dest_location }}
-                                    </td>
-                                    <td class="text-center">
-                                        {{ trip.write_date }}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
+                </div>
+                <div class="row">
+                    <div class="card" name="agricuturedashboard">
+                        <div class="container mt-4">
+                            <h1 class="text-center">Smart Agriculture Dashboard</h1>
+                            
+                            <!-- Weather's Today Section -->
+                            <div class="card mb-4">
+                            <div class="card-header">Weather's Today</div>
+                            <div class="card-body">
+                                <p><strong>Date:</strong> Monday (23rd March 2023)</p>
+                                <p><strong>Temperature:</strong> 12°C</p>
+                                <p><strong>Daylight:</strong> 12.43 hours (8.19/9.30)</p>
+                                <p><strong>Humidity:</strong> 42%</p>
+                                <p><strong>Wind Speed:</strong> 9 m/s</p>
+                                <p><strong>Pressure:</strong> 923 hPa</p>
+                            </div>
+                            </div>
+                            
+                            <!-- Weather Forecast Section -->
+                            <div class="card mb-4">
+                            <div class="card-header">Weather Forecast</div>
+                            <div class="card-body">
+                                <h5>24 Hours</h5>
+                                <p><strong>Temperature:</strong> 17°C (Day), 3°C (Night)</p>
+                                <p><strong>Humidity:</strong> 60%</p>
+                                <p><strong>Wind Speed:</strong> 7 m/s</p>
+                                <p><strong>Pressure:</strong> 1007 hPa</p>
+                            </div>
+                            </div>
+                            
+                            <!-- Current Tasks Section -->
+                            <div class="card mb-4">
+                            <div class="card-header">Current Tasks</div>
+                            <div class="card-body">
+                                <h5>Task 1</h5>
+                                <p><strong>Status:</strong> 3 days due</p>
+                                <p><strong>Description:</strong> Schedule spraying was not performed. You have 4 days of delay.</p>
+                                <p><strong>Crop:</strong> Maize #1</p>
+                                <h5>Task 2</h5>
+                                <p><strong>Status:</strong> 4 days left</p>
+                                <p><strong>Description:</strong> Field fertilization required in 4 days.</p>
+                                <p><strong>Crop:</strong> Wheat #3</p>
+                            </div>
+                            </div>
+                            
+                            <!-- Crops Section -->
+                            <div class="card mb-4">
+                            <div class="card-header">Crops</div>
+                            <div class="card-body">
+                                <p>85% of fields are covered with Maize and Wheat.</p>
+                            </div>
+                            </div>
+                            
+                            <!-- Harvest Section -->
+                            <div class="card mb-4">
+                            <div class="card-header">Harvest</div>
+                            <div class="card-body">
+                                <p><strong>Total:</strong> 6.6 Tons/3 months</p>
+                                <p><strong>Wheat:</strong> 4.1t</p>
+                                <p><strong>Maize:</strong> 2.1t</p>
+                                <p><strong>Onions:</strong> 2.4t</p>
+                            </div>
+                            </div>
+                            
+                            <!-- Summary Section -->
+                            <div class="card mb-4">
+                            <div class="card-header">Summary (4 months)</div>
+                            <div class="card-body">
+                                <p><strong>Fuel Consumption:</strong> 500L</p>
+                                <p><strong>Working Time:</strong> 530h</p>
+                                <p><strong>Worked Hectares:</strong> 423ha</p>
+                                <p><strong>Activities:</strong> Plowing, Spraying, Fertilization, Harvesting</p>
+                            </div>
+                            </div>
+                        </div>
+                
+                        <div class="container mt-4">
+                            <h1 class="text-center">Smart Agriculture Dashboard</h1>
+                            
+                            <!-- Weather's Today Section -->
+                            <div class="card mb-4">
+                            <div class="card-header">Weather's Today</div>
+                            <div class="card-body">
+                                <p><strong>Date:</strong> Monday (23rd March 2023)</p>
+                                <p><strong>Temperature:</strong> 12°C</p>
+                                <p><strong>Daylight:</strong> 12.43 hours (8.19/9.30)</p>
+                                <p><strong>Humidity:</strong> 42%</p>
+                                <p><strong>Wind Speed:</strong> 9 m/s</p>
+                                <p><strong>Pressure:</strong> 923 hPa</p>
+                            </div>
+                            </div>
+                            
+                            <!-- Weather Forecast Section -->
+                            <div class="card mb-4">
+                            <div class="card-header">Weather Forecast</div>
+                            <div class="card-body">
+                                <h5>24 Hours</h5>
+                                <p><strong>Temperature:</strong> 17°C (Day), 3°C (Night)</p>
+                                <p><strong>Humidity:</strong> 60%</p>
+                                <p><strong>Wind Speed:</strong> 7 m/s</p>
+                                <p><strong>Pressure:</strong> 1007 hPa</p>
+                            </div>
+                            </div>
+                            
+                            <!-- Current Tasks Section -->
+                            <div class="card mb-4">
+                            <div class="card-header">Current Tasks</div>
+                            <div class="card-body">
+                                <h5>Task 1</h5>
+                                <p><strong>Status:</strong> 3 days due</p>
+                                <p><strong>Description:</strong> Schedule spraying was not performed. You have 4 days of delay.</p>
+                                <p><strong>Crop:</strong> Maize #1</p>
+                                <h5>Task 2</h5>
+                                <p><strong>Status:</strong> 4 days left</p>
+                                <p><strong>Description:</strong> Field fertilization required in 4 days.</p>
+                                <p><strong>Crop:</strong> Wheat #3</p>
+                            </div>
+                            </div>
+                            
+                            <!-- Crops Section -->
+                            <div class="card mb-4">
+                            <div class="card-header">Crops</div>
+                            <div class="card-body">
+                                <p>85% of fields are covered with Maize and Wheat.</p>
+                            </div>
+                            </div>
+                            
+                            <!-- Harvest Section -->
+                            <div class="card mb-4">
+                            <div class="card-header">Harvest</div>
+                            <div class="card-body">
+                                <p><strong>Total:</strong> 6.6 Tons/3 months</p>
+                                <p><strong>Wheat:</strong> 4.1t</p>
+                                <p><strong>Maize:</strong> 2.1t</p>
+                                <p><strong>Onions:</strong> 2.4t</p>
+                            </div>
+                            </div>
+                            
+                            <!-- Summary Section -->
+                            <div class="card mb-4">
+                            <div class="card-header">Summary (4 months)</div>
+                            <div class="card-body">
+                                <p><strong>Fuel Consumption:</strong> 500L</p>
+                                <p><strong>Working Time:</strong> 530h</p>
+                                <p><strong>Worked Hectares:</strong> 423ha</p>
+                                <p><strong>Activities:</strong> Plowing, Spraying, Fertilization, Harvesting</p>
+                            </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        
+
     </div>
 
 {% endblock content %}
