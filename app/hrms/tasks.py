@@ -2,18 +2,18 @@
 
 import logging
 from celery import shared_task
-from datetime import timedelta
+from datetime import timedelta, datetime
 from hrms.models import Timesheet
 
 logger = logging.getLogger(__name__)
 
 
-def save_to_django_timesheet(schedule):
+def save_to_django_timesheet(schedule, start_date, end_date):
     # for employee_code, records in grouped_data.items():
     timesheet, created = Timesheet.objects.get_or_create(
         employee_code=schedule.employee_code,
-        start_date=schedule.start_date,
-        end_date=schedule.end_date,
+        start_date=datetime.strptime(start_date, "%Y-%m-%d"),
+        end_date=datetime.strptime(end_date, "%Y-%m-%d"),
         defaults={"timesheet_records": []},
     )
     timesheet.timesheet_records = schedule.scheduling_records
@@ -66,7 +66,7 @@ def calculate_scheduling(attendance_id):
             # process_missing_attendance(sched)
             # find_attendance_hue4_time_mode(sched)
             calculate_worktime_with_inout_standard(sched)
-        save_to_django_timesheet(scheduling)
+        save_to_django_timesheet(scheduling, first_day_of_month, last_day_of_month)
         # Tính toán và cập nhật Scheduling tương ứng
         # scheduling, created = Scheduling.objects.get_or_create(attendance=attendance)
 
