@@ -31,7 +31,7 @@ def calculate_scheduling(attendance_id):
         # Lấy đối tượng Attendance
         attendance = Attendance.objects.get(id=attendance_id)
         start_date = attendance.start_date + timedelta(days=1)
-        first_day_of_month =start_date.replace(day=1)
+        first_day_of_month = start_date.replace(day=1)
         if first_day_of_month.month == 12:
             next_month = first_day_of_month.replace(year=first_day_of_month.year + 1, month=1, day=1)
         else:
