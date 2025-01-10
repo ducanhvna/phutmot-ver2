@@ -1,32 +1,33 @@
 {% extends "layouts/base.html" %}
 
-{% block title %} Dashboard {% endblock %} 
+{% block title %} Dashboard {% endblock %}
 
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}{% endblock stylesheets %}
 
 {% block content %}
 
-    <div class="content">
-        <div class="row">
-            <div class="col-2"> 
-                <div class="card card-user">
-                    <div class="card-body">
-                        <p class="card-text">
-                        <div class="author">
-                            <div class="block block-one"></div>
-                            <div class="block block-two"></div>
-                            <div class="block block-three"></div>
-                            <div class="block block-four"></div>
-                            
-                        </div>
-                        </p>
-                        <div class="card-description">
-                        Do not be scared of the truth because we need to restart the human foundation in truth And I love you like Kanye loves Kanye I love Rick Owens’ bed design but the back is...
-                        </div>
+<div class="content">
+    <div class="row">
+        <div class="col-2">
+            <div class="card card-user">
+                <div class="card-body">
+                    <p class="card-text">
+                    <div class="author">
+                        <div class="block block-one"></div>
+                        <div class="block block-two"></div>
+                        <div class="block block-three"></div>
+                        <div class="block block-four"></div>
+
                     </div>
-                    <div class="card-footer">
-                        <div class="button-container">
+                    </p>
+                    <div class="card-description">
+                        Do not be scared of the truth because we need to restart the human foundation in truth And I
+                        love you like Kanye loves Kanye I love Rick Owens’ bed design but the back is...
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="button-container">
                         <button href="javascript:void(0)" class="btn btn-icon btn-round btn-facebook">
                             <i class="fab fa-facebook"></i>
                         </button>
@@ -36,525 +37,529 @@
                         <button href="javascript:void(0)" class="btn btn-icon btn-round btn-google">
                             <i class="fab fa-google-plus"></i>
                         </button>
-                        </div>
-                    </div>
-                    </div>
-            </div>
-            <div class="col-5">
-                <div class="card card-chart">
-                    <div class="card-header ">
-                        <div class="row">
-                            <div class="col-sm-6 text-left">
-                                <h5 class="card-category">Total Shipments</h5>
-                                <h2 class="card-title">Performance</h2>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
-                                    <label class="btn btn-sm btn-primary btn-simple active" id="0">
-                                        <input type="radio" name="options" checked>
-                                        <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Accounts</span>
-                                        <span class="d-block d-sm-none">
-                        <i class="tim-icons icon-single-02"></i>
-                    </span>
-                                    </label>
-                                    <label class="btn btn-sm btn-primary btn-simple" id="1">
-                                        <input type="radio" class="d-none d-sm-none" name="options">
-                                        <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Purchases</span>
-                                        <span class="d-block d-sm-none">
-                        <i class="tim-icons icon-gift-2"></i>
-                    </span>
-                                    </label>
-                                    <label class="btn btn-sm btn-primary btn-simple" id="2">
-                                        <input type="radio" class="d-none" name="options">
-                                        <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Sessions</span>
-                                        <span class="d-block d-sm-none">
-                        <i class="tim-icons icon-tap-02"></i>
-                    </span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-area">
-                            <canvas id="chartBig1"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card card-chart">
-                    <div class="card-header">
-                        <h5 class="card-category">Daily Sales</h5>
-                        <h3 class="card-title"><i class="tim-icons icon-delivery-fast text-info"></i> 3,500€</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-area">
-                            <canvas id="CountryChartAgri"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-5">
-                <div class="col-lg-12 col-md-12">
-                    <div class="row">
-                        
-                <div class="card card-tasks">
-                    <div class="card-header">
-                      <h4 class="card-title"> Simple Table</h4>
-                    </div>
-                    <div class="card-body">
-                      <div class="table-responsive">
-                        <table class="table tablesorter " id="">
-                          <thead class=" text-primary">
-                            <tr>
-                              <th>
-                                Name
-                              </th>
-                              <th>
-                                Country
-                              </th>
-                              <th>
-                                City
-                              </th>
-                              <th class="text-center">
-                                Salary
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td>
-                                Dakota Rice
-                              </td>
-                              <td>
-                                Niger
-                              </td>
-                              <td>
-                                Oud-Turnhout
-                              </td>
-                              <td class="text-center">
-                                $36,738
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                Minerva Hooper
-                              </td>
-                              <td>
-                                Curaçao
-                              </td>
-                              <td>
-                                Sinaai-Waas
-                              </td>
-                              <td class="text-center">
-                                $23,789
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                Sage Rodriguez
-                              </td>
-                              <td>
-                                Netherlands
-                              </td>
-                              <td>
-                                Baileux
-                              </td>
-                              <td class="text-center">
-                                $56,142
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                Philip Chaney
-                              </td>
-                              <td>
-                                Korea, South
-                              </td>
-                              <td>
-                                Overland Park
-                              </td>
-                              <td class="text-center">
-                                $38,735
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                Doris Greene
-                              </td>
-                              <td>
-                                Malawi
-                              </td>
-                              <td>
-                                Feldkirchen in Kärnten
-                              </td>
-                              <td class="text-center">
-                                $63,542
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                Mason Porter
-                              </td>
-                              <td>
-                                Chile
-                              </td>
-                              <td>
-                                Gloucester
-                              </td>
-                              <td class="text-center">
-                                $78,615
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                Jon Porter
-                              </td>
-                              <td>
-                                Portugal
-                              </td>
-                              <td>
-                                Gloucester
-                              </td>
-                              <td class="text-center">
-                                $98,615
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                </div>
-                        </div></div>
-
-                <div class="card ">
-                    <div class="card-header">
-                        <h4 class="card-title"> Simple Table</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table tablesorter " id="">
-                                <thead class=" text-primary">
-                                    <tr>
-                                        <th>
-                                            Name
-                                        </th>
-                                        <th>
-                                            Country
-                                        </th>
-                                        <th>
-                                            City
-                                        </th>
-                                        <th class="text-center">
-                                            Salary
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            Dakota Rice
-                                        </td>
-                                        <td>
-                                            Niger
-                                        </td>
-                                        <td>
-                                            Oud-Turnhout
-                                        </td>
-                                        <td class="text-center">
-                                            $36,738
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            Minerva Hooper
-                                        </td>
-                                        <td>
-                                            Curaçao
-                                        </td>
-                                        <td>
-                                            Sinaai-Waas
-                                        </td>
-                                        <td class="text-center">
-                                            $23,789
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            Sage Rodriguez
-                                        </td>
-                                        <td>
-                                            Netherlands
-                                        </td>
-                                        <td>
-                                            Baileux
-                                        </td>
-                                        <td class="text-center">
-                                            $56,142
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            Philip Chaney
-                                        </td>
-                                        <td>
-                                            Korea, South
-                                        </td>
-                                        <td>
-                                            Overland Park
-                                        </td>
-                                        <td class="text-center">
-                                            $38,735
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            Doris Greene
-                                        </td>
-                                        <td>
-                                            Malawi
-                                        </td>
-                                        <td>
-                                            Feldkirchen in Kärnten
-                                        </td>
-                                        <td class="text-center">
-                                            $63,542
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            Mason Porter
-                                        </td>
-                                        <td>
-                                            Chile
-                                        </td>
-                                        <td>
-                                            Gloucester
-                                        </td>
-                                        <td class="text-center">
-                                            $78,615
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            Jon Porter
-                                        </td>
-                                        <td>
-                                            Portugal
-                                        </td>
-                                        <td>
-                                            Gloucester
-                                        </td>
-                                        <td class="text-center">
-                                            $98,615
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-12 col-md-12">
-                    <div class="row">
-                        
-                            <div class="card card-tasks">
-                                <div class="card-header">
-                                    <h4 class="card-title"> Simple Table</h4>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table tablesorter " id="">
-                                            <thead class=" text-primary">
-                                                <tr>
-                                                    <th>
-                                                        Name
-                                                    </th>
-                                                    <th>
-                                                        Country
-                                                    </th>
-                                                    <th>
-                                                        City
-                                                    </th>
-                                                    <th class="text-center">
-                                                        Salary
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>
-                                                        Dakota Rice
-                                                    </td>
-                                                    <td>
-                                                        Niger
-                                                    </td>
-                                                    <td>
-                                                        Oud-Turnhout
-                                                    </td>
-                                                    <td class="text-center">
-                                                        $36,738
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        Minerva Hooper
-                                                    </td>
-                                                    <td>
-                                                        Curaçao
-                                                    </td>
-                                                    <td>
-                                                        Sinaai-Waas
-                                                    </td>
-                                                    <td class="text-center">
-                                                        $23,789
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        Sage Rodriguez
-                                                    </td>
-                                                    <td>
-                                                        Netherlands
-                                                    </td>
-                                                    <td>
-                                                        Baileux
-                                                    </td>
-                                                    <td class="text-center">
-                                                        $56,142
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        Philip Chaney
-                                                    </td>
-                                                    <td>
-                                                        Korea, South
-                                                    </td>
-                                                    <td>
-                                                        Overland Park
-                                                    </td>
-                                                    <td class="text-center">
-                                                        $38,735
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        Doris Greene
-                                                    </td>
-                                                    <td>
-                                                        Malawi
-                                                    </td>
-                                                    <td>
-                                                        Feldkirchen in Kärnten
-                                                    </td>
-                                                    <td class="text-center">
-                                                        $63,542
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        Mason Porter
-                                                    </td>
-                                                    <td>
-                                                        Chile
-                                                    </td>
-                                                    <td>
-                                                        Gloucester
-                                                    </td>
-                                                    <td class="text-center">
-                                                        $78,615
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        Jon Porter
-                                                    </td>
-                                                    <td>
-                                                        Portugal
-                                                    </td>
-                                                    <td>
-                                                        Gloucester
-                                                    </td>
-                                                    <td class="text-center">
-                                                        $98,615
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            
-                        </div>
-                    </div>
-                </div>
-                
-                </div>
-
-        </div>
-        <div class="row">
-            <div class="col-lg-4">
-                <div class="card card-chart">
-                    <div class="card-header">
-                        <h5 class="card-category" id='worktime_company'>Total work time </h5>
-                        <h3 class="card-title"><i class="tim-icons icon-bell-55 text-primary"></i> 763,215</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-area">
-                            <canvas id="chartLinePurple"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="card card-chart">
-                    <div class="card-header">
-                        <h5 class="card-category">Daily Sales</h5>
-                        <h3 class="card-title"><i class="tim-icons icon-delivery-fast text-info"></i> 3,500€</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-area">
-                            <canvas id="CountryChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="card card-chart">
-                    <div class="card-header">
-                        <h5 class="card-category">Completed Tasks</h5>
-                        <h3 class="card-title"><i class="tim-icons icon-send text-success"></i> 12,100K</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-area">
-                            <canvas id="chartLineGreen"></canvas>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-lg-6 col-md-12">
+        <div class="col-5">
+            <div class="card card-chart">
+                <div class="card-header ">
+                    <div class="row">
+                        <div class="col-sm-6 text-left">
+                            <h5 class="card-category">Total Shipments</h5>
+                            <h2 class="card-title">Performance</h2>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
+                                <label class="btn btn-sm btn-primary btn-simple active" id="0">
+                                    <input type="radio" name="options" checked>
+                                    <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Accounts</span>
+                                    <span class="d-block d-sm-none">
+                                        <i class="tim-icons icon-single-02"></i>
+                                    </span>
+                                </label>
+                                <label class="btn btn-sm btn-primary btn-simple" id="1">
+                                    <input type="radio" class="d-none d-sm-none" name="options">
+                                    <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Purchases</span>
+                                    <span class="d-block d-sm-none">
+                                        <i class="tim-icons icon-gift-2"></i>
+                                    </span>
+                                </label>
+                                <label class="btn btn-sm btn-primary btn-simple" id="2">
+                                    <input type="radio" class="d-none" name="options">
+                                    <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Sessions</span>
+                                    <span class="d-block d-sm-none">
+                                        <i class="tim-icons icon-tap-02"></i>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="chartBig1"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card card-chart">
+                <div class="card-header">
+                    <h5 class="card-category">Daily Sales</h5>
+                    <h3 class="card-title"><i class="tim-icons icon-delivery-fast text-info"></i> 3,500€</h3>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="CountryChartAgri"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-5">
+            <div class="col-lg-12 col-md-12">
                 <div class="row">
+
                     <div class="card card-tasks">
-                        <div class="card-header ">
-                            <h6 class="title d-inline">Chuyến đi(5)</h6>
-                            <p class="card-category d-inline">Hôm nay</p>
-                            <div class="dropdown">
-                                <button type="button" class="btn btn-link dropdown-toggle btn-icon"
-                                        data-toggle="dropdown">
-                                    <i class="tim-icons icon-settings-gear-63"></i>
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
-                                    <a class="dropdown-item" href="#pablo">Action</a>
-                                    <a class="dropdown-item" href="#pablo">Another action</a>
-                                    <a class="dropdown-item" href="#pablo">Something else</a>
-                                </div>
+                        <div class="card-header">
+                            <h4 class="card-title"> Simple Table</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table tablesorter " id="">
+                                    <thead class=" text-primary">
+                                        <tr>
+                                            <th>
+                                                Name
+                                            </th>
+                                            <th>
+                                                Country
+                                            </th>
+                                            <th>
+                                                City
+                                            </th>
+                                            <th class="text-center">
+                                                Salary
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                Dakota Rice
+                                            </td>
+                                            <td>
+                                                Niger
+                                            </td>
+                                            <td>
+                                                Oud-Turnhout
+                                            </td>
+                                            <td class="text-center">
+                                                $36,738
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Minerva Hooper
+                                            </td>
+                                            <td>
+                                                Curaçao
+                                            </td>
+                                            <td>
+                                                Sinaai-Waas
+                                            </td>
+                                            <td class="text-center">
+                                                $23,789
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Sage Rodriguez
+                                            </td>
+                                            <td>
+                                                Netherlands
+                                            </td>
+                                            <td>
+                                                Baileux
+                                            </td>
+                                            <td class="text-center">
+                                                $56,142
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Philip Chaney
+                                            </td>
+                                            <td>
+                                                Korea, South
+                                            </td>
+                                            <td>
+                                                Overland Park
+                                            </td>
+                                            <td class="text-center">
+                                                $38,735
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Doris Greene
+                                            </td>
+                                            <td>
+                                                Malawi
+                                            </td>
+                                            <td>
+                                                Feldkirchen in Kärnten
+                                            </td>
+                                            <td class="text-center">
+                                                $63,542
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Mason Porter
+                                            </td>
+                                            <td>
+                                                Chile
+                                            </td>
+                                            <td>
+                                                Gloucester
+                                            </td>
+                                            <td class="text-center">
+                                                $78,615
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Jon Porter
+                                            </td>
+                                            <td>
+                                                Portugal
+                                            </td>
+                                            <td>
+                                                Gloucester
+                                            </td>
+                                            <td class="text-center">
+                                                $98,615
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                        <div class="card-body ">
-                            <div class="table-full-width table-responsive">
-                                <table class="table">
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12 col-md-12">
+                <div class="row">
+
+                    <div class="card card-tasks">
+                        <div class="card-header">
+                            <h4 class="card-title"> Simple Table</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table tablesorter " id="">
+                                    <thead class=" text-primary">
+                                        <tr>
+                                            <th>
+                                                Name
+                                            </th>
+                                            <th>
+                                                Country
+                                            </th>
+                                            <th>
+                                                City
+                                            </th>
+                                            <th class="text-center">
+                                                Salary
+                                            </th>
+                                        </tr>
+                                    </thead>
                                     <tbody>
+                                        <tr>
+                                            <td>
+                                                Dakota Rice
+                                            </td>
+                                            <td>
+                                                Niger
+                                            </td>
+                                            <td>
+                                                Oud-Turnhout
+                                            </td>
+                                            <td class="text-center">
+                                                $36,738
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Minerva Hooper
+                                            </td>
+                                            <td>
+                                                Curaçao
+                                            </td>
+                                            <td>
+                                                Sinaai-Waas
+                                            </td>
+                                            <td class="text-center">
+                                                $23,789
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Sage Rodriguez
+                                            </td>
+                                            <td>
+                                                Netherlands
+                                            </td>
+                                            <td>
+                                                Baileux
+                                            </td>
+                                            <td class="text-center">
+                                                $56,142
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Philip Chaney
+                                            </td>
+                                            <td>
+                                                Korea, South
+                                            </td>
+                                            <td>
+                                                Overland Park
+                                            </td>
+                                            <td class="text-center">
+                                                $38,735
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Doris Greene
+                                            </td>
+                                            <td>
+                                                Malawi
+                                            </td>
+                                            <td>
+                                                Feldkirchen in Kärnten
+                                            </td>
+                                            <td class="text-center">
+                                                $63,542
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Mason Porter
+                                            </td>
+                                            <td>
+                                                Chile
+                                            </td>
+                                            <td>
+                                                Gloucester
+                                            </td>
+                                            <td class="text-center">
+                                                $78,615
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Jon Porter
+                                            </td>
+                                            <td>
+                                                Portugal
+                                            </td>
+                                            <td>
+                                                Gloucester
+                                            </td>
+                                            <td class="text-center">
+                                                $98,615
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12 col-md-12">
+                <div class="row">
+
+                    <div class="card card-tasks">
+                        <div class="card-header">
+                            <h4 class="card-title"> Simple Table</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table tablesorter " id="">
+                                    <thead class=" text-primary">
+                                        <tr>
+                                            <th>
+                                                Name
+                                            </th>
+                                            <th>
+                                                Country
+                                            </th>
+                                            <th>
+                                                City
+                                            </th>
+                                            <th class="text-center">
+                                                Salary
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                Dakota Rice
+                                            </td>
+                                            <td>
+                                                Niger
+                                            </td>
+                                            <td>
+                                                Oud-Turnhout
+                                            </td>
+                                            <td class="text-center">
+                                                $36,738
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Minerva Hooper
+                                            </td>
+                                            <td>
+                                                Curaçao
+                                            </td>
+                                            <td>
+                                                Sinaai-Waas
+                                            </td>
+                                            <td class="text-center">
+                                                $23,789
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Sage Rodriguez
+                                            </td>
+                                            <td>
+                                                Netherlands
+                                            </td>
+                                            <td>
+                                                Baileux
+                                            </td>
+                                            <td class="text-center">
+                                                $56,142
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Philip Chaney
+                                            </td>
+                                            <td>
+                                                Korea, South
+                                            </td>
+                                            <td>
+                                                Overland Park
+                                            </td>
+                                            <td class="text-center">
+                                                $38,735
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Doris Greene
+                                            </td>
+                                            <td>
+                                                Malawi
+                                            </td>
+                                            <td>
+                                                Feldkirchen in Kärnten
+                                            </td>
+                                            <td class="text-center">
+                                                $63,542
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Mason Porter
+                                            </td>
+                                            <td>
+                                                Chile
+                                            </td>
+                                            <td>
+                                                Gloucester
+                                            </td>
+                                            <td class="text-center">
+                                                $78,615
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Jon Porter
+                                            </td>
+                                            <td>
+                                                Portugal
+                                            </td>
+                                            <td>
+                                                Gloucester
+                                            </td>
+                                            <td class="text-center">
+                                                $98,615
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card card-chart">
+                <div class="card-header">
+                    <h5 class="card-category" id='worktime_company'>Total work time </h5>
+                    <h3 class="card-title"><i class="tim-icons icon-bell-55 text-primary"></i> 763,215</h3>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="chartLinePurple"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card card-chart">
+                <div class="card-header">
+                    <h5 class="card-category">Daily Sales</h5>
+                    <h3 class="card-title"><i class="tim-icons icon-delivery-fast text-info"></i> 3,500€</h3>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="CountryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card card-chart">
+                <div class="card-header">
+                    <h5 class="card-category">Completed Tasks</h5>
+                    <h3 class="card-title"><i class="tim-icons icon-send text-success"></i> 12,100K</h3>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="chartLineGreen"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 col-md-12">
+            <div class="row">
+                <div class="card card-tasks">
+                    <div class="card-header ">
+                        <h6 class="title d-inline">Chuyến đi(5)</h6>
+                        <p class="card-category d-inline">Hôm nay</p>
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-link dropdown-toggle btn-icon" data-toggle="dropdown">
+                                <i class="tim-icons icon-settings-gear-63"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                <a class="dropdown-item" href="#pablo">Action</a>
+                                <a class="dropdown-item" href="#pablo">Another action</a>
+                                <a class="dropdown-item" href="#pablo">Something else</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body ">
+                        <div class="table-full-width table-responsive">
+                            <table class="table">
+                                <tbody>
                                     {% for trip in today_trips %}
                                     <tr>
                                         <td>
@@ -562,8 +567,8 @@
                                                 <label class="form-check-label">
                                                     <input class="form-check-input" type="checkbox" value="">
                                                     <span class="form-check-sign">
-                                <span class="check"></span>
-                                </span>
+                                                        <span class="check"></span>
+                                                    </span>
                                                 </label>
                                             </div>
                                         </td>
@@ -573,21 +578,21 @@
                                         </td>
                                         <td class="td-actions text-right">
                                             <button type="button" rel="tooltip" title="" class="btn btn-link"
-                                                    data-original-title="Edit Task">
+                                                data-original-title="Edit Task">
                                                 <i class="tim-icons icon-pencil"></i>
                                             </button>
                                         </td>
                                     </tr>
                                     {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
+                                </tbody>
+                            </table>
                         </div>
-                    
-                        <div class="col-md-12">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="card card-user">
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card card-user">
                                     <div class="card-body">
                                         <p class="card-text">
                                         <div class="author">
@@ -596,258 +601,264 @@
                                             <div class="block block-three"></div>
                                             <div class="block block-four"></div>
                                             <a href="javascript:void(0)">
-                                            <img class="avatar" src="{{ ASSETS_ROOT }}/img/emilyz.jpg" alt="...">
-                                            <h5 class="title">Mike Andrew</h5>
+                                                <img class="avatar" src="{{ ASSETS_ROOT }}/img/emilyz.jpg" alt="...">
+                                                <h5 class="title">Mike Andrew</h5>
                                             </a>
                                             <p class="description">
-                                            Ceo/Co-Founder
+                                                Ceo/Co-Founder
                                             </p>
                                         </div>
                                         </p>
                                         <div class="card-body">
                                             <div class="table-full-width table-responsive">
-                                            <table class="table tablesorter " id="">
-                                                <thead class=" text-primary">
-                                                <tr>
-                                                    <th>
-                                                    I/O
-                                                    </th>
-                                                    <th class="text-center">
-                                                    Giờ
-                                                    </th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                <tr>
-                                                    <td>
-                                                    In
-                                                    </td>
-                                                    <td class="text-center">
-                                                    08:00:00
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        Out
-                                                    </td>
-                                                    <td class="text-center">
-                                                        12:10:00
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        In
-                                                    </td>
-                                                    <td class="text-center">
-                                                        12:20:00
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        In
-                                                    </td>
-                                                    <td class="text-center">
-                                                        12:40:00
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        Out
-                                                    </td>
-                                                    <td class="text-center">
-                                                        15:00:00
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        In
-                                                    </td>
-                                                    <td class="text-center">
-                                                        18:00:00
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        Out
-                                                    </td>
-                                                    <td class="text-center">
-                                                        18:00:00
-                                                    </td>
-                                                </tr>
-                                                
-                                                <tr>
-                                                    <td>
-                                                        Out
-                                                    </td>
-                                                    <td class="text-center">
-                                                        18:00:00
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        Out
-                                                    </td>
-                                                    <td class="text-center">
-                                                        18:00:00
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        Out
-                                                    </td>
-                                                    <td class="text-center">
-                                                        18:00:00
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        Out
-                                                    </td>
-                                                    <td class="text-center">
-                                                        18:00:00
-                                                    </td>
-                                                </tr>
-                                                
-                                                <tr>
-                                                    <td>
-                                                        Out
-                                                    </td>
-                                                    <td class="text-center">
-                                                        18:00:00
-                                                    </td>
-                                                </tr>
-                                                
-                                                <tr>
-                                                    <td>
-                                                        Out
-                                                    </td>
-                                                    <td class="text-center">
-                                                        18:00:00
-                                                    </td>
-                                                </tr>
-                                                
-                                                <tr>
-                                                    <td>
-                                                        Out
-                                                    </td>
-                                                    <td class="text-center">
-                                                        18:00:00
-                                                    </td>
-                                                </tr>
-                                                
-                                                <tr>
-                                                    <td>
-                                                        Out
-                                                    </td>
-                                                    <td class="text-center">
-                                                        18:00:00
-                                                    </td>
-                                                </tr>
-                                                
+                                                <table class="table tablesorter " id="">
+                                                    <thead class=" text-primary">
+                                                        <tr>
+                                                            <th>
+                                                                I/O
+                                                            </th>
+                                                            <th class="text-center">
+                                                                Giờ
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>
+                                                                In
+                                                            </td>
+                                                            <td class="text-center">
+                                                                08:00:00
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                Out
+                                                            </td>
+                                                            <td class="text-center">
+                                                                12:10:00
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                In
+                                                            </td>
+                                                            <td class="text-center">
+                                                                12:20:00
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                In
+                                                            </td>
+                                                            <td class="text-center">
+                                                                12:40:00
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                Out
+                                                            </td>
+                                                            <td class="text-center">
+                                                                15:00:00
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                In
+                                                            </td>
+                                                            <td class="text-center">
+                                                                18:00:00
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                Out
+                                                            </td>
+                                                            <td class="text-center">
+                                                                18:00:00
+                                                            </td>
+                                                        </tr>
 
-                                                </tbody>
-                                            </table>
+                                                        <tr>
+                                                            <td>
+                                                                Out
+                                                            </td>
+                                                            <td class="text-center">
+                                                                18:00:00
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                Out
+                                                            </td>
+                                                            <td class="text-center">
+                                                                18:00:00
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                Out
+                                                            </td>
+                                                            <td class="text-center">
+                                                                18:00:00
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                Out
+                                                            </td>
+                                                            <td class="text-center">
+                                                                18:00:00
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>
+                                                                Out
+                                                            </td>
+                                                            <td class="text-center">
+                                                                18:00:00
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>
+                                                                Out
+                                                            </td>
+                                                            <td class="text-center">
+                                                                18:00:00
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>
+                                                                Out
+                                                            </td>
+                                                            <td class="text-center">
+                                                                18:00:00
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>
+                                                                Out
+                                                            </td>
+                                                            <td class="text-center">
+                                                                18:00:00
+                                                            </td>
+                                                        </tr>
+
+
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="card-footer">
                                         <div class="button-container">
-                                        <button href="javascript:void(0)" class="btn btn-icon btn-round btn-facebook">
-                                            <i class="fab fa-facebook"></i>
-                                        </button>
-                                        <button href="javascript:void(0)" class="btn btn-icon btn-round btn-twitter">
-                                            <i class="fab fa-twitter"></i>
-                                        </button>
-                                        <button href="javascript:void(0)" class="btn btn-icon btn-round btn-google">
-                                            <i class="fab fa-google-plus"></i>
-                                        </button>
-                                        </div>
-                                    </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-8">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="card-header">
-                                                <h4 class="card-title"><span><b> 08:30 </b></span></h4>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="card-header">
-                                                <h4 class="card-title"><span><b> 17:30 </b></span></h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="card">
-                                            <div class="card-body">
-                                                <div class="alert alert-success">
-                                                <span>7-9h</span>
-                                                </div>
-                                                <div class="alert alert-success">
-                                                <span><b>9-12h </b> nghỉ không lương</span>
-                                                </div>
-                                                <div class="alert alert-success">
-                                                <span>12-12h</span>
-                                                </div>
-                                            </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="card">
-                                            <div class="card-body">
-                                                <div class="alert alert-primary">
-                                                <button type="button" aria-hidden="true" class="close" data-dismiss="alert" aria-label="Close">
-                                                </button>
-                                                <span><b> 16-17h </b></span>
-                                                </div>
-                                
-                                                <div class="alert alert-success">
-                                                <button type="button" aria-hidden="true" class="close" data-dismiss="alert" >
-                                                </button>
-                                                <span> 14-16h </span>
-                                                </div>
-                                                <div class="alert alert-warning">
-                                                <button type="button" aria-hidden="true" class="close" data-dismiss="alert" >
-                                                    
-                                                </button>
-                                                <span><b> 13-14h </b> Ra ngoài </span>
-                                                </div>
-                                                <div class="alert alert-danger">
-                                                <button type="button" aria-hidden="true" class="close" data-dismiss="alert" >
-                                                    <i class="tim-icons icon-simple-remove"></i>
-                                                </button>
-                                                <span><b> 12-13h </b> Chưa giải trình </span>
-                                                </div>
-                                            </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="card-header">
-                                                <h4 class="card-title"><span><b> 12:00 </b></span></h4>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="card-header">
-                                                <h4 class="card-title"><span><b> 13:00 </b></span></h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="card card-chart">
-                                        <div class="card-body">
-                                            <div class="chart-area">
-                                                <canvas id="CountryChartDaily"></canvas>
-                                            </div>
+                                            <button href="javascript:void(0)"
+                                                class="btn btn-icon btn-round btn-facebook">
+                                                <i class="fab fa-facebook"></i>
+                                            </button>
+                                            <button href="javascript:void(0)"
+                                                class="btn btn-icon btn-round btn-twitter">
+                                                <i class="fab fa-twitter"></i>
+                                            </button>
+                                            <button href="javascript:void(0)" class="btn btn-icon btn-round btn-google">
+                                                <i class="fab fa-google-plus"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="card card-user">
+                            <div class="col-md-8">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card-header">
+                                            <h4 class="card-title"><span><b> 08:30 </b></span></h4>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card-header">
+                                            <h4 class="card-title"><span><b> 17:30 </b></span></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="alert alert-success">
+                                                    <span>7-9h</span>
+                                                </div>
+                                                <div class="alert alert-success">
+                                                    <span><b>9-12h </b> nghỉ không lương</span>
+                                                </div>
+                                                <div class="alert alert-success">
+                                                    <span>12-12h</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="alert alert-primary">
+                                                    <button type="button" aria-hidden="true" class="close"
+                                                        data-dismiss="alert" aria-label="Close">
+                                                    </button>
+                                                    <span><b> 16-17h </b></span>
+                                                </div>
+
+                                                <div class="alert alert-success">
+                                                    <button type="button" aria-hidden="true" class="close"
+                                                        data-dismiss="alert">
+                                                    </button>
+                                                    <span> 14-16h </span>
+                                                </div>
+                                                <div class="alert alert-warning">
+                                                    <button type="button" aria-hidden="true" class="close"
+                                                        data-dismiss="alert">
+
+                                                    </button>
+                                                    <span><b> 13-14h </b> Ra ngoài </span>
+                                                </div>
+                                                <div class="alert alert-danger">
+                                                    <button type="button" aria-hidden="true" class="close"
+                                                        data-dismiss="alert">
+                                                        <i class="tim-icons icon-simple-remove"></i>
+                                                    </button>
+                                                    <span><b> 12-13h </b> Chưa giải trình </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card-header">
+                                            <h4 class="card-title"><span><b> 12:00 </b></span></h4>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card-header">
+                                            <h4 class="card-title"><span><b> 13:00 </b></span></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card card-chart">
+                                    <div class="card-body">
+                                        <div class="chart-area">
+                                            <canvas id="CountryChartDaily"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card card-user">
                                     <div class="card-body">
                                         <p class="card-text">
                                         <div class="author">
@@ -856,7 +867,7 @@
                                             <div class="block block-three"></div>
                                             <div class="block block-four"></div>
                                             <a href="javascript:void(0)">
-                                            <h5 class="title">Dự án hằng ngày</h5>
+                                                <h5 class="title">Dự án hằng ngày</h5>
                                             </a>
                                             <div class="card-body">
                                                 <div class="card card-chart">
@@ -870,14 +881,14 @@
                                         </div>
                                         </p>
                                         <div class="card-description">
-                                        
+
                                         </div>
                                     </div>
-                                
-                                    </div>
+
                                 </div>
-                                <div class="col-md-8">
-                                    <div class="card card-user">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card card-user">
                                     <div class="card-body">
                                         <p class="card-text">
                                         <div class="author">
@@ -886,8 +897,8 @@
                                             <div class="block block-three"></div>
                                             <div class="block block-four"></div>
                                             <a href="javascript:void(0)">
-                
-                                            <h5 class="title">Dự án 1</h5>
+
+                                                <h5 class="title">Dự án 1</h5>
                                             </a>
                                             <div class="card-body">
                                                 <div class="card card-chart">
@@ -901,29 +912,29 @@
                                         </div>
                                         </p>
                                         <div class="card-description">
-                                        
+
                                         </div>
                                     </div>
-                                
-                                    </div>
-                                </div>
 
+                                </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6 col-md-12">
-                <div class="row">
-                    <div class="card ">
-                        <div class="card-header">
-                            <h4 class="card-title"> Trạng thái mới nhất</h4>
-                            <div id="latest-trips-container"></div>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table tablesorter " id="">
-                                    <thead class=" text-primary">
+        </div>
+        <div class="col-lg-6 col-md-12">
+            <div class="row">
+                <div class="card ">
+                    <div class="card-header">
+                        <h4 class="card-title"> Trạng thái mới nhất</h4>
+                        <div id="latest-trips-container"></div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table tablesorter " id="">
+                                <thead class=" text-primary">
                                     <tr>
                                         <th>
                                             Xe
@@ -938,8 +949,8 @@
                                             Cập nhật cuối
                                         </th>
                                     </tr>
-                                    </thead>
-                                    <tbody>
+                                </thead>
+                                <tbody>
                                     {% for trip in latest_trips %}
                                     <tr>
                                         <td>
@@ -956,19 +967,19 @@
                                         </td>
                                     </tr>
                                     {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="card" name="agricuturedashboard">
-                        <div class="container mt-4">
-                            <h1 class="text-center">Smart Agriculture Dashboard</h1>
-                            
-                            <!-- Weather's Today Section -->
-                            <div class="card mb-4">
+            </div>
+            <div class="row">
+                <div class="card" name="agricuturedashboard">
+                    <div class="container mt-4">
+                        <h1 class="text-center">Smart Agriculture Dashboard</h1>
+
+                        <!-- Weather's Today Section -->
+                        <div class="card mb-4">
                             <div class="card-header">Weather's Today</div>
                             <div class="card-body">
                                 <p><strong>Date:</strong> Monday (23rd March 2023)</p>
@@ -978,10 +989,10 @@
                                 <p><strong>Wind Speed:</strong> 9 m/s</p>
                                 <p><strong>Pressure:</strong> 923 hPa</p>
                             </div>
-                            </div>
-                            
-                            <!-- Weather Forecast Section -->
-                            <div class="card mb-4">
+                        </div>
+
+                        <!-- Weather Forecast Section -->
+                        <div class="card mb-4">
                             <div class="card-header">Weather Forecast</div>
                             <div class="card-body">
                                 <h5>24 Hours</h5>
@@ -990,33 +1001,34 @@
                                 <p><strong>Wind Speed:</strong> 7 m/s</p>
                                 <p><strong>Pressure:</strong> 1007 hPa</p>
                             </div>
-                            </div>
-                            
-                            <!-- Current Tasks Section -->
-                            <div class="card mb-4">
+                        </div>
+
+                        <!-- Current Tasks Section -->
+                        <div class="card mb-4">
                             <div class="card-header">Current Tasks</div>
                             <div class="card-body">
                                 <h5>Task 1</h5>
                                 <p><strong>Status:</strong> 3 days due</p>
-                                <p><strong>Description:</strong> Schedule spraying was not performed. You have 4 days of delay.</p>
+                                <p><strong>Description:</strong> Schedule spraying was not performed. You have 4 days of
+                                    delay.</p>
                                 <p><strong>Crop:</strong> Maize #1</p>
                                 <h5>Task 2</h5>
                                 <p><strong>Status:</strong> 4 days left</p>
                                 <p><strong>Description:</strong> Field fertilization required in 4 days.</p>
                                 <p><strong>Crop:</strong> Wheat #3</p>
                             </div>
-                            </div>
-                            
-                            <!-- Crops Section -->
-                            <div class="card mb-4">
+                        </div>
+
+                        <!-- Crops Section -->
+                        <div class="card mb-4">
                             <div class="card-header">Crops</div>
                             <div class="card-body">
                                 <p>85% of fields are covered with Maize and Wheat.</p>
                             </div>
-                            </div>
-                            
-                            <!-- Harvest Section -->
-                            <div class="card mb-4">
+                        </div>
+
+                        <!-- Harvest Section -->
+                        <div class="card mb-4">
                             <div class="card-header">Harvest</div>
                             <div class="card-body">
                                 <p><strong>Total:</strong> 6.6 Tons/3 months</p>
@@ -1024,10 +1036,10 @@
                                 <p><strong>Maize:</strong> 2.1t</p>
                                 <p><strong>Onions:</strong> 2.4t</p>
                             </div>
-                            </div>
-                            
-                            <!-- Summary Section -->
-                            <div class="card mb-4">
+                        </div>
+
+                        <!-- Summary Section -->
+                        <div class="card mb-4">
                             <div class="card-header">Summary (4 months)</div>
                             <div class="card-body">
                                 <p><strong>Fuel Consumption:</strong> 500L</p>
@@ -1035,15 +1047,15 @@
                                 <p><strong>Worked Hectares:</strong> 423ha</p>
                                 <p><strong>Activities:</strong> Plowing, Spraying, Fertilization, Harvesting</p>
                             </div>
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-
     </div>
+
+
+</div>
 
 {% endblock content %}
 
@@ -1063,16 +1075,16 @@
     const socket = new WebSocket('wss://hinosoft.com/ws/chat/');
 
     // Khi kết nối WebSocket mở
-    socket.onopen = function(e) {
+    socket.onopen = function (e) {
         console.log('WebSocket connection established.');
     };
 
     // Khi nhận được thông điệp từ server
-    socket.onmessage = function(e) {
+    socket.onmessage = function (e) {
         const data = JSON.parse(e.data);
         const message = data.message;
         const latestTrips = data.latest_trips;
-        
+
         // Cập nhật nội dung trên trang
         document.getElementById('latest-trips-container').innerHTML = `
             <p>${message}</p>
@@ -1081,12 +1093,12 @@
     };
 
     // Khi kết nối WebSocket đóng
-    socket.onclose = function(e) {
+    socket.onclose = function (e) {
         console.log('WebSocket connection closed.');
     };
 
     // Khi có lỗi kết nối WebSocket
-    socket.onerror = function(error) {
+    socket.onerror = function (error) {
         console.log('WebSocket error: ', error);
     };
 </script>
