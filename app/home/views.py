@@ -12,7 +12,7 @@ from django.http import JsonResponse
 from dashboard.models import Fleet
 from rest_framework import generics
 from hrms.serializers import EmployeeSerializer
-from django.db.models import Q
+from django.db.models import Q, Func, F
 from unidecode import unidecode
 
 
@@ -20,8 +20,8 @@ def search_page(request):
     return render(request, 'search.html')
 
 
-def remove_accent(s):
-    return unidecode(s).lower()
+class Unaccent(Func):
+    function = 'unaccent'
 
 
 class EmployeeSearchAPIView(generics.ListAPIView):
