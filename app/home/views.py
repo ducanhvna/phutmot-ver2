@@ -29,13 +29,13 @@ class EmployeeSearchAPIView(generics.ListAPIView):
         if query:
             query = unidecode(query)
             # Chuyển đổi từng trường trong queryset thành không dấu
-            queryset = queryset.filter(
-                Q(employee_code__icontains=query) | Q(start_date__icontains=query) | (
-                Q(time_keeping_code__icontains=query) | Q(Q(info__name__icontains=query) | (
-                Q(unidecode(info__name='')).icontains(query)) | Q(Q(info__code__icontains=query) | (
-                Q(unidecode(info__code='')).icontains(query)) | (
-                Q(Q(info__time_keeping_code__icontains=query) | Q(unidecode(info__time_keeping_code='')).icontains(query))))))
-            )
+            condition = Q(employee_code__icontains=query)
+            condition = condition | Q(start_date__icontains=query)
+            condition = condition | Q(time_keeping_code__icontains=query)
+            condition = condition | Q(info__name__icontains=query)
+            condition = condition | Q(info__code__icontains=query)
+            condition = condition | Q(info__time_keeping_code__icontains=query)
+            queryset = queryset.filter(condition)
         return queryset
 
 
