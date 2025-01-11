@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
+from .models import UserProfile
 from hrms.models import Attendance, Scheduling, Employee, Shifts, Leave, Explaination
 from datetime import datetime, timedelta
 from dashboard.models import Hrms
@@ -11,22 +12,20 @@ import calendar
 from django.http import JsonResponse
 from dashboard.models import Fleet
 from rest_framework import generics
-from hrms.serializers import EmployeeSerializer
+from .serializers import UserProfileSerializer
 from django.db.models import Q, Func, F
 from unidecode import unidecode
 
 
-class EmployeeSearchAPIView(generics.ListAPIView):
-    serializer_class = EmployeeSerializer
+class UserProfileAPIView(generics.ListAPIView):
+    serializer_class = UserProfileSerializer
 
     def get_queryset(self):
-        queryset = Employee.objects.all()
+        queryset = UserProfile.objects.all()
         query = self.request.query_params.get('q')
         if query:
             query = unidecode(query).lower()
             queryset = queryset.filter(employee_code__icontains=query) | \
-                Q(start_date__icontains=query) | \
-                Q(time_keeping_code__icontains=query) | \
                 Q(info_unaccented__name__icontains=query) | \
                 Q(info_unaccented__code__icontains=query) | \
                 Q(info_unaccented__time_keeping_code__icontains=query)
