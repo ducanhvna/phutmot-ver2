@@ -23,6 +23,7 @@ def search_page(request):
 def remove_accent(text):
     return unidecode(text).lower()
 
+
 class EmployeeSearchAPIView(generics.ListAPIView):
     serializer_class = EmployeeSerializer
 
@@ -36,10 +37,10 @@ class EmployeeSearchAPIView(generics.ListAPIView):
                 name = employee.info.get('name', '')
                 code = employee.info.get('code', '')
                 time_keeping_code = employee.info.get('time_keeping_code', '')
-                
-                search_conditions |= Q(info__name__icontains=remove_accent(name)) | \
-                                      Q(info__code__icontains=remove_accent(code)) | \
-                                      Q(info__time_keeping_code__icontains=remove_accent(time_keeping_code))
+
+                search_conditions = Q(info__name__icontains=remove_accent(name))
+                search_conditions = search_conditions | Q(info__code__icontains=remove_accent(code))
+                search_conditions = search_conditions | Q(info__time_keeping_code__icontains=remove_accent(time_keeping_code))
             queryset = queryset.filter(search_conditions)
         return queryset
 
