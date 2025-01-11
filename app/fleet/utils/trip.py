@@ -121,13 +121,13 @@ class Trip():
                 {'offset': index * LIMIT_SIZE, 'limit': LIMIT_SIZE},
             )
             len_data = len(ids)
-            print(ids)
+            print(f"{model_name} - {len_data}")
             merged_array = list(set(merged_array) | set(ids))
             index += 1
 
         # Split ids into chunks of 200
         ids_chunks = [merged_array[i:i + 200] for i in range(0, len(merged_array), 200)]
-        print(ids_chunks)
+        print("ids_chunks: ", len(ids_chunks))
         merged_data = []
 
         for ids_chunk in ids_chunks:
