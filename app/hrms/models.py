@@ -3,6 +3,7 @@ from datetime import datetime, date, timedelta
 from django.db.models import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from unidecode import unidecode
 
 
 class Employee(models.Model):
@@ -10,16 +11,15 @@ class Employee(models.Model):
     start_date = models.DateField("Ngày bắt đầu tháng")
     end_date = models.DateField("Ngày kết thúc tháng")
     time_keeping_code = models.CharField("Mã chấm công", max_length=255)
-    info = JSONField("Thông tin bổ sung", default=dict, blank=True)
-    other_profile = JSONField("Hồ sơ khác", default=list, blank=True)
+    info = models.JSONField("Thông tin bổ sung", default=dict, blank=True)
+    other_profile = models.JSONField("Hồ sơ khác", default=list, blank=True)
     create_time = models.DateTimeField("Thời gian tạo", auto_now_add=True)
     update_time = models.DateTimeField("Thời gian cập nhật", auto_now=True)
-    main_contract = JSONField("hợp đồng chính", default=dict, blank=True)
-    main_offical_contract = JSONField("hợp đồng chính thức chính", default=dict, blank=True)
-    main_probation_contract = JSONField("hợp đồng thử việc chính", default=dict, blank=True)
-    other_contracts = JSONField("hợp đồng khác", default=list, blank=True)
-    # created_user = models.CharField("Người tạo", max_length=255)
-    # modified_user = models.CharField("Người sửa đổi", max_length=255)
+    main_contract = models.JSONField("hợp đồng chính", default=dict, blank=True)
+    main_offical_contract = models.JSONField("hợp đồng chính thức chính", default=dict, blank=True)
+    main_probation_contract = models.JSONField("hợp đồng thử việc chính", default=dict, blank=True)
+    other_contracts = models.JSONField("hợp đồng khác", default=list, blank=True)
+    info_unaccented = models.JSONField("Thông tin bổ sung không dấu", default=dict, blank=True)
 
     class Meta:
         constraints = [
@@ -29,8 +29,10 @@ class Employee(models.Model):
             )
         ]
 
-    def __str__(self):
-        return self.employee_code
+    def save(self, *args, **kwargs):
+        if self.info:
+            self.info_unaccented = {key: unidecode(value).lower() for key, value in self.info.items()}
+        super(Employee, self).save(*args, **kwargs)
 
 
 class Attendance(models.Model):
