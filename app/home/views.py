@@ -171,7 +171,7 @@ def index(request):
                 print(ex)
             if parsed_date and (parsed_date.day == selected_date.day) and (parsed_date.month == selected_date.month):
                 context['timesheet'] = record
-            merge_couples_before_private = record.get('merge_couples_before_private',[])
+            merge_couples_before_private = record.get('merge_couples_before_private', [])
             if len(merge_couples_before_private) == 5:
                 context['merge_couples_before_private0'] = merge_couples_before_private[0]
                 context['merge_couples_before_private1'] = merge_couples_before_private[1]
