@@ -108,17 +108,17 @@ def merge_and_split_couples(couple1, couple2, keys_to_check):
                     break
             elif attempt_in >= key:
                 split_list[key_index + 1].append(CoupleInout(
-                        AttendanceAttemptInOut(attempt_in, InoutMode.In),
-                        AttendanceAttemptInOut(attempt_out, InoutMode.Out),
-                        typeio=couple.typeio
-                    ))
+                    AttendanceAttemptInOut(attempt_in, InoutMode.In),
+                    AttendanceAttemptInOut(attempt_out, InoutMode.Out),
+                    typeio=couple.typeio
+                ))
                 break
             elif attempt_out <= key:
                 split_list[key_index].append(CoupleInout(
-                        AttendanceAttemptInOut(attempt_in, InoutMode.In),
-                        AttendanceAttemptInOut(attempt_out, InoutMode.Out),
-                        typeio=couple.typeio
-                    ))
+                    AttendanceAttemptInOut(attempt_in, InoutMode.In),
+                    AttendanceAttemptInOut(attempt_out, InoutMode.Out),
+                    typeio=couple.typeio
+                ))
                 break
 
     return split_list
