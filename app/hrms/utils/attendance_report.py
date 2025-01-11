@@ -64,8 +64,7 @@ class AttendanceAttemptInOut:
 
     @property
     def display_hour(self):
-        attempt_time = datetime.strptime(self.attempt, '%Y-%m-%dT%H:%M:%S')
-        return attempt_time.hour
+        return self.attempt.hour if self.attempt else 0
 
     def to_dict(self):
         return {
