@@ -26,9 +26,9 @@ class UserProfileAPIView(generics.ListAPIView):
         if query:
             query = unidecode(query).lower()
             search_conditions = Q(employee_code__icontains=query) | \
-                                Q(info_unaccented__name__icontains=query) | \
-                                Q(info_unaccented__code__icontains=query) | \
-                                Q(info_unaccented__time_keeping_code__icontains=query)
+                Q(info_unaccented__name__icontains=query) | \
+                Q(info_unaccented__code__icontains=query) | \
+                Q(info_unaccented__time_keeping_code__icontains=query)
             queryset = queryset.filter(search_conditions)
         return queryset
 
