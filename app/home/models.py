@@ -28,6 +28,7 @@ class UserProfile(models.Model):
     cl = JSONField(default=list)  # Dữ liệu bù dạng JSON
     create_time = models.DateTimeField("Thời gian tạo", auto_now_add=True)
     update_time = models.DateTimeField("Thời gian cập nhật", auto_now=True)
+    info_unaccented = models.JSONField("Thông tin bổ sung không dấu", default=dict, blank=True)
 
     class Meta:
         constraints = [
@@ -37,6 +38,11 @@ class UserProfile(models.Model):
                 condition=models.Q(employee_code__isnull=False)
             )
         ]
+
+    def save(self, *args, **kwargs):
+        if self.info:
+            self.info_unaccented = {key: unidecode(value).lower() for key, value in self.info.items()}
+        super(UserProfile, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.username}'s profile" if self.user else "<anonymous>"
