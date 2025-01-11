@@ -4,48 +4,82 @@
         <span class="close" onclick="closeModal()">&times;</span>
         <div class="card card-user">
             <div class="card-body">
-                <p class="card-text">
-                <div class="author">
-                    <div class="block block-one"></div>
-                    <div class="block block-two"></div>
-                    <div class="block block-three"></div>
-                    <div class="block block-four"></div>
-                    <a href="javascript:void(0)">
-                        <img class="avatar" src="{{ ASSETS_ROOT }}/img/emilyz.jpg" alt="...">
-                        <h5 id="modalDate" class="title">Mike Andrew</h5>
-                    </a>
-                    <p class="description">
-                        Ceo/Co-Founder
-                    </p>
-                </div>
-                </p>
-                <div class="card-description">
-                    Do not be scared of the truth because we need to restart the human foundation in truth And I love
-                    you like
-                    Kanye loves Kanye I love Rick Owens’ bed design but the back is...
-                </div>
-                <p id="modalOrderCount"></p>
-                <p id="modalWorkHours"></p>
-                <p id="modalSalary"></p>
+                <input type="text" id="searchQuery" placeholder="Nhập từ khóa tìm kiếm...">
+                <button onclick="searchEmployee()">Tìm kiếm</button>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã nhân viên</th>
+                            <th>Ngày bắt đầu</th>
+                            <th>Mã chấm công</th>
+                            <th>Tên</th>
+                            <th>Mã</th>
+                            <th>Mã chấm công bổ sung</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTableBody">
+                        <!-- Kết quả tìm kiếm sẽ được chèn vào đây -->
+                    </tbody>
+                </table>
             </div>
-            <div class="card-footer">
-                <div class="button-container">
-                    <button href="javascript:void(0)" class="btn btn-icon btn-round btn-facebook">
-                        <i class="fab fa-facebook"></i>
-                    </button>
-                    <button href="javascript:void(0)" class="btn btn-icon btn-round btn-twitter">
-                        <i class="fab fa-twitter"></i>
-                    </button>
-                    <button href="javascript:void(0)" class="btn btn-icon btn-round btn-google">
-                        <i class="fab fa-google-plus"></i>
-                    </button>
-                </div>
+        </div>
+    </div>
+</div>
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div class="card card-user">
+            <div class="card-body">
+                <input type="text" id="searchQuery" placeholder="Nhập từ khóa tìm kiếm...">
+                <button onclick="searchEmployee()">Tìm kiếm</button>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Mã nhân viên</th>
+                            <th>Ngày bắt đầu</th>
+                            <th>Mã chấm công</th>
+                            <th>Tên</th>
+                            <th>Mã</th>
+                            <th>Mã chấm công bổ sung</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTableBody">
+                        <!-- Kết quả tìm kiếm sẽ được chèn vào đây -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    async function searchEmployee() {
+        const query = document.getElementById('searchQuery').value;
+        const response = await fetch(`/api/employee/search/?q=${query}`);
+        const data = await response.json();
+        const tableBody = document.getElementById('resultsTableBody');
+        tableBody.innerHTML = '';  // Xóa các kết quả cũ
+
+        if (data.length > 0) {
+            data.forEach(employee => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${employee.employee_code}</td>
+                    <td>${employee.start_date}</td>
+                    <td>${employee.time_keeping_code}</td>
+                    <td>${employee.info.name}</td>
+                    <td>${employee.info.code}</td>
+                    <td>${employee.info.time_keeping_code}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } else {
+            const row = document.createElement('tr');
+            row.innerHTML = '<td colspan="6">Không tìm thấy nhân viên nào</td>';
+            tableBody.appendChild(row);
+        }
+    }
+    
     function closeModal() {
         document.getElementById("myModal").style.display = "none";
     }

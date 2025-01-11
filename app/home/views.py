@@ -10,6 +10,34 @@ import json
 import calendar
 from django.http import JsonResponse
 from dashboard.models import Fleet
+from rest_framework import generics
+from hrms.models import Employee
+from hrms.serializers import EmployeeSerializer
+from django.db.models import Q
+from unidecode import unidecode
+
+
+def search_page(request):
+    return render(request, 'search.html')
+
+
+class EmployeeSearchAPIView(generics.ListAPIView):
+    serializer_class = EmployeeSerializer
+
+    def get_queryset(self):
+        queryset = Employee.objects.all()
+        query = self.request.query_params.get('q')
+        if query:
+            query = unidecode(query)
+            queryset = queryset.filter(
+                Q(employee_code__icontains=query) |
+                Q(start_date__icontains=query) |
+                Q(time_keeping_code__icontains=query) |
+                Q(unidecode(info__name)__icontains=query) |
+                Q(unidecode(info__code)__icontains=query) |
+                Q(unidecode(info__time_keeping_code)__icontains=query)
+            )
+        return queryset
 
 
 def get_calendar_data(month=None, year=None):

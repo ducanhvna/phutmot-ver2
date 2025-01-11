@@ -16,3 +16,4 @@ djangorestframework-simplejwt
 django-cuser
 celery
 redis
+unidecode
