@@ -78,11 +78,11 @@ def index(request):
         'Magiê 2': 'East',
     }
     reminder_data = [
-        {'name': 'Potato', 'weight': '0.58 tons', 'location': 'Field 11-DA', 'harvest_date': '17/06/2023', 'state': 'success'},
-        {'name': 'Tomato', 'weight': '0.28 tons', 'location': 'Field 1-VQ', 'harvest_date': '16/06/2023', 'state': 'warning'},
-        {'name': 'Eggplant', 'weight': '0.67 tons', 'location': 'Field 10-UV', 'harvest_date': '14/06/2023', 'state': 'pending'},
-        {'name': 'Potato', 'weight': '0.88 tons', 'location': 'Field 9-DP', 'harvest_date': '13/06/2023', 'state': 'success'},
-        {'name': 'Potato', 'weight': '0.88 tons', 'location': 'Field 18-EA', 'harvest_date': '11/06/2023', 'state': 'pending'}
+        {'name': 'Khoai tây', 'weight': '0.58 tấn', 'location': 'Ruộng 11-DA', 'harvest_date': '17/06/2023', 'state': 'thành công'},
+        {'name': 'Cà chua', 'weight': '0.28 tấn', 'location': 'Ruộng 1-VQ', 'harvest_date': '16/06/2023', 'state': 'cảnh báo'},
+        {'name': 'Cà tím', 'weight': '0.67 tấn', 'location': 'Ruộng 10-UV', 'harvest_date': '14/06/2023', 'state': 'đang chờ'},
+        {'name': 'Khoai tây', 'weight': '0.88 tấn', 'location': 'Ruộng 9-DP', 'harvest_date': '13/06/2023', 'state': 'thành công'},
+        {'name': 'Khoai tây', 'weight': '0.88 tấn', 'location': 'Ruộng 18-EA', 'harvest_date': '11/06/2023', 'state': 'đang chờ'}
     ]
 
     context = {
