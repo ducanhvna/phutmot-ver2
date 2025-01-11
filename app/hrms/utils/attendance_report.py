@@ -1478,6 +1478,11 @@ def process_worktime_ho(scheduling_record):
         list_couple_before_explanation_private = find_in_out_couple(attempt_with_inout_array, scheduling_record)
         scheduling_record['list_couple_out_in_before_explanation_private'] = get_list_couple_out_in(list_couple_before_explanation_private, scheduling_record)
         scheduling_record['list_couple_before_explanation_private'] = list_couple_before_explanation_private
+        keys_to_check = [scheduling_record['shift_start_datetime']]
+        keys_to_check.append(scheduling_record['rest_start_datetime'])
+        keys_to_check.append(scheduling_record['shift_start_datetime'])
+        keys_to_check.append(scheduling_record['shift_start_datetime'])
+        scheduling_record['merge_couples_before_private'] = merge_and_split_couples(list_couple_before_explanation_private, scheduling_record['list_couple_out_in_before_explanation_private'], keys_to_check)
         if list_couple_before_explanation_private:
             real_timein_couple = next((element for element in list_couple_before_explanation_private if element.itemOut.attempt > shift_start_datetime), None)
             real_timein = real_timein_couple.itemIn.attempt if real_timein_couple else None

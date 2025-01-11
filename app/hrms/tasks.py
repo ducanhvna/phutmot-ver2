@@ -21,6 +21,7 @@ def serialize_scheduling(obj):
             "shift_start_datetime": scheduling.get("shift_start_datetime", None),
             "shift_end_datetime": scheduling.get("shift_end_datetime", None),
             "rest_start_datetime": scheduling.get("rest_start_datetime", None),
+            "merge_couples_before_private": scheduling.get("merge_couples_before_private", []),
             "rest_end_datetime": scheduling.get("rest_end_datetime", None),
             'shift_name': scheduling.get('shift_name', '-'),
             "out_in_after_explanation_private": scheduling.get(
@@ -28,6 +29,12 @@ def serialize_scheduling(obj):
             ),
             "couple_after_explanation_private": scheduling.get(
                 "list_couple_after_explanation_private", []
+            ),
+            "couple_before_explanation_private": scheduling.get(
+                "list_couple_before_explanation_private", []
+            ),
+            "out_in_before_explanation_private": scheduling.get(
+                "list_couple_out_in_before_explanation_private", []
             ),
         }
         result.append(timesheet)
