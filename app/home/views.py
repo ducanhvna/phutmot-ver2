@@ -163,6 +163,7 @@ def index(request):
         context['timesheet'] = ts.timesheet_records
     if employee_info:
         context['job_title'] = employee_info.get('job_title', '-')
+        context['name'] = employee_info.get('name', '-')
 
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
