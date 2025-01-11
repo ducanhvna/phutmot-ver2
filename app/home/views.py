@@ -25,10 +25,11 @@ class UserProfileAPIView(generics.ListAPIView):
         query = self.request.query_params.get('q')
         if query:
             query = unidecode(query).lower()
-            queryset = queryset.filter(employee_code__icontains=query) | \
-                Q(info_unaccented__name__icontains=query) | \
-                Q(info_unaccented__code__icontains=query) | \
-                Q(info_unaccented__time_keeping_code__icontains=query)
+            search_conditions = Q(employee_code__icontains=query) | \
+                                Q(info_unaccented__name__icontains=query) | \
+                                Q(info_unaccented__code__icontains=query) | \
+                                Q(info_unaccented__time_keeping_code__icontains=query)
+            queryset = queryset.filter(search_conditions)
         return queryset
 
 
