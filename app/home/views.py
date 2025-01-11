@@ -158,7 +158,7 @@ def index(request):
         "employee_code": employee_code
     }
     if timesheet:
-        context['timesheet'] = timesheet
+        context['timesheet'] = timesheet.timesheet_records
     if employee_info:
         context['job_title'] = employee_info.get('job_title', '-')
 
