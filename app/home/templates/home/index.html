@@ -583,13 +583,15 @@
                                 <table class="table">
                                     <div class="row alert-success">
                                         {% for name, value in attributes.items %}
-                                        <div class=" col-md-3">
-                                            <div class="column-header"></div>
-                                                <div>{{ name }}</div>
-                                        </div>
-                                        <div class="col-md-3 alert alert-info">
-                                            <div class="column-header"></div>
-                                                <div>{{ value }}</div>
+                                        <div class=" col-md-6">
+                                            <div class=" col-md-7 alert alert-info">
+                                                <div class="column-header"></div>
+                                                    <div>{{ name }}</div>
+                                            </div>
+                                            <div class="col-md-5 alert alert-info">
+                                                <div class="column-header"></div>
+                                                    <div>{{ value }}</div>
+                                            </div>
                                         </div>
                                         {% endfor %}
                                     </div>
