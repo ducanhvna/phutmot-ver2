@@ -85,33 +85,41 @@ def merge_and_split_couples(couple1, couple2, keys_to_check):
 
         attempt_in = item_in.attempt
         attempt_out = item_out.attempt
-
-        split_points = [key for key in keys_to_check if attempt_in < key < attempt_out]
-
-        if split_points:
-            split_points.sort()
-            previous_attempt = attempt_in
-
-            for index, split_point in enumerate(split_points):
-                section_index = min(index + 1, 4)
-                split_list[section_index].append(CoupleInout(
-                    AttendanceAttemptInOut(previous_attempt, item_in.inout),
-                    AttendanceAttemptInOut(split_point, item_in.inout),
+        key_index = 0
+        for key in keys_to_check:
+            if attempt_in < key < attempt_out:
+                split_list[key_index].append(CoupleInout(
+                    AttendanceAttemptInOut(attempt_in if key_index < 1 else split_list[key_index - 1], InoutMode.In),
+                    AttendanceAttemptInOut(key, InoutMode.Out),
                     typeio=couple.typeio
                 ))
-                previous_attempt = split_point
-
-            split_list[4].append(CoupleInout(
-                AttendanceAttemptInOut(previous_attempt, item_in.inout),
-                AttendanceAttemptInOut(attempt_out, item_out.inout),
-                typeio=couple.typeio
-            ))
-        else:
-            section_index = 0
-            for index, key in enumerate(keys_to_check):
-                if attempt_in >= key:
-                    section_index = index + 1
-            split_list[section_index].append(couple)
+                if (key_index < 3) and (keys_to_check[key_index + 1] < attempt_out):
+                    split_list[key_index + 1].append(CoupleInout(
+                        AttendanceAttemptInOut(key, InoutMode.In),
+                        AttendanceAttemptInOut(keys_to_check[key_index + 1], InoutMode.Out),
+                        typeio=couple.typeio
+                    ))
+                else:
+                    split_list[key_index + 1].append(CoupleInout(
+                        AttendanceAttemptInOut(key, InoutMode.In),
+                        AttendanceAttemptInOut(attempt_out, InoutMode.Out),
+                        typeio=couple.typeio
+                    ))
+                    break
+            elif attempt_in >= key:
+                split_list[key_index + 1].append(CoupleInout(
+                        AttendanceAttemptInOut(attempt_in, InoutMode.In),
+                        AttendanceAttemptInOut(attempt_out, InoutMode.Out),
+                        typeio=couple.typeio
+                    ))
+                break
+            elif attempt_out <= key:
+                split_list[key_index].append(CoupleInout(
+                        AttendanceAttemptInOut(attempt_in, InoutMode.In),
+                        AttendanceAttemptInOut(attempt_out, InoutMode.Out),
+                        typeio=couple.typeio
+                    ))
+                break
 
     return split_list
 
