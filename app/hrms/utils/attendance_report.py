@@ -17,15 +17,15 @@ class InoutMode:
 
 
 class AttendanceAttemptInOut:
-    def __init__(self, attempt):
+    def __init__(self, attempt, inout=None):
         self.attempt = attempt
-        self.inout = None
+        self.inout = inout
 
     def to_dict(self):
         return {
             "attempt": self.attempt,
             "inout": (
-                self.inout.to_string() if isinstance(self.inout, InoutMode) else None
+                InoutMode.to_string(self.inout) if self.inout else None
             ),
         }
 
