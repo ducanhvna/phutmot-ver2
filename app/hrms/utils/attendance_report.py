@@ -87,7 +87,7 @@ def merge_and_split_couples(couple1, couple2, keys_to_check):
         attempt_out = item_out.attempt
         key_index = 0
         for key in keys_to_check:
-            if attempt_in < key < attempt_out:
+            if attempt_in <= key <= attempt_out:
                 split_list[key_index].append(CoupleInout(
                     AttendanceAttemptInOut(attempt_in if key_index < 1 else max(attempt_in, split_list[key_index - 1]), InoutMode.In),
                     AttendanceAttemptInOut(key, InoutMode.Out),
@@ -106,20 +106,22 @@ def merge_and_split_couples(couple1, couple2, keys_to_check):
                         typeio=couple.typeio
                     ))
                     break
-            elif attempt_in >= key:
-                split_list[key_index + 1].append(CoupleInout(
-                    AttendanceAttemptInOut(attempt_in, InoutMode.In),
-                    AttendanceAttemptInOut(attempt_out, InoutMode.Out),
-                    typeio=couple.typeio
-                ))
-                break
-            elif attempt_out <= key:
-                split_list[key_index].append(CoupleInout(
-                    AttendanceAttemptInOut(attempt_in, InoutMode.In),
-                    AttendanceAttemptInOut(attempt_out, InoutMode.Out),
-                    typeio=couple.typeio
-                ))
-                break
+            elif attempt_in > key:
+                if (key_index == 3) or (keys_to_check[key_index + 1] > attempt_out):
+                    split_list[key_index + 1].append(CoupleInout(
+                        AttendanceAttemptInOut(attempt_in, InoutMode.In),
+                        AttendanceAttemptInOut(attempt_out if key_index == 3 else min(attempt_out, keys_to_check[key_index + 1]), InoutMode.Out),
+                        typeio=couple.typeio
+                    ))
+                    break
+            elif attempt_out < key:
+                if (key_index == 0) or (keys_to_check[key_index - 1] < attempt_in):
+                    split_list[key_index].append(CoupleInout(
+                        AttendanceAttemptInOut(attempt_in, InoutMode.In),
+                        AttendanceAttemptInOut(attempt_out, InoutMode.Out),
+                        typeio=couple.typeio
+                    ))
+                    break
 
     return split_list
 
