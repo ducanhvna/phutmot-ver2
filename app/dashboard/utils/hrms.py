@@ -53,7 +53,7 @@ class HrmsDashboard():
             max_write_date_employees = info.get('max_write_date_employees', None)
         new_write_date_shifts = self.comany_shift_service.download_shift(max_write_date_shifts)
         hrms_dashboard.info["max_write_date_shifts"] = (
-            new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date_shifts else None
+            new_write_date_shifts.strftime("%Y-%m-%d %H:%M:%S") if new_write_date_shifts else None
         )
         new_write_date = leave.download(max_write_date_leave)
         hrms_dashboard.info["max_write_date_leave"] = (
