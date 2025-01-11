@@ -162,10 +162,14 @@ def index(request):
     if ts:
         timesheet_records = ts.timesheet_records
         for record in timesheet_records:
-            date = record.get('date', None)
+            date_string = record.get('date', None)
+            parsed_date = None
             # Parse the date string to a datetime object
-            parsed_date = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%S')
-            if date and (parsed_date.day == selected_date.day)  and (parsed_date.month == selected_date.month):
+            try:
+                parsed_date = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%S')
+            except Exception as ex:
+                print(ex)
+            if parsed_date and (parsed_date.day == selected_date.day)  and (parsed_date.month == selected_date.month):
                 context['timesheet'] = record
     if employee_info:
         context['job_title'] = employee_info.get('job_title', '-')
