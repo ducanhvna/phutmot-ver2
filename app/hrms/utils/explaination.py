@@ -176,7 +176,7 @@ class ExplainationService():
         ids_chunks = [
             merged_array[i:i + 200] for i in range(0, len(merged_array), 200)
         ]
-        print("chunks: ", lend(ids_chunks))
+        print("chunks: ", len(ids_chunks))
         merged_data = []
 
         for ids_chunk in ids_chunks:
