@@ -20,6 +20,10 @@ def search_page(request):
     return render(request, 'search.html')
 
 
+def remove_accent(s):
+    return unidecode(s).lower()
+
+
 class EmployeeSearchAPIView(generics.ListAPIView):
     serializer_class = EmployeeSerializer
 
@@ -27,15 +31,23 @@ class EmployeeSearchAPIView(generics.ListAPIView):
         queryset = Employee.objects.all()
         query = self.request.query_params.get('q')
         if query:
-            query = unidecode(query)
-            # Chuyển đổi từng trường trong queryset thành không dấu
-            condition = Q(employee_code__icontains=query)
-            condition = condition | Q(start_date__icontains=query)
-            condition = condition | Q(time_keeping_code__icontains=query)
-            condition = condition | Q(info__name__icontains=query)
-            condition = condition | Q(info__code__icontains=query)
-            condition = condition | Q(info__time_keeping_code__icontains=query)
-            queryset = queryset.filter(condition)
+            query = unidecode(query).lower()
+            queryset = queryset.annotate(
+                name_unaccent=Unaccent(F('info__name')),
+                code_unaccent=Unaccent(F('info__code')),
+                time_keeping_code_unaccent=Unaccent(F('info__time_keeping_code'))
+            )
+
+            # Gán chuỗi điều kiện Q vào một biến trước
+            search_conditions = Q(employee_code__icontains=query)
+            search_conditions = search_conditions | Q(start_date__icontains=query)
+            search_conditions = search_conditions | Q(time_keeping_code__icontains=query)
+            search_conditions = search_conditions | Q(name_unaccent__icontains=query)
+            search_conditions = search_conditions | Q(code_unaccent__icontains=query)
+            search_conditions = search_conditions | Q(time_keeping_code_unaccent__icontains=query)
+
+            # Sử dụng biến chứa chuỗi điều kiện Q trong filter
+            queryset = queryset.filter(search_conditions)
         return queryset
 
 
