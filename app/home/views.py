@@ -160,7 +160,7 @@ def index(request):
         "employee_code": employee_code
     }
     if ts:
-        timesheet_records = timesheet_records
+        timesheet_records = ts.timesheet_records
         for record in timesheet_records:
             date = record.get('date', None)
             if date and (date.day == selected_date.day):

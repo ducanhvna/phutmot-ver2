@@ -63,7 +63,7 @@ class ApecShiftService():
         self.save_company_to_django()
         write_dates = [
             datetime.strptime(record["write_date"], "%Y-%m-%d %H:%M:%S")
-            for record in company_merged_data
+            for record in self.company_merged_data
             if record.get("write_date")
         ]
         # Get the maximum write_date or None if the list is empty
