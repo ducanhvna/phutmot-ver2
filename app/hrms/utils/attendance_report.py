@@ -30,7 +30,6 @@ class AttendanceAttemptInOut:
         }
 
 
-
 class KidMode(Enum):
     NONE = "None"
     SBEGIN60 = "SBegin60"
