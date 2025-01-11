@@ -193,7 +193,7 @@ class ApecShiftService():
 
         return merged_data
 
-    def save_to_django(self, grouped_data):
+    def save_company_to_django(self):
         company, _ = Company.objects.get_or_create(
             company_code='APEC',
             company_name='APEC GROUP',
@@ -202,6 +202,8 @@ class ApecShiftService():
         company.info['companies'] = self.company_merged_data
         company.save()
 
+    def save_to_django(self, grouped_data):
+        self.save_company_to_django()
         for company_info, record in grouped_data.items():
             try:
                 shifts, created = Shifts.objects.get_or_create(
