@@ -160,7 +160,11 @@ def index(request):
         "employee_code": employee_code
     }
     if ts:
-        context['timesheet'] = ts.timesheet_records
+        timesheet_records = ts.get('timesheet_records', [])
+        for record in timesheet_records:
+            date = record.get('date', None)
+            if date and (date.day == selected_date.day):
+                context['timesheet'] = record
     if employee_info:
         context['job_title'] = employee_info.get('job_title', '-')
         context['name'] = employee_info.get('name', '-')
