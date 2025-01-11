@@ -2,6 +2,46 @@ from datetime import timedelta, datetime
 from enum import Enum
 
 
+def merge_and_split_couples(couple1, couple2, keys_to_check):
+    merged_list = couple1 + couple2
+    split_list = []
+
+    for couple in merged_list:
+        item_in = couple.get("itemIn", {})
+        item_out = couple.get("itemOut", {})
+
+        attempt_in = item_in.get("attempt")
+        attempt_out = item_out.get("attempt")
+
+        split_points = [key for key in keys_to_check if attempt_in < key < attempt_out]
+
+        if split_points:
+            split_points.sort()
+            previous_attempt = attempt_in
+            for split_point in split_points:
+                split_list.append({
+                    "itemIn": {"inout": item_in.get("inout"), "attempt": previous_attempt},
+                    "itemOut": {"inout": item_in.get("inout"), "attempt": split_point},
+                    "atoffice_time": 0,
+                    "nightWorkTime": 0,
+                    "holidayWorkTime": 0,
+                    "nightHolidayWorkTime": 0
+                })
+                previous_attempt = split_point
+            split_list.append({
+                "itemIn": {"inout": item_in.get("inout"), "attempt": previous_attempt},
+                "itemOut": {"inout": item_out.get("inout"), "attempt": attempt_out},
+                "atoffice_time": 0,
+                "nightWorkTime": 0,
+                "holidayWorkTime": 0,
+                "nightHolidayWorkTime": 0
+            })
+        else:
+            split_list.append(couple)
+
+    return split_list
+
+
 class InoutMode:
     In = "In"
     Out = "Out"
