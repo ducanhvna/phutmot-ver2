@@ -169,7 +169,7 @@ def index(request):
                 parsed_date = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%S')
             except Exception as ex:
                 print(ex)
-            if parsed_date and (parsed_date.day == selected_date.day)  and (parsed_date.month == selected_date.month):
+            if parsed_date and (parsed_date.day == selected_date.day) and (parsed_date.month == selected_date.month):
                 context['timesheet'] = record
     if employee_info:
         context['job_title'] = employee_info.get('job_title', '-')
