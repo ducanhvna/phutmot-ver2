@@ -749,9 +749,9 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave_records, explana
             scheduling['shift_end_datetime'] = date.replace(
                 hour=shift.end_work_time.hour, minute=shift.end_work_time.minute)
             scheduling['rest_start_datetime'] = date.replace(
-                hour=shift.start_work_time.hour, minute=shift.start_rest_time.minute)
+                hour=shift.start_rest_time.hour, minute=shift.start_rest_time.minute)
             scheduling['rest_end_datetime'] = date.replace(
-                hour=shift.end_work_time.hour, minute=shift.end_rest_time.minute)
+                hour=shift.end_rest_time.hour, minute=shift.end_rest_time.minute)
             process_leave_records(leave_records, scheduling)
             scheduling['date'] = date
             process_explaination_records(explanation, scheduling)
