@@ -2,53 +2,6 @@ from datetime import timedelta, datetime
 from enum import Enum
 
 
-def merge_and_split_couples(couple1, couple2, keys_to_check):
-    merged_list = couple1 + couple2
-    split_list = [[] for _ in range(5)]  # Create a list containing 5 empty lists for each section
-
-    for couple in merged_list:
-        item_in = couple.itemIn
-        item_out = couple.itemOut
-
-        attempt_in = item_in.attempt
-        attempt_out = item_out.attempt
-
-        split_points = [key for key in keys_to_check if attempt_in < key < attempt_out]
-
-        if split_points:
-            split_points.sort()
-            previous_attempt = attempt_in
-
-            for index, split_point in enumerate(split_points):
-                section_index = min(index + 1, 4)
-                split_list[section_index].append({
-                    "itemIn": {"inout": item_in.inout, "attempt": previous_attempt},
-                    "itemOut": {"inout": item_in.inout, "attempt": split_point},
-                    "atoffice_time": 0,
-                    "nightWorkTime": 0,
-                    "holidayWorkTime": 0,
-                    "nightHolidayWorkTime": 0
-                })
-                previous_attempt = split_point
-
-            split_list[4].append({
-                "itemIn": {"inout": item_in.inout, "attempt": previous_attempt},
-                "itemOut": {"inout": item_out.inout, "attempt": attempt_out},
-                "atoffice_time": 0,
-                "nightWorkTime": 0,
-                "holidayWorkTime": 0,
-                "nightHolidayWorkTime": 0
-            })
-        else:
-            section_index = 0
-            for index, key in enumerate(keys_to_check):
-                if attempt_in >= key:
-                    section_index = index + 1
-            split_list[section_index].append(couple)
-
-    return split_list
-
-
 class InoutMode:
     In = "In"
     Out = "Out"
@@ -120,6 +73,47 @@ class CoupleInout:
             "nightHolidayWorkTime": self.nightHolidayWorkTime,
             "typeio": self.typeio,
         }
+
+
+def merge_and_split_couples(couple1, couple2, keys_to_check):
+    merged_list = couple1 + couple2
+    split_list = [[] for _ in range(5)]  # Create a list containing 5 empty lists for each section
+
+    for couple in merged_list:
+        item_in = couple.itemIn
+        item_out = couple.itemOut
+
+        attempt_in = item_in.attempt
+        attempt_out = item_out.attempt
+
+        split_points = [key for key in keys_to_check if attempt_in < key < attempt_out]
+
+        if split_points:
+            split_points.sort()
+            previous_attempt = attempt_in
+
+            for index, split_point in enumerate(split_points):
+                section_index = min(index + 1, 4)
+                split_list[section_index].append(CoupleInout(
+                    AttendanceAttemptInOut(previous_attempt, item_in.inout),
+                    AttendanceAttemptInOut(split_point, item_in.inout),
+                    typeio=couple.typeio
+                ))
+                previous_attempt = split_point
+
+            split_list[4].append(CoupleInout(
+                AttendanceAttemptInOut(previous_attempt, item_in.inout),
+                AttendanceAttemptInOut(attempt_out, item_out.inout),
+                typeio=couple.typeio
+            ))
+        else:
+            section_index = 0
+            for index, key in enumerate(keys_to_check):
+                if attempt_in >= key:
+                    section_index = index + 1
+            split_list[section_index].append(couple)
+
+    return split_list
 
 
 def serialize_datetime(obj):
