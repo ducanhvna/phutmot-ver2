@@ -7,7 +7,6 @@ from .models import UserProfile
 from hrms.models import Attendance, Scheduling, Employee, Shifts, Leave, Explaination, Timesheet
 from dashboard.models import Hrms
 from datetime import datetime, timedelta
-from dashboard.models import Hrms
 import json
 import calendar
 from django.http import JsonResponse
@@ -72,12 +71,14 @@ def index(request):
             # Lấy thông tin profile từ model UserProfile
             user_profile = UserProfile.objects.get(employee_code=employee_code)
             employee_info = user_profile.info
-            time_keeping_code = employee_info['time_keeping_code']
+            # time_keeping_code = employee_info['time_keeping_code']
             first_day_of_month = selected_date.replace(day=1)
-            apec_dashboard = Hrms.objects.get(company_code='APEC', start_date=first_day_of_month)
+            # apec_dashboard = Hrms.objects.get(company_code='APEC', start_date=first_day_of_month)
             timesheet = Timesheet.objects.get(employee_code=employee_code, start_date=first_day_of_month)
-        except:
-            pass # Nếu không tìm thấy profile hoặc định dạng ngày không hợp lệ thì bỏ qua
+        except Exception as ex:
+            print("index ex: ", ex)
+            # Nếu không tìm thấy profile hoặc định dạng ngày không hợp lệ thì bỏ qua
+            pass
 
     first_day_of_month = datetime.now().replace(day=1)
     fleet_dashboard = Fleet.objects.get(start_date=first_day_of_month.date())
