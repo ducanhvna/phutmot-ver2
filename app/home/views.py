@@ -64,6 +64,8 @@ def index(request):
     employee_code = request.GET.get('employeeCode')
     selected_date = request.GET.get('date')
     user_profile = None
+    employee_info = None
+    ts = None
     if employee_code and selected_date:
         try:
             # Chuyển đổi selected_date thành đối tượng datetime
@@ -74,7 +76,7 @@ def index(request):
             # time_keeping_code = employee_info['time_keeping_code']
             first_day_of_month = selected_date.replace(day=1)
             # apec_dashboard = Hrms.objects.get(company_code='APEC', start_date=first_day_of_month)
-            timesheet = Timesheet.objects.get(employee_code=employee_code, start_date=first_day_of_month)
+            ts = Timesheet.objects.get(employee_code=employee_code, start_date=first_day_of_month)
         except Exception as ex:
             print("index ex: ", ex)
             # Nếu không tìm thấy profile hoặc định dạng ngày không hợp lệ thì bỏ qua
@@ -157,8 +159,8 @@ def index(request):
         "weather_data": weather_data,
         "employee_code": employee_code
     }
-    if timesheet:
-        context['timesheet'] = timesheet.timesheet_records
+    if ts:
+        context['timesheet'] = ts.timesheet_records
     if employee_info:
         context['job_title'] = employee_info.get('job_title', '-')
 
