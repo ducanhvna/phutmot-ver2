@@ -2,20 +2,6 @@ from datetime import timedelta, datetime
 from enum import Enum
 
 
-class AttendanceAttemptInOut:
-    def __init__(self, attempt):
-        self.attempt = attempt
-        self.inout = None
-
-    def to_dict(self):
-        return {
-            "attempt": self.attempt,
-            "inout": (
-                self.inout.to_dict() if isinstance(self.inout, CoupleInout) else None
-            ),
-        }
-
-
 class InoutMode:
     In = "In"
     Out = "Out"
@@ -28,6 +14,21 @@ class InoutMode:
         elif isinstance(value, str):
             return value
         raise TypeError(f"Invalid InoutMode value: {value}")
+
+
+class AttendanceAttemptInOut:
+    def __init__(self, attempt):
+        self.attempt = attempt
+        self.inout = None
+
+    def to_dict(self):
+        return {
+            "attempt": self.attempt,
+            "inout": (
+                self.inout.to_string() if isinstance(self.inout, InoutMode) else None
+            ),
+        }
+
 
 
 class KidMode(Enum):
