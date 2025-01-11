@@ -15,9 +15,9 @@ def serialize_scheduling(obj):
     for scheduling in obj.scheduling_records:
         timesheet = {
             "date": scheduling.get("date", None),
-            'listitemTrans' : scheduling.get('listitemTrans', []),
-            'attempt_with_inout_array' : scheduling.get('attempt_with_inout_array', []),
-            'attendanceAttemptArray' : scheduling.get('attendanceAttemptArray', []),
+            'listitemTrans': scheduling.get('listitemTrans', []),
+            'attempt_with_inout_array': scheduling.get('attempt_with_inout_array', []),
+            'attendanceAttemptArray': scheduling.get('attendanceAttemptArray', []),
             "shift_start_datetime": scheduling.get("shift_start_datetime", None),
             "shift_end_datetime": scheduling.get("shift_end_datetime", None),
             "rest_start_datetime": scheduling.get("rest_start_datetime", None),
