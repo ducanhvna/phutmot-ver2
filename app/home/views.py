@@ -67,10 +67,25 @@ def index(request):
                 "write_date": item["write_date"],
             }
         )
+    attributes = {
+        'Kết cấu đất': '15 Acres',
+        'Chất hữu cơ': '53 Acres',
+        'Chỉ số đệm': '9 Acres',
+        'Nitơ': '26',
+        'Thêm văn bản vào đây 1': '9.4',
+        'Thêm văn bản vào đây 2': '49',
+        'Giá trị pH': '8.5',
+        'Magiê 1': '3.7',
+        'Sắt': '5.3',
+        'Magiê 2': 'East',
+        'Thêm văn bản vào đây 3': '0.3',
+        'Thêm văn bản vào đây 4': '0.3',
+    }
     context = {
         "segment": "index",
         "today_trips": today_trips,
         "latest_trips": latest_trips,
+        "attributes": attributes
     }
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
