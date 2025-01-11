@@ -19,12 +19,13 @@ class HrmsDashboard():
         super(HrmsDashboard, self).__init__()
 
     def download_base(self):
-        comany_shift_service = ApecShiftService()
-        comany_shift_service.download_copanies()
+        self.comany_shift_service = ApecShiftService()
+        self.comany_shift_service.download_copanies()
         print("download company, shift, al, cl")
 
     def update(self, first_day_of_month=None):
         # Get the first day of the current month
+        max_write_date_shifts = None
         max_write_date_leave = None
         max_write_date_trans = None
         max_write_date_reports = None
@@ -44,11 +45,16 @@ class HrmsDashboard():
         )
         info = hrms_dashboard.info
         if info and (info != {}):
-            max_write_date_leave = info["max_write_date_leave"]
+            max_write_date_shifts = info.get("max_write_date_shifts", None)
+            max_write_date_leave = info.get("max_write_date_leave", None)
             max_write_date_trans = info.get("max_write_date_trans", None)
             max_write_date_reports = info.get('max_write_date_reports', None)
             max_write_date_explainations = info.get('max_write_date_explainations', None)
             max_write_date_employees = info.get('max_write_date_employees', None)
+        new_write_date_shifts = self.comany_shift_service.download_shift(max_write_date_shifts)
+        hrms_dashboard.info["max_write_date_shifts"] = (
+            new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date_shifts else None
+        )
         new_write_date = leave.download(max_write_date_leave)
         hrms_dashboard.info["max_write_date_leave"] = (
             new_write_date.strftime("%Y-%m-%d %H:%M:%S") if new_write_date else None
