@@ -474,7 +474,7 @@
                             <div class="table-full-width table-responsive">
                                 <table class="table">
                                     <tbody>
-                                        {% for trip in today_trips %}
+                                        {% for task in tasks %}
                                         <tr>
                                             <td>
                                                 <div class="form-check">
@@ -486,10 +486,10 @@
                                                     </label>
                                                 </div>
                                             </td>
-                                            <td>
-                                                <p class="title">{{ trip.start_location }} - {{ trip.dest_location }}</p>
-                                                <p class="text-muted">{{ trip.schedule_date }}</p>
-                                            </td>
+                                            <td>{{ task.task }}</td>
+                                            <td>{{ task.plot }}</td>
+                                            <td>{{ task.area }}</td>
+                                            <td>{{ task.date }}</td>
                                             <td class="td-actions text-right">
                                                 <button type="button" rel="tooltip" title="" class="btn btn-link"
                                                     data-original-title="Edit Task">

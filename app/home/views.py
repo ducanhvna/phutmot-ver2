@@ -85,12 +85,20 @@ def index(request):
         {'name': 'Khoai tây', 'weight': '0.88 tấn', 'location': 'Ruộng 18-EA', 'harvest_date': '11/06/2023', 'state': 'đang chờ'}
     ]
 
+    tasks_data = [
+        {'task': 'Kiểm tra đất', 'plot': '17', 'area': '4.6 ha', 'date': '13/05/2023'},
+        {'task': 'Trồng cây', 'plot': '22', 'area': '3.6 ha', 'date': '20/05/2023'},
+        {'task': 'Thu hoạch', 'plot': '2', 'area': '2 ha', 'date': '23/05/2023'},
+        {'task': 'Thu hoạch', 'plot': '9', 'area': '4.6 ha', 'date': '28/05/2023'}
+    ]
+
     context = {
         "segment": "index",
         "today_trips": today_trips,
         "latest_trips": latest_trips,
         "attributes": attributes,
-        "reminders": reminder_data
+        "reminders": reminder_data,
+        "tasks": tasks_data
     }
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
