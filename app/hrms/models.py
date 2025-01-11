@@ -31,7 +31,12 @@ class Employee(models.Model):
 
     def save(self, *args, **kwargs):
         if self.info:
-            self.info_unaccented = {key: unidecode(value).lower() for key, value in self.info.items()}
+            self.info_unaccented = {}
+            for key, value in self.info.items():
+                if isinstance(value, str):
+                    self.info_unaccented[key] = unidecode(value).lower()
+                else:
+                    self.info_unaccented[key] = value  # Giữ nguyên giá trị cho các kiểu dữ liệu khác
         super(Employee, self).save(*args, **kwargs)
 
 
