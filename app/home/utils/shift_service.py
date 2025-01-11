@@ -60,6 +60,7 @@ class ApecShiftService():
         for record in self.company_merged_data:
             self.company_grouped_data[f'{record["id"]}'] = record
             print(f"{record['id']} -- {record['name']}")
+        self.save_company_to_django()
 
     def download_shift(self, max_write_date_shifts=None):
         self.max_write_date_shifts = max_write_date_shifts
@@ -203,7 +204,7 @@ class ApecShiftService():
         company.save()
 
     def save_to_django(self, grouped_data):
-        self.save_company_to_django()
+        # self.save_company_to_django()
         for company_info, record in grouped_data.items():
             try:
                 shifts, created = Shifts.objects.get_or_create(
