@@ -1491,8 +1491,8 @@ def process_worktime_ho(scheduling_record):
         scheduling_record['list_couple_before_explanation_private'] = list_couple_before_explanation_private
         keys_to_check = [scheduling_record['shift_start_datetime']]
         keys_to_check.append(scheduling_record['rest_start_datetime'])
-        keys_to_check.append(scheduling_record['shift_start_datetime'])
-        keys_to_check.append(scheduling_record['shift_start_datetime'])
+        keys_to_check.append(scheduling_record['rest_end_datetime'])
+        keys_to_check.append(scheduling_record['shift_end_datetime'])
         for inout_couple in list_couple_before_explanation_private:
             inout_couple.typeio = 'IO'
         for inout_couple in scheduling_record['list_couple_out_in_before_explanation_private']:
