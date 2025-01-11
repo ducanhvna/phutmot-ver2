@@ -4,7 +4,8 @@ from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from .models import UserProfile
-from hrms.models import Attendance, Scheduling, Employee, Shifts, Leave, Explaination
+from hrms.models import Attendance, Scheduling, Employee, Shifts, Leave, Explaination, Timesheet
+from dashboard.models import Hrms
 from datetime import datetime, timedelta
 from dashboard.models import Hrms
 import json
@@ -61,6 +62,23 @@ def get_calendar_data(month=None, year=None):
 
 
 def index(request):
+    employee_code = request.GET.get('employeeCode')
+    selected_date = request.GET.get('date')
+    user_profile = None
+    if employee_code and selected_date:
+        try:
+            # Chuyển đổi selected_date thành đối tượng datetime
+            selected_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+            # Lấy thông tin profile từ model UserProfile
+            user_profile = UserProfile.objects.get(employee_code=employee_code)
+            employee_info = user_profile.info
+            time_keeping_code = employee_info['time_keeping_code']
+            first_day_of_month = selected_date.replace(day=1)
+            apec_dashboard = Hrms.objects.get(company_code='APEC', start_date=first_day_of_month)
+            timesheet = Timesheet.objects.get(employee_code=employee_code, start_date=first_day_of_month)
+        except:
+            pass # Nếu không tìm thấy profile hoặc định dạng ngày không hợp lệ thì bỏ qua
+
     first_day_of_month = datetime.now().replace(day=1)
     fleet_dashboard = Fleet.objects.get(start_date=first_day_of_month.date())
     today_trips = []
@@ -135,8 +153,14 @@ def index(request):
         "attributes": attributes,
         "reminders": reminder_data,
         "tasks": tasks_data,
-        "weather_data": weather_data
+        "weather_data": weather_data,
+        "employee_code": employee_code
     }
+    if timesheet:
+        context['timesheet'] = timesheet
+    if employee_info:
+        context['job_title'] = employee_info.get('job_title', '-')
+
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
 
