@@ -291,6 +291,11 @@
                             <div class="col-md-6">
                                 <div class="card">
                                     <div class="card-body">
+                                        {% for couple in merge_couples_before_private0 %}
+                                        <div class="alert alert-info">
+                                            <span>{{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }} h</span>
+                                        </div>
+                                        {% endfor %}
                                         {% for couple in merge_couples_before_private1 %}
                                         <div class="alert alert-success">
                                             <span>{{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }} h</span>
@@ -302,8 +307,18 @@
                             <div class="col-md-6">
                                 <div class="card">
                                     <div class="card-body">
+                                        {% for couple in merge_couples_before_private2 %}
+                                        <div class="alert alert-warning">
+                                            <span><b> {{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }} h </b></span>
+                                        </div>
+                                        {% endfor %}
                                         {% for couple in merge_couples_before_private3 %}
                                         <div class="alert alert-primary">
+                                            <span><b> {{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }} h </b></span>
+                                        </div>
+                                        {% endfor %}
+                                        {% for couple in merge_couples_before_private3 %}
+                                        <div class="alert alert-danger">
                                             <span><b> {{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }} h </b></span>
                                         </div>
                                         {% endfor %}
