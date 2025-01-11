@@ -528,7 +528,7 @@
                             <div class="table-full-width table-responsive">
                                 <table class="table">
                                     <tbody>
-                                        {% for trip in today_trips %}
+                                        {% for reminder in reminders %}
                                         <tr>
                                             <td>
                                                 <div class="form-check">
@@ -540,10 +540,11 @@
                                                     </label>
                                                 </div>
                                             </td>
-                                            <td>
-                                                <p class="title">{{ trip.start_location }} - {{ trip.dest_location }}</p>
-                                                <p class="text-muted">{{ trip.schedule_date }}</p>
-                                            </td>
+                                            <td>{{ reminder.name }}</td>
+                                            <td>{{ reminder.weight }}</td>
+                                            <td>{{ reminder.location }}</td>
+                                            <td>{{ reminder.harvest_date }}</td>
+                                            <td>{{ reminder.state }}</td>
                                             <td class="td-actions text-right">
                                                 <button type="button" rel="tooltip" title="" class="btn btn-link"
                                                     data-original-title="Edit Task">
