@@ -808,7 +808,7 @@ def mergedTimeToScheduling(schedulings, shifts, employee, leave_records, explana
 def add_attempt_more_than_limit(listAttendanceTrans, scheduling_record, diffHoursWithNext, diffHoursWithPrev):
     attempt_with_inout_array = []
     attendanceAttemptArray = []
-    if scheduling_record['shift_start_datetime'] and scheduling_record['shift_end_datetime']:
+    if scheduling_record['shift_start_datetime']:
         additionTrans = []
         shift_start = scheduling_record['shift_start_datetime']
         shift_end = scheduling_record['shift_end_datetime']
