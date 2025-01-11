@@ -6,7 +6,7 @@
 {% block stylesheets %}{% endblock stylesheets %}
 
 {% block content %}
-
+{% include 'home/popup_template.html' %}
 <div class="content">
     <div class="row">
         <div class="card">
@@ -781,5 +781,19 @@
         console.log('WebSocket error: ', error);
     };
 </script>
-
+<script>
+    function openModal(element) {
+        document.getElementById("myModal").style.display = "block";
+    //   var date = element.getAttribute("data-date");
+    //   fetch(`/api/get_details?date=${date}`)
+    //     .then(response => response.json())
+    //     .then(data => {
+    //       document.getElementById("modalDate").innerText = `Chi tiết ngày: ${date}`;
+    //       document.getElementById("modalOrderCount").innerText = `Số lượng đơn: ${data.order_count}`;
+    //       document.getElementById("modalWorkHours").innerText = `Thời gian đi làm: ${data.work_hours}`;
+    //       document.getElementById("modalSalary").innerText = `Công tính lương: ${data.salary}`;
+    //       document.getElementById("myModal").style.display = "block";
+    //     });
+    }
+  </script>
 {% endblock javascripts %}
