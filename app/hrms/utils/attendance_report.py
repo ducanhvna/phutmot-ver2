@@ -4,7 +4,7 @@ from enum import Enum
 
 def merge_and_split_couples(couple1, couple2, keys_to_check):
     merged_list = couple1 + couple2
-    split_list = []
+    split_list = [[] for _ in range(5)]  # Create a list containing 5 empty lists for each section
 
     for couple in merged_list:
         item_in = couple.itemIn
@@ -18,8 +18,10 @@ def merge_and_split_couples(couple1, couple2, keys_to_check):
         if split_points:
             split_points.sort()
             previous_attempt = attempt_in
-            for split_point in split_points:
-                split_list.append({
+
+            for index, split_point in enumerate(split_points):
+                section_index = min(index + 1, 4)
+                split_list[section_index].append({
                     "itemIn": {"inout": item_in.inout, "attempt": previous_attempt},
                     "itemOut": {"inout": item_in.inout, "attempt": split_point},
                     "atoffice_time": 0,
@@ -28,7 +30,8 @@ def merge_and_split_couples(couple1, couple2, keys_to_check):
                     "nightHolidayWorkTime": 0
                 })
                 previous_attempt = split_point
-            split_list.append({
+
+            split_list[4].append({
                 "itemIn": {"inout": item_in.inout, "attempt": previous_attempt},
                 "itemOut": {"inout": item_out.inout, "attempt": attempt_out},
                 "atoffice_time": 0,
@@ -37,7 +40,11 @@ def merge_and_split_couples(couple1, couple2, keys_to_check):
                 "nightHolidayWorkTime": 0
             })
         else:
-            split_list.append(couple)
+            section_index = 0
+            for index, key in enumerate(keys_to_check):
+                if attempt_in >= key:
+                    section_index = index + 1
+            split_list[section_index].append(couple)
 
     return split_list
 
