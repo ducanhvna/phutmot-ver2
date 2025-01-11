@@ -103,7 +103,7 @@ class ApecShiftService():
         shift_grouped_data = {}
         for record in shift_merged_data:
             shift_grouped_data[f'{record["name"]}_{record["company_id"][0]}_{record["company_id"][1]}'] = record
-            print(f"{record['id']} -- {record['name']} -- {float_to_time(record['start_work_time'])}")
+            # print(f"{record['id']} -- {record['name']} -- {float_to_time(record['start_work_time'])}")
         # Save data to Django
         self.save_to_django(shift_grouped_data)
         write_dates = [
