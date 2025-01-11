@@ -116,7 +116,57 @@
                     </div>
                 </div>
             </div>
+            <!-- weather data -->
+            <div class="card card-tasks">
+                <div class="card-header ">
+                    <h6 class="title d-inline">Nhắc nhở(Reminder)</h6>
+                    <p class="card-category d-inline">Hôm nay</p>
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-link dropdown-toggle btn-icon" data-toggle="dropdown">
+                            <i class="tim-icons icon-settings-gear-63"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                            <a class="dropdown-item" href="#pablo">Action</a>
+                            <a class="dropdown-item" href="#pablo">Another action</a>
+                            <a class="dropdown-item" href="#pablo">Something else</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body ">
+                    <div class="table-full-width table-responsive">
+                        <table class="table">
+                            <tbody>
+                                {% for weather in weather_data %}
 
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="checkbox" value="">
+                                                <span class="form-check-sign">
+                                                    <span class="check"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>{{ weather.date }}</td>
+                                    <td>{{ weather.weather }}</td>
+                                    <td>{{ weather.wind }}</td>
+                                    <td>{{ weather.humidity }}</td>
+                                    <td class="td-actions text-right">
+                                        <button type="button" rel="tooltip" title="" class="btn btn-link"
+                                            data-original-title="View">
+                                            <i class="tim-icons icon-zoom-split"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
             <!-- Employee -->
             <div class="col-md-12">
                 <div class="row">

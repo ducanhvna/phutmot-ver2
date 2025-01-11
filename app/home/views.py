@@ -101,13 +101,20 @@ def index(request):
         {'task': 'Thu hoạch', 'plot': '9', 'area': '4.6 ha', 'date': '28/05/2023'}
     ]
 
+    weather_data = [
+        {'date': 'Hôm nay (08/08)', 'weather': 'Mưa', 'wind': 'Gió từ phía tây 3 mph', 'humidity': '76%'},
+        {'date': 'Chủ nhật (09/08)', 'weather': 'Có mây một phần', 'wind': 'Gió từ phía tây nam 7 mph', 'humidity': '51%'},
+        {'date': 'Thứ bảy (06/08)', 'weather': 'Trời quang', 'wind': 'Gió từ tây bắc 12 mph', 'humidity': '34%'}
+    ]
+
     context = {
         "segment": "index",
         "today_trips": today_trips,
         "latest_trips": latest_trips,
         "attributes": attributes,
         "reminders": reminder_data,
-        "tasks": tasks_data
+        "tasks": tasks_data,
+        "weather_data": weather_data
     }
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
