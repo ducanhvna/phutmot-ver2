@@ -178,6 +178,12 @@ def index(request):
                 context['merge_couples_before_private2'] = merge_couples_before_private[2]
                 context['merge_couples_before_private3'] = merge_couples_before_private[3]
                 context['merge_couples_before_private4'] = merge_couples_before_private[4]
+            else:
+                context['merge_couples_before_private0'] = []
+                context['merge_couples_before_private1'] = []
+                context['merge_couples_before_private2'] = []
+                context['merge_couples_before_private3'] = []
+                context['merge_couples_before_private4'] = []
     if employee_info:
         context['job_title'] = employee_info.get('job_title', '-')
         context['name'] = employee_info.get('name', '-')
