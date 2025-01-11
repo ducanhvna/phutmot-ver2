@@ -20,6 +20,12 @@ class AttendanceAttemptInOut:
     def __init__(self, attempt, inout=None):
         self.attempt = attempt
         self.inout = inout
+        self.typeio = "IO" if self.inout == InoutMode.In else "OI" if self.inout == InoutMode.Out else "Unknown"
+
+    @property
+    def display_hour(self):
+        attempt_time = datetime.strptime(self.attempt, '%Y-%m-%dT%H:%M:%S')
+        return attempt_time.hour
 
     def to_dict(self):
         return {
@@ -27,6 +33,8 @@ class AttendanceAttemptInOut:
             "inout": (
                 InoutMode.to_string(self.inout) if self.inout else None
             ),
+            "display_hour": self.display_hour,
+            "typeio": self.typeio,
         }
 
 
