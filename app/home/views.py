@@ -33,11 +33,9 @@ class EmployeeSearchAPIView(generics.ListAPIView):
                 name = remove_accent(employee.info.get('name', ''))
                 code = remove_accent(employee.info.get('code', ''))
                 time_keeping_code = remove_accent(employee.info.get('time_keeping_code', ''))
-                
                 search_conditions = search_conditions | Q(info__name__icontains=name)
                 search_conditions = search_conditions | Q(info__code__icontains=code)
                 search_conditions = search_conditions | Q(info__time_keeping_code__icontains=time_keeping_code)
-            
             queryset = queryset.filter(search_conditions)
         return queryset
 
