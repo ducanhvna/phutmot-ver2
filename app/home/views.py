@@ -76,7 +76,16 @@ def index(request):
         'Magiê 1': '3.7',
         'Sắt': '5.3',
         'Magiê 2': 'East',
+        'Độ ẩm đất': '45%',
+        'Hàm lượng kali': '5%',
+        'Hàm lượng phospho': '4%',
+        'Độ dẫn điện của đất': '1.2 mS/cm',
+        'Độ thấm nước của đất': '3.5 in/hr',
+        'Cấu trúc đất': 'Loamy',
+        'Cation exchange capacity': '25 meq/100g',
+        'Hàm lượng hữu cơ trong đất': '12%',
     }
+
     reminder_data = [
         {'name': 'Khoai tây', 'weight': '0.58 tấn', 'location': 'Ruộng 11-DA', 'harvest_date': '17/06/2023', 'state': 'thành công'},
         {'name': 'Cà chua', 'weight': '0.28 tấn', 'location': 'Ruộng 1-VQ', 'harvest_date': '16/06/2023', 'state': 'cảnh báo'},
