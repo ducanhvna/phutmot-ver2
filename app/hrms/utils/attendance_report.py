@@ -67,7 +67,6 @@ class AttendanceAttemptInOut:
     def __init__(self, attempt, inout=None):
         self.attempt = attempt
         self.inout = inout
-        self.typeio = "IO" if self.inout == InoutMode.In else "OI" if self.inout == InoutMode.Out else "Unknown"
 
     @property
     def display_hour(self):
@@ -80,7 +79,6 @@ class AttendanceAttemptInOut:
                 InoutMode.to_string(self.inout) if self.inout else None
             ),
             "display_hour": self.display_hour,
-            "typeio": self.typeio,
         }
 
 
@@ -95,13 +93,14 @@ class KidMode(Enum):
 
 
 class CoupleInout:
-    def __init__(self, itemIn, itemOut):
+    def __init__(self, itemIn, itemOut, typeio=None):
         self.itemIn = itemIn
         self.itemOut = itemOut
         self.atoffice_time = 0
         self.nightWorkTime = 0
         self.holidayWorkTime = 0
         self.nightHolidayWorkTime = 0
+        self.typeio = typeio if typeio in ['IO', 'OI', 'II', 'OO'] else "Unknown"
 
     def to_dict(self):
         return {
@@ -119,6 +118,7 @@ class CoupleInout:
             "nightWorkTime": self.nightWorkTime,
             "holidayWorkTime": self.holidayWorkTime,
             "nightHolidayWorkTime": self.nightHolidayWorkTime,
+            "typeio": self.typeio,
         }
 
 
@@ -1488,6 +1488,10 @@ def process_worktime_ho(scheduling_record):
         keys_to_check.append(scheduling_record['rest_start_datetime'])
         keys_to_check.append(scheduling_record['shift_start_datetime'])
         keys_to_check.append(scheduling_record['shift_start_datetime'])
+        for inout_couple in list_couple_before_explanation_private:
+            inout_couple.typeio = 'IO'
+        for inout_couple in scheduling_record['list_couple_out_in_before_explanation_private']:
+            inout_couple.typeio = 'OI'
         scheduling_record['merge_couples_before_private'] = merge_and_split_couples(list_couple_before_explanation_private, scheduling_record['list_couple_out_in_before_explanation_private'], keys_to_check)
         if list_couple_before_explanation_private:
             real_timein_couple = next((element for element in list_couple_before_explanation_private if element.itemOut.attempt > shift_start_datetime), None)

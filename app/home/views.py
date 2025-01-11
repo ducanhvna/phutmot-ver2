@@ -171,6 +171,13 @@ def index(request):
                 print(ex)
             if parsed_date and (parsed_date.day == selected_date.day) and (parsed_date.month == selected_date.month):
                 context['timesheet'] = record
+            merge_couples_before_private = record.get('merge_couples_before_private',[])
+            if len(merge_couples_before_private) == 5:
+                context['merge_couples_before_private0'] = merge_couples_before_private[0]
+                context['merge_couples_before_private1'] = merge_couples_before_private[1]
+                context['merge_couples_before_private2'] = merge_couples_before_private[2]
+                context['merge_couples_before_private3'] = merge_couples_before_private[3]
+                context['merge_couples_before_private4'] = merge_couples_before_private[4]
     if employee_info:
         context['job_title'] = employee_info.get('job_title', '-')
         context['name'] = employee_info.get('name', '-')
