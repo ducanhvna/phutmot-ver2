@@ -122,6 +122,7 @@ def merge_and_split_couples(couple1, couple2, keys_to_check):
                         typeio=couple.typeio
                     ))
                     break
+            key_index = key_index + 1
 
     return split_list
 
