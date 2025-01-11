@@ -7,11 +7,11 @@ def merge_and_split_couples(couple1, couple2, keys_to_check):
     split_list = []
 
     for couple in merged_list:
-        item_in = couple.get("itemIn", {})
-        item_out = couple.get("itemOut", {})
+        item_in = couple.itemIn
+        item_out = couple.itemOut
 
-        attempt_in = item_in.get("attempt")
-        attempt_out = item_out.get("attempt")
+        attempt_in = item_in.attempt
+        attempt_out = item_out.attempt
 
         split_points = [key for key in keys_to_check if attempt_in < key < attempt_out]
 
@@ -20,8 +20,8 @@ def merge_and_split_couples(couple1, couple2, keys_to_check):
             previous_attempt = attempt_in
             for split_point in split_points:
                 split_list.append({
-                    "itemIn": {"inout": item_in.get("inout"), "attempt": previous_attempt},
-                    "itemOut": {"inout": item_in.get("inout"), "attempt": split_point},
+                    "itemIn": {"inout": item_in.inout, "attempt": previous_attempt},
+                    "itemOut": {"inout": item_in.inout, "attempt": split_point},
                     "atoffice_time": 0,
                     "nightWorkTime": 0,
                     "holidayWorkTime": 0,
@@ -29,8 +29,8 @@ def merge_and_split_couples(couple1, couple2, keys_to_check):
                 })
                 previous_attempt = split_point
             split_list.append({
-                "itemIn": {"inout": item_in.get("inout"), "attempt": previous_attempt},
-                "itemOut": {"inout": item_out.get("inout"), "attempt": attempt_out},
+                "itemIn": {"inout": item_in.inout, "attempt": previous_attempt},
+                "itemOut": {"inout": item_out.inout, "attempt": attempt_out},
                 "atoffice_time": 0,
                 "nightWorkTime": 0,
                 "holidayWorkTime": 0,
