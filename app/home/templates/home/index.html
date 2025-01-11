@@ -584,13 +584,15 @@
                                     <div class="row">
                                         {% for name, value in attributes.items %}
                                         <div class=" col-md-6">
-                                            <div class=" col-md-7 alert alert-info">
-                                                <div class="column-header"></div>
-                                                    <div>{{ name }}</div>
-                                            </div>
-                                            <div class="col-md-5">
-                                                <div class="column-header"></div>
-                                                    <div>{{ value }}</div>
+                                            <div class="row">
+                                                <div class=" col-md-7 alert alert-info">
+                                                    <div class="column-header"></div>
+                                                        <div>{{ name }}</div>
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <div class="column-header"></div>
+                                                        <div>{{ value }}</div>
+                                                </div>
                                             </div>
                                         </div>
                                         {% endfor %}
