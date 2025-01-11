@@ -61,6 +61,18 @@ class ApecShiftService():
             self.company_grouped_data[f'{record["id"]}'] = record
             print(f"{record['id']} -- {record['name']}")
         self.save_company_to_django()
+        write_dates = [
+            datetime.strptime(record["write_date"], "%Y-%m-%d %H:%M:%S")
+            for record in company_merged_data
+            if record.get("write_date")
+        ]
+        # Get the maximum write_date or None if the list is empty
+        max_write_date = max(write_dates, default=None)
+
+        # Now max_write_date contains the maximum write_date or None if there are no dates
+        print(f"Maximum write_date: {max_write_date}")
+
+        return max_write_date
 
     def download_shift(self, max_write_date_shifts=None):
         self.max_write_date_shifts = max_write_date_shifts
