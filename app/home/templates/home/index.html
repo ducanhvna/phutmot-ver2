@@ -420,184 +420,186 @@
                     </div>
                 </div>
                 <div class="col-md-12">
-                    <div class="col-md-4">
-                        <div class="col-lg-12 col-md-12">
-                            <div class="row">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="col-lg-12 col-md-12">
+                                <div class="row">
 
-                                <div class="card card-tasks">
-                                    <div class="card-header ">
-                                        <h6 class="title d-inline">Nhiệm vụ (Tasks)</h6>
-                                        <p class="card-category d-inline">Hôm nay</p>
-                                        <div class="dropdown">
-                                            <button type="button" class="btn btn-link dropdown-toggle btn-icon" data-toggle="dropdown">
-                                                <i class="tim-icons icon-settings-gear-63"></i>
-                                            </button>
-                                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
-                                                <a class="dropdown-item" href="#pablo">Action</a>
-                                                <a class="dropdown-item" href="#pablo">Another action</a>
-                                                <a class="dropdown-item" href="#pablo">Something else</a>
+                                    <div class="card card-tasks">
+                                        <div class="card-header ">
+                                            <h6 class="title d-inline">Nhiệm vụ (Tasks)</h6>
+                                            <p class="card-category d-inline">Hôm nay</p>
+                                            <div class="dropdown">
+                                                <button type="button" class="btn btn-link dropdown-toggle btn-icon" data-toggle="dropdown">
+                                                    <i class="tim-icons icon-settings-gear-63"></i>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                                    <a class="dropdown-item" href="#pablo">Action</a>
+                                                    <a class="dropdown-item" href="#pablo">Another action</a>
+                                                    <a class="dropdown-item" href="#pablo">Something else</a>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="card-body ">
-                                        <div class="table-full-width table-responsive">
-                                            <table class="table">
-                                                <tbody>
-                                                    {% for task in tasks %}
-                                                    <tr>
-                                                        <td>
-                                                            <div class="form-check">
-                                                                <label class="form-check-label">
-                                                                    <input class="form-check-input" type="checkbox" value="">
-                                                                    <span class="form-check-sign">
-                                                                        <span class="check"></span>
-                                                                    </span>
-                                                                </label>
-                                                            </div>
-                                                        </td>
-                                                        <td>{{ task.task }}</td>
-                                                        <td>{{ task.plot }}</td>
-                                                        <td>{{ task.area }}</td>
-                                                        <td>{{ task.date }}</td>
-                                                        <td class="td-actions text-right">
-                                                            <button type="button" rel="tooltip" title="" class="btn btn-link"
-                                                                data-original-title="Edit Task">
-                                                                <i class="tim-icons icon-pencil"></i>
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
+                                        <div class="card-body ">
+                                            <div class="table-full-width table-responsive">
+                                                <table class="table">
+                                                    <tbody>
+                                                        {% for task in tasks %}
+                                                        <tr>
+                                                            <td>
+                                                                <div class="form-check">
+                                                                    <label class="form-check-label">
+                                                                        <input class="form-check-input" type="checkbox" value="">
+                                                                        <span class="form-check-sign">
+                                                                            <span class="check"></span>
+                                                                        </span>
+                                                                    </label>
+                                                                </div>
+                                                            </td>
+                                                            <td>{{ task.task }}</td>
+                                                            <td>{{ task.plot }}</td>
+                                                            <td>{{ task.area }}</td>
+                                                            <td>{{ task.date }}</td>
+                                                            <td class="td-actions text-right">
+                                                                <button type="button" rel="tooltip" title="" class="btn btn-link"
+                                                                    data-original-title="Edit Task">
+                                                                    <i class="tim-icons icon-pencil"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
+                    
                                     </div>
-                
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="col-lg-12 col-md-12">
-                            <div class="row">
+                        <div class="col-md-4">
+                            <div class="col-lg-12 col-md-12">
+                                <div class="row">
 
-                                <div class="card card-tasks">
-                                    <div class="card-header ">
-                                        <h6 class="title d-inline">Nhắc nhở(Reminder)</h6>
-                                        <p class="card-category d-inline">Hôm nay</p>
-                                        <div class="dropdown">
-                                            <button type="button" class="btn btn-link dropdown-toggle btn-icon" data-toggle="dropdown">
-                                                <i class="tim-icons icon-settings-gear-63"></i>
-                                            </button>
-                                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
-                                                <a class="dropdown-item" href="#pablo">Action</a>
-                                                <a class="dropdown-item" href="#pablo">Another action</a>
-                                                <a class="dropdown-item" href="#pablo">Something else</a>
+                                    <div class="card card-tasks">
+                                        <div class="card-header ">
+                                            <h6 class="title d-inline">Nhắc nhở(Reminder)</h6>
+                                            <p class="card-category d-inline">Hôm nay</p>
+                                            <div class="dropdown">
+                                                <button type="button" class="btn btn-link dropdown-toggle btn-icon" data-toggle="dropdown">
+                                                    <i class="tim-icons icon-settings-gear-63"></i>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                                    <a class="dropdown-item" href="#pablo">Action</a>
+                                                    <a class="dropdown-item" href="#pablo">Another action</a>
+                                                    <a class="dropdown-item" href="#pablo">Something else</a>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="card-body ">
-                                        <div class="table-full-width table-responsive">
-                                            <table class="table">
-                                                <tbody>
-                                                    {% for reminder in reminders %}
-                                                    <tr>
-                                                        <td>
-                                                            <div class="form-check">
-                                                                <label class="form-check-label">
-                                                                    <input class="form-check-input" type="checkbox" value="">
-                                                                    <span class="form-check-sign">
-                                                                        <span class="check"></span>
-                                                                    </span>
-                                                                </label>
-                                                            </div>
-                                                        </td>
-                                                        <td>{{ reminder.name }}</td>
-                                                        <td>{{ reminder.weight }}</td>
-                                                        <td>{{ reminder.location }}</td>
-                                                        <td>{{ reminder.harvest_date }}</td>
-                                                        <td>{{ reminder.state }}</td>
-                                                        <td class="td-actions text-right">
-                                                            <button type="button" rel="tooltip" title="" class="btn btn-link"
-                                                                data-original-title="Edit Task">
-                                                                <i class="tim-icons icon-pencil"></i>
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
+                                        <div class="card-body ">
+                                            <div class="table-full-width table-responsive">
+                                                <table class="table">
+                                                    <tbody>
+                                                        {% for reminder in reminders %}
+                                                        <tr>
+                                                            <td>
+                                                                <div class="form-check">
+                                                                    <label class="form-check-label">
+                                                                        <input class="form-check-input" type="checkbox" value="">
+                                                                        <span class="form-check-sign">
+                                                                            <span class="check"></span>
+                                                                        </span>
+                                                                    </label>
+                                                                </div>
+                                                            </td>
+                                                            <td>{{ reminder.name }}</td>
+                                                            <td>{{ reminder.weight }}</td>
+                                                            <td>{{ reminder.location }}</td>
+                                                            <td>{{ reminder.harvest_date }}</td>
+                                                            <td>{{ reminder.state }}</td>
+                                                            <td class="td-actions text-right">
+                                                                <button type="button" rel="tooltip" title="" class="btn btn-link"
+                                                                    data-original-title="Edit Task">
+                                                                    <i class="tim-icons icon-pencil"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
+                    
                                     </div>
-                
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-4">
-                        <!-- Project Manager -->
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="card card-user">
-                                    <div class="card-body">
-                                        <p class="card-text">
-                                        <div class="author">
-                                            <div class="block block-one"></div>
-                                            <div class="block block-two"></div>
-                                            <div class="block block-three"></div>
-                                            <div class="block block-four"></div>
-                                            <a href="javascript:void(0)">
-                                                <h5 class="title">Dự án hằng ngày</h5>
-                                            </a>
-                                            <div class="card-body">
-                                                <div class="card card-chart">
-                                                    <div class="card-body">
-                                                        <div class="chart-area">
-                                                            <canvas id="projectgantt2"></canvas>
+                        <div class="col-md-4">
+                            <!-- Project Manager -->
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="card card-user">
+                                        <div class="card-body">
+                                            <p class="card-text">
+                                            <div class="author">
+                                                <div class="block block-one"></div>
+                                                <div class="block block-two"></div>
+                                                <div class="block block-three"></div>
+                                                <div class="block block-four"></div>
+                                                <a href="javascript:void(0)">
+                                                    <h5 class="title">Dự án hằng ngày</h5>
+                                                </a>
+                                                <div class="card-body">
+                                                    <div class="card card-chart">
+                                                        <div class="card-body">
+                                                            <div class="chart-area">
+                                                                <canvas id="projectgantt2"></canvas>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        </p>
-                                        <div class="card-description">
+                                            </p>
+                                            <div class="card-description">
 
+                                            </div>
                                         </div>
+
                                     </div>
-
                                 </div>
-                            </div>
-                            <div class="col-md-8">
-                                <div class="card card-user">
-                                    <div class="card-body">
-                                        <p class="card-text">
-                                        <div class="author">
-                                            <div class="block block-one"></div>
-                                            <div class="block block-two"></div>
-                                            <div class="block block-three"></div>
-                                            <div class="block block-four"></div>
-                                            <a href="javascript:void(0)">
+                                <div class="col-md-8">
+                                    <div class="card card-user">
+                                        <div class="card-body">
+                                            <p class="card-text">
+                                            <div class="author">
+                                                <div class="block block-one"></div>
+                                                <div class="block block-two"></div>
+                                                <div class="block block-three"></div>
+                                                <div class="block block-four"></div>
+                                                <a href="javascript:void(0)">
 
-                                                <h5 class="title">Dự án 1</h5>
-                                            </a>
-                                            <div class="card-body">
-                                                <div class="card card-chart">
-                                                    <div class="card-body">
-                                                        <div class="chart-area">
-                                                            <canvas id="projectgantt"></canvas>
+                                                    <h5 class="title">Dự án 1</h5>
+                                                </a>
+                                                <div class="card-body">
+                                                    <div class="card card-chart">
+                                                        <div class="card-body">
+                                                            <div class="chart-area">
+                                                                <canvas id="projectgantt"></canvas>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        </p>
-                                        <div class="card-description">
+                                            </p>
+                                            <div class="card-description">
 
+                                            </div>
                                         </div>
+
                                     </div>
-
                                 </div>
-                            </div>
 
+                            </div>
                         </div>
                     </div>
                 </div>
