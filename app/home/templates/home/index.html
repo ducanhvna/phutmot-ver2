@@ -202,55 +202,16 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
+                                                {{ for tran in listitem_trans}}
                                                 <tr>
                                                     <td>
-                                                        In
+                                                        {{ tran.in_out }}
                                                     </td>
                                                     <td class="text-center">
-                                                        08:00:00
+                                                        {{ tran.hour }}
                                                     </td>
                                                 </tr>
-                                                <tr>
-                                                    <td>
-                                                        Out
-                                                    </td>
-                                                    <td class="text-center">
-                                                        12:10:00
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        In
-                                                    </td>
-                                                    <td class="text-center">
-                                                        12:20:00
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        In
-                                                    </td>
-                                                    <td class="text-center">
-                                                        12:40:00
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        Out
-                                                    </td>
-                                                    <td class="text-center">
-                                                        15:00:00
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        Out
-                                                    </td>
-                                                    <td class="text-center">
-                                                        18:00:00
-                                                    </td>
-                                                </tr>
-
+                                                {{ endfor }}
 
                                             </tbody>
                                         </table>

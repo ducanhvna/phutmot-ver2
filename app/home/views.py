@@ -184,6 +184,13 @@ def index(request):
                     context['merge_couples_before_private2'] = []
                     context['merge_couples_before_private3'] = []
                     context['merge_couples_before_private4'] = []
+                listitem_trans = record.get('listitemTrans', [])
+                for tran in listitem_trans:
+                    try:
+                        tran['hour'] = tran['time'].split(' ')[1]
+                    except Exception as ex:
+                        print(ex)
+                context['listitem_trans'] = listitem_trans
     if employee_info:
         context['job_title'] = employee_info.get('job_title', '-')
         context['name'] = employee_info.get('name', '-')
