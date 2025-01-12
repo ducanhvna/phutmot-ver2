@@ -29,7 +29,7 @@ class DocumentApprovalSteps(models.Model):
 
     steps = fields.Integer(string="Steps",
                            help='For counting how many steps needed')
-    approver_id = fields.Many2one('res.users', string="Approver",
+    approver_id = fields.Many2one('hr.employee', string="Approver",
                                   help='The person who is responsible for '
                                        'the approval')
     role = fields.Char(string="Role/Position",

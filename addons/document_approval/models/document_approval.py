@@ -36,7 +36,7 @@ class DocumentApproval(models.Model):
     description = fields.Text(string="Description",
                               help='Used to add description about the document'
                                    ' approval')
-    approve_initiator_id = fields.Many2one('res.users', string="Initiator",
+    approve_initiator_id = fields.Many2one('hr.employee', string="Initiator",
                                            default=lambda self: self.env.user,
                                            help='Set who has initiated the '
                                                 'document approval.')
@@ -75,7 +75,7 @@ class DocumentApproval(models.Model):
                                help='You can upload file and file details')
     step_count = fields.Integer(string="Step", help="Current Step",
                                 readonly=True)
-    approver_ids = fields.Many2many('res.users', string="Approver",
+    approver_ids = fields.Many2many('hr.employee', string="Approver",
                                     help="User to approve the document")
     show_approve = fields.Boolean(string="Show Approve Button", copy=False,
                                   help="To show the approve button to approve "

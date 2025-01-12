@@ -30,7 +30,7 @@ class DocumentApprovalTeam(models.Model):
 
     name = fields.Char(string='Name', required=True, help='Name of the team',
                        tracking=True)
-    team_lead_id = fields.Many2one('res.users', string='Team Leader',
+    team_lead_id = fields.Many2one('hr.employee', string='Team Leader',
                                    help='For setting th team lead',
                                    tracking=True, required=True,
                                    default=lambda self: self.env.user)
