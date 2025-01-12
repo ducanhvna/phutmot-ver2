@@ -37,7 +37,7 @@ class DocumentApproval(models.Model):
                               help='Used to add description about the document'
                                    ' approval')
     approve_initiator_id = fields.Many2one('hr.employee', string="Initiator",
-                                        #    default=lambda self: self.env.user,
+                                           default=lambda self: self.env.user,
                                            help='Set who has initiated the '
                                                 'document approval.')
     team_id = fields.Many2one('document.approval.team', string="Approval Team",
