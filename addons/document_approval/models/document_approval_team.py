@@ -32,8 +32,8 @@ class DocumentApprovalTeam(models.Model):
                        tracking=True)
     team_lead_id = fields.Many2one('hr.employee', string='Team Leader',
                                    help='For setting th team lead',
-                                   tracking=True, required=True,
-                                   default=lambda self: self.env.user)
+                                   tracking=True, required=True)
+                                #    default=lambda self: self.env.user)
     company_id = fields.Many2one('res.company', string='Company',
                                  help='For setting the company',
                                  default=lambda self: self.env.company)
