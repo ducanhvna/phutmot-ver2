@@ -157,7 +157,8 @@ def index(request):
         "reminders": reminder_data,
         "tasks": tasks_data,
         "weather_data": weather_data,
-        "employee_code": employee_code
+        "employee_code": employee_code,
+        "listitem_trans": []
     }
     if ts:
         timesheet_records = ts.timesheet_records
