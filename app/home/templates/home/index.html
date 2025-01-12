@@ -202,7 +202,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {{ for tran in listitem_trans}}
+                                                {% for tran in listitem_trans %}
                                                 <tr>
                                                     <td>
                                                         {{ tran.in_out }}
@@ -211,7 +211,7 @@
                                                         {{ tran.hour }}
                                                     </td>
                                                 </tr>
-                                                {{ endfor }}
+                                                {% endfor %}
 
                                             </tbody>
                                         </table>
