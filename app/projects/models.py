@@ -32,7 +32,7 @@ class Project(models.Model):
                     self.info_unaccented[key] = unidecode(value).lower()
                 else:
                     self.info_unaccented[key] = value  # Giữ nguyên giá trị cho các kiểu dữ liệu khác
-        super(UserProfile, self).save(*args, **kwargs)
+        super(Project, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"({self.company_code}.{self.code}) - {self.name} info from {self.start_date} to {self.end_date}"
