@@ -188,7 +188,7 @@ def index(request):
                 couple_index = 0
                 for couple in context['merge_couples_before_private1']:
                     couple['description'] = 'làm việc'
-                    if couple_index == 0 and couple.get('typeio', '') == 'OI':
+                    if couple_index == 0 and couple.get('typeio', '') == 'IO':
                         couple['description'] = 'đi muộn'
                     couple_index = couple_index + 1
                 for couple in context['merge_couples_before_private3']:
