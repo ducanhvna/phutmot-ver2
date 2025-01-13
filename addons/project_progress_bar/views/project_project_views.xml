@@ -13,6 +13,7 @@
                     <field name="is_progress_bar" invisible="1"/>
                     <field name="progressbar" widget="progressbar"
                            invisible="not is_progress_bar"/>
+                    <field name="code"/>
                     <field name="employee_ids"/>
                     <field name="department_id"/>
                     <field name="is_daily"/>
