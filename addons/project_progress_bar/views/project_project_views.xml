@@ -13,6 +13,9 @@
                     <field name="is_progress_bar" invisible="1"/>
                     <field name="progressbar" widget="progressbar"
                            invisible="not is_progress_bar"/>
+                    <field name="employee_ids"/>
+                    <field name="department_id"/>
+                    <field name="is_daily"/>
                 </field>
                 <xpath expr="//div[@t-if='record.date.raw_value or record.date_start.raw_value']"
                        position="after">
