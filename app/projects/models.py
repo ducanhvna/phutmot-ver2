@@ -9,6 +9,8 @@ class Project(models.Model):
     company_code = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     company_name = models.CharField(max_length=255)
+    start_date = models.DateField("Ngày bắt đầu tháng")
+    end_date = models.DateField("Ngày kết thúc tháng")
     info = JSONField(default=dict, blank=True)
     info_unaccented = models.JSONField("Thông tin bổ sung không dấu", default=dict, blank=True)
     create_time = models.DateTimeField("Thời gian tạo", auto_now_add=True)
@@ -17,7 +19,7 @@ class Project(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["code", "company_code"],
+                fields=["code", "company_code", "start_date", "end_date"],
                 name="unique_code_project_company",
             )
         ]
@@ -33,7 +35,7 @@ class Project(models.Model):
         super(UserProfile, self).save(*args, **kwargs)
 
     def __str__(self):
-        return f"({self.company_code}.{self.code}) - {self.name} info"
+        return f"({self.company_code}.{self.code}) - {self.name} info from {self.start_date} to {self.end_date}"
 
 
 class Task(models.Model):

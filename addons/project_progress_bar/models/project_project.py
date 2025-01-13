@@ -26,6 +26,7 @@ class ProjectProject(models.Model):
     """Inherits the project Model for adding new fields and functions"""
     _inherit = "project.project"
 
+    code = fields.Char(string='Mã dự án')
     progressbar = fields.Float(string='Progress Bar',
                                compute='_compute_progress_bar',
                                help='Calculate the progress of the task '
