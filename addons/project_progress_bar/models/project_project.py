@@ -33,6 +33,10 @@ class ProjectProject(models.Model):
     is_progress_bar = fields.Boolean(string='Is Progress Bar',
                                      help='Status of the task based the '
                                           'stage')
+    employee_ids = fields.Many2many('hr.employee',
+                                     string='Người tham gia')
+    department_id = fields.Many2one('hr.department', string="phòng ban")
+    is_daily = fields.Boolean(string="Công việc hằng ngày")
 
     @api.depends()
     def _compute_progress_bar(self):
