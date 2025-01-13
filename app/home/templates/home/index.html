@@ -366,7 +366,7 @@
                                                 {% endfor %}
                                                 {% for couple in merge_couples_before_private1 %}
                                                 <div class="alert alert-success">
-                                                    <span>{{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }}h: {{ couple.description }}</span>
+                                                    <span>{{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }}h: {{ couple.typeio }}</span>
                                                 </div>
                                                 {% endfor %}
                                             </div>
@@ -382,7 +382,7 @@
                                                 {% endfor %}
                                                 {% for couple in merge_couples_before_private3 %}
                                                 <div class="alert alert-primary">
-                                                    <span><b> {{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }}h: {{ couple.description }}</b></span>
+                                                    <span><b> {{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }}h: {{ couple.typeio }}</b></span>
                                                 </div>
                                                 {% endfor %}
                                                 {% for couple in merge_couples_before_private2 %}
