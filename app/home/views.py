@@ -188,12 +188,12 @@ def index(request):
                 couple_index = 0
                 for couple in context['merge_couples_before_private1']:
                     couple['description'] = 'làm việc'
-                    if couple_index == 0 and couple.typeio == 'OI':
+                    if couple_index == 0 and couple.get('typeio', '') == 'OI':
                         couple['description'] = 'đi muộn'
                     couple_index = couple_index + 1
                 for couple in context['merge_couples_before_private3']:
                     couple['description'] = 'làm việc'
-                    if (couple_index == (len(context['merge_couples_before_private3']) - 1)) and couple.typeio == 'IO':
+                    if (couple_index == (len(context['merge_couples_before_private3']) - 1)) and couple.get('typeio', '') == 'IO':
                         couple['description'] = 'Về sớm'
                     couple_index = couple_index + 1
                 listitem_trans = record.get('listitemTrans', [])
