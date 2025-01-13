@@ -185,6 +185,17 @@ def index(request):
                     context['merge_couples_before_private2'] = []
                     context['merge_couples_before_private3'] = []
                     context['merge_couples_before_private4'] = []
+                couple_index = 0
+                for couple in context['merge_couples_before_private1']:
+                    couple['description'] = 'làm việc'
+                    if couple_index == 0 and couple.typeio == 'OI':
+                        couple['description'] = 'đi muộn'
+                    couple_index = couple_index + 1
+                for couple in context['merge_couples_before_private3']:
+                    couple['description'] = 'làm việc'
+                    if (couple_index == (len(context['merge_couples_before_private3']) - 1)) and couple.typeio == 'IO':
+                        couple['description'] = 'Về sớm'
+                    couple_index = couple_index + 1
                 listitem_trans = record.get('listitemTrans', [])
                 for tran in listitem_trans:
                     try:

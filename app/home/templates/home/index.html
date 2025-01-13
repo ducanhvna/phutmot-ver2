@@ -361,12 +361,12 @@
                                             <div class="card-body">
                                                 {% for couple in merge_couples_before_private0 %}
                                                 <div class="alert alert-info">
-                                                    <span>{{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }} h</span>
+                                                    <span>{{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }}h: Đến công ty</span>
                                                 </div>
                                                 {% endfor %}
                                                 {% for couple in merge_couples_before_private1 %}
                                                 <div class="alert alert-success">
-                                                    <span>{{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }} h</span>
+                                                    <span>{{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }}h: {{ couple.description }}</span>
                                                 </div>
                                                 {% endfor %}
                                             </div>
@@ -377,17 +377,17 @@
                                             <div class="card-body">
                                                 {% for couple in merge_couples_before_private4 %}
                                                 <div class="alert alert-warning">
-                                                    <span><b> {{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }} h </b></span>
+                                                    <span><b> {{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }}h: Ra về </b></span>
                                                 </div>
                                                 {% endfor %}
                                                 {% for couple in merge_couples_before_private3 %}
                                                 <div class="alert alert-primary">
-                                                    <span><b> {{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }} h </b></span>
+                                                    <span><b> {{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }}h: {{ couple.description }}</b></span>
                                                 </div>
                                                 {% endfor %}
                                                 {% for couple in merge_couples_before_private2 %}
                                                 <div class="alert alert-danger">
-                                                    <span><b> {{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }} h </b></span>
+                                                    <span><b> {{ couple.itemIn.display_hour }}-{{ couple.itemOut.display_hour }}h </b></span>
                                                 </div>
                                                 {% endfor %}
                                             </div>
