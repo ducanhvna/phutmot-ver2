@@ -14,7 +14,12 @@
                     <field name="progressbar" widget="progressbar"
                            invisible="not is_progress_bar"/>
                     <field name="code"/>
-                    <field name="employee_ids"/>
+                    <field name="employee_ids "type="xml">
+                        <tree>
+                            <field name="code" string="Mã nhân viên"/>
+                            <field name="name" string="Cán bộ nhân viên"/>
+                        </tree>
+                    </field>
                     <field name="department_id"/>
                     <field name="is_daily"/>
                 </field>
