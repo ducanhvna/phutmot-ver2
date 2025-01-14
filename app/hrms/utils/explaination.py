@@ -55,7 +55,7 @@ class ExplainationService():
         company_grouped_data = {}
         for record in self.company_merged_data:
             company_grouped_data[f'{record["id"]}'] = record
-            print(f"{record['id']} -- {record['name']}")
+            # print(f"{record['id']} -- {record['name']}")
         explaination_fields = [
             'id',
             'employee_id',
