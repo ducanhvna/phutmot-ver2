@@ -15,6 +15,6 @@ class HrmsAdmin(admin.ModelAdmin):
 
 
 @admin.register(Projecttask)
-class HrmsAdmin(admin.ModelAdmin):
+class ProjecttaskAdmin(admin.ModelAdmin):
     list_display = ('company_code', 'company_name', 'start_date', 'end_date')
     search_fields = ('company_code', 'company_name', 'start_date', 'end_date')
