@@ -16,7 +16,7 @@ class Project(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["code", "company_code", "start_date", "end_date"],
+                fields=["employee_code", "start_date", "end_date"],
                 name="unique_code_project_company",
             )
         ]
