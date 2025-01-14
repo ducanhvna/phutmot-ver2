@@ -42,7 +42,7 @@ class ProjectService():
         self.last_day_of_month = next_month - timedelta(days=1)
         super(ProjectService, self).__init__()
 
-    def get_grouped_employee_data(self, start_date, end_date):
+    def get_grouped_employee_data(self):
         employee_fields = [
             "id",
             "active",
@@ -64,7 +64,8 @@ class ProjectService():
         print(f"Start date: {start_str}")
         print(f"End date: {end_str}")
 
-        employee_grouped_data = self.get_grouped_employee_data(start_str, end_str)
+        employee_grouped_data = self.get_grouped_employee_data()
+        print("employee_grouped_data: ", employee_grouped_data)
         project_fields = [
             'id',
             'name',
