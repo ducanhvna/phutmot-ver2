@@ -83,7 +83,7 @@ class ExplainationService():
         for record in explaination_merged_data:
             explaination_grouped_data[f'{record["employee_code"]}'].append(record)
             record['company_code'] = company_grouped_data[f"{record['company_id'][0]}"]['mis_id'],
-            print(f"{record['id']} -- {record['employee_code']} -- {record['reason']} -- {record['company_code']}")
+            # print(f"{record['id']} -- {record['employee_code']} -- {record['reason']} -- {record['company_code']}")
         # Save data to Django
         self.save_to_django(explaination_grouped_data, start_str, end_str)
         write_dates = [

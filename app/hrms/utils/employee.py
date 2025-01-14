@@ -39,7 +39,7 @@ class EmployeeService():
         end_str = self.last_day_of_month.strftime('%Y-%m-%d')
         nextmonthFistdayStr = self.next_month_first_day.strftime('%Y-%m-%d')
 
-        print(f"Start date: {start_str}")
+        print(f" Employee Start date: {start_str}")
         print(f"nextmonthFistdayStr: {nextmonthFistdayStr}")
 
         # Download employee data
