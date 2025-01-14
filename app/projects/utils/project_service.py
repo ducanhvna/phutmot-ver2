@@ -65,7 +65,7 @@ class ProjectService():
         print(f"End date: {end_str}")
 
         employee_grouped_data = self.get_grouped_employee_data()
-        print("employee_grouped_data: ", employee_grouped_data)
+        # print("employee_grouped_data: ", employee_grouped_data)
         project_fields = [
             'id',
             'name',
