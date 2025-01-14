@@ -67,6 +67,8 @@ class ProjectService():
         employee_grouped_data = self.get_grouped_employee_data(start_str, end_str)
         project_fields = [
             'id',
+            'name',
+            'display_name',
             'label_tasks',
             'code',
             'department_id',
@@ -88,7 +90,7 @@ class ProjectService():
                     item_copy['employee_code'] = employee_grouped_data[f"{employee_id}"]['code']
                     project_splited_data.append(item_copy)
         # Group data by employee_code
-        project_grouped_data = defaultdict(list)
+        project_grouped_data = {}
         for record in project_splited_data:
             project_grouped_data[f'{record["employee_code"]}'].append(record)
 
@@ -205,6 +207,7 @@ class ProjectService():
         return merged_data
 
     def save_to_django(self, grouped_data, start_date, end_date):
+        print('grouped_data: ', grouped_data)
         for employee_code, records in grouped_data.items():
             project, created = Project.objects.get_or_create(
                 employee_code=employee_code,
