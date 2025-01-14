@@ -221,7 +221,7 @@ class ProjectService():
                 defaults={"info": {}},
             )
             project_records = project.info.get('records', [])
-            existing_projects =project_records if project_records else []
+            existing_projects = project_records if project_records else []
             for _, item in enumerate(existing_projects):
                 found = False
                 for record in records:
