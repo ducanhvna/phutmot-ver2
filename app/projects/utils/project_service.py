@@ -157,7 +157,7 @@ class ProjectService():
             domain = [
                 [
                     '&',
-                    ['company_id', '!=', False],
+                    # ['company_id', '!=', False],
                     ["date_start", "<=", end_str],
                     '|',
                     ["date", ">=", start_str],
