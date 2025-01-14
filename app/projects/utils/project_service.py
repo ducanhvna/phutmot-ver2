@@ -63,20 +63,7 @@ class ProjectService():
         end_str = self.last_day_of_month.strftime('%Y-%m-%d')
         print(f"Start date: {start_str}")
         print(f"End date: {end_str}")
-        if not self.company_merged_data:
-            company_fields = [
-                'id',
-                'name',
-                'is_ho',
-                'mis_id'
-            ]
-            self.company_merged_data = self.download_data("res.company", company_fields)
 
-        # Group data by company
-        company_grouped_data = {}
-        for record in self.company_merged_data:
-            company_grouped_data[f'{record["id"]}'] = record
-            # print(f"{record['id']} -- {record['name']}")
         employee_grouped_data = self.get_grouped_employee_data(start_str, end_str)
         project_fields = [
             'id',
@@ -101,8 +88,7 @@ class ProjectService():
         project_grouped_data = defaultdict(list)
         for record in project_splited_data:
             project_grouped_data[f'{record["employee_code"]}'].append(record)
-            # record['company_code'] = company_grouped_data[f"{record['company_id'][0]}"]['mis_id'],
-            # print(f"{record['id']} -- {record['employee_code']} -- {record['reason']} -- {record['company_code']}")
+
         # Save data to Django
         self.save_to_django(project_grouped_data, start_str, end_str)
         write_dates = [

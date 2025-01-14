@@ -1,13 +1,4 @@
-from hrms.utils.employee import EmployeeService
-from hrms.utils.hrleave import LeaveService
-from hrms.utils.trans import AttendanceTransService
-from hrms.utils.attendance_report_service import AttendanceReportService
-from hrms.utils.explaination import ExplainationService
-# from collections import defaultdict
-from hrms.models import Leave
-from home.utils.shift_service import ApecShiftService
 from projects.utils.project_service import ProjectService
-import xmlrpc.client
 from dashboard.models import Hrms, Projecttask
 from datetime import datetime, timedelta
 # from asgiref.sync import async_to_sync
@@ -25,14 +16,16 @@ class ProjectDashboard():
 
         if not first_day_of_month:
             first_day_of_month = datetime.now().replace(day=1)
-        self.first_day_of_month = first_day_of_month
-        # self.download_base()
-        leave = LeaveService(first_day_of_month)
+        if first_day_of_month.month == 12:
+            next_month = first_day_of_month.replace(year=first_day_of_month.year + 1, month=1, day=1)
+        else:
+            next_month = first_day_of_month.replace(month=first_day_of_month.month + 1, day=1)
 
+        last_day_of_month = next_month - timedelta(days=1)
         projecttask_dashboard, created = Projecttask.objects.get_or_create(
             company_code="BHL",
             start_date=first_day_of_month,
-            end_date=leave.last_day_of_month,
+            end_date=last_day_of_month,
             defaults={"info": {}},
         )
 
