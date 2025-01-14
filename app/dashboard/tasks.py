@@ -33,7 +33,7 @@ def update_apec_hrm():
 
 
 @shared_task
-def update_apec_hrm():
+def update_bhl_project():
     logger.info("Create project check project")
     print("Tác vụ chạy định kỳ mỗi 360 giây project")
     project_dashboard = ProjectDashboard()
