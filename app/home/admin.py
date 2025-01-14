@@ -6,7 +6,7 @@ import json
 
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
-    list_display = ('db', 'url', 'username', 'password', 'company_name', 'company_code')
+    list_display = ('company_name', 'company_code', 'db', 'url', 'username', 'password')
     search_fields = ('company_name', 'company_code')
 
 
