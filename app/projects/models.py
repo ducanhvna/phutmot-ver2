@@ -32,7 +32,7 @@ class Project(models.Model):
         super(Project, self).save(*args, **kwargs)
 
     def __str__(self):
-        return f"({self.company_code}.{self.code}) - {self.name} info from {self.start_date} to {self.end_date}"
+        return f"{self.employee_code}'s projects info from {self.start_date} to {self.end_date}"
 
 
 class Task(models.Model):
