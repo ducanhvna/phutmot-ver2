@@ -176,7 +176,7 @@ class Command(BaseCommand):
             100
         )
         # Group employee data
-        grouped_employee_data = self.group_data(employees, "code")
+        self.grouped_employee_data = self.group_data(employees, "code")
         al_fields = [
             "id",
             "year",
@@ -258,7 +258,7 @@ class Command(BaseCommand):
         )
 
         # Process data and save to Django
-        self.save_to_django(grouped_employee_data, contracts, employee_cl, employee_al)
+        self.save_to_django(contracts, employee_cl, employee_al)
 
     def download_data(self, models, db, uid, password, model_name, fields, limit=300):
         LIMIT_SIZE = limit
@@ -337,7 +337,7 @@ class Command(BaseCommand):
             grouped_data[record[key]].append(record)
         return grouped_data
 
-    def save_to_django(self, grouped_employee_data, contracts, cls, als):
+    def save_to_django(self, contracts, cls, als):
         contract_dict = defaultdict(list)
         for contract in contracts:
             contract_dict[contract["employee_code"]].append(contract)
@@ -350,7 +350,7 @@ class Command(BaseCommand):
         for al in als:
             al_dict[al["employee_code"]].append(al)
 
-        for employee_code, records in grouped_employee_data.items():
+        for employee_code, records in self.grouped_employee_data.items():
             # Sắp xếp các record để tìm record phù hợp
             records = sorted(
                 records,
