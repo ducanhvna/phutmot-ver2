@@ -72,7 +72,7 @@ class ProjectService():
             'department_id',
             'company_id',
             'date_start',
-            'date_end',
+            'date',
             'is_daily',
             'employee_ids',
             'write_date'
@@ -151,9 +151,12 @@ class ProjectService():
         elif model_name == "project.project":
             domain = [
                 [
+                    '&',
                     ['company_id', '!=', False],
-                    ["date_start", ">=", start_str],
-                    ["date_end", "<=", end_str]
+                    ["date_start", "<=", end_str],
+                    '|',
+                    ["date", ">=", start_str],
+                    ["date", "=", False]
                 ]
             ]
             if self.max_write_date_project:
