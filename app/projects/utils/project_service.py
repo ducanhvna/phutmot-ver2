@@ -79,11 +79,14 @@ class ProjectService():
         ]
         project_merged_data = self.download_data("project.project", project_fields, 200, start_str, end_str)
         project_splited_data = []
+        print('project_merged_data', project_merged_data)
         for item in project_merged_data:
+            print('item', item)
             for employee_id in item['employee_ids']:
                 if f"{employee_id}" in employee_grouped_data:
                     item_copy = copy.deepcopy(item)
                     item_copy['employee_code'] = employee_grouped_data[f"{employee_id}"]['code']
+                    project_splited_data.append(item_copy)
         # Group data by employee_code
         project_grouped_data = defaultdict(list)
         for record in project_splited_data:
