@@ -5,10 +5,7 @@ from unidecode import unidecode
 
 
 class Project(models.Model):
-    code = models.CharField(max_length=255)
-    company_code = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
-    company_name = models.CharField(max_length=255)
+    employee_code = models.CharField(max_length=255)
     start_date = models.DateField("Ngày bắt đầu tháng")
     end_date = models.DateField("Ngày kết thúc tháng")
     info = JSONField(default=dict, blank=True)
