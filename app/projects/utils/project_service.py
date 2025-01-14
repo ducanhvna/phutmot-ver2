@@ -55,7 +55,7 @@ class ProjectService():
         employee_grouped_data = {}
         for record in employee_merged_data:
             employee_grouped_data[f'{record["id"]}'] = record
-        return employee_merged_data
+        return employee_grouped_data
 
     def download(self, max_write_date_project):
         self.max_write_date_project = max_write_date_project
