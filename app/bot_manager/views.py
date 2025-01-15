@@ -74,30 +74,15 @@ class TelegramBotView(View):
         requests.post(url, json=payload)
 
 
-@method_decorator(csrf_exempt, name="dispatch")
 class FetchSettingView(APIView):
+    @csrf_exempt
     def post(self, request, *args, **kwargs):
         try:
-            setting = (
-                Setting.objects.first()
-            )  # Assuming there's only one settings object
+            setting = Setting.objects.first()  # Assuming there's only one settings object
             if setting:
                 serializer = SettingSerializer(setting)
-                return Response(
-                    {
-                        "status": True,
-                        "message": "Settings fetched successfully",
-                        "data": serializer.data,
-                    },
-                    status=status.HTTP_200_OK,
-                )
+                return Response({"status": True, "message": "Settings fetched successfully", "data": serializer.data}, status=status.HTTP_200_OK)
             else:
-                return Response(
-                    {"status": False, "message": "No settings found"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+                return Response({"status": False, "message": "No settings found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response(
-                {"status": False, "message": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            return Response({"status": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
