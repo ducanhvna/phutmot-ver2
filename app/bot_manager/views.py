@@ -177,7 +177,6 @@ class EditProfileView(APIView):
 class CheckUsernameView(APIView):
     def post(self, request):
         username = request.data.get('username')
-      
         if User.objects.filter(username=username).exists():
             response_data = {
                 'status': True,
