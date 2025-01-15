@@ -146,3 +146,29 @@ class FetchProfileView(APIView):
             'data': serializer.data
         }
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+class EditProfileView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        interest_ids = request.data.get('interest_ids')
+
+        if isinstance(interest_ids, str):
+            interest_ids = json.loads(interest_ids)  # Convert string to list if needed
+
+        user = get_object_or_404(User, id=user_id)
+        
+        # Update the interest_ids and any other fields as needed
+        user.interest_ids = ','.join(map(str, interest_ids)) if isinstance(interest_ids, list) else str(interest_ids)
+        user.save()
+
+        serializer = UserSerializer(user)
+        response_data = {
+            'status': True,
+            'message': 'User profile updated successfully',
+            'data': serializer.data
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
