@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
 from django.http import QueryDict
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
+from django.shortcuts import get_object_or_404
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -127,3 +128,21 @@ class AddUserView(APIView):
             'data': serializer.data
         }
         return Response(response_data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+
+class FetchProfileView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def post(self, request):
+        # my_user_id = request.data.get('my_user_id')
+        user_id = request.data.get('user_id')
+
+        user = get_object_or_404(User, id=user_id)
+        serializer = UserSerializer(user)
+        response_data = {
+            'status': True,
+            'message': 'User profile fetched successfully',
+            'data': serializer.data
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
