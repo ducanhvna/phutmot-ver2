@@ -30,9 +30,21 @@ class DocumentTypeSerializer(serializers.ModelSerializer):
 
 
 class SettingSerializer(serializers.ModelSerializer):
-    interests = InterestSerializer(many=True, read_only=True)
-    report_reasons = ReportReasonSerializer(many=True, read_only=True)
-    document_type = DocumentTypeSerializer(many=True, read_only=True)
+    interests = serializers.SerializerMethodField()
+    report_reasons = serializers.SerializerMethodField()
+    document_type = serializers.SerializerMethodField()
+
+    def get_interests(self, obj):
+        interests = Interest.objects.all()
+        return InterestSerializer(interests, many=True).data
+
+    def get_report_reasons(self, obj):
+        report_reasons = ReportReason.objects.all()
+        return ReportReasonSerializer(report_reasons, many=True).data
+
+    def get_document_type(self, obj):
+        document_type = DocumentType.objects.all()
+        return DocumentTypeSerializer(document_type, many=True).data
 
     class Meta:
         model = Setting
