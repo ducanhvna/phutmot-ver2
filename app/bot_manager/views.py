@@ -19,6 +19,7 @@ from django.shortcuts import get_object_or_404
 from .models import Post, Room, FollowingList
 from .serializers import FeedSerializer, RoomSerializer
 
+
 @method_decorator(csrf_exempt, name='dispatch')
 class TelegramBotView(View):
     def post(self, request):
@@ -197,6 +198,7 @@ class CheckUsernameView(APIView):
             }
 
         return Response(response_data, status=status.HTTP_200_OK)
+
 
 class FetchPostsView(APIView):
     permission_classes = (AllowAny,)
