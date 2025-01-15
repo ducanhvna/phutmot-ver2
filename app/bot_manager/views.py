@@ -9,11 +9,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Setting, User
-from .serializers import SettingSerializer
+from .serializers import SettingSerializer, UserSerializer
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
-from .serializers import UserSerializer
+from django.http import QueryDict
+from rest_framework.parsers import FormParser, MultiPartParser
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -95,8 +96,12 @@ class FetchSettingView(APIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class AddUserView(APIView):
     permission_classes = (AllowAny,)
+    parser_classes = [FormParser, MultiPartParser]
 
     def post(self, request):
+        if isinstance(request.data, QueryDict):
+            request.data = request.data.dict()
+
         identity = request.data.get('identity')
         device_token = request.data.get('device_token')
         login_type = request.data.get('login_type')
