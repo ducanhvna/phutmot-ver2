@@ -12,6 +12,7 @@ from .models import Setting
 from .serializers import SettingSerializer
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import AllowAny
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -76,6 +77,8 @@ class TelegramBotView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class FetchSettingView(APIView):
+    permission_classes = (AllowAny,)
+
     def post(self, request, *args, **kwargs):
         try:
             setting = Setting.objects.first()  # Assuming there's only one settings object
