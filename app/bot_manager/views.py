@@ -7,11 +7,13 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import requests
 import json
-from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Setting
 from .serializers import SettingSerializer
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -74,15 +76,30 @@ class TelegramBotView(View):
         requests.post(url, json=payload)
 
 
-@csrf_exempt
-@api_view(['POST'])
-def fetch_setting(request):
-    try:
-        setting = Setting.objects.first()  # Assuming there's only one settings object
-        if setting:
-            serializer = SettingSerializer(setting)
-            return Response({"status": True, "message": "Settings fetched successfully", "data": serializer.data}, status=status.HTTP_200_OK)
-        else:
-            return Response({"status": False, "message": "No settings found"}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({"status": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+@method_decorator(csrf_exempt, name="dispatch")
+class FetchSettingView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            setting = (
+                Setting.objects.first()
+            )  # Assuming there's only one settings object
+            if setting:
+                serializer = SettingSerializer(setting)
+                return Response(
+                    {
+                        "status": True,
+                        "message": "Settings fetched successfully",
+                        "data": serializer.data,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {"status": False, "message": "No settings found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except Exception as e:
+            return Response(
+                {"status": False, "message": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
