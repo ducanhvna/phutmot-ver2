@@ -160,7 +160,7 @@ class EditProfileView(APIView):
             interest_ids = json.loads(interest_ids)  # Convert string to list if needed
 
         user = get_object_or_404(User, id=user_id)
-        
+
         # Update the interest_ids and any other fields as needed
         user.interest_ids = ','.join(map(str, interest_ids)) if isinstance(interest_ids, list) else str(interest_ids)
         user.save()
