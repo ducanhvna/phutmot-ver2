@@ -92,7 +92,10 @@ class FetchSettingView(APIView):
             return Response({"status": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class AddUserView(APIView):
+    permission_classes = (AllowAny,)
+
     def post(self, request):
         identity = request.data.get('identity')
         device_token = request.data.get('device_token')
