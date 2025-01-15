@@ -74,10 +74,12 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
 
+
 class ContentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostContent
         fields = ['id', 'post_id', 'content_type', 'content', 'thumbnail', 'created_at', 'updated_at']
+
 
 class FeedSerializer(serializers.ModelSerializer):
     content = ContentSerializer(many=True, read_only=True)
@@ -86,6 +88,7 @@ class FeedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['id', 'user_id', 'desc', 'comments_count', 'likes_count', 'created_at', 'updated_at', 'is_like', 'content', 'user']
+
 
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
