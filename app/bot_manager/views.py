@@ -172,3 +172,21 @@ class EditProfileView(APIView):
             'data': serializer.data
         }
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+class CheckUsernameView(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+      
+        if User.objects.filter(username=username).exists():
+            response_data = {
+                'status': True,
+                'message': 'Username exists'
+            }
+        else:
+            response_data = {
+                'status': False,
+                'message': 'Username does not exist'
+            }
+
+        return Response(response_data, status=status.HTTP_200_OK)

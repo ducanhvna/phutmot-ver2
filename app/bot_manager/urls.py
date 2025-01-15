@@ -1,5 +1,11 @@
 from django.urls import path
-from .views import FetchSettingView, AddUserView, FetchProfileView, EditProfileView
+from .views import (
+    FetchSettingView,
+    AddUserView,
+    FetchProfileView,
+    EditProfileView,
+    CheckUsernameView,
+)
 
 
 app_name = "bot_manager"
@@ -10,4 +16,5 @@ urlpatterns = [
     path('addUser', AddUserView.as_view(), name='add_user'),
     path('fetchProfile', FetchProfileView.as_view(), name='fetch_profile'),
     path('editProfile', EditProfileView.as_view(), name='edit_profile'),
+    path('checkUsername', CheckUsernameView.as_view(), name='check_username')
 ]
