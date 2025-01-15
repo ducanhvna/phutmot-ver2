@@ -16,7 +16,8 @@ from rest_framework.permissions import AllowAny
 from django.http import QueryDict
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from django.shortcuts import get_object_or_404
-
+from .models import Post, Room, FollowingList
+from .serializers import FeedSerializer, RoomSerializer
 
 @method_decorator(csrf_exempt, name='dispatch')
 class TelegramBotView(View):
@@ -194,5 +195,32 @@ class CheckUsernameView(APIView):
                 'status': True,
                 'message': 'Username does not exist'
             }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+class FetchPostsView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def post(self, request):
+        my_user_id = request.data.get('my_user_id')
+        limit = request.data.get('limit', 100)
+        should_send_suggested_room = request.data.get('should_send_suggested_room', 1)
+
+        # Lấy danh sách các bài viết của người dùng
+        following_list = FollowingList.objects.filter(my_user_id=my_user_id).values_list('user_id', flat=True)
+        posts = Post.objects.filter(user_id__in=following_list).order_by('-created_at')[:limit]
+        feed_serializer = FeedSerializer(posts, many=True)
+
+        response_data = {
+            'status': True,
+            'message': 'Fetched posts successfully',
+            'data': feed_serializer.data,
+        }
+
+        if should_send_suggested_room:
+            suggested_rooms = Room.objects.all()
+            room_serializer = RoomSerializer(suggested_rooms, many=True)
+            response_data['suggestedRooms'] = room_serializer.data
 
         return Response(response_data, status=status.HTTP_200_OK)

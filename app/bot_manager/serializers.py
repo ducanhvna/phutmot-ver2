@@ -5,7 +5,7 @@ from .models import (
     ReportReason,
     DocumentType,
 )  # Make sure to import the models
-from .models import User
+from .models import Post, PostContent, Room, User
 
 
 class InterestSerializer(serializers.ModelSerializer):
@@ -73,3 +73,21 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+
+class ContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostContent
+        fields = ['id', 'post_id', 'content_type', 'content', 'thumbnail', 'created_at', 'updated_at']
+
+class FeedSerializer(serializers.ModelSerializer):
+    content = ContentSerializer(many=True, read_only=True)
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Post
+        fields = ['id', 'user_id', 'desc', 'comments_count', 'likes_count', 'created_at', 'updated_at', 'is_like', 'content', 'user']
+
+class RoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = ['id', 'title', 'desc']
