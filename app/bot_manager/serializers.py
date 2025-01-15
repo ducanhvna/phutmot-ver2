@@ -5,6 +5,7 @@ from .models import (
     ReportReason,
     DocumentType,
 )  # Make sure to import the models
+from .models import User
 
 
 class InterestSerializer(serializers.ModelSerializer):
@@ -36,3 +37,9 @@ class SettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Setting
         fields = "__all__"
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'

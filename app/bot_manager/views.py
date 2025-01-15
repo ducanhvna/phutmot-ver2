@@ -8,11 +8,12 @@ import json
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Setting
+from .models import Setting, User
 from .serializers import SettingSerializer
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
+from .serializers import UserSerializer
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -89,3 +90,34 @@ class FetchSettingView(APIView):
                 return Response({"status": False, "message": "No settings found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"status": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class AddUserView(APIView):
+    def post(self, request):
+        identity = request.data.get('identity')
+        device_token = request.data.get('device_token')
+        login_type = request.data.get('login_type')
+        device_type = request.data.get('device_type')
+
+        user, created = User.objects.get_or_create(
+            identity=identity,
+            defaults={
+                'device_token': device_token,
+                'login_type': login_type,
+                'device_type': device_type
+            }
+        )
+
+        if not created:
+            user.device_token = device_token
+            user.login_type = login_type
+            user.device_type = device_type
+            user.save()
+
+        serializer = UserSerializer(user)
+        response_data = {
+            'status': True,
+            'message': 'User added successfully' if created else 'User already exists, data updated',
+            'data': serializer.data
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
