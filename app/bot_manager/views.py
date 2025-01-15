@@ -7,6 +7,11 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import requests
 import json
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Setting
+from .serializers import SettingSerializer
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -67,3 +72,16 @@ class TelegramBotView(View):
             'text': text,
         }
         requests.post(url, json=payload)
+
+
+@api_view(['GET'])
+def fetch_setting(request):
+    try:
+        setting = Setting.objects.first()  # Assuming there's only one settings object
+        if setting:
+            serializer = SettingSerializer(setting)
+            return Response({"status": True, "message": "Settings fetched successfully", "data": serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response({"status": False, "message": "No settings found"}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"status": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
