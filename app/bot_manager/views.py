@@ -1,7 +1,5 @@
 from django.views import View
 from django.http import JsonResponse, HttpResponseBadRequest
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from .models import Customer, Message
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
