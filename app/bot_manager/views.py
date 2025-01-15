@@ -186,12 +186,12 @@ class CheckUsernameView(APIView):
         username = request.data.get('username')
         if User.objects.filter(username=username).exists():
             response_data = {
-                'status': True,
+                'status': False,
                 'message': 'Username exists'
             }
         else:
             response_data = {
-                'status': False,
+                'status': True,
                 'message': 'Username does not exist'
             }
 
