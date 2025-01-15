@@ -14,7 +14,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
 from django.http import QueryDict
-from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -96,16 +96,14 @@ class FetchSettingView(APIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class AddUserView(APIView):
     permission_classes = (AllowAny,)
-    parser_classes = [FormParser, MultiPartParser]
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
 
     def post(self, request):
-        if isinstance(request.data, QueryDict):
-            request.data = request.data.dict()
-
-        identity = request.data.get('identity')
-        device_token = request.data.get('device_token')
-        login_type = request.data.get('login_type')
-        device_type = request.data.get('device_type')
+        data = request.data
+        identity = data.get('identity')
+        device_token = data.get('device_token')
+        login_type = data.get('login_type')
+        device_type = data.get('device_type')
 
         user, created = User.objects.get_or_create(
             identity=identity,
