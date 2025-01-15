@@ -74,6 +74,7 @@ class TelegramBotView(View):
         requests.post(url, json=payload)
 
 
+@csrf_exempt
 @api_view(['POST'])
 def fetch_setting(request):
     try:
