@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from myapp.models import Setting
+from bot_manager.models import Setting
 from datetime import datetime
 
 
