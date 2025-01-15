@@ -74,8 +74,8 @@ class TelegramBotView(View):
         requests.post(url, json=payload)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class FetchSettingView(APIView):
-    @csrf_exempt
     def post(self, request, *args, **kwargs):
         try:
             setting = Setting.objects.first()  # Assuming there's only one settings object
