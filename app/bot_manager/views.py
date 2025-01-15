@@ -74,7 +74,7 @@ class TelegramBotView(View):
         requests.post(url, json=payload)
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 def fetch_setting(request):
     try:
         setting = Setting.objects.first()  # Assuming there's only one settings object
