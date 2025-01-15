@@ -154,15 +154,19 @@ class EditProfileView(APIView):
 
     def post(self, request):
         user_id = request.data.get('user_id')
-        interest_ids = request.data.get('interest_ids')
-
-        if isinstance(interest_ids, str):
-            interest_ids = json.loads(interest_ids)  # Convert string to list if needed
+        interest_ids = request.data.get('interest_ids', None)
+        username = request.data.get('username', None)
 
         user = get_object_or_404(User, id=user_id)
 
-        # Update the interest_ids and any other fields as needed
-        user.interest_ids = ','.join(map(str, interest_ids)) if isinstance(interest_ids, list) else str(interest_ids)
+        if interest_ids:
+            if isinstance(interest_ids, str):
+                interest_ids = json.loads(interest_ids)  # Convert string to list if needed
+            user.interest_ids = ','.join(map(str, interest_ids)) if isinstance(interest_ids, list) else str(interest_ids)
+
+        if username:
+            user.username = username
+
         user.save()
 
         serializer = UserSerializer(user)
@@ -175,6 +179,9 @@ class EditProfileView(APIView):
 
 
 class CheckUsernameView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
     def post(self, request):
         username = request.data.get('username')
         if User.objects.filter(username=username).exists():
