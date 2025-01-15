@@ -48,7 +48,25 @@ class SettingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Setting
-        fields = "__all__"
+        fields = [
+            "id",
+            "app_name",
+            "setRoomUsersLimit",
+            "minute_limit_in_creating_story",
+            "minute_limit_in_choosing_video_for_story",
+            "minute_limit_in_choosing_video_for_post",
+            "max_images_can_be_uploaded_in_one_post",
+            "ad_banner_android",
+            "ad_interstitial_android",
+            "ad_banner_iOS",
+            "ad_interstitial_iOS",
+            "is_admob_on",
+            "created_at",
+            "updated_at",
+            "interests",
+            "report_reasons",
+            "document_type",
+        ]
 
 
 class UserSerializer(serializers.ModelSerializer):
