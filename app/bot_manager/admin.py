@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Customer, Message, Interest
+from .models import Customer, Message, Interest, User
 
 
 @admin.register(Customer)
@@ -20,3 +20,10 @@ class InterestAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_at', 'updated_at')
     list_filter = ('title',)
     search_fields = ('title',)
+
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('username', 'full_name', 'profile')
+    list_filter = ('username',)
+    search_fields = ('username',)
