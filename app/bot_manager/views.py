@@ -8,7 +8,7 @@ import json
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Setting, User
+from .models import Setting, User, Story
 from .serializers import SettingSerializer, UserSerializer
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -17,7 +17,7 @@ from django.http import QueryDict
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from django.shortcuts import get_object_or_404
 from .models import Post, Room, FollowingList
-from .serializers import FeedSerializer, RoomSerializer
+from .serializers import FeedSerializer, RoomSerializer, StorySerializer
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -224,5 +224,31 @@ class FetchPostsView(APIView):
             suggested_rooms = Room.objects.all()
             room_serializer = RoomSerializer(suggested_rooms, many=True)
             response_data['suggestedRooms'] = room_serializer.data
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+class FetchStoryView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def post(self, request):
+        my_user_id = request.data.get('my_user_id')
+
+        # Validate the user
+        try:
+            user = User.objects.get(id=my_user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Fetch stories
+        stories = Story.objects.filter(user_id=my_user_id)
+        story_serializer = StorySerializer(stories, many=True)
+
+        response_data = {
+            'status': True,
+            'message': 'Fetched stories successfully',
+            'data': story_serializer.data,
+        }
 
         return Response(response_data, status=status.HTTP_200_OK)

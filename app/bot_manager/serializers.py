@@ -4,6 +4,7 @@ from .models import (
     Interest,
     ReportReason,
     DocumentType,
+    Story
 )  # Make sure to import the models
 from .models import Post, PostContent, Room, User
 
@@ -94,3 +95,9 @@ class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = ['id', 'title', 'desc']
+
+
+class StorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Story
+        fields = '__all__'
