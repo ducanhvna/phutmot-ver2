@@ -377,7 +377,9 @@ class CreateStoryView(APIView):
         # Validate required fields
         if not user_id or story_type is None or duration is None:
             return Response({'status': False, 'message': 'user_id, type, and duration are required fields'}, status=status.HTTP_400_BAD_REQUEST)
-
+        # Ensure content is a valid string and set default if necessary
+        if not isinstance(content, str) or not content:
+            content = '-'
         # Create a new story
         story_data = {
             'user_id': user_id,
