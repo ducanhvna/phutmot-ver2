@@ -218,6 +218,7 @@ class FetchPostsView(APIView):
             'status': True,
             'message': 'Fetched posts successfully',
             'data': feed_serializer.data,
+            'suggestedRooms': []
         }
 
         if should_send_suggested_room:
