@@ -237,7 +237,7 @@ class FetchStoryView(APIView):
 
         # Validate the user
         try:
-            user = User.objects.get(id=my_user_id)
+            User.objects.get(id=my_user_id)
         except User.DoesNotExist:
             return Response({'error': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
