@@ -211,7 +211,11 @@ class FetchPostsView(APIView):
 
         # Lấy danh sách các bài viết của người dùng
         following_list = FollowingList.objects.filter(my_user_id=my_user_id).values_list('user_id', flat=True)
-        posts = Post.objects.filter(user_id__in=following_list).order_by('-created_at')[:limit]
+        posts = []
+        try:
+            posts = Post.objects.filter(user_id__in=following_list).order_by('-created_at')[:limit]
+        except Exception as ex:
+            print(ex)
         feed_serializer = FeedSerializer(posts, many=True)
 
         response_data = {
