@@ -24,5 +24,5 @@ urlpatterns = [
     path('fetchPosts', FetchPostsView.as_view(), name='fetch_posts'),
     path('fetchStory', FetchStoryView.as_view(), name='fetch_story'),
     path('addPost', AddPostView.as_view(), name='addPost'),
-    path('fetchComments/', FetchCommentsView.as_view(), name='fetchComments'),
+    path('fetchComments', FetchCommentsView.as_view(), name='fetchComments'),
 ]
