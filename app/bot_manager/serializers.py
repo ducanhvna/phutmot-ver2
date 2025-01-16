@@ -5,7 +5,8 @@ from .models import (
     ReportReason,
     DocumentType,
     Story,
-    Like
+    Like,
+    Comment
 )  # Make sure to import the models
 from .models import Post, PostContent, Room, User
 
@@ -116,3 +117,11 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = '__all__'
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'user_id', 'post_id', 'desc', 'created_at', 'updated_at', 'user']

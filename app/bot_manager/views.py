@@ -16,8 +16,8 @@ from rest_framework.permissions import AllowAny
 from django.http import QueryDict
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from django.shortcuts import get_object_or_404
-from .models import Post, Room, FollowingList
-from .serializers import FeedSerializer, RoomSerializer, StorySerializer, PostSerializer
+from .models import Post, Room, FollowingList, Comment
+from .serializers import FeedSerializer, RoomSerializer, StorySerializer, PostSerializer, CommentSerializer
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -296,3 +296,27 @@ class AddPostView(APIView):
             return Response(response_data, status=status.HTTP_201_CREATED)
         else:
             return Response(post_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FetchCommentsView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def post(self, request):
+        post_id = request.data.get('post_id')
+        
+        # Validate the post_id
+        if not post_id:
+            return Response({'error': 'post_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Fetch comments for the given post_id
+        comments = Comment.objects.filter(post_id=post_id).order_by('-created_at')
+        comment_serializer = CommentSerializer(comments, many=True)
+
+        response_data = {
+            'status': True,
+            'message': 'Fetched comments successfully',
+            'data': comment_serializer.data,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
