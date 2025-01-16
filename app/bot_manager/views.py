@@ -17,7 +17,7 @@ from django.http import QueryDict
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from django.shortcuts import get_object_or_404
 from .models import Post, Room, FollowingList
-from .serializers import FeedSerializer, RoomSerializer, StorySerializer
+from .serializers import FeedSerializer, RoomSerializer, StorySerializer, PostSerializer
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -257,3 +257,38 @@ class FetchStoryView(APIView):
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+class AddPostView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def post(self, request):
+        desc = request.data.get('desc')
+        tags = request.data.get('tags', '')
+        user_id = request.data.get('user_id')
+        content_type = request.data.get('content_type')
+
+        # Validate required fields
+        if not desc or not user_id or not content_type:
+            return Response({'error': 'desc, user_id, and content_type are required fields'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create a new post
+        post_data = {
+            'desc': desc,
+            'tags': tags,
+            'user_id': user_id,
+            'content_type': content_type,
+        }
+        post_serializer = PostSerializer(data=post_data)
+
+        if post_serializer.is_valid():
+            post = post_serializer.save()
+            response_data = {
+                'status': True,
+                'message': 'Post created successfully',
+                'data': post_serializer.data
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(post_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

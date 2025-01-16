@@ -6,7 +6,8 @@ from .views import (
     EditProfileView,
     CheckUsernameView,
     FetchPostsView,
-    FetchStoryView
+    FetchStoryView,
+    AddPostView
 )
 
 
@@ -21,4 +22,5 @@ urlpatterns = [
     path('checkUsername', CheckUsernameView.as_view(), name='check_username'),
     path('fetchPosts', FetchPostsView.as_view(), name='fetch_posts'),
     path('fetchStory', FetchStoryView.as_view(), name='fetch_story'),
+    path('addPost', AddPostView.as_view(), name='addPost'),
 ]
