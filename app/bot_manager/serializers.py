@@ -92,10 +92,17 @@ class FeedSerializer(serializers.ModelSerializer):
         model = Post
         fields = ['id', 'user_id', 'desc', 'comments_count', 'likes_count', 'created_at', 'updated_at', 'is_like', 'content', 'user']
 
+    def __init__(self, *args, **kwargs):
+        self.my_user_id = kwargs.pop('my_user_id', None)
+        super().__init__(*args, **kwargs)
+
     def get_is_like(self, obj):
         # Assuming you have access to the current user's id, e.g., through the request context
         user_id = self.context['request'].user.id
         return Like.objects.filter(user_id=user_id, post_id=obj.id).exists()
+
+    def get_is_like(self, obj):
+        return Like.objects.filter(user_id=self.my_user_id, post_id=obj.id).exists()
 
 
 class RoomSerializer(serializers.ModelSerializer):
