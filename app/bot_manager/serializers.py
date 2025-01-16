@@ -102,12 +102,6 @@ class FeedSerializer(serializers.ModelSerializer):
         return 1 if Like.objects.filter(user_id=self.my_user_id, post_id=obj.id).exists() else 0
 
 
-class RoomSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Room
-        fields = ['id', 'title', 'desc']
-
-
 class StorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Story
