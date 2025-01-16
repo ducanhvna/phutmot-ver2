@@ -125,3 +125,8 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ['id', 'user_id', 'post_id', 'desc', 'created_at', 'updated_at', 'user']
+
+
+class CommonResponseSerializer(serializers.Serializer):
+    status = serializers.BooleanField()
+    message = serializers.CharField(max_length=255)

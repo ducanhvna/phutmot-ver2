@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Setting, User, Story, Like
-from .serializers import SettingSerializer, UserSerializer
+from .serializers import SettingSerializer, UserSerializer, CommonResponseSerializer
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
@@ -362,3 +362,38 @@ class DislikePostView(APIView):
             return Response({'status': True, 'message': 'Post disliked successfully'}, status=status.HTTP_200_OK)
 
         return Response({'status': True, 'message': 'Like does not exist'}, status=status.HTTP_200_OK)
+
+
+class CreateStoryView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        story_type = request.data.get('type')
+        duration = request.data.get('duration')
+        content = request.data.get('content', '')
+
+        # Validate required fields
+        if not user_id or story_type is None or duration is None:
+            return Response({'status': False, 'message': 'user_id, type, and duration are required fields'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create a new story
+        story_data = {
+            'user_id': user_id,
+            'type': story_type,
+            'duration': duration,
+            'content': content,
+        }
+        story_serializer = StorySerializer(data=story_data)
+
+        if story_serializer.is_valid():
+            story_serializer.save()
+            response_data = {
+                'status': True,
+                'message': 'Story created successfully',
+            }
+            response_serializer = CommonResponseSerializer(response_data)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(story_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
