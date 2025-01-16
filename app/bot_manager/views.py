@@ -304,11 +304,11 @@ class FetchCommentsView(APIView):
 
     def post(self, request):
         post_id = request.data.get('post_id')
-        
+
         # Validate the post_id
         if not post_id:
             return Response({'error': 'post_id is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Fetch comments for the given post_id
         comments = Comment.objects.filter(post_id=post_id).order_by('-created_at')
         comment_serializer = CommentSerializer(comments, many=True)
