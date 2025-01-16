@@ -4,7 +4,8 @@ from .models import (
     Interest,
     ReportReason,
     DocumentType,
-    Story
+    Story,
+    Like
 )  # Make sure to import the models
 from .models import Post, PostContent, Room, User
 
@@ -85,10 +86,16 @@ class ContentSerializer(serializers.ModelSerializer):
 class FeedSerializer(serializers.ModelSerializer):
     content = ContentSerializer(many=True, read_only=True)
     user = UserSerializer(read_only=True)
+    is_like = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = ['id', 'user_id', 'desc', 'comments_count', 'likes_count', 'created_at', 'updated_at', 'is_like', 'content', 'user']
+
+    def get_is_like(self, obj):
+        # Assuming you have access to the current user's id, e.g., through the request context
+        user_id = self.context['request'].user.id
+        return Like.objects.filter(user_id=user_id, post_id=obj.id).exists()
 
 
 class RoomSerializer(serializers.ModelSerializer):
