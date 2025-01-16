@@ -283,7 +283,7 @@ class AddPostView(APIView):
         post_serializer = PostSerializer(data=post_data)
 
         if post_serializer.is_valid():
-            post = post_serializer.save()
+            post_serializer.save()
             response_data = {
                 'status': True,
                 'message': 'Post created successfully',
