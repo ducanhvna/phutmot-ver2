@@ -372,7 +372,7 @@ class CreateStoryView(APIView):
         user_id = request.data.get('user_id')
         story_type = request.data.get('type')
         duration = request.data.get('duration')
-        content = request.data.get('content', '')
+        content = request.data.get('content', '-')
 
         # Validate required fields
         if not user_id or story_type is None or duration is None:
