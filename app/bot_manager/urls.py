@@ -8,7 +8,9 @@ from .views import (
     FetchPostsView,
     FetchStoryView,
     AddPostView,
-    FetchCommentsView
+    FetchCommentsView,
+    LikePostView,
+    DislikePostView
 )
 
 
@@ -25,4 +27,6 @@ urlpatterns = [
     path('fetchStory', FetchStoryView.as_view(), name='fetch_story'),
     path('addPost', AddPostView.as_view(), name='addPost'),
     path('fetchComments', FetchCommentsView.as_view(), name='fetchComments'),
+    path('likePost', LikePostView.as_view(), name='likePost'),
+    path('dislikePost', DislikePostView.as_view(), name='dislikePost'),
 ]

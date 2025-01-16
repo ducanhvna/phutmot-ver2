@@ -8,7 +8,7 @@ import json
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Setting, User, Story
+from .models import Setting, User, Story, Like
 from .serializers import SettingSerializer, UserSerializer
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -320,3 +320,45 @@ class FetchCommentsView(APIView):
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+class LikePostView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        post_id = request.data.get('post_id')
+
+        # Validate required fields
+        if not user_id or not post_id:
+            return Response({'status': False, 'message': 'user_id and post_id are required fields'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if the like already exists
+        if Like.objects.filter(user_id=user_id, post_id=post_id).exists():
+            return Response({'status': True, 'message': 'Like already exists'}, status=status.HTTP_200_OK)
+
+        # Create a new like
+        Like.objects.create(user_id=user_id, post_id=post_id)
+        return Response({'status': True, 'message': 'Post liked successfully'}, status=status.HTTP_201_CREATED)
+
+
+class DislikePostView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        post_id = request.data.get('post_id')
+
+        # Validate required fields
+        if not user_id or not post_id:
+            return Response({'status': False, 'message': 'user_id and post_id are required fields'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if the like exists
+        like = Like.objects.filter(user_id=user_id, post_id=post_id).first()
+        if like:
+            like.delete()
+            return Response({'status': True, 'message': 'Post disliked successfully'}, status=status.HTTP_200_OK)
+
+        return Response({'status': True, 'message': 'Like does not exist'}, status=status.HTTP_200_OK)
