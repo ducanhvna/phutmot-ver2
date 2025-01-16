@@ -11,7 +11,8 @@ from .views import (
     FetchCommentsView,
     LikePostView,
     DislikePostView,
-    CreateStoryView
+    CreateStoryView,
+    FetchRandomRoomsView
 )
 
 
@@ -31,4 +32,5 @@ urlpatterns = [
     path('likePost', LikePostView.as_view(), name='likePost'),
     path('dislikePost', DislikePostView.as_view(), name='dislikePost'),
     path('createStory', CreateStoryView.as_view(), name='createStory'),
+    path('fetchRandomRooms', FetchRandomRoomsView.as_view(), name='fetchRandomRooms'),
 ]

@@ -18,6 +18,7 @@ from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from django.shortcuts import get_object_or_404
 from .models import Post, Room, FollowingList, Comment
 from .serializers import FeedSerializer, RoomSerializer, StorySerializer, PostSerializer, CommentSerializer
+import random
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -399,3 +400,31 @@ class CreateStoryView(APIView):
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(story_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FetchRandomRoomsView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def post(self, request):
+        limit = int(request.data.get('limit', 20))
+        user_id = request.data.get('user_id')
+
+        # Validate required fields
+        if user_id is None:
+            return Response({'status': False, 'message': 'user_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Fetch random rooms
+        rooms = list(Room.objects.all())
+        random.shuffle(rooms)
+        rooms = rooms[:limit]
+
+        room_serializer = RoomSerializer(rooms, many=True)
+
+        response_data = {
+            'status': True,
+            'message': 'Fetched random rooms successfully',
+            'data': room_serializer.data,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)

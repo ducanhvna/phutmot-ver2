@@ -6,7 +6,8 @@ from .models import (
     DocumentType,
     Story,
     Like,
-    Comment
+    Comment,
+    Room
 )  # Make sure to import the models
 from .models import Post, PostContent, Room, User
 
@@ -130,3 +131,15 @@ class CommentSerializer(serializers.ModelSerializer):
 class CommonResponseSerializer(serializers.Serializer):
     status = serializers.BooleanField()
     message = serializers.CharField(max_length=255)
+
+
+class RoomSerializer(serializers.ModelSerializer):
+    admin = UserSerializer(read_only=True)
+    interests = InterestSerializer(many=True, read_only=True)
+    roomUsers = UserSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Room
+        fields = ['id', 'admin_id', 'photo', 'title', 'desc', 'interest_ids', 'is_private', 
+                  'is_join_request_enable', 'total_member', 'created_at', 'updated_at', 
+                  'userRoomStatus', 'is_mute', 'interests', 'admin', 'roomUsers']
