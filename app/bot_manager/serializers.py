@@ -9,7 +9,7 @@ from .models import (
     Comment,
     Room
 )  # Make sure to import the models
-from .models import Post, PostContent, Room, User
+from .models import Post, PostContent, User
 
 
 class InterestSerializer(serializers.ModelSerializer):
