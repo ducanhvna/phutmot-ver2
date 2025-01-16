@@ -34,4 +34,3 @@ class PostAdmin(admin.ModelAdmin):
     list_display = ('user_id', 'desc', 'tags', 'created_at')
     list_filter = ('user_id', 'desc')
     search_fields = ('user_id', 'desc')
-    
