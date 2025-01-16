@@ -206,7 +206,7 @@ class FetchPostsView(APIView):
 
     def post(self, request):
         my_user_id = request.data.get('my_user_id')
-        limit = request.data.get('limit', 100)
+        limit = int(request.data.get('limit', 100)) # Convert limit to an integer
         should_send_suggested_room = request.data.get('should_send_suggested_room', 1)
 
         # Lấy danh sách các bài viết của người dùng
