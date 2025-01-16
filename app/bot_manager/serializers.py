@@ -97,11 +97,6 @@ class FeedSerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
 
     def get_is_like(self, obj):
-        # Assuming you have access to the current user's id, e.g., through the request context
-        user_id = self.context['request'].user.id
-        return Like.objects.filter(user_id=user_id, post_id=obj.id).exists()
-
-    def get_is_like(self, obj):
         return Like.objects.filter(user_id=self.my_user_id, post_id=obj.id).exists()
 
 
