@@ -216,6 +216,9 @@ class FetchPostsView(APIView):
             posts = Post.objects.filter(user_id__in=following_list).order_by('-created_at')[:limit]
         except Exception as ex:
             print(ex)
+        if len(posts) < 1:
+            posts = Post.objects.filter(user_id=my_user_id).order_by('-created_at')[:limit]
+
         feed_serializer = FeedSerializer(posts, many=True)
 
         response_data = {
