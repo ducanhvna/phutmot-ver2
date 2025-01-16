@@ -140,6 +140,21 @@ class RoomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Room
-        fields = ['id', 'admin_id', 'photo', 'title', 'desc', 'interest_ids', 'is_private', 
-                  'is_join_request_enable', 'total_member', 'created_at', 'updated_at', 
-                  'userRoomStatus', 'is_mute', 'interests', 'admin', 'roomUsers']
+        fields = [
+            "id",
+            "admin_id",
+            "photo",
+            "title",
+            "desc",
+            "interest_ids",
+            "is_private",
+            "is_join_request_enable",
+            "total_member",
+            "created_at",
+            "updated_at",
+            "userRoomStatus",
+            "is_mute",
+            "interests",
+            "admin",
+            "roomUsers",
+        ]
