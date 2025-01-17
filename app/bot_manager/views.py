@@ -247,7 +247,6 @@ class FetchPostByUserView(APIView):
         user_id = request.data.get('user_id')
         start = int(request.data.get('start', 0))
         limit = int(request.data.get('limit', 20))
-        should_send_suggested_room = int(request.data.get('should_send_suggested_room', 1))
 
         # Fetch posts by user_id
         posts = []
@@ -263,13 +262,7 @@ class FetchPostByUserView(APIView):
             'status': True,
             'message': 'Fetched posts successfully',
             'data': feed_serializer.data,
-            'suggestedRooms': []
         }
-
-        if should_send_suggested_room:
-            suggested_rooms = Room.objects.all()
-            room_serializer = RoomSerializer(suggested_rooms, many=True)
-            response_data['suggestedRooms'] = room_serializer.data
 
         return Response(response_data, status=status.HTTP_200_OK)
 
