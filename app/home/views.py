@@ -378,7 +378,7 @@ class LoginView(APIView):
         odoo_client = OdooClient(base_url='https://hrm.mandalahotel.com.vn', db='apechrm_product_v3')
         odoo_response = odoo_client.authenticate(username, password)
 
-        if 'access' in odoo_response and 'refresh' in odoo_response:
+        if odoo_response['status'] == 'success':
             # Tạo hoặc lấy người dùng trong Django
             user, created = User.objects.get_or_create(username=username)
             if created:
@@ -393,4 +393,4 @@ class LoginView(APIView):
                 'refresh_token': str(refresh)
             })
         else:
-            return Response({'status': 'fail', 'message': 'Invalid credentials'}, status=400)
+            return Response({'status': 'fail', 'message': odoo_response.get('message', 'Invalid credentials')}, status=400)
