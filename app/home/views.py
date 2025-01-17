@@ -21,6 +21,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from .utils.odoo_client import OdooClient
 from rest_framework.permissions import AllowAny
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 
