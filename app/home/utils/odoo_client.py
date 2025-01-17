@@ -16,4 +16,5 @@ class OdooClient:
             else:
                 return {'status': 'fail', 'message': 'Invalid credentials'}
         except Exception as e:
+            print(e)
             return {'status': 'error', 'message': str(e)}
