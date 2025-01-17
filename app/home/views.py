@@ -15,6 +15,11 @@ from rest_framework import generics
 from .serializers import UserProfileSerializer
 from django.db.models import Q, Func, F
 from unidecode import unidecode
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.models import User
+from utils.odoo_client import OdooClient
 
 
 class UserProfileAPIView(generics.ListAPIView):
@@ -351,3 +356,35 @@ def get_details(request):
         data = {}
 
     return JsonResponse(data)
+
+
+class LoginView(APIView):
+    authentication_classes = []  # Bỏ qua xác thực cho endpoint này
+    permission_classes = []      # Bỏ qua quyền truy cập cho endpoint này
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        if not username or not password:
+            return Response({'status': 'fail', 'message': 'Username and password required'}, status=400)
+
+        # Tạo instance của OdooClient
+        odoo_client = OdooClient(base_url='https://hrm.mandalahotel.com.vn', db='apechrm_product_v3')
+        odoo_response = odoo_client.authenticate(username, password)
+
+        if 'access' in odoo_response and 'refresh' in odoo_response:
+            # Tạo hoặc lấy người dùng trong Django
+            user, created = User.objects.get_or_create(username=username)
+            if created:
+                user.set_password(password)
+                user.save()
+
+            # Tạo token JWT cho người dùng
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'status': 'success',
+                'access_token': str(refresh.access_token),
+                'refresh_token': str(refresh)
+            })
+        else:
+            return Response({'status': 'fail', 'message': 'Invalid credentials'}, status=400)
