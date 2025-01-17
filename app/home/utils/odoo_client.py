@@ -1,5 +1,6 @@
 import xmlrpc.client
 
+
 class OdooClient:
     def __init__(self, base_url, db):
         self.base_url = base_url
