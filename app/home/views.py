@@ -366,7 +366,6 @@ def get_details(request):
 @method_decorator(csrf_exempt, name='dispatch')
 class LoginView(APIView):
     authentication_classes = []  # Bỏ qua xác thực cho endpoint này
-    permission_classes = []      # Bỏ qua quyền truy cập cho endpoint này
     permission_classes = (AllowAny,)
 
     def post(self, request):
