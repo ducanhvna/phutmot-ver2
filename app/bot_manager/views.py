@@ -262,6 +262,7 @@ class FetchPostByUserView(APIView):
             'status': True,
             'message': 'Fetched posts successfully',
             'data': feed_serializer.data,
+            'suggestedRooms': []
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
@@ -457,3 +458,15 @@ class FetchRandomRoomsView(APIView):
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
+
+class LogOutView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def post(self, request):
+        response_data = {
+            'status': True,
+            'message': 'Story created successfully',
+        }
+        response_serializer = CommonResponseSerializer(response_data)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)

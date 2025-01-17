@@ -13,7 +13,8 @@ from .views import (
     DislikePostView,
     CreateStoryView,
     FetchRandomRoomsView,
-    FetchPostByUserView
+    FetchPostByUserView,
+    LogOutView
 )
 
 
@@ -34,5 +35,6 @@ urlpatterns = [
     path('dislikePost', DislikePostView.as_view(), name='dislikePost'),
     path('createStory', CreateStoryView.as_view(), name='createStory'),
     path('fetchRandomRooms', FetchRandomRoomsView.as_view(), name='fetchRandomRooms'),
-    path('fetchPostByUser', FetchPostByUserView.as_view, name='fetchPostByUser'),
+    path('fetchPostByUser', FetchPostByUserView.as_view(), name='fetchPostByUser'),
+    path('logOut', LogOutView.as_view(), name='logOut'),
 ]
