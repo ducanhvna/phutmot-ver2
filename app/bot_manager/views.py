@@ -459,6 +459,7 @@ class FetchRandomRoomsView(APIView):
 
         return Response(response_data, status=status.HTTP_200_OK)
 
+
 class LogOutView(APIView):
     permission_classes = (AllowAny,)
     parser_classes = (JSONParser, FormParser, MultiPartParser)
