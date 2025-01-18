@@ -254,7 +254,6 @@ class FetchPostByUserView(APIView):
     parser_classes = (JSONParser, FormParser, MultiPartParser)
 
     def post(self, request):
-        # my_user_id = request.data.get('my_user_id')
         user_id = request.data.get('user_id')
         start = int(request.data.get('start', 0))
         limit = int(request.data.get('limit', 20))
@@ -269,9 +268,26 @@ class FetchPostByUserView(APIView):
             posts = Post.objects.filter(user_id=user_id).order_by('-created_at')[:limit]
         feed_serializer = FeedSerializer(posts, many=True)
 
+        response_message = "Fetched posts successfully"
+
+        # Add new post if client is authenticated
+        if request.user and request.user.is_authenticated:
+            new_post_instance = Post(
+                user_id=request.user.id,
+                desc=f"Post by {request.user.username}",
+                tags='new,post,tags',
+                comments_count=0,
+                likes_count=0
+            )
+            new_post_instance.save()
+
+            new_post_serializer = FeedSerializer(new_post_instance)
+            feed_serializer.data.append(new_post_serializer.data)
+            response_message = "Fetched posts with user details successfully"
+
         response_data = {
             'status': True,
-            'message': 'Fetched posts successfully',
+            'message': response_message,
             'data': feed_serializer.data,
             'suggestedRooms': []
         }
