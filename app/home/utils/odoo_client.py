@@ -12,6 +12,8 @@ class OdooClient:
         try:
             self.uid = self.common.authenticate(self.db, username, password, {})
             if self.uid:
+                self.password = password
+                self.models = xmlrpc.client.ServerProxy(f"{self.base_url}/xmlrpc/2/object")
                 return {'status': 'success', 'user_id': self.uid}
             else:
                 return {'status': 'fail', 'message': 'Invalid credentials'}
