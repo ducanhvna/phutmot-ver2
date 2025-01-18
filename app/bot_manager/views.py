@@ -261,8 +261,8 @@ class FetchPostsView(APIView):
                 'likes_count': new_post_instance.likes_count,
                 'created_at': new_post_instance.created_at,
                 'updated_at': new_post_instance.updated_at,
-            }            
-        
+            }
+
             # Add serialized new post data to feed
             feed_serializer_data = list(feed_serializer.data)
             feed_serializer_data.append(new_post_serializer_data)
@@ -329,8 +329,8 @@ class FetchPostByUserView(APIView):
                 'likes_count': new_post_instance.likes_count,
                 'created_at': new_post_instance.created_at,
                 'updated_at': new_post_instance.updated_at,
-            }            
-        
+            }
+
             # Add serialized new post data to feed
             feed_serializer_data = list(feed_serializer.data)
             feed_serializer_data.append(new_post_serializer_data)
