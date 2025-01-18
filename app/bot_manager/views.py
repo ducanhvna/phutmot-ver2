@@ -248,14 +248,21 @@ class FetchPostsView(APIView):
                 'updated_at': timezone.now()
             }
 
-            # Serialize the new post data
-            new_post_serializer = FeedSerializer(data=new_post_data)
-            if new_post_serializer.is_valid():
-                feed_serializer.data.append(new_post_serializer.data)
-                response_message = "Fetched posts with user details successfully"
-            else:
-                print("New post data invalid:", new_post_serializer.errors)
-                response_message = "Fetched posts successfully with some errors in additional post"
+            # Save new Post instance without saving to database
+            new_post_instance = Post(**new_post_data)
+            new_post_instance_dict = {
+                'id': new_post_instance.id, # simulate id if necessary
+                'user_id': new_post_instance.user_id,
+                'desc': new_post_instance.desc,
+                'tags': new_post_instance.tags,
+                'comments_count': new_post_instance.comments_count,
+                'likes_count': new_post_instance.likes_count,
+                'created_at': new_post_instance.created_at,
+                'updated_at': new_post_instance.updated_at,
+            }
+
+            feed_serializer.data.append(new_post_instance_dict)
+            response_message = "Fetched posts with user details successfully"
         else:
             response_message = "Fetched posts successfully"
 
@@ -293,8 +300,6 @@ class FetchPostByUserView(APIView):
             posts = Post.objects.filter(user_id=user_id).order_by('-created_at')[:limit]
         feed_serializer = FeedSerializer(posts, many=True)
 
-        response_message = "Fetched posts successfully"
-
         # Add new post if client is authenticated
         if request.user and request.user.is_authenticated:
             new_post_data = {
@@ -307,14 +312,21 @@ class FetchPostByUserView(APIView):
                 'updated_at': timezone.now()
             }
 
-            # Serialize the new post data
-            new_post_serializer = FeedSerializer(data=new_post_data)
-            if new_post_serializer.is_valid():
-                feed_serializer.data.append(new_post_serializer.data)
-                response_message = "Fetched posts with user details successfully"
-            else:
-                print("New post data invalid:", new_post_serializer.errors)
-                response_message = "Fetched posts successfully with some errors in additional post"
+            # Save new Post instance without saving to database
+            new_post_instance = Post(**new_post_data)
+            new_post_instance_dict = {
+                'id': new_post_instance.id, # simulate id if necessary
+                'user_id': new_post_instance.user_id,
+                'desc': new_post_instance.desc,
+                'tags': new_post_instance.tags,
+                'comments_count': new_post_instance.comments_count,
+                'likes_count': new_post_instance.likes_count,
+                'created_at': new_post_instance.created_at,
+                'updated_at': new_post_instance.updated_at,
+            }
+
+            feed_serializer.data.append(new_post_instance_dict)
+            response_message = "Fetched posts with user details successfully"
         else:
             response_message = "Fetched posts successfully"
 
