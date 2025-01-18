@@ -8,8 +8,8 @@ import json
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Setting, User, Story, Like
-from .serializers import SettingSerializer, UserSerializer, CommonResponseSerializer
+from .models import Setting, Chatuser, Story, Like
+from .serializers import SettingSerializer, ChatuserSerializer, CommonResponseSerializer
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
@@ -109,7 +109,7 @@ class AddUserView(APIView):
         login_type = data.get('login_type')
         device_type = data.get('device_type')
 
-        user, created = User.objects.get_or_create(
+        user, created = Chatuser.objects.get_or_create(
             identity=identity,
             defaults={
                 'device_token': device_token,
@@ -124,10 +124,10 @@ class AddUserView(APIView):
             user.device_type = device_type
             user.save()
 
-        serializer = UserSerializer(user)
+        serializer = ChatuserSerializer(user)
         response_data = {
             'status': True,
-            'message': 'User added successfully' if created else 'User already exists, data updated',
+            'message': 'Chatuser added successfully' if created else 'Chatuser already exists, data updated',
             'data': serializer.data
         }
         return Response(response_data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
@@ -141,11 +141,11 @@ class FetchProfileView(APIView):
         # my_user_id = request.data.get('my_user_id')
         user_id = request.data.get('user_id')
 
-        user = get_object_or_404(User, id=user_id)
-        serializer = UserSerializer(user)
+        user = get_object_or_404(Chatuser, id=user_id)
+        serializer = ChatuserSerializer(user)
         response_data = {
             'status': True,
-            'message': 'User profile fetched successfully',
+            'message': 'Chatuser profile fetched successfully',
             'data': serializer.data
         }
         return Response(response_data, status=status.HTTP_200_OK)
@@ -160,7 +160,7 @@ class EditProfileView(APIView):
         interest_ids = request.data.get('interest_ids', None)
         username = request.data.get('username', None)
 
-        user = get_object_or_404(User, id=user_id)
+        user = get_object_or_404(Chatuser, id=user_id)
 
         if interest_ids:
             if isinstance(interest_ids, str):
@@ -172,10 +172,10 @@ class EditProfileView(APIView):
 
         user.save()
 
-        serializer = UserSerializer(user)
+        serializer = ChatuserSerializer(user)
         response_data = {
             'status': True,
-            'message': 'User profile updated successfully',
+            'message': 'Chatuser profile updated successfully',
             'data': serializer.data
         }
         return Response(response_data, status=status.HTTP_200_OK)
@@ -187,7 +187,7 @@ class CheckUsernameView(APIView):
 
     def post(self, request):
         username = request.data.get('username')
-        if User.objects.filter(username=username).exists():
+        if Chatuser.objects.filter(username=username).exists():
             response_data = {
                 'status': False,
                 'message': 'Username exists'
@@ -277,9 +277,9 @@ class FetchStoryView(APIView):
 
         # Validate the user
         try:
-            User.objects.get(id=my_user_id)
-        except User.DoesNotExist:
-            return Response({'error': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
+            Chatuser.objects.get(id=my_user_id)
+        except Chatuser.DoesNotExist:
+            return Response({'error': 'Chatuser does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
         # Fetch stories
         stories = Story.objects.filter(user_id=my_user_id)
