@@ -9,7 +9,7 @@ from .models import (
     Comment,
     Room
 )  # Make sure to import the models
-from .models import Post, PostContent, Chatuser
+from .models import Post, PostContent, User
 
 
 class InterestSerializer(serializers.ModelSerializer):
@@ -73,9 +73,9 @@ class SettingSerializer(serializers.ModelSerializer):
         ]
 
 
-class ChatuserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Chatuser
+        model = User
         fields = '__all__'
 
 
@@ -87,7 +87,7 @@ class ContentSerializer(serializers.ModelSerializer):
 
 class FeedSerializer(serializers.ModelSerializer):
     content = ContentSerializer(many=True, read_only=True)
-    user = ChatuserSerializer(read_only=True)
+    user = UserSerializer(read_only=True)
     is_like = serializers.SerializerMethodField()
 
     class Meta:
@@ -115,7 +115,7 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    user = ChatuserSerializer(read_only=True)
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Comment
@@ -128,9 +128,9 @@ class CommonResponseSerializer(serializers.Serializer):
 
 
 class RoomSerializer(serializers.ModelSerializer):
-    admin = ChatuserSerializer(read_only=True)
+    admin = UserSerializer(read_only=True)
     interests = InterestSerializer(many=True, read_only=True)
-    roomUsers = ChatuserSerializer(many=True, read_only=True)
+    roomUsers = UserSerializer(many=True, read_only=True)
 
     class Meta:
         model = Room
