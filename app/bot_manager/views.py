@@ -316,7 +316,7 @@ class FetchPostByUserView(APIView):
             # Save new Post instance without saving to database
             new_post_instance = Post(**new_post_data)
             new_post_instance_dict = {
-                #simulate id if necessary
+                # simulate id if necessary
                 'id': new_post_instance.id,
                 'user_id': new_post_instance.user_id,
                 'desc': new_post_instance.desc,
