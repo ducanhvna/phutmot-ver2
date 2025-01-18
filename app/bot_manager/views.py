@@ -104,6 +104,14 @@ class AddUserView(APIView):
 
     def post(self, request):
         data = request.data
+
+        # Check if there's a user in the request
+        if request.user and request.user.is_authenticated:
+            # Case 1: User is logged in
+            user = request.user
+            message = 'User is logged in. Processing with existing user.'
+        
+        # Case 2: No user is logged in
         identity = data.get('identity')
         device_token = data.get('device_token')
         login_type = data.get('login_type')
@@ -118,6 +126,8 @@ class AddUserView(APIView):
             }
         )
 
+        message = 'Chatuser added successfully' if created else 'Chatuser already exists, data updated'
+
         if not created:
             user.device_token = device_token
             user.login_type = login_type
@@ -127,10 +137,11 @@ class AddUserView(APIView):
         serializer = ChatuserSerializer(user)
         response_data = {
             'status': True,
-            'message': 'Chatuser added successfully' if created else 'Chatuser already exists, data updated',
+            'message': message,
             'data': serializer.data
         }
-        return Response(response_data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+        status_code = status.HTTP_201_CREATED if 'created' in locals() and created else status.HTTP_200_OK
+        return Response(response_data, status=status_code)
 
 
 class FetchProfileView(APIView):
