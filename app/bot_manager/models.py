@@ -208,7 +208,7 @@ class Page(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
-class User(models.Model):
+class Chatuser(models.Model):
     id = models.BigAutoField(primary_key=True)
     identity = models.CharField(max_length=255)
     username = models.CharField(max_length=255, null=True, blank=True)
