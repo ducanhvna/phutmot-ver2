@@ -248,11 +248,12 @@ class FetchPostsView(APIView):
                 'updated_at': timezone.now()
             }
 
-            # Save new Post instance without saving to database
+            # Create new post instance without saving to database
             new_post_instance = Post(**new_post_data)
-            new_post_instance_dict = {
-                # simulate id if necessary
-                'id': new_post_instance.id,
+
+            # Manually serialize new post instance
+            new_post_serializer_data = {
+                'id': getattr(new_post_instance, 'id', len(posts) + 1),  # simulate id if necessary
                 'user_id': new_post_instance.user_id,
                 'desc': new_post_instance.desc,
                 'tags': new_post_instance.tags,
@@ -260,17 +261,19 @@ class FetchPostsView(APIView):
                 'likes_count': new_post_instance.likes_count,
                 'created_at': new_post_instance.created_at,
                 'updated_at': new_post_instance.updated_at,
-            }
-
-            feed_serializer.data.append(new_post_instance_dict)
+            }            
+        
+            # Add serialized new post data to feed
+            feed_serializer_data = list(feed_serializer.data)
+            feed_serializer_data.append(new_post_serializer_data)
             response_message = "Fetched posts with user details successfully"
         else:
-            response_message = "Fetched posts successfully"
+            feed_serializer_data = feed_serializer.data
 
         response_data = {
             'status': True,
             'message': response_message,
-            'data': feed_serializer.data,
+            'data': feed_serializer_data,
             'suggestedRooms': []
         }
 
@@ -313,11 +316,12 @@ class FetchPostByUserView(APIView):
                 'updated_at': timezone.now()
             }
 
-            # Save new Post instance without saving to database
+            # Create new post instance without saving to database
             new_post_instance = Post(**new_post_data)
-            new_post_instance_dict = {
-                # simulate id if necessary
-                'id': new_post_instance.id,
+
+            # Manually serialize new post instance
+            new_post_serializer_data = {
+                'id': getattr(new_post_instance, 'id', len(posts) + 1),  # simulate id if necessary
                 'user_id': new_post_instance.user_id,
                 'desc': new_post_instance.desc,
                 'tags': new_post_instance.tags,
@@ -325,17 +329,19 @@ class FetchPostByUserView(APIView):
                 'likes_count': new_post_instance.likes_count,
                 'created_at': new_post_instance.created_at,
                 'updated_at': new_post_instance.updated_at,
-            }
-
-            feed_serializer.data.append(new_post_instance_dict)
+            }            
+        
+            # Add serialized new post data to feed
+            feed_serializer_data = list(feed_serializer.data)
+            feed_serializer_data.append(new_post_serializer_data)
             response_message = "Fetched posts with user details successfully"
         else:
-            response_message = "Fetched posts successfully"
+            feed_serializer_data = feed_serializer.data
 
         response_data = {
             'status': True,
             'message': response_message,
-            'data': feed_serializer.data,
+            'data': feed_serializer_data,
             'suggestedRooms': []
         }
 
