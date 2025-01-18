@@ -237,18 +237,26 @@ class FetchPostsView(APIView):
 
         # Add new post if client is authenticated
         if request.user and request.user.is_authenticated:
-            new_post_instance = Post(
-                user_id=request.user.id,
-                desc=f"Post by {request.user.username}",
-                tags='new,post,tags',
-                comments_count=0,
-                likes_count=0
-            )
-            new_post_instance.save()
+            new_post_data = {
+                'user_id': request.user.id,
+                'desc': f"Post by {request.user.username}",
+                'tags': 'new,post,tags',
+                'comments_count': 0,
+                'likes_count': 0,
+                'created_at': timezone.now(),  # Ensure datetime fields match structure
+                'updated_at': timezone.now()
+            }
 
-            new_post_serializer = FeedSerializer(new_post_instance)
-            feed_serializer.data.append(new_post_serializer.data)
-            response_message = "Fetched posts with user details successfully"
+            # Serialize the new post data
+            new_post_serializer = FeedSerializer(data=new_post_data)
+            if new_post_serializer.is_valid():
+                feed_serializer.data.append(new_post_serializer.data)
+                response_message = "Fetched posts with user details successfully"
+            else:
+                print("New post data invalid:", new_post_serializer.errors)
+                response_message = "Fetched posts successfully with some errors in additional post"
+        else:
+            response_message = "Fetched posts successfully"
 
         response_data = {
             'status': True,
@@ -288,18 +296,26 @@ class FetchPostByUserView(APIView):
 
         # Add new post if client is authenticated
         if request.user and request.user.is_authenticated:
-            new_post_instance = Post(
-                user_id=request.user.id,
-                desc=f"Post by {request.user.username}",
-                tags='new,post,tags',
-                comments_count=0,
-                likes_count=0
-            )
-            new_post_instance.save()
+            new_post_data = {
+                'user_id': request.user.id,
+                'desc': f"Post by {request.user.username}",
+                'tags': 'new,post,tags',
+                'comments_count': 0,
+                'likes_count': 0,
+                'created_at': timezone.now(),  # Ensure datetime fields match structure
+                'updated_at': timezone.now()
+            }
 
-            new_post_serializer = FeedSerializer(new_post_instance)
-            feed_serializer.data.append(new_post_serializer.data)
-            response_message = "Fetched posts with user details successfully"
+            # Serialize the new post data
+            new_post_serializer = FeedSerializer(data=new_post_data)
+            if new_post_serializer.is_valid():
+                feed_serializer.data.append(new_post_serializer.data)
+                response_message = "Fetched posts with user details successfully"
+            else:
+                print("New post data invalid:", new_post_serializer.errors)
+                response_message = "Fetched posts successfully with some errors in additional post"
+        else:
+            response_message = "Fetched posts successfully"
 
         response_data = {
             'status': True,
