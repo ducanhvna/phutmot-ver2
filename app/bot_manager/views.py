@@ -110,7 +110,7 @@ class AddUserView(APIView):
             # Case 1: User is logged in
             user = request.user
             message = 'User is logged in. Processing with existing user.'
-        
+
         # Case 2: No user is logged in
         identity = data.get('identity')
         device_token = data.get('device_token')
