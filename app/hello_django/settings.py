@@ -195,3 +195,9 @@ MEDIA_ROOT = BASE_DIR / "mediafiles"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Define constants for Odoo connection
+ODOO_BASE_URL = "https://hrm.mandalahotel.com.vn"
+ODOO_DB = "apechrm_product_v3"
+ODOO_USERNAME = "admin_ho"
+ODOO_PASSWORD = "43a824d3a724da2b59d059d909f13ba0c38fcb82"

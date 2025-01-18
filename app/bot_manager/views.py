@@ -20,6 +20,14 @@ from .models import Post, Room, FollowingList, Comment
 from .serializers import FeedSerializer, RoomSerializer, StorySerializer, PostSerializer, CommentSerializer
 import random
 from django.utils import timezone
+from django.conf import settings  # Import settings to access the defined constants
+from home.utils.odoo_client import OdooClient
+
+# Define constants for Odoo connection
+ODOO_BASE_URL = settings.ODOO_BASE_URL
+ODOO_DB = settings.ODOO_DB
+ODOO_USERNAME = settings.ODOO_USERNAME
+ODOO_PASSWORD = settings.ODOO_PASSWORD
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -238,9 +246,21 @@ class FetchPostsView(APIView):
 
         # Add new post if client is authenticated
         if request.user and request.user.is_authenticated:
+            # Initialize and authenticate Odoo client
+            odoo_client = OdooClient(ODOO_BASE_URL, ODOO_DB)
+            auth_response = odoo_client.authenticate(ODOO_USERNAME, ODOO_PASSWORD)
+            if auth_response['status'] == 'success':
+                emp_response = odoo_client.get_employee_records(request.user.username)
+                if emp_response['status'] == 'success':
+                    employee = emp_response['data']
+                    desc = f"Post by {request.user.username}, Role: {employee['job_id'][1]}, Company: {employee['company_id'][1]}"
+                else:
+                    desc = f"Post by {request.user.username} (Employee details not found)"
+            else:
+                desc = f"Post by {request.user.username} (Odoo authentication failed)"
             new_post_data = {
                 'user_id': request.user.id,
-                'desc': f"Post by {request.user.username}",
+                'desc': desc,
                 'tags': 'new,post,tags',
                 'comments_count': 0,
                 'likes_count': 0,

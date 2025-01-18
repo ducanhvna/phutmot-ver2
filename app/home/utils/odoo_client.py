@@ -18,3 +18,52 @@ class OdooClient:
         except Exception as e:
             print(e)
             return {'status': 'error', 'message': str(e)}
+
+    def get_employee_records(self, username):
+        if self.uid is None or self.models is None:
+            return {'status': 'error', 'message': 'User not authenticated'}
+
+        try:
+            # Get user ID associated with the username
+            user_ids = self.models.execute_kw(
+                self.db,
+                self.uid,
+                self.password,
+                'res.users',
+                'search',
+                [[('login', '=', username)]]
+            )
+            if not user_ids:
+                return {'status': 'fail', 'message': 'User not found'}
+            user_id = user_ids[0]
+
+            # Search for employees with the user_id matching found user_id
+            employee_ids = self.models.execute_kw(
+                self.db,
+                self.uid,
+                self.password,
+                'hr.employee',
+                'search',
+                [[('user_id', '=', user_id)]]
+            )
+            if not employee_ids:
+                return {'status': 'fail', 'message': 'Employee records not found'}
+
+            # Read employee records, including the 'workingday' field
+            employees = self.models.execute_kw(
+                self.db,
+                self.uid,
+                self.password,
+                'hr.employee',
+                'read',
+                [employee_ids],
+                {'fields': ['name', 'job_id', 'department_id', 'company_id', 'workingday']}  # Add workingday field
+            )
+
+            # Sort employees by workingday and get the latest one
+            latest_employee = sorted(employees, key=lambda x: x['workingday'], reverse=True)[0]
+
+            return {'status': 'success', 'data': latest_employee}
+        except Exception as e:
+            print(e)
+            return {'status': 'error', 'message': str(e)}
