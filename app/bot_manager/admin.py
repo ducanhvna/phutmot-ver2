@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Customer, Message, Interest, User, Post
+from .models import Customer, Message, Interest, Chatuser, Post
 
 
 @admin.register(Customer)
@@ -22,8 +22,8 @@ class InterestAdmin(admin.ModelAdmin):
     search_fields = ('title',)
 
 
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
+@admin.register(Chatuser)
+class ChatuserAdmin(admin.ModelAdmin):
     list_display = ('username', 'full_name', 'profile')
     list_filter = ('username',)
     search_fields = ('username',)
