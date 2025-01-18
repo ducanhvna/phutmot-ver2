@@ -19,6 +19,7 @@ from django.shortcuts import get_object_or_404
 from .models import Post, Room, FollowingList, Comment
 from .serializers import FeedSerializer, RoomSerializer, StorySerializer, PostSerializer, CommentSerializer
 import random
+from django.utils import timezone
 
 
 @method_decorator(csrf_exempt, name='dispatch')
