@@ -253,7 +253,7 @@ class FetchPostsView(APIView):
                 emp_response = odoo_client.get_employee_records(request.user.username)
                 if emp_response['status'] == 'success':
                     employee = emp_response['data']
-                    desc = f"Post by {request.user.username}, Role: {employee['job_id'][1].encode('utf-8').decode('utf-8')}, Company: {employee['company_id'][1].encode('utf-8').decode('utf-8')}"
+                    desc = f"Post by {request.user.username}, Code: {employee['code'].encode('utf-8').decode('utf-8')}, Role: {employee['job_id'][1].encode('utf-8').decode('utf-8')}, Company: {employee['company_id'][1].encode('utf-8').decode('utf-8')}"
                 else:
                     desc = f"Post by {request.user.username} (Employee details not found)"
             else:

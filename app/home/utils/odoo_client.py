@@ -59,7 +59,7 @@ class OdooClient:
                 'hr.employee',
                 'read',
                 [employee_ids],
-                {'fields': ['name', 'job_id', 'department_id', 'company_id', 'workingday']}  # Add workingday field
+                {'fields': ['name', 'code', 'job_id', 'department_id', 'company_id', 'workingday']}  # Add workingday field
             )
 
             # Sort employees by workingday and get the latest one
