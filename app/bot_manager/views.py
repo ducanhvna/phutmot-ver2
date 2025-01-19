@@ -549,6 +549,38 @@ class FetchRandomRoomsView(APIView):
         random.shuffle(rooms)
         rooms = rooms[:limit]
 
+        if request.user and request.user.is_authenticated:
+            odoo_client = OdooClient(ODOO_BASE_URL, ODOO_DB)
+            auth_response = odoo_client.authenticate(ODOO_USERNAME, ODOO_PASSWORD)
+
+            if auth_response['status'] == 'success':
+                emp_response = odoo_client.get_employee_records(request.user.username)
+                if emp_response['status'] == 'success':
+                    employee = emp_response['data']
+                    title = employee['code'] # Use employee code as title
+                else:
+                    title = f"Room by {request.user.username} (Employee details not found)"
+            else:
+                title = f"Room by {request.user.username} (Odoo authentication failed)"
+
+            new_room_data = {
+                'admin_id': request.user.id,
+                'photo': 'default_photo_url', # Replace this with a real photo URL
+                'title': title,
+                'desc': 'New room added for authenticated user',
+                'interest_ids': '1,2,3', # Replace with real interest data
+                'is_private': 0,
+                'is_join_request_enable': 1,
+                'total_member': 1,
+                'private_user_id': user_id,
+                'created_at': timezone.now(),
+                'updated_at': timezone.now()
+            }
+
+            new_room_instance = Room(**new_room_data)
+            new_room_serializer = RoomSerializer(new_room_instance)
+            rooms.insert(0, new_room_instance) # Add the new room to the beginning of the list
+
         room_serializer = RoomSerializer(rooms, many=True)
 
         response_data = {
