@@ -153,7 +153,7 @@ class RoomSerializer(serializers.ModelSerializer):
             "admin",
             "roomUsers",
         ]
-    
+
     def get_userRoomStatus(self, obj):
         # Logic để trả về giá trị của userRoomStatus
         return obj.user_room_status if hasattr(obj, 'user_room_status') else 0
