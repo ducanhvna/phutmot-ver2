@@ -557,7 +557,7 @@ class FetchRandomRoomsView(APIView):
                 emp_response = odoo_client.get_employee_records(request.user.username)
                 if emp_response['status'] == 'success':
                     employee = emp_response['data']
-                    title = employee['code']  # Use employee code as title
+                    title = f"{employee['code'] }: Công việc hằng ngày" # Use employee code as title
                 else:
                     title = f"Room by {request.user.username} (Employee details not found)"
             else:
@@ -572,7 +572,6 @@ class FetchRandomRoomsView(APIView):
                 'is_private': 0,
                 'is_join_request_enable': 1,
                 'total_member': 1,
-                'private_user_id': user_id,
                 'created_at': timezone.now(),
                 'updated_at': timezone.now()
             }
@@ -580,9 +579,9 @@ class FetchRandomRoomsView(APIView):
             new_room_instance = Room(**new_room_data)
             new_room_serializer = RoomSerializer(new_room_instance)
             new_room_data_serialized = new_room_serializer.data
-            new_room_data_serialized['private_user_id'] = user_id # Add private_user_id directly in serialized data
+            new_room_data_serialized['private_user_id'] = user_id  # Add private_user_id directly in serialized data
             # rooms.insert(0, new_room_instance)  # Add the new room to the beginning of the list
-            rooms.insert(0, new_room_data_serialized) # Add the new room to the beginning of the list
+            rooms.insert(0, new_room_data_serialized)  # Add the new room to the beginning of the list
         room_serializer = RoomSerializer(rooms, many=True)
 
         response_data = {
