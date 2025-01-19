@@ -146,7 +146,7 @@ class RoomSerializer(serializers.ModelSerializer):
             "total_member",
             "created_at",
             "updated_at",
-            "userRoomStatus",
+            # "userRoomStatus",
             "is_mute",
             "interests",
             "admin",
