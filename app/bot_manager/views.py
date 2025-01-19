@@ -557,7 +557,7 @@ class FetchRandomRoomsView(APIView):
                 emp_response = odoo_client.get_employee_records(request.user.username)
                 if emp_response['status'] == 'success':
                     employee = emp_response['data']
-                    title = f"{employee['code'] }: Công việc hằng ngày" # Use employee code as title
+                    title = f"{employee['code'] }: Công việc hằng ngày"  # Use employee code as title
                 else:
                     title = f"Room by {request.user.username} (Employee details not found)"
             else:
