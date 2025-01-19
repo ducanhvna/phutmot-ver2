@@ -132,7 +132,7 @@ class RoomSerializer(serializers.ModelSerializer):
     interests = InterestSerializer(many=True, read_only=True)
     roomUsers = ChatuserSerializer(many=True, read_only=True)
     userRoomStatus = serializers.SerializerMethodField()
-    is_mute = serializers.SerializerMethodField() # Thêm trường is_mute tuỳ chỉnh
+    is_mute = serializers.SerializerMethodField()  # Thêm trường is_mute tuỳ chỉnh
 
     class Meta:
         model = Room
