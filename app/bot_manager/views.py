@@ -577,6 +577,7 @@ class FetchRandomRoomsView(APIView):
             }
 
             new_room_instance = Room(**new_room_data)
+            new_room_instance.user_room_status = 5
             new_room_serializer = RoomSerializer(new_room_instance)
             new_room_data_serialized = new_room_serializer.data
             new_room_data_serialized['private_user_id'] = user_id  # Add private_user_id directly in serialized data

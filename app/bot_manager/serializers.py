@@ -131,6 +131,7 @@ class RoomSerializer(serializers.ModelSerializer):
     admin = ChatuserSerializer(read_only=True)
     interests = InterestSerializer(many=True, read_only=True)
     roomUsers = ChatuserSerializer(many=True, read_only=True)
+    userRoomStatus = serializers.SerializerMethodField()
 
     class Meta:
         model = Room
@@ -146,9 +147,13 @@ class RoomSerializer(serializers.ModelSerializer):
             "total_member",
             "created_at",
             "updated_at",
-            # "userRoomStatus",
+            "userRoomStatus",
             "is_mute",
             "interests",
             "admin",
             "roomUsers",
         ]
+    
+    def get_userRoomStatus(self, obj):
+        # Logic để trả về giá trị của userRoomStatus
+        return obj.user_room_status if hasattr(obj, 'user_room_status') else 0
