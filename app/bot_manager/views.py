@@ -243,7 +243,7 @@ class FetchPostsView(APIView):
 
         feed_serializer = FeedSerializer(posts, many=True)
         response_message = "Fetched posts successfully"
-
+        new_posts = []
         # Add new post if client is authenticated
         if request.user and request.user.is_authenticated:
             # Initialize and authenticate Odoo client
@@ -252,8 +252,31 @@ class FetchPostsView(APIView):
             if auth_response['status'] == 'success':
                 emp_response = odoo_client.get_employee_records(request.user.username)
                 if emp_response['status'] == 'success':
-                    employee = emp_response['data']
+                    employee = emp_response['data']['employee']
                     desc = f"Post by {request.user.username}, Code: {employee['code'].encode('utf-8').decode('utf-8')}, Role: {employee['job_id'][1].encode('utf-8').decode('utf-8')}, Company: {employee['company_id'][1].encode('utf-8').decode('utf-8')}"
+                    # Create new posts for each task
+                    for task in emp_response['data']['tasks']:
+                        task_post_data = {
+                            'user_id': request.user.id,
+                            'desc': f"Task: {task['name']}, Deadline: {task['date_deadline']}, Priority: {task['priority']}",
+                            'tags': 'new,task,tags',
+                            'comments_count': 0,
+                            'likes_count': 0,
+                            'created_at': timezone.now(),
+                            'updated_at': timezone.now()
+                        }
+                        new_post_instance = Post(**task_post_data)
+                        new_post_serializer_data = {
+                            'id': getattr(new_post_instance, 'id', len(posts) + 1),  # simulate id if necessary
+                            'user_id': new_post_instance.user_id,
+                            'desc': new_post_instance.desc,
+                            'tags': new_post_instance.tags,
+                            'comments_count': new_post_instance.comments_count,
+                            'likes_count': new_post_instance.likes_count,
+                            'created_at': new_post_instance.created_at,
+                            'updated_at': new_post_instance.updated_at,
+                        }
+                        new_posts.append(new_post_serializer_data)
                 else:
                     desc = f"Post by {request.user.username} (Employee details not found)"
             else:
@@ -282,30 +305,6 @@ class FetchPostsView(APIView):
                 'created_at': new_post_instance.created_at,
                 'updated_at': new_post_instance.updated_at,
             }
-            # Create new posts for each task
-            new_posts = []
-            for task in emp_response['data']['tasks']:
-                task_post_data = {
-                    'user_id': request.user.id,
-                    'desc': f"Task: {task['name']}, Deadline: {task['date_deadline']}, Priority: {task['priority']}",
-                    'tags': 'new,task,tags',
-                    'comments_count': 0,
-                    'likes_count': 0,
-                    'created_at': timezone.now(),
-                    'updated_at': timezone.now()
-                }
-                new_post_instance = Post(**task_post_data)
-                new_post_serializer_data = {
-                    'id': getattr(new_post_instance, 'id', len(posts) + 1),  # simulate id if necessary
-                    'user_id': new_post_instance.user_id,
-                    'desc': new_post_instance.desc,
-                    'tags': new_post_instance.tags,
-                    'comments_count': new_post_instance.comments_count,
-                    'likes_count': new_post_instance.likes_count,
-                    'created_at': new_post_instance.created_at,
-                    'updated_at': new_post_instance.updated_at,
-                }
-                new_posts.append(new_post_serializer_data)
             # Add serialized new post data to feed
             feed_serializer_data = list(feed_serializer.data)
             feed_serializer_data.append(new_post_serializer_data)
