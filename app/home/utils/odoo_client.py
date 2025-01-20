@@ -83,7 +83,7 @@ class OdooClient:
                     self.password,
                     'project.task',
                     'read',
-                    task_ids,
+                    [task_ids],
                     {'fields': ['name', 'id', 'date_deadline', 'priority', 'user_ids']}  # Add user_ids field
                 )
 
