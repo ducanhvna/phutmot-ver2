@@ -72,7 +72,8 @@ class OdooClient:
                 self.password,
                 'project.task',
                 'search',
-                [[('user_ids', 'in', user_ids)]]
+                # ('user_ids', 'in', user_ids)
+                [[]]
             )
             tasks = []
             if task_ids and len(task_ids) > 0:
