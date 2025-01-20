@@ -257,6 +257,7 @@ class FetchPostsView(APIView):
                     # Create new posts for each task
                     for task in emp_response['data']['tasks']:
                         task_post_data = {
+                            'id': task['id'],
                             'user_id': request.user.id,
                             'desc': f"Task: {task['name']}, Deadline: {task['date_deadline']}, Priority: {task['priority']}",
                             'tags': 'new,task,tags',
@@ -267,7 +268,7 @@ class FetchPostsView(APIView):
                         }
                         new_post_instance = Post(**task_post_data)
                         new_post_serializer_data = {
-                            'id': getattr(new_post_instance, 'id', len(posts) + 1),  # simulate id if necessary
+                            'id': new_post_instance.id,  # simulate id if necessary
                             'user_id': new_post_instance.user_id,
                             'desc': new_post_instance.desc,
                             'tags': new_post_instance.tags,
