@@ -66,26 +66,26 @@ class OdooClient:
             latest_employee = sorted(employees, key=lambda x: x['workingday'], reverse=True)[0]
 
             # Fetch tasks assigned to the latest employee
-            task_ids = self.models.execute_kw(
-                self.db,
-                self.uid,
-                self.password,
-                'project.task',
-                'search',
-                # ('user_ids', 'in', user_ids)
-                [[]]
-            )
+            # task_ids = self.models.execute_kw(
+            #     self.db,
+            #     self.uid,
+            #     self.password,
+            #     'project.task',
+            #     'search',
+            #     # ('user_ids', 'in', user_ids)
+            #     [[]]
+            # )
             tasks = []
-            if task_ids and len(task_ids) > 0:
-                tasks = self.models.execute_kw(
-                    self.db,
-                    self.uid,
-                    self.password,
-                    'project.task',
-                    'read',
-                    task_ids,
-                    {'fields': ['name', 'id', 'date_deadline', 'priority', 'user_ids']}  # Add user_ids field
-                )
+            # if task_ids and len(task_ids) > 0:
+            #     tasks = self.models.execute_kw(
+            #         self.db,
+            #         self.uid,
+            #         self.password,
+            #         'project.task',
+            #         'read',
+            #         task_ids,
+            #         {'fields': ['name', 'id', 'date_deadline', 'priority', 'user_ids']}  # Add user_ids field
+            #     )
 
             return {'status': 'success', 'data': {'employee': latest_employee, 'tasks': tasks}}
         except Exception as e:
