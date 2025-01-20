@@ -282,10 +282,34 @@ class FetchPostsView(APIView):
                 'created_at': new_post_instance.created_at,
                 'updated_at': new_post_instance.updated_at,
             }
-
+            # Create new posts for each task
+            new_posts = []
+            for task in emp_response['data']['tasks']:
+                task_post_data = {
+                    'user_id': request.user.id,
+                    'desc': f"Task: {task['name']}, Deadline: {task['date_deadline']}, Priority: {task['priority']}",
+                    'tags': 'new,task,tags',
+                    'comments_count': 0,
+                    'likes_count': 0,
+                    'created_at': timezone.now(),
+                    'updated_at': timezone.now()
+                }
+                new_post_instance = Post(**task_post_data)
+                new_post_serializer_data = {
+                    'id': getattr(new_post_instance, 'id', len(posts) + 1),  # simulate id if necessary
+                    'user_id': new_post_instance.user_id,
+                    'desc': new_post_instance.desc,
+                    'tags': new_post_instance.tags,
+                    'comments_count': new_post_instance.comments_count,
+                    'likes_count': new_post_instance.likes_count,
+                    'created_at': new_post_instance.created_at,
+                    'updated_at': new_post_instance.updated_at,
+                }
+                new_posts.append(new_post_serializer_data)
             # Add serialized new post data to feed
             feed_serializer_data = list(feed_serializer.data)
             feed_serializer_data.append(new_post_serializer_data)
+            feed_serializer_data.extend(new_posts)
             response_message = "Fetched posts with user details successfully"
         else:
             feed_serializer_data = feed_serializer.data
