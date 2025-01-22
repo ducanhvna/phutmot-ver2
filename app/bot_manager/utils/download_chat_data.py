@@ -93,7 +93,7 @@ class ChatService():
         # Initialize empty employees list for each user and populate it
         for user in user_merged_data:
             user_id = user['id']
-            user['employees'] = [employee for employee in employees if  employee['user_id'] and (employee['user_id'][0] == user_id)]
+            user['employees'] = [employee for employee in employees if employee['user_id'] and (employee['user_id'][0] == user_id)]
         self.save_user_to_django(user_merged_data=user_merged_data)
 
     def save_user_to_django(self, user_merged_data):
