@@ -62,3 +62,13 @@ class ProjectProject(models.Model):
                     'progress_bar'))) / len(progressbar_tasks)
             else:
                 rec.progressbar = 0
+
+
+class DailyAdvice(models.Model):
+    _name = 'daily.advice'
+    _description = 'Daily Advice'
+
+    user_id = fields.Many2one('res.users', string='User')
+    date = fields.Date(string='Date', default=fields.Date.context_today)
+    project_advice = fields.Text(string='Project Advice')
+    hrm_advice = fields.Text(string='Hrm Advice')
