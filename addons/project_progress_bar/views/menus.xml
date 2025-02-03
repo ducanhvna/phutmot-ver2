@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <menuitem id="ai_project_management_menu_root"
+              name="AI Project Management"
+              sequence="20"/>
+</odoo>

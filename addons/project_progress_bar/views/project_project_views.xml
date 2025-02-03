@@ -104,7 +104,7 @@
             <field name="perm_create" eval="1"/>
             <field name="perm_unlink" eval="1"/>
         </record>
-        
+
         <record id="view_project_details_tree" model="ir.ui.view">
             <field name="name">project.details.tree</field>
             <field name="model">project.details</field>
@@ -143,7 +143,7 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="menu_project_details" name="Project Details" parent="base.menu_custom" action="action_project_details"/>
+        <menuitem id="menu_project_details" name="Project Details" parent="ai_project_management_menu_root" action="action_project_details"/>
 
     </data>
 </odoo>

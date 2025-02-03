@@ -43,6 +43,7 @@
         'views/project_task_types_views.xml',
         'views/project_project_views.xml',
         'views/project_task_views.xml',
+        'views/menus.xml'
     ],
     'images': ['static/description/banner.jpg'],
     'license': 'LGPL-3',
