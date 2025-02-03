@@ -21,11 +21,23 @@
 #############################################################################
 from odoo import api, fields, models
 
+class ProjectDetails(models.Model):
+    _name = 'project.details'
+    _description = 'Project Details'
+
+    project_id = fields.Many2one('project.project', string='Project')
+    user_id = fields.Many2one('res.users', string='User')
+    criteria = fields.Text(string='Criteria')
+    evaluation = fields.Text(string='Evaluation')
+    goals = fields.Text(string='Goals')
+    vision = fields.Text(string='Vision')
+
 
 class ProjectProject(models.Model):
     """Inherits the project Model for adding new fields and functions"""
     _inherit = "project.project"
 
+    project_details_ids = fields.One2many('project.details', 'project_id', string='Project Details')
     code = fields.Char(string='Mã dự án')
     progressbar = fields.Float(string='Progress Bar',
                                compute='_compute_progress_bar',
