@@ -82,5 +82,57 @@
                 </field>
             </field>
         </record>
+        <record id="view_project_form_inherit" model="ir.ui.view">
+            <field name="name">project.project.form.inherit</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.edit_project"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet" position="inside">
+                    <h3>Project Details</h3>
+                    <field name="project_details_ids"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_project_details_tree" model="ir.ui.view">
+            <field name="name">project.details.tree</field>
+            <field name="model">project.details</field>
+            <field name="arch" type="xml">
+                <tree string="Project Details">
+                    <field name="project_id"/>
+                    <field name="user_id"/>
+                    <field name="criteria"/>
+                    <field name="evaluation"/>
+                    <field name="goals"/>
+                    <field name="vision"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_project_details_form" model="ir.ui.view">
+            <field name="name">project.details.form</field>
+            <field name="model">project.details</field>
+            <field name="arch" type="xml">
+                <form string="Project Details">
+                    <group>
+                        <field name="project_id"/>
+                        <field name="user_id"/>
+                        <field name="criteria"/>
+                        <field name="evaluation"/>
+                        <field name="goals"/>
+                        <field name="vision"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_project_details" model="ir.actions.act_window">
+            <field name="name">Project Details</field>
+            <field name="res_model">project.details</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_project_details" name="Project Details" parent="base.menu_custom" action="action_project_details"/>
+
     </data>
 </odoo>
