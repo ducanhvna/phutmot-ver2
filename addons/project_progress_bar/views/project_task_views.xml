@@ -49,4 +49,39 @@
             </xpath>
         </field>
     </record>
+    
+    <record id="view_daily_advice_tree" model="ir.ui.view">
+        <field name="name">daily.advice.tree</field>
+        <field name="model">daily.advice</field>
+        <field name="arch" type="xml">
+            <tree string="Daily Advice">
+                <field name="user_id"/>
+                <field name="date"/>
+                <field name="advice"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_daily_advice_form" model="ir.ui.view">
+        <field name="name">daily.advice.form</field>
+        <field name="model">daily.advice</field>
+        <field name="arch" type="xml">
+            <form string="Daily Advice">
+                <group>
+                    <field name="user_id"/>
+                    <field name="date"/>
+                    <field name="advice"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_daily_advice" model="ir.actions.act_window">
+        <field name="name">Daily Advice</field>
+        <field name="res_model">daily.advice</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_daily_advice" name="Daily Advice" parent="base.menu_custom" action="action_daily_advice"/>
+
 </odoo>

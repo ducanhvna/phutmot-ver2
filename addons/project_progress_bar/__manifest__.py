@@ -39,6 +39,7 @@
     'website': 'https://www.cybrosys.com',
     'depends': ['hr_timesheet', 'project'],
     'data': [
+        'security/ir.model.access.csv',
         'views/project_task_types_views.xml',
         'views/project_project_views.xml',
         'views/project_task_views.xml',
