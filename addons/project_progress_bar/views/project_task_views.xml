@@ -57,7 +57,8 @@
             <tree string="Daily Advice">
                 <field name="user_id"/>
                 <field name="date"/>
-                <field name="advice"/>
+                <field name="project_advice"/>
+                <field name="hrm_advice"/>
             </tree>
         </field>
     </record>
@@ -70,7 +71,8 @@
                 <group>
                     <field name="user_id"/>
                     <field name="date"/>
-                    <field name="advice"/>
+                    <field name="project_advice"/>
+                    <field name="hrm_advice"/>
                 </group>
             </form>
         </field>
