@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.index, name='index'),
     re_path('timesheet/', views.timesheet, name='timesheet'),
     path('hrms/', include('hrms.urls')),
+    path('documents/', include('documents.urls')),
     path('api/chat/', include('bot_manager.urls')),
     path('api/login/', LoginView.as_view(), name='login'),
     # re_path('createtask/', taskcreate, name='task_create2'),
