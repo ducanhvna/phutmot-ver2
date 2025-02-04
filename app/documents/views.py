@@ -1,6 +1,8 @@
+import os
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import DocumentForm
 from .models import Document
+from django.conf import settings
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.oauth2.credentials import Credentials
@@ -14,7 +16,8 @@ def upload_document(request):
             file_path = document.file.path
 
             # Đẩy tệp lên Google Docs
-            creds = Credentials.from_authorized_user_file('token.json', ['https://www.googleapis.com/auth/drive.file'])
+            token_path = os.path.join(settings.BASE_DIR, 'documents/token.json')
+            creds = Credentials.from_authorized_user_file(token_path, ['https://www.googleapis.com/auth/drive.file'])
             service = build('drive', 'v3', credentials=creds)
             file_metadata = {'name': document.title}
             media = MediaFileUpload(file_path, mimetype='application/pdf')
