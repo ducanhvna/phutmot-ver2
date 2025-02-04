@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import DocumentForm
 from .models import Document
 from googleapiclient.discovery import build
@@ -28,3 +28,8 @@ def upload_document(request):
     else:
         form = DocumentForm()
     return render(request, 'documents/upload.html', {'form': form})
+
+
+def document_detail(request, id):
+    document = get_object_or_404(Document, id=id)
+    return render(request, 'documents/document_detail.html', {'document': document})
