@@ -9,5 +9,6 @@
   {% if image_url %}
     <p>File uploaded at: <a href="{{ image_url }}">{{ image_url }}</a></p>
   {% endif %}
+  <a href="{% url 'authorize' %}">Authorize Google Drive</a>
 
 {% endblock %}
