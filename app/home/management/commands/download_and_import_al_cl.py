@@ -258,6 +258,7 @@ class Command(BaseCommand):
         )
 
         # Process data and save to Django
+        self.print_active_employees_without_cl(contracts, employee_cl, employee_al, models, db, uid, password)
         self.save_to_django(contracts, employee_cl, employee_al)
 
     def download_data(self, models, db, uid, password, model_name, fields, limit=300):
@@ -403,3 +404,133 @@ class Command(BaseCommand):
             )
             print(f'create {employee_code}')
             profile.save()
+
+    def print_active_employees_without_cl(self, contracts, cls, als, models, db, uid, password):
+        contract_dict = defaultdict(list)
+        for contract in contracts:
+            contract_dict[contract["employee_code"]].append(contract)
+
+        cl_dict = defaultdict(list)
+        for cl in cls:
+            cl_dict[cl["employee_code"]].append(cl)
+
+        al_dict = defaultdict(list)
+        for al in als:
+            al_dict[al["employee_code"]].append(al)
+
+        # Get the current date and calculate the date range for the first two months
+        current_date = datetime.now()
+        end_of_next_month = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        start_of_two_months_later = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1)
+
+        for employee_code, records in self.grouped_employee_data.items():
+            # Filter records based on "severance_day" and sort them
+            filtered_records = []
+            for rec in records:
+                if rec["severance_day"] is False:
+                    filtered_records.append(rec)
+                else:
+                    try:
+                        severance_day = datetime.strptime(rec["severance_day"], '%Y-%m-%d')  # Adjust the format as needed
+                        if severance_day > end_of_next_month:
+                            filtered_records.append(rec)
+                    except ValueError:
+                        continue  # Handle the case where the date string is invalid
+
+            if not filtered_records:
+                continue
+
+            records = sorted(
+                filtered_records,
+                key=lambda x: (
+                    x["severance_day"] is not False,
+                    x["severance_day"],
+                    x["workingday"] is not False,
+                    x["workingday"],
+                    x["id"],
+                ),
+                reverse=True,
+            )
+            # selected_record = records[0]
+            # other_records = records[1:] if len(records) > 1 else []
+
+            # employee_contracts = contract_dict.get(employee_code, [])
+            # sorted_contracts = sorted(
+            #     employee_contracts,
+            #     key=lambda x: (
+            #         x["date_end"] is not False,
+            #         x["date_end"],
+            #         x["date_start"] is not False,
+            #         x["date_start"],
+            #         x["id"],
+            #     ),
+            #     reverse=True,
+            # )
+
+            employee_cls = cl_dict.get(employee_code, [])
+            sorted_cls = []
+            for cl in employee_cls:
+                try:
+                    cl["date_calculate"] = datetime.strptime(cl["date_calculate"], '%Y-%m-%d')  # Adjust the format as needed
+                    sorted_cls.append(cl)
+                except ValueError:
+                    continue  # Handle the case where the date string is invalid
+            employee_als = al_dict.get(employee_code, [])
+            sorted_als = []
+            for al in employee_als:
+                try:
+                    al["date_calculate_leave"] = datetime.strptime(al["date_calculate_leave"], '%Y-%m-%d')  # Adjust the format as needed
+                    sorted_als.append(al)
+                except ValueError:
+                    continue  # Handle the case where the date string is invalid
+            sorted_cls = sorted(sorted_cls, key=lambda x: (x["date_calculate"],), reverse=True)
+
+            employee_als = al_dict.get(employee_code, [])
+            sorted_als = sorted(
+                sorted_als, key=lambda x: (x["date_calculate_leave"],), reverse=True
+            )
+
+            # Check if there are no "cl" records within the first two months
+            no_cl_in_two_months = not any((cl["date_calculate"].strftime('%Y-%m-%d') == start_of_two_months_later.strftime('%Y-%m-%d')) for cl in sorted_cls)
+
+            if no_cl_in_two_months:
+                nearest_cl = sorted_cls[0] if sorted_cls else None
+                print(f'Active employee without cl on {start_of_two_months_later}: {employee_code}')
+                if nearest_cl and nearest_cl['company_id']:
+                    print(f'Nearest cl record: {nearest_cl}')
+                    # Create a new cl record via XML-RPC
+                    new_cl_data = {
+                        'date_calculate': start_of_two_months_later.strftime('%Y-%m-%d'),
+                        'year': current_date.year,
+                        'company_id': nearest_cl['company_id'][0],
+                        'employee_id': nearest_cl['employee_id'][0],
+                        'department_id': nearest_cl['department_id'][0] if nearest_cl['department_id'] else False,
+                        'job_title': nearest_cl['job_title'],
+                        'workingday': nearest_cl['workingday'],
+                        'date_sign': nearest_cl['date_sign'],
+                    }
+                    models.execute_kw(db, uid, password, 'hr.cl.report', 'create', [new_cl_data])
+                    print(f'New cl record created for employee {employee_code}')
+                else:
+                    print(f'No nearest cl record found for employee {employee_code}')
+            no_al_in_two_months = not any((al["date_calculate_leave"].strftime('%Y-%m-%d') == start_of_two_months_later.strftime('%Y-%m-%d')) for al in sorted_als)
+            if no_al_in_two_months:
+                nearest_al = sorted_als[0] if sorted_als else None
+                if nearest_al:
+                    print(f'Nearest al record: {nearest_al}')
+                    # Create a new cl record via XML-RPC
+                    new_al_data = {
+                        'date_calculate_leave': start_of_two_months_later.strftime('%Y-%m-%d'),
+                        'year': current_date.year,
+                        'company_id': nearest_al['company_id'][0],
+                        'employee_id': nearest_al['employee_id'][0],
+                        'department_id': nearest_al['department_id'][0] if nearest_al['department_id'] else False,
+                        'job_title': nearest_al['job_title'],
+                        'workingday': nearest_al['workingday'],
+                        'date_sign': nearest_al['date_sign'],
+                        'date_apply_leave': nearest_al['date_apply_leave']
+                    }
+                    models.execute_kw(db, uid, password, 'hr.al.report', 'create', [new_al_data])
+                    print(f'New al record created for employee {employee_code}')
+                else:
+                    print(f'No nearest al record found for employee {employee_code}')
