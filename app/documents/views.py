@@ -22,7 +22,7 @@ def upload_document(request):
             token_path = os.path.join(settings.BASE_DIR, 'documents/token.json')
             if not os.path.exists(token_path):
                 return render(request, 'documents/error.html', {'message': 'Token file not found. Please authorize first.'})
-            
+
             creds = Credentials.from_authorized_user_file(token_path, ['https://www.googleapis.com/auth/drive.file'])
             service = build('drive', 'v3', credentials=creds)
             file_metadata = {'name': document.title}
