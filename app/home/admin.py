@@ -12,8 +12,8 @@ class CompanyAdmin(admin.ModelAdmin):
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('employee_code', 'display_contracts', 'create_time', 'update_time', 'user')
-    search_fields = ('employee_code', 'user')
+    list_display = ('employee_code', 'create_time', 'update_time', 'user')
+    search_fields = ('employee_code')
 
     def display_contracts(self, obj):
         try:
