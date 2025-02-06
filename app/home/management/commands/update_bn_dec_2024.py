@@ -277,7 +277,7 @@ class Command(BaseCommand):
         elif model_name == "hr.contract":
             domain = [
                 [
-                    "&",
+                    '&',
                     ["employee_id", "!=", False],
                     "|",
                     ["active", "=", False],
@@ -286,11 +286,15 @@ class Command(BaseCommand):
             ]
         elif model_name == "hr.cl.report":
             domain = [
-                [["date_calculate", "!=", False]]
+                [
+                    ["date_calculate", "!=", False]
+                ]
             ]
         elif model_name == "hr.al.report":
             domain = [
-                [["date_calculate_leave", "!=", False]]
+                [
+                    ["date_calculate_leave", "!=", False]
+                ]
             ]
         else:
             raise ValueError("Invalid model name")
@@ -491,46 +495,39 @@ class Command(BaseCommand):
             )
 
             # Check if there are no "cl" records within the first two months
-            no_cl_in_two_months = not any((cl["date_calculate"].strftime('%Y-%m-%d') == start_of_two_months_later.strftime('%Y-%m-%d')) for cl in sorted_cls)
+            cl_in_two_months = [cl for cl in sorted_cls if cl["date_calculate"].strftime('%Y-%m-%d') == start_of_two_months_later.strftime('%Y-%m-%d')]
 
-            if no_cl_in_two_months:
-                nearest_cl = next((cl for cl in sorted_cls if cl['date_calculate'] < start_of_two_months_later), None)
-                print(f'Active employee without cl on {start_of_two_months_later}: {employee_code}')
-                if nearest_cl and nearest_cl['company_id']:
-                    print(f'Nearest cl record: {nearest_cl}')
-                    # Create a new cl record via XML-RPC
-                    new_cl_data = {
-                        'date_calculate': start_of_two_months_later.strftime('%Y-%m-%d'),
-                        'year': current_date.year,
-                        'company_id': nearest_cl['company_id'][0],
-                        'employee_id': nearest_cl['employee_id'][0],
-                        'department_id': nearest_cl['department_id'][0] if nearest_cl['department_id'] else False,
-                        'job_title': nearest_cl['job_title'],
-                        'workingday': nearest_cl['workingday'],
-                        'date_sign': nearest_cl['date_sign'],
-                    }
-                    models.execute_kw(db, uid, password, 'hr.cl.report', 'create', [new_cl_data])
-                    print(f'New cl record created for employee {employee_code}')
-                else:
-                    print(f'No nearest cl record found for employee {employee_code}')
-            no_al_in_two_months = not any((al["date_calculate_leave"].strftime('%Y-%m-%d') == start_of_two_months_later.strftime('%Y-%m-%d')) for al in sorted_als)
-            if no_al_in_two_months:
-                nearest_al = next((al for al in sorted_als if al['date_calculate_leave'] < start_of_two_months_later), None)
-                if nearest_al:
-                    print(f'Nearest al record: {nearest_al}')
-                    # Create a new cl record via XML-RPC
-                    new_al_data = {
-                        'date_calculate_leave': start_of_two_months_later.strftime('%Y-%m-%d'),
-                        'year': current_date.year,
-                        'company_id': nearest_al['company_id'][0],
-                        'employee_id': nearest_al['employee_id'][0],
-                        'department_id': nearest_al['department_id'][0] if nearest_al['department_id'] else False,
-                        'job_title': nearest_al['job_title'],
-                        'workingday': nearest_al['workingday'],
-                        'date_sign': nearest_al['date_sign'],
-                        'date_apply_leave': nearest_al['date_apply_leave']
-                    }
-                    models.execute_kw(db, uid, password, 'hr.al.report', 'create', [new_al_data])
-                    print(f'New al record created for employee {employee_code}')
-                else:
-                    print(f'No nearest al record found for employee {employee_code}')
+            if len(cl_in_two_months)>0:
+                selected_cl = cl_in_two_months[0]
+                if (selected_cl['company_id']) and (selected_cl['company_id'][0]==18):
+                    nearest_cl = next((cl for cl in sorted_cls if cl['date_calculate'] < start_of_two_months_later), None)
+                    print(f'Active employee without cl on {start_of_two_months_later}: {employee_code}')
+                    if nearest_cl and nearest_cl['company_id']:
+                        print(f'Nearest cl record: {nearest_cl}')
+                        # Create a update cl record via XML-RPC
+                        new_cl_data = {
+                            "increase_probationary_11": nearest_cl["increase_probationary_11"],
+                            "increase_official_11": nearest_cl["increase_official_11"],
+                            "used_probationary_11": nearest_cl["used_probationary_11"]
+                        }
+                        ids = [selected_cl['id']]
+                        models.execute_kw(db, uid, password, 'hr.cl.report', 'write', [ids, new_cl_data])
+                        print(f'update cl record created for employee {employee_code}')
+                    else:
+                        print(f'No nearest cl record found for employee {employee_code}')
+            al_in_two_months = [al for al in sorted_als if al["date_calculate_leave"].strftime('%Y-%m-%d') == start_of_two_months_later.strftime('%Y-%m-%d')]
+            if len(al_in_two_months)>0:
+                selected_al = al_in_two_months[0]
+                if (selected_al['company_id']) and (selected_al['company_id'][0]==18):
+                    nearest_al = next((al for al in sorted_als if al['date_calculate_leave'] < start_of_two_months_later), None)
+                    if nearest_al:
+                        print(f'Nearest al record: {nearest_al}')
+                        # Create a new cl record via XML-RPC
+                        new_al_data = {
+                            'november': new_al_data['november'],
+                        }
+                        ids = [selected_al['id']]
+                        models.execute_kw(db, uid, password, 'hr.al.report', 'write', [ids, new_al_data])
+                        print(f'update al record created for employee {employee_code}')
+                    else:
+                        print(f'No nearest al record found for employee {employee_code}')
