@@ -425,7 +425,7 @@ class Command(BaseCommand):
         # Get the current date and calculate the date range for the first two months
         current_date = datetime.now()
         end_of_next_month = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-        start_of_two_months_later = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1)
+        start_of_two_months_later = current_date.replace(day=1)
 
         for employee_code, records in self.grouped_employee_data.items():
             # Filter records based on "severance_day" and sort them
