@@ -506,9 +506,9 @@ class Command(BaseCommand):
                         print(f'Nearest cl record: {nearest_cl}')
                         # Create a update cl record via XML-RPC
                         new_cl_data = {
-                            "increase_probationary_11": nearest_cl["increase_probationary_11"],
-                            "increase_official_11": nearest_cl["increase_official_11"],
-                            "used_probationary_11": nearest_cl["used_probationary_11"]
+                            "increase_probationary_11":nearest_cl["increase_probationary_11"],
+                            "increase_official_11":nearest_cl["increase_official_11"],
+                            "used_probationary_11":nearest_cl["used_probationary_11"]
                         }
                         ids = [selected_cl['id']]
                         models.execute_kw(db, uid, password, 'hr.cl.report', 'write', [ids, new_cl_data])
@@ -524,7 +524,7 @@ class Command(BaseCommand):
                         print(f'Nearest al record: {nearest_al}')
                         # Create a new cl record via XML-RPC
                         new_al_data = {
-                            'november': new_al_data['november'],
+                            'november':nearest_al['november'],
                         }
                         ids = [selected_al['id']]
                         models.execute_kw(db, uid, password, 'hr.al.report', 'write', [ids, new_al_data])
