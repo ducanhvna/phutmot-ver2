@@ -497,9 +497,9 @@ class Command(BaseCommand):
             # Check if there are no "cl" records within the first two months
             cl_in_two_months = [cl for cl in sorted_cls if cl["date_calculate"].strftime('%Y-%m-%d') == start_of_two_months_later.strftime('%Y-%m-%d')]
 
-            if len(cl_in_two_months)>0:
+            if len(cl_in_two_months) > 0:
                 selected_cl = cl_in_two_months[0]
-                if (selected_cl['company_id']) and (selected_cl['company_id'][0]==18):
+                if (selected_cl['company_id']) and (selected_cl['company_id'][0] == 18):
                     nearest_cl = next((cl for cl in sorted_cls if cl['date_calculate'] < start_of_two_months_later), None)
                     print(f'Active employee without cl on {start_of_two_months_later}: {employee_code}')
                     if nearest_cl and nearest_cl['company_id']:
@@ -518,7 +518,7 @@ class Command(BaseCommand):
             al_in_two_months = [al for al in sorted_als if al["date_calculate_leave"].strftime('%Y-%m-%d') == start_of_two_months_later.strftime('%Y-%m-%d')]
             if len(al_in_two_months) > 0:
                 selected_al = al_in_two_months[0]
-                if (selected_al['company_id']) and (selected_al['company_id'][0] == 18) :
+                if (selected_al['company_id']) and (selected_al['company_id'][0] == 18):
                     nearest_al = next((al for al in sorted_als if al['date_calculate_leave'] < start_of_two_months_later), None)
                     if nearest_al:
                         print(f'Nearest al record: {nearest_al}')
