@@ -506,9 +506,9 @@ class Command(BaseCommand):
                         print(f'Nearest cl record: {nearest_cl}')
                         # Create a update cl record via XML-RPC
                         new_cl_data = {
-                            "increase_probationary_11":nearest_cl["increase_probationary_11"],
-                            "increase_official_11":nearest_cl["increase_official_11"],
-                            "used_probationary_11":nearest_cl["used_probationary_11"]
+                            "increase_probationary_11": nearest_cl["increase_probationary_11"],
+                            "increase_official_11": nearest_cl["increase_official_11"],
+                            "used_probationary_11": nearest_cl["used_probationary_11"]
                         }
                         ids = [selected_cl['id']]
                         models.execute_kw(db, uid, password, 'hr.cl.report', 'write', [ids, new_cl_data])
@@ -516,15 +516,15 @@ class Command(BaseCommand):
                     else:
                         print(f'No nearest cl record found for employee {employee_code}')
             al_in_two_months = [al for al in sorted_als if al["date_calculate_leave"].strftime('%Y-%m-%d') == start_of_two_months_later.strftime('%Y-%m-%d')]
-            if len(al_in_two_months)>0:
+            if len(al_in_two_months) > 0:
                 selected_al = al_in_two_months[0]
-                if (selected_al['company_id']) and (selected_al['company_id'][0]==18):
+                if (selected_al['company_id']) and (selected_al['company_id'][0] == 18) :
                     nearest_al = next((al for al in sorted_als if al['date_calculate_leave'] < start_of_two_months_later), None)
                     if nearest_al:
                         print(f'Nearest al record: {nearest_al}')
                         # Create a new cl record via XML-RPC
                         new_al_data = {
-                            'november':nearest_al['november'],
+                            'november': nearest_al['november'],
                         }
                         ids = [selected_al['id']]
                         models.execute_kw(db, uid, password, 'hr.al.report', 'write', [ids, new_al_data])
