@@ -82,18 +82,19 @@ class AlTablesView(View):
             ]
             for up in matching_user_profiles:
                 merged_profile = {"employee": emp, "user_profile": up}
-                merged_profile['january'] = 0 if not up.al else up.al[-1].get("january", 0)
-                merged_profile['february'] = 0 if not up.al else up.al[-1].get("february", 0)
-                merged_profile['march'] = 0 if not up.al else up.al[-1].get("march", 0)
-                merged_profile['april'] = 0 if not up.al else up.al[-1].get("april", 0)
-                merged_profile['may'] = 0 if not up.al else up.al[-1].get("may", 0)
-                merged_profile['june'] = 0 if not up.al else up.al[-1].get("june", 0)
-                merged_profile['july'] = 0 if not up.al else up.al[-1].get("july", 0)
-                merged_profile['august'] = 0 if not up.al else up.al[-1].get("august", 0)
-                merged_profile['september'] = 0 if not up.al else up.al[-1].get("september", 0)
-                merged_profile['october'] = 0 if not up.al else up.al[-1].get("october", 0)
-                merged_profile['november'] = 0 if not up.al else up.al[-1].get("november", 0)
-                merged_profile['december'] = 0 if not up.al else up.al[-1].get("december", 0)
+                filtered_al = [entry for entry in up.al if entry.get("date_calculate_leave") == "2025-02-01"]
+                merged_profile['january'] = 0 if not filtered_al else filtered_al[-1].get("january", 0)
+                merged_profile['february'] = 0 if not filtered_al else filtered_al[-1].get("february", 0)
+                merged_profile['march'] = 0 if not filtered_al else filtered_al[-1].get("march", 0)
+                merged_profile['april'] = 0 if not filtered_al else filtered_al[-1].get("april", 0)
+                merged_profile['may'] = 0 if not filtered_al else filtered_al[-1].get("may", 0)
+                merged_profile['june'] = 0 if not filtered_al else filtered_al[-1].get("june", 0)
+                merged_profile['july'] = 0 if not filtered_al else filtered_al[-1].get("july", 0)
+                merged_profile['august'] = 0 if not filtered_al else filtered_al[-1].get("august", 0)
+                merged_profile['september'] = 0 if not filtered_al else filtered_al[-1].get("september", 0)
+                merged_profile['october'] = 0 if not filtered_al else filtered_al[-1].get("october", 0)
+                merged_profile['november'] = 0 if not filtered_al else filtered_al[-1].get("november", 0)
+                merged_profile['december'] = 0 if not filtered_al else filtered_al[-1].get("december", 0)
                 merged_profiles.append(merged_profile)
 
         return render(request, "hrms/al_tables.html", {"profiles": merged_profiles})
