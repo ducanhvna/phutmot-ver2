@@ -20,10 +20,10 @@
                 <thead class=" text-primary">
                   <tr>
                     <th>
-                      Name
+                      Code
                     </th>
                     <th>
-                      Country
+                      Name
                     </th>
                     <th>
                       City
@@ -37,10 +37,10 @@
                   {% for profile in profiles %}
                   <tr>
                     <td>
-                      profile.code
+                      {{ profile.code }}
                     </td>
                     <td>
-                      Niger
+                      {{ profile.info.name }}
                     </td>
                     <td>
                       Oud-Turnhout
