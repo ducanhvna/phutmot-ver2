@@ -30,6 +30,9 @@ def update_apec_hrm():
     last_day_of_last_month = first_day_of_month - timedelta(days=1)
     first_day_of_last_month = last_day_of_last_month.replace(day=1)
     hrms_dashboard.update(first_day_of_last_month)
+    last_day_of_last_last_month = first_day_of_last_month - timedelta(days=1)
+    first_day_of_last_last_month = last_day_of_last_last_month.replace(day=1)
+    hrms_dashboard.update(first_day_of_last_last_month)
 
 
 @shared_task

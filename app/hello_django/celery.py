@@ -12,11 +12,11 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'my-scheduled-task': {
         'task': 'dashboard.tasks.check_apec_hrms_update',
-        'schedule': 80.0,  # 60 giây một lần
+        'schedule': 180.0,  # 60 giây một lần
     },
     'hrm-scheduled-task': {  # Task mới
         'task': 'dashboard.tasks.update_apec_hrm',
-        'schedule': 480.0,  # 8 phút một lần
+        'schedule': 960.0,  # 16 phút một lần
     },
     'project-scheduled-task': {
         'task': 'dashboard.tasks.update_bhl_project',
