@@ -3,6 +3,8 @@ from django.http import JsonResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.db.models import Q
+from home.models import UserProfile
 import xmlrpc.client
 import json
 from dateutil.parser import parse
@@ -56,7 +58,8 @@ class TaskCreateAPIView(View):
 
 class AlTablesView(View):
     def get(self, request):
-        return render(request, 'hrms/al_tables.html')
+        filtered_profiles = UserProfile.objects.filter(Q(company_id__0=18))
+        return render(request, "hrms/al_tables.html", {"profiles": filtered_profiles})
 
 
 class ClTablesView(View):
