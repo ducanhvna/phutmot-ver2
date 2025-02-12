@@ -38,7 +38,7 @@ ASSETS_ROOT = os.environ.get('ASSETS_ROOT', default='/static/assets')
 # For example: 'DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]'
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:1337", "http://localhost:8072", "https://hinosoft.com"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:1337", "http://localhost:8072", "https://hinosoft.com", "https://demo.hinosoft.com"]
 
 # Application definition
 
