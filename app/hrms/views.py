@@ -134,4 +134,4 @@ class ClTablesView(View):
                     merged_profile[f'overtime_official_{month_index}'] = 0 if not filtered_cl else filtered_cl[-1].get(f"overtime_official_{month_index}", 0)
                 merged_profiles.append(merged_profile)
 
-        return render(request, 'hrms/cl_tables.html', {"profiles": merged_profile})
+        return render(request, 'hrms/cl_tables.html', {"profiles": merged_profiles})
