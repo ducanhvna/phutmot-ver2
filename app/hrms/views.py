@@ -81,8 +81,8 @@ class AlTablesView(View):
                 up for up in user_profiles if up.employee_code == emp.employee_code
             ]
             for up in matching_user_profiles:
-                up["january"] = 0 if not up.al else up.al[-1].get("january", 0)
                 merged_profile = {"employee": emp, "user_profile": up}
+                merged_profile['january'] = 0 if not up.al else up.al[-1].get("january", 0)
                 merged_profiles.append(merged_profile)
 
         return render(request, "hrms/al_tables.html", {"profiles": merged_profiles})
