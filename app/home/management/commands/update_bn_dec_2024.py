@@ -406,7 +406,7 @@ class Command(BaseCommand):
             profile.al = sorted(
                 employee_als, key=lambda x: (x["date_calculate_leave"],), reverse=True
             )
-            print(f'create {employee_code}')
+            # print(f'create {employee_code}')
             profile.save()
 
     def print_active_employees_without_cl(self, contracts, cls, als, models, db, uid, password):

@@ -59,7 +59,7 @@ class ApecShiftService():
         self.company_grouped_data = {}
         for record in self.company_merged_data:
             self.company_grouped_data[f'{record["id"]}'] = record
-            print(f"{record['id']} -- {record['name']}")
+            # print(f"{record['id']} -- {record['name']}")
         self.save_company_to_django()
         write_dates = [
             datetime.strptime(record["write_date"], "%Y-%m-%d %H:%M:%S")

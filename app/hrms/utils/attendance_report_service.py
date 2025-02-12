@@ -168,7 +168,7 @@ class AttendanceReportService():
         grouped_data = defaultdict(list)
         for record in merged_data:
             grouped_data[record["employee_code"]].append(record)
-            print(f"{record['employee_code']} -- {len(grouped_data[record['employee_code']])}")
+            # print(f"{record['employee_code']} -- {len(grouped_data[record['employee_code']])}")
 
         # Save data to Django
         self.grouped_total_worktime_by_company = {}
