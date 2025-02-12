@@ -106,4 +106,32 @@ class ClTablesView(View):
         filtered_profiles = Employee.objects.filter(
             Q(info__company_id__0=18), start_date=start_datetime
         )
-        return render(request, 'hrms/cl_tables.html', {"profiles": filtered_profiles})
+        # Step 2: Extract employee_code
+        employee_code_array = [
+            emp.employee_code for emp in filtered_profiles if emp.employee_code
+        ]
+
+        # Step 3: Fetch UserProfile records
+        user_profiles = UserProfile.objects.filter(
+            employee_code__in=employee_code_array
+        )
+
+        # Step 4: Merge the two lists based on employee_code
+        merged_profiles = []
+        for emp in filtered_profiles:
+            matching_user_profiles = [
+                up for up in user_profiles if up.employee_code == emp.employee_code
+            ]
+            for up in matching_user_profiles:
+                merged_profile = {"employee": emp, "user_profile": up}
+                filtered_cl = [entry for entry in up.cl if entry.get("date_calculate") == "2025-02-01"]
+                for month_index in range(1, 13):
+                    merged_profile[f'increase_probationary_{month_index}'] = 0 if not filtered_cl else filtered_cl[-1].get(f"increase_probationary_{month_index}", 0)
+                    merged_profile[f'increase_official_{month_index}'] = 0 if not filtered_cl else filtered_cl[-1].get(f"increase_official_{month_index}", 0)
+                    merged_profile[f'used_probationary_{month_index}'] = 0 if not filtered_cl else filtered_cl[-1].get(f"used_probationary_{month_index}", 0)
+                    merged_profile[f'used_official_{month_index}'] = 0 if not filtered_cl else filtered_cl[-1].get(f"used_official_{month_index}", 0)
+                    merged_profile[f'overtime_probationary_{month_index}'] = 0 if not filtered_cl else filtered_cl[-1].get(f"overtime_probationary_{month_index}", 0)
+                    merged_profile[f'overtime_official_{month_index}'] = 0 if not filtered_cl else filtered_cl[-1].get(f"overtime_official_{month_index}", 0)
+                merged_profiles.append(merged_profile)
+
+        return render(request, 'hrms/cl_tables.html', {"profiles": merged_profile})
