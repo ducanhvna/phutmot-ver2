@@ -84,7 +84,7 @@ class AlTablesView(View):
                 merged_profile = {"employee": emp, "user_profile": up}
                 merged_profiles.append(merged_profile)
 
-        return render(request, "hrms/al_tables.html", {"profiles": filtered_profiles})
+        return render(request, "hrms/al_tables.html", {"profiles": merged_profiles})
 
 
 class ClTablesView(View):
