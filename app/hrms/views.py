@@ -58,10 +58,11 @@ class TaskCreateAPIView(View):
 
 class AlTablesView(View):
     def get(self, request):
-        filtered_profiles = UserProfile.objects.filter(Q(company_id__0=18))
+        filtered_profiles = UserProfile.objects.filter(Q(info__company_id__0=18))
         return render(request, "hrms/al_tables.html", {"profiles": filtered_profiles})
 
 
 class ClTablesView(View):
     def get(self, request):
-        return render(request, 'hrms/cl_tables.html')
+        filtered_profiles = UserProfile.objects.filter(Q(info__company_id__0=18))
+        return render(request, 'hrms/cl_tables.html', {"profiles": filtered_profiles})
