@@ -52,3 +52,13 @@ class TaskCreateAPIView(View):
         }])
 
         return JsonResponse({'task_id': task_id})
+
+
+class AlTablesView(View):
+    def get(self, request):
+        return render(request, 'hrms/al_tables.html')
+
+
+class ClTablesView(View):
+    def get(self, request):
+        return render(request, 'hrms/cl_tables.html')
