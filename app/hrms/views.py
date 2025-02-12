@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db.models import Q
 from .models import Employee
+from home.models import UserProfile
 import xmlrpc.client
 import json
 from datetime import datetime
@@ -63,6 +64,26 @@ class AlTablesView(View):
         filtered_profiles = Employee.objects.filter(
             Q(info__company_id__0=18), start_date=start_datetime
         )
+        # Step 2: Extract employee_code
+        employee_code_array = [
+            emp.employee_code for emp in filtered_profiles if emp.employee_code
+        ]
+
+        # Step 3: Fetch UserProfile records
+        user_profiles = UserProfile.objects.filter(
+            employee_code__in=employee_code_array
+        )
+
+        # Step 4: Merge the two lists based on employee_code
+        merged_profiles = []
+        for emp in filtered_profiles:
+            matching_user_profiles = [
+                up for up in user_profiles if up.employee_code == emp.employee_code
+            ]
+            for up in matching_user_profiles:
+                merged_profile = {"employee": emp, "user_profile": up}
+                merged_profiles.append(merged_profile)
+
         return render(request, "hrms/al_tables.html", {"profiles": filtered_profiles})
 
 
