@@ -4,9 +4,10 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db.models import Q
-from home.models import UserProfile
+from .models import Employee
 import xmlrpc.client
 import json
+from datetime import datetime
 from dateutil.parser import parse
 
 ODOO_URL = "http://odoo17:8069"
@@ -58,11 +59,17 @@ class TaskCreateAPIView(View):
 
 class AlTablesView(View):
     def get(self, request):
-        filtered_profiles = UserProfile.objects.filter(Q(info__company_id__0=18))
+        start_datetime = datetime(2024, 12, 1, 0, 0, 0)  # December 1, 2024 at 00:00:00
+        filtered_profiles = Employee.objects.filter(
+            Q(info__company_id__0=18), start_date=start_datetime
+        )
         return render(request, "hrms/al_tables.html", {"profiles": filtered_profiles})
 
 
 class ClTablesView(View):
     def get(self, request):
-        filtered_profiles = UserProfile.objects.filter(Q(info__company_id__0=18))
+        start_datetime = datetime(2024, 12, 1, 0, 0, 0)  # December 1, 2024 at 00:00:00
+        filtered_profiles = Employee.objects.filter(
+            Q(info__company_id__0=18), start_date=start_datetime
+        )
         return render(request, 'hrms/cl_tables.html', {"profiles": filtered_profiles})
