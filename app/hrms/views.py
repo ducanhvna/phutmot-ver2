@@ -149,7 +149,7 @@ class Employees(View):
         employees = odoo_xmlrpc.get_employees(offset=offset, limit=page_size)
 
         # Get total record count
-        total_records = len(odoo_xmlrpc.get_employees(offset=0, limit=0))  # Get total count without limit
+        total_records = odoo_xmlrpc.get_total_records()
 
         paginator = Paginator(employees, page_size)
         page_obj = paginator.get_page(page_number)

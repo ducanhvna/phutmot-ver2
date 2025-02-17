@@ -26,3 +26,14 @@ class OdooXMLRPC:
             {'fields': ['id', 'name'], 'offset': offset, 'limit': limit}
         )
         return employees
+
+    def get_total_records(self):
+        total_records = self.models.execute_kw(
+            self.db,
+            self.uid,
+            self.password,
+            'hr.employee',
+            'search',
+            [[]]
+        )
+        return len(total_records)
