@@ -202,3 +202,8 @@ ODOO_BASE_URL = "https://hrm.mandalahotel.com.vn"
 ODOO_DB = "apechrm_product_v3"
 ODOO_USERNAME = "admin_ho"
 ODOO_PASSWORD = "43a824d3a724da2b59d059d909f13ba0c38fcb82"
+
+ERP_URL = "http://odoo17:8069"
+ERP_DB = "odoo"
+ERP_USERNAME = "admin"
+ERP_PASSWORD = "admin"

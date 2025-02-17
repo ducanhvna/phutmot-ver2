@@ -135,3 +135,8 @@ class ClTablesView(View):
                 merged_profiles.append(merged_profile)
 
         return render(request, 'hrms/cl_tables.html', {"profiles": merged_profiles})
+
+
+class Employees(View):
+    def get(self, request):
+        return render(request, "hrms/employees.html")
