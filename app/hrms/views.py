@@ -142,13 +142,23 @@ class ClTablesView(View):
 class Employees(View):
     def get(self, request):
         page_number = int(request.GET.get('page_number', 1))
-        page_size = int(request.GET.get('page_size', 10))
+        page_size = int(request.GET.get('page_size', 20))  # Default 20 items per page
         offset = (page_number - 1) * page_size
 
         odoo_xmlrpc = OdooXMLRPC()
         employees = odoo_xmlrpc.get_employees(offset=offset, limit=page_size)
 
+        # Get total record count
+        total_records = len(odoo_xmlrpc.get_employees(offset=0, limit=0))  # Get total count without limit
+
         paginator = Paginator(employees, page_size)
         page_obj = paginator.get_page(page_number)
 
-        return render(request, "hrms/employees.html", {"page_obj": page_obj})
+        context = {
+            "page_obj": page_obj,
+            "total_records": total_records,
+            "page_size": page_size,
+            "page_number": page_number
+        }
+
+        return render(request, "hrms/employees.html", context)

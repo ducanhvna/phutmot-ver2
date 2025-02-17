@@ -136,23 +136,41 @@
               </table>
               
               <div class="pagination">
-                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-                {% if page_obj.has_previous %}
-                    <a href="?page_number={{ page_obj.previous_page_number }}&page_size={{ page_obj.paginator.per_page }}">Previous</a>
-                {% endif %}
-
-                {% for num in page_obj.paginator.page_range %}
-                    {% if num == page_obj.number %}
-                        <strong>{{ num }}</strong>
-                    {% else %}
-                        <a href="?page_number={{ num }}&page_size={{ page_obj.paginator.per_page }}">{{ num }}</a>
+                <span>Tổng {{ total_records }} bản ghi</span> <!-- Total records -->
+                <div class="pagination-controls">
+                    <!-- Previous page -->
+                    {% if page_obj.has_previous %}
+                        <a href="?page_number={{ page_obj.previous_page_number }}&page_size={{ page_size }}">&laquo;</a>
                     {% endif %}
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                    <a href="?page_number={{ page_obj.next_page_number }}&page_size={{ page_obj.paginator.per_page }}">Next</a>
-                {% endif %}
-              </div>
+            
+                    <!-- Page numbers -->
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if num == page_number %}
+                            <strong>{{ num }}</strong>
+                        {% else %}
+                            <a href="?page_number={{ num }}&page_size={{ page_size }}">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+            
+                    <!-- Next page -->
+                    {% if page_obj.has_next %}
+                        <a href="?page_number={{ page_obj.next_page_number }}&page_size={{ page_size }}">&raquo;</a>
+                    {% endif %}
+                </div>
+            
+                <form method="get" class="pagination-settings">
+                    <label for="page_size">Trang:</label>
+                    <select id="page_size" name="page_size" onchange="this.form.submit()">
+                        <option value="10" {% if page_size == 10 %}selected{% endif %}>10 / trang</option>
+                        <option value="20" {% if page_size == 20 %}selected{% endif %}>20 / trang</option>
+                        <option value="50" {% if page_size == 50 %}selected{% endif %}>50 / trang</option>
+                    </select>
+                    <label for="go_to">Đến:</label>
+                    <input id="go_to" type="number" name="page_number" min="1" max="{{ page_obj.paginator.num_pages }}" value="{{ page_number }}">
+                    <input type="submit" value="Trang">
+                </form>
+            </div>
+            
 
             </div>
           </div>
