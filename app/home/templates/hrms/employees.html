@@ -134,6 +134,26 @@
                   </tr>
                 </tbody>
               </table>
+              
+              <div class="pagination">
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_previous %}
+                    <a href="?page_number={{ page_obj.previous_page_number }}&page_size={{ page_obj.paginator.per_page }}">Previous</a>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if num == page_obj.number %}
+                        <strong>{{ num }}</strong>
+                    {% else %}
+                        <a href="?page_number={{ num }}&page_size={{ page_obj.paginator.per_page }}">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <a href="?page_number={{ page_obj.next_page_number }}&page_size={{ page_obj.paginator.per_page }}">Next</a>
+                {% endif %}
+              </div>
+
             </div>
           </div>
         </div>

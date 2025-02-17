@@ -10,6 +10,8 @@ import xmlrpc.client
 import json
 from datetime import datetime
 from dateutil.parser import parse
+from django.core.paginator import Paginator
+from hrms.utils.odoo_xmlrpc import OdooXMLRPC
 
 ODOO_URL = "http://odoo17:8069"
 ODOO_DB = "odoo"
@@ -139,4 +141,14 @@ class ClTablesView(View):
 
 class Employees(View):
     def get(self, request):
-        return render(request, "hrms/employees.html")
+        page_number = int(request.GET.get('page_number', 1))
+        page_size = int(request.GET.get('page_size', 10))
+        offset = (page_number - 1) * page_size
+
+        odoo_xmlrpc = OdooXMLRPC()
+        employees = odoo_xmlrpc.get_employees(offset=offset, limit=page_size)
+
+        paginator = Paginator(employees, page_size)
+        page_obj = paginator.get_page(page_number)
+
+        return render(request, "hrms/employees.html", {"page_obj": page_obj})
