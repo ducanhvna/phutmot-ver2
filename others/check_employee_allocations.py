@@ -37,7 +37,7 @@ while True:
         ODOO_DB, uid, ODOO_PASSWORD,
         'hr.employee.allocation.v2', 'search_read',
         [[]],  # Điều kiện lọc
-        {'fields': ['id', 'new_company_working_date', 'new_job_id_date', 'new_department_working_date', 
+        {'fields': ['id','state', 'new_company_working_date', 'new_job_id_date', 'new_department_working_date', 
                     'severance_day_old_company',
                     'current_shift', 'new_shift', 'day_change_shift',
                     "date_end_shift", "company_id", "contract_name", "date_end", "date_sign",
@@ -81,3 +81,48 @@ df_merged = pd.merge(df_all_records, df_employees, how='left', left_on='employee
 df_merged.to_excel('merged_allocation_records.xlsx', index=False)
 
 print("Dữ liệu đã được lưu vào file 'merged_allocation_records.xlsx'")
+
+# Filter records with state 'đã duyệt' and company_id not False
+filtered_df = df_merged[
+    (df_merged["state"] == "đã duyệt")
+    & (df_merged["company_id"] != False)
+    & (df_merged["employee_code"] != False)
+]
+
+# Initialize a list to store employees that exist in Odoo
+existing_employees = []
+existing_contracts = []
+# Loop through the filtered DataFrame and check if the employee exists in Odoo
+for index, row in filtered_df.iterrows():
+    employee_code = row['employee_code']
+    company_id = row['company_id'][0]  # Assuming company_id is a list-like structure
+    
+    # Check if the employee exists in Odoo
+    existing_employee = models.execute_kw(
+        ODOO_DB, uid, ODOO_PASSWORD,
+        'hr.employee', 'search',
+        [[['code', '=', employee_code], ['company_id', '=', company_id]]]
+    )
+    
+    if existing_employee:
+        existing_employees.append(row)
+    else:
+        print(f"Đơn {row['id']}-{existing_employee} - {employee_code} - {row['name']} - {row['company_id'][1]} not exist")
+
+    existing_contract = models.execute_kw(
+        ODOO_DB, uid, ODOO_PASSWORD,
+        'hr.contract', 'search',
+        [[['employee_code', '=', employee_code], ['company_id', '=', company_id]]]
+    )
+    
+    if existing_contract:
+        existing_contract.append(row)
+    else:
+        print(f"Hợp đồng {row['id']}-{existing_employee} - {employee_code} - {row['name']} - {row['company_id'][1]} not exist")
+# Convert the list of existing employees to a DataFrame
+existing_employees_df = pd.DataFrame(existing_employees)
+
+# Save the filtered DataFrame to an Excel file
+existing_employees_df.to_excel('existing_employees.xlsx', index=False)
+
+print("Dữ liệu đã được lưu vào file 'existing_employees.xlsx'")
