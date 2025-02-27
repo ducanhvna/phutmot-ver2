@@ -35,7 +35,7 @@ for index, row in df.iterrows():
 
         if employee_ids:
             # Update the 'november' field for the found record
-            update_values = {'october': 0 if pd.isna(row[("AL-2024", 10)]) or pd.isnull(row[("AL-2024", 10)]) else row[("AL-2024", 10)]}
+            update_values = {'october': 0 if pd.isna(row[("AL-2024", 10)]) or pd.isnull(row[("AL-2024", 10)]) else row[("AL-2024", 10) ] *480}
             models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.al.report', 'write', [employee_ids, update_values])
             print('updated', employee_ids)
 print("Update process completed.")

@@ -38,7 +38,7 @@ for index, row in df.iterrows():
             update_values = {'increase_probationary_10': 0,
                              'increase_official_10': 0,
                              'used_probationary_10': 0,
-                             'used_official_10': 0 if pd.isna(row[("CL-2024", 10)]) or pd.isnull(row[("CL-2024", 10)]) else row[("CL-2024", 10)],
+                             'used_official_10': 0 if pd.isna(row[("CL-2024", 10)]) or pd.isnull(row[("CL-2024", 10)]) else row[("CL-2024", 10)] *480,
                              'overtime_probationary_10': 0,
                              'overtime_official_10': 0,}
             models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.cl.report', 'write', [employee_ids, update_values])
