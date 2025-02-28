@@ -534,3 +534,15 @@ class Command(BaseCommand):
                     print(f'New al record created for employee {employee_code}')
                 else:
                     print(f'No nearest al record found for employee {employee_code}')
+        for cl in employee_cls:
+            try:
+                cl["date_calculate"] = cl["date_calculate"].isoformat()  # Adjust the format as needed
+                sorted_cls.append(cl)
+            except ValueError:
+                continue  # Handle the case where the date string is invalid
+        for al in employee_als:
+            try:
+                al["date_calculate_leave"] = al["date_calculate_leave"].isoformat()  # Adjust the format as needed
+                sorted_als.append(al)
+            except ValueError:
+                continue  # Handle the case where the date string is invalid
