@@ -10,6 +10,156 @@ ODOO_DB = "apechrm_product_v3"
 ODOO_USERNAME = "admin_ho"
 ODOO_PASSWORD = "43a824d3a724da2b59d059d909f13ba0c38fcb82"
 
+employee_fields = [
+    "id",
+    "name",
+    "user_id",
+    "employee_ho",
+    "part_time_company_id",
+    "part_time_department_id",
+    "company_id",
+    "code",
+    "department_id",
+    "time_keeping_code",
+    "job_title",
+    "probationary_contract_termination_date",
+    "severance_day",
+    "work_phone",
+    "mobile_phone",
+    "work_email",
+    "personal_email",
+    "coach_id",
+    "parent_id",
+    "birthday",
+    "employee_type",
+    "workingday",
+    "probationary_salary_rate",
+    "resource_calendar_id",
+    "date_sign",
+    "level",
+    "working_status",
+    "write_date",
+    "active",
+]
+# Connect to
+def process_miss_employee(employeeCode, old_company_id, new_company_id, new_department_id):
+    common = xmlrpc.client.ServerProxy('{}/xmlrpc/2/common'.format(ODOO_BASE_URL))
+    uid = common.authenticate(ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD, {})
+    models = xmlrpc.client.ServerProxy('{}/xmlrpc/2/object'.format(ODOO_BASE_URL))
+
+    # Search for employees with the specified code
+    employee_ids = models.execute_kw(
+        ODOO_DB,
+        uid,
+        ODOO_PASSWORD,
+        "hr.employee",
+        "search",
+        [
+            [
+                "&",
+                "&",
+                "|",
+                ["company_id", "=", new_company_id],
+                ["company_id", "=", old_company_id],
+                ["code", "=", employeeCode],
+                "|",
+                ["active", "=", False],
+                ["active", "=", True],
+            ]
+        ],
+    )
+    print(employee_ids)
+    # Retrieve employee records
+    employees = models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD,
+        'hr.employee', 'read', [employee_ids, employee_fields])
+
+    # Update the 'active' attribute to true
+    if employee_ids:
+        try:
+            models.execute_kw(
+                ODOO_DB,
+                uid,
+                ODOO_PASSWORD,
+                "hr.employee",
+                "write",
+                [
+                    employee_ids,
+                    {
+                        "active": True,
+                        "working_status": "working",
+                        "company_id": new_company_id,
+                        "department_id": new_department_id,
+                        'severance_day': False
+                    },
+                ],
+            )
+        except Exception as ex:
+            print(f"MISS EMPLOYEE ACTIVE: {ex}")
+
+    # Print employee records
+    for employee in employees:
+        user_ids = models.execute_kw(
+            ODOO_DB,
+            uid,
+            ODOO_PASSWORD,
+            "res.users",
+            "search",
+            [
+                [
+                    ["email", "=", employee['work_email']],
+                    ['login','=', employee['work_email'].split("@")[0]],
+                ]
+            ],
+        )
+        print("user: ",user_ids)
+        if len(user_ids) == 1:
+            users = models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD,
+                'res.users', 'read', [user_ids, ['user_ids', 'company_ids']])
+            if(not new_company_id in users[0]['company_ids']):
+                users[0]['company_ids'].append(new_company_id)
+                comapny_array = [item for item in users[0]['company_ids']]
+                print(comapny_array)
+                try:
+                    models.execute_kw(
+                        ODOO_DB,
+                        uid,
+                        ODOO_PASSWORD,
+                        "res.users",
+                        "write",
+                        [
+                            users,
+                            {
+                                "company_ids": comapny_array
+                            },
+                        ],
+                    )
+                    print ("Update user id company successfuly")
+                except Exception as ex:
+                    print(f"Uppdate user  ex: {ex}")
+            print(users)
+        if (employee['user_id']== False) and (employee['work_email'] != False):
+            print(f"{user_ids} ==>{ employee}")
+            if len(user_ids)==1:
+                try:
+                    models.execute_kw(
+                        ODOO_DB,
+                        uid,
+                        ODOO_PASSWORD,
+                        "hr.employee",
+                        "write",
+                        [
+                            [employee['id']],
+                            {
+                                "user_id": user_ids[0]
+                            },
+                        ],
+                    )
+                    print ("Update user id successfuly")
+                except Exception as ex:
+                    print(f"Update employee ex: {ex}")
+        else:
+            print(employee)
+
 # Kết nối tới Minio
 client = Minio(
     "42.113.122.201:9000",
@@ -37,7 +187,8 @@ while True:
         ODOO_DB, uid, ODOO_PASSWORD,
         'hr.employee.allocation.v2', 'search_read',
         [[]],  # Điều kiện lọc
-        {'fields': ['id','state', 'new_company_working_date', 'new_job_id_date', 'new_department_working_date', 
+        {'fields': ['id','state', 'new_company_working_date', 'new_job_id_date', 'new_department_working_date', 'current_company_id',
+                    'allocation_type', 'current_department_id', 'department_id',
                     'severance_day_old_company',
                     'current_shift', 'new_shift', 'day_change_shift',
                     "date_end_shift", "company_id", "contract_name", "date_end", "date_sign",
@@ -107,8 +258,11 @@ for index, row in filtered_df.iterrows():
     if existing_employee:
         existing_employees.append(row)
     else:
-        print(f"Đơn {row['id']}-{existing_employee} - {employee_code} - {row['name']} - {row['company_id'][1]} not exist")
-
+        print(f"Đơn {row['id']}-{existing_employee} - {employee_code} - {row['name']} {row['current_company_id']} ---> {row['company_id']} not exist")
+        print(f"{row['current_department_id']} ---> {row['department_id']}")
+        print(f"New contract name: {row}")
+        if row['company_id'] and (row['company_id'][0] == 30):
+            process_miss_employee(employee_code, row['current_company_id'][0], row['company_id'][0], row['department_id'][0])
     existing_contract = models.execute_kw(
         ODOO_DB, uid, ODOO_PASSWORD,
         'hr.contract', 'search',
