@@ -41,6 +41,43 @@ employee_fields = [
     "write_date",
     "active",
 ]
+def update_company_name(employeeCode, old_company_working_name, new_company_working_name, from_date):
+    common = xmlrpc.client.ServerProxy('{}/xmlrpc/2/common'.format(ODOO_BASE_URL))
+    uid = common.authenticate(ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD, {})
+    models = xmlrpc.client.ServerProxy('{}/xmlrpc/2/object'.format(ODOO_BASE_URL))
+    domain = [[("date", ">=", from_date),
+            ("company",'=', old_company_working_name),
+            ("employee_code",'=', employeeCode)
+        ]]
+    report_ids = models.execute_kw(
+        ODOO_DB,
+        uid,
+        ODOO_PASSWORD,
+        "hr.apec.attendance.report",
+        "search",
+        domain,
+    )
+    try:
+        models.execute_kw(
+            ODOO_DB,
+            uid,
+            ODOO_PASSWORD,
+            "hr.apec.attendance.report",
+            "write",
+            [
+                report_ids,
+                {
+                    "company": new_company_working_name,
+                },
+            ],
+        )
+        print('update sucess')
+    except Exception as ex:
+        print(f"UPdate REPORT ACTIVE: {ex}")
+
+    print (report_ids)
+
+update_company_name('APG230321013', 'Công ty Cổ phần Đầu tư IDJ Việt Nam', 'Công ty Cổ phần Fourier Solution (FS)', '2025-02-01')
 # Connect to
 def process_miss_employee(employeeCode, old_company_id, new_company_id, new_department_id):
     common = xmlrpc.client.ServerProxy('{}/xmlrpc/2/common'.format(ODOO_BASE_URL))
@@ -186,7 +223,7 @@ while True:
     allocation_records = models.execute_kw(
         ODOO_DB, uid, ODOO_PASSWORD,
         'hr.employee.allocation.v2', 'search_read',
-        [[]],  # Điều kiện lọc
+        [[['new_company_working_date','!=',False],['state', '=', "đã duyệt"]]],  # Điều kiện lọc
         {'fields': ['id','state', 'new_company_working_date', 'new_job_id_date', 'new_department_working_date', 'current_company_id',
                     'allocation_type', 'current_department_id', 'department_id',
                     'severance_day_old_company',
@@ -254,7 +291,8 @@ for index, row in filtered_df.iterrows():
         'hr.employee', 'search',
         [[['code', '=', employee_code], ['company_id', '=', company_id]]]
     )
-    
+    if row['company_id'] and (row['company_id'][0] == 30):
+        update_company_name(employee_code, row['current_company_id'][1], row['company_id'][1], row['new_company_working_date'])
     if existing_employee:
         existing_employees.append(row)
     else:
