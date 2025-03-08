@@ -77,7 +77,7 @@ def update_company_name(employeeCode, old_company_working_name, new_company_work
 
     print (report_ids)
 
-update_company_name('APG230321013', 'Công ty Cổ phần Đầu tư IDJ Việt Nam', 'Công ty Cổ phần Fourier Solution (FS)', '2025-02-01')
+update_company_name('APG2240701019', 'Mandala Chăm Bay Mũi Né', 'Công ty Cổ phần Quản lý Vận hành BĐS Mandala', '2025-02-01')
 # Connect to
 def process_miss_employee(employeeCode, old_company_id, new_company_id, new_department_id):
     common = xmlrpc.client.ServerProxy('{}/xmlrpc/2/common'.format(ODOO_BASE_URL))
@@ -153,7 +153,10 @@ def process_miss_employee(employeeCode, old_company_id, new_company_id, new_depa
             users = models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD,
                 'res.users', 'read', [user_ids, ['user_ids', 'company_ids']])
             if(not new_company_id in users[0]['company_ids']):
-                users[0]['company_ids'].append(new_company_id)
+                current_company_ids = users[0]['company_ids']
+
+                # Thêm công ty mới vào danh sách company_ids hiện tại
+                # updated_company_ids = current_company_ids + [new_company_id]
                 comapny_array = [item for item in users[0]['company_ids']]
                 print(comapny_array)
                 try:
@@ -164,9 +167,9 @@ def process_miss_employee(employeeCode, old_company_id, new_company_id, new_depa
                         "res.users",
                         "write",
                         [
-                            users,
+                            user_ids,
                             {
-                                "company_ids": comapny_array
+                                 "company_ids": [(4, new_company_id)],
                             },
                         ],
                     )
@@ -291,7 +294,7 @@ for index, row in filtered_df.iterrows():
         'hr.employee', 'search',
         [[['code', '=', employee_code], ['company_id', '=', company_id]]]
     )
-    if row['company_id'] and (row['company_id'][0] == 30):
+    if row['company_id'] and (row['company_id'][0] == 5):
         update_company_name(employee_code, row['current_company_id'][1], row['company_id'][1], row['new_company_working_date'])
     if existing_employee:
         existing_employees.append(row)
@@ -299,8 +302,8 @@ for index, row in filtered_df.iterrows():
         print(f"Đơn {row['id']}-{existing_employee} - {employee_code} - {row['name']} {row['current_company_id']} ---> {row['company_id']} not exist")
         print(f"{row['current_department_id']} ---> {row['department_id']}")
         print(f"New contract name: {row}")
-        if row['company_id'] and (row['company_id'][0] == 30):
-            process_miss_employee(employee_code, row['current_company_id'][0], row['company_id'][0], row['department_id'][0])
+    if row['company_id'] and (row['company_id'][0] == 5):
+        process_miss_employee(employee_code, row['current_company_id'][0], row['company_id'][0], row['department_id'][0])
     existing_contract = models.execute_kw(
         ODOO_DB, uid, ODOO_PASSWORD,
         'hr.contract', 'search',
