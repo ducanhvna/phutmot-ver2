@@ -1100,8 +1100,21 @@
             <br>
             <button type="button" onclick="sendTelegramData()">Submit</button>
         </form>
-        
+        <script src="https://telegram.org/js/telegram-web-app.js"></script>
         <script>
+             // Init TWA
+            Telegram.WebApp.ready();
+            Telegram.WebApp.onEvent('themeChanged', function() {
+                document.documentElement.className = Telegram.WebApp.colorScheme;
+            });
+            // Show main button
+            Telegram.WebApp.MainButton.setParams({
+                text: 'Main Button'
+            });
+            Telegram.WebApp.MainButton.onClick(function () {
+                Telegram.WebApp.showAlert('Main Button was clicked')
+            });	
+            Telegram.WebApp.MainButton.show();
             function sendTelegramData() {
                 // Lấy thông tin từ form
                 const username = document.getElementById('username').value;
