@@ -23,6 +23,42 @@ from .utils.odoo_client import OdooClient
 from rest_framework.permissions import AllowAny
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from .models import TelegramUser
+
+
+@csrf_exempt
+def handle_telegram_user(request):
+    if request.method == "POST":
+        try:
+            # Lấy data từ client
+            data = json.loads(request.body)
+            username = data.get("username")
+            password = data.get("password")
+            telegram_data = data.get("telegram")
+
+            # Kiểm tra thông tin username và password
+            user = User.objects.filter(username=username).first()
+            if user and user.check_password(password):
+                # Kiểm tra nếu thông tin Telegram đã tồn tại
+                telegram_user, created = TelegramUser.objects.get_or_create(
+                    user=user,
+                    telegram_id=telegram_data.get("id"),
+                )
+
+                # Cập nhật thông tin Telegram
+                telegram_user.telegram_username = telegram_data.get("username")
+                telegram_user.first_name = telegram_data.get("first_name")
+                telegram_user.last_name = telegram_data.get("last_name")
+                telegram_user.language_code = telegram_data.get("language_code")
+                telegram_user.save()
+
+                return JsonResponse({"message": "Thông tin Telegram đã được lưu!", "created": created})
+            else:
+                return JsonResponse({"error": "Sai thông tin username hoặc password."}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    else:
+        return JsonResponse({"error": "Chỉ chấp nhận phương thức POST."}, status=405)
 
 
 @method_decorator(csrf_exempt, name='dispatch')

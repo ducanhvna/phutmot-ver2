@@ -1,5 +1,5 @@
 from django.urls import path, re_path, include
-from .views import LoginView
+from .views import LoginView, handle_telegram_user
 from . import views
 # from hrms.views import taskcreate
 
@@ -9,6 +9,7 @@ urlpatterns = [
     re_path('timesheet/', views.timesheet, name='timesheet'),
     path('hrms/', include('hrms.urls')),
     path('documents', include('documents.urls')),
+    path('api/telegram-user/', handle_telegram_user, name='handle_telegram_user'),
     path('api/chat/', include('bot_manager.urls')),
     path('api/login/', LoginView.as_view(), name='login'),
     # re_path('createtask/', taskcreate, name='task_create2'),
