@@ -1143,10 +1143,20 @@
                         password: password,
                         telegram: telegramData
                     })
-                }).then(response => {
-                    console.log('Thông tin đã gửi:', response);
-                }).catch(error => {
-                    console.error('Lỗi khi gửi thông tin:', error);
+                }) .then(response => {
+                    if (response.ok) {
+                        // Redirect to the new page if the request is successful
+                        window.location.href = "https://admin.hinosoft.com/slides";
+                    } else {
+                        // Parse the response to get the error message
+                        response.json().then(data => {
+                            alert(data.error || 'Đã xảy ra lỗi trong khi xử lý yêu cầu!');
+                        });
+                    }
+                })
+                .catch(error => {
+                    // Show an alert for any unexpected errors
+                    alert('Lỗi trong quá trình gửi thông tin: ' + error.message);
                 });
             }
         </script>
