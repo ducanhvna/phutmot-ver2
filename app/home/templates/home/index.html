@@ -1090,7 +1090,7 @@
 
     <div class='row'>
         <div class='card'>
-        <form id="telegramForm" method="post" action="{% url 'index' %}">
+        <form id="telegramForm" method="post" action="{% url 'handle_telegram_user' %}">
             {% csrf_token %}
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>
