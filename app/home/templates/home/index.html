@@ -1132,7 +1132,7 @@
                 };
         
                 // Gửi tất cả dữ liệu đến server
-                fetch('{% url "index" %}', {
+                fetch('{% url "handle_telegram_user" %}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
