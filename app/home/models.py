@@ -64,3 +64,13 @@ class TelegramUser(models.Model):
 
     def __str__(self):
         return f"{self.telegram_username} ({self.telegram_id})"
+
+
+class OdooUser(models.Model):
+    user = models.OneToOneField(User, on_delete=models.SET_NULL, related_name='odoouser', null=True, blank=True)
+    login = models.CharField(max_length=255, unique=True)
+    password = models.CharField(max_length=255, unique=True)
+    apikey = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return f"{self.login}"
