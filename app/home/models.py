@@ -71,6 +71,7 @@ class OdooUser(models.Model):
     login = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255, unique=True)
     apikey = models.CharField(max_length=255, unique=True)
+    info = JSONField(default=dict)  # Thông tin profile dạng JSON
 
     def __str__(self):
         return f"{self.login}"
