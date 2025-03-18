@@ -24,6 +24,12 @@ from rest_framework.permissions import AllowAny
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from .models import TelegramUser
+import xmlrpc.client
+
+ERP_URL = "http://odoo17:8069"
+ERP_DB = "odoo"
+# ERP_USERNAME = "admin"
+# ERP_PASSWORD = "admin"
 
 
 @csrf_exempt
@@ -35,24 +41,30 @@ def handle_telegram_user(request):
             username = data.get("username")
             password = data.get("password")
             telegram_data = data.get("telegram")
+            url = ERP_URL
+            db = ERP_DB
+            common = xmlrpc.client.ServerProxy('{}/xmlrpc/2/common'.format(url))
+            uid = common.authenticate(db, username, password, {})
+            if uid:
+                # Kiểm tra thông tin username và password
+                user = User.objects.filter(username=username).first()
+                if user and user.check_password(password):
+                    # Kiểm tra nếu thông tin Telegram đã tồn tại
+                    telegram_user, created = TelegramUser.objects.get_or_create(
+                        user=user,
+                        telegram_id=telegram_data.get("id"),
+                    )
 
-            # Kiểm tra thông tin username và password
-            user = User.objects.filter(username=username).first()
-            if user and user.check_password(password):
-                # Kiểm tra nếu thông tin Telegram đã tồn tại
-                telegram_user, created = TelegramUser.objects.get_or_create(
-                    user=user,
-                    telegram_id=telegram_data.get("id"),
-                )
+                    # Cập nhật thông tin Telegram
+                    telegram_user.telegram_username = telegram_data.get("username")
+                    telegram_user.first_name = telegram_data.get("first_name")
+                    telegram_user.last_name = telegram_data.get("last_name")
+                    telegram_user.language_code = telegram_data.get("language_code")
+                    telegram_user.save()
 
-                # Cập nhật thông tin Telegram
-                telegram_user.telegram_username = telegram_data.get("username")
-                telegram_user.first_name = telegram_data.get("first_name")
-                telegram_user.last_name = telegram_data.get("last_name")
-                telegram_user.language_code = telegram_data.get("language_code")
-                telegram_user.save()
-
-                return JsonResponse({"message": "Thông tin Telegram đã được lưu!", "created": created})
+                    return JsonResponse({"message": "Thông tin Telegram đã được lưu!", "created": created})
+                else:
+                    return JsonResponse({"error": "Sai thông tin username hoặc password."}, status=400)
             else:
                 return JsonResponse({"error": "Sai thông tin username hoặc password."}, status=400)
         except Exception as e:
