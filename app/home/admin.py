@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Company, UserProfile
+from .models import Company, UserProfile, TelegramUser
 from django.utils.html import format_html
 import json
 
@@ -30,3 +30,9 @@ class UserProfileAdmin(admin.ModelAdmin):
             return "Invalid JSON"
 
     display_contracts.short_description = 'Danh sách hợp đồng'
+
+
+@admin.register(TelegramUser)
+class TelegramUserAdmin(admin.ModelAdmin):
+    list_display = ('user', 'telegram_id', 'telegram_username', 'first_name', 'last_name', 'language_code')
+    search_fields = ('telegram_username', 'first_name', 'last_name')

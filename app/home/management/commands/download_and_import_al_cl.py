@@ -158,12 +158,8 @@ class Command(BaseCommand):
             "total_increase_ct_ovt",
             "total_used_probationary",
             "total_used_official",
-            "remaining_probationary_minute",
-            "remaining_official_minute",
-            "remaining_total_minute",
             "remaining_probationary_day",
             "remaining_official_day",
-            "remaining_total_day",
             "write_date",
         ]
         employee_cl = self.download_data(
