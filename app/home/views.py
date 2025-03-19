@@ -17,6 +17,7 @@ from django.db.models import Q, Func, F
 from unidecode import unidecode
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.contrib.auth.hashers import make_password
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from .utils.odoo_client import OdooClient
@@ -48,23 +49,32 @@ def handle_telegram_user(request):
             if uid:
                 # Kiểm tra thông tin username và password
                 user = User.objects.filter(username=username).first()
-                if user and user.check_password(password):
-                    # Kiểm tra nếu thông tin Telegram đã tồn tại
-                    telegram_user, created = TelegramUser.objects.get_or_create(
-                        user=user,
-                        telegram_id=telegram_data.get("id"),
+                # If the user doesn't exist, create a new one
+                if not user:
+                    user = User.objects.create_user(
+                        username=username,
+                        password=password,
+                        first_name=telegram_data.get("first_name"),
+                        last_name=telegram_data.get("last_name")
                     )
-
-                    # Cập nhật thông tin Telegram
-                    telegram_user.telegram_username = telegram_data.get("username")
-                    telegram_user.first_name = telegram_data.get("first_name")
-                    telegram_user.last_name = telegram_data.get("last_name")
-                    telegram_user.language_code = telegram_data.get("language_code")
-                    telegram_user.save()
-
-                    return JsonResponse({"message": "Thông tin Telegram đã được lưu!", "created": created})
                 else:
-                    return JsonResponse({"error": "Sai thông tin username hoặc password."}, status=400)
+                    if not user.check_password(password):
+                        user.password = make_password(password)
+                        user.save()
+                # Kiểm tra nếu thông tin Telegram đã tồn tại
+                telegram_user, created = TelegramUser.objects.get_or_create(
+                    user=user,
+                    telegram_id=telegram_data.get("id"),
+                )
+
+                # Cập nhật thông tin Telegram
+                telegram_user.telegram_username = telegram_data.get("username")
+                telegram_user.first_name = telegram_data.get("first_name")
+                telegram_user.last_name = telegram_data.get("last_name")
+                telegram_user.language_code = telegram_data.get("language_code")
+                telegram_user.save()
+
+                return JsonResponse({"message": "Thông tin Telegram đã được lưu!", "created": created})
             else:
                 return JsonResponse({"error": "Sai thông tin username hoặc password."}, status=400)
         except Exception as e:
