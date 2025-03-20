@@ -15,6 +15,7 @@ from rest_framework import generics
 from .serializers import UserProfileSerializer
 from django.db.models import Q, Func, F
 from unidecode import unidecode
+import requests
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
@@ -73,6 +74,15 @@ def handle_telegram_user(request):
                 telegram_user.last_name = telegram_data.get("last_name")
                 telegram_user.language_code = telegram_data.get("language_code")
                 telegram_user.save()
+
+                # apecBaocaotuanToken
+                token = '7277612281:AAG3o_utZTPPdi_G30xlsJ1KINR9CD1FZgU'
+                url = f"https://api.telegram.org/bot{token}/sendMessage"
+                payload = {
+                    'chat_id': telegram_user.telegram_id,
+                    'text': "Chào mừng bạn đến với Báo cáo tuần bot",
+                }
+                requests.post(url, json=payload)
 
                 return JsonResponse({"message": "Thông tin Telegram đã được lưu!", "created": created})
             else:
