@@ -3,3 +3,4 @@ etc/odoo-server.log
 etc/sessions/
 etc/filestore/
 postgre_dj_data/
+myenv
