@@ -509,6 +509,19 @@ class Command(BaseCommand):
                     print(f'New cl record created for employee {employee_code}')
                 else:
                     print(f'No nearest cl record found for employee {employee_code}')
+                    if (employee_code == 'APG0241223002'):
+                        new_cl_data = {
+                            'date_calculate': start_of_two_months_later.strftime('%Y-%m-%d'),
+                            'year': current_date.year,
+                            'company_id': records[0]['company_id'][0],
+                            'employee_id': records[0]['id'],
+                            'department_id': records[0]['department_id'][0] if records[0]['department_id'] else False,
+                            'job_title': records[0]['job_title'],
+                            'workingday': records[0]['workingday'],
+                            'date_sign': records[0]['date_sign'],
+                        }
+                        models.execute_kw(db, uid, password, 'hr.cl.report', 'create', [new_cl_data])
+
             no_al_in_two_months = not any((al["date_calculate_leave"].strftime('%Y-%m-%d') == start_of_two_months_later.strftime('%Y-%m-%d')) for al in sorted_als)
             if no_al_in_two_months:
                 nearest_al = next((al for al in sorted_als if al['date_calculate_leave'] < start_of_two_months_later), None)
@@ -530,6 +543,19 @@ class Command(BaseCommand):
                     print(f'New al record created for employee {employee_code}')
                 else:
                     print(f'No nearest al record found for employee {employee_code}')
+                    if (employee_code == 'APG0241223002'):
+                        new_al_data = {
+                            'date_calculate_leave': start_of_two_months_later.strftime('%Y-%m-%d'),
+                            'year': current_date.year,
+                            'company_id': records[0]['company_id'][0],
+                            'employee_id': records[0]['id'],
+                            'department_id': records[0]['department_id'][0] if records[0]['department_id'] else False,
+                            'job_title': records[0]['job_title'],
+                            'workingday': records[0]['workingday'],
+                            'date_sign': records[0]['date_sign'],
+                            'date_apply_leave': records[0]['date_sign'],
+                        }
+                        models.execute_kw(db, uid, password, 'hr.al.report', 'create', [new_al_data])
         for cl in employee_cls:
             try:
                 cl["date_calculate"] = cl["date_calculate"].isoformat()  # Adjust the format as needed
