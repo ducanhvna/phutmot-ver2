@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from bot_manager.models import Room
 from django.utils import timezone
+from rest_framework import status
 from bot_manager.serializers import RoomSerializer
 
 
