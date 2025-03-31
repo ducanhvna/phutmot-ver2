@@ -17,4 +17,4 @@ class Device(models.Model):
     modified_time = models.DateTimeField(auto_now=True)  # Lấy thời gian sửa tự động
 
     def __str__(self):
-        return f'{self.device_name}-{self.device_id}-{self.os_version}-{self.user}'
+        return f'{self.device_name}-{self.device_id}-{self.os_version}'
