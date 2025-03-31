@@ -12,8 +12,9 @@ class Device(models.Model):
     )
 
     # Các trường mới
+    info = models.JSONField("Thông tin bổ sung", default=dict, blank=True)
     created_time = models.DateTimeField(auto_now_add=True)  # Lấy thời gian tạo tự động
     modified_time = models.DateTimeField(auto_now=True)  # Lấy thời gian sửa tự động
 
     def __str__(self):
-        return f'{self.device_name}-{self.device_id}-{self.os_version}'
+        return f'{self.device_name}-{self.device_id}-{self.os_version}-{self.user}'
