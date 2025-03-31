@@ -52,3 +52,4 @@ def device_login(request):
         'refresh_token': str(refresh),
         'username': user.username
     })
+
