@@ -1,10 +1,10 @@
 from django.urls import path
-from .views import device_login
+from .views import DeviceLoginView
 
 
 app_name = "devices"
 
 
 urlpatterns = [
-    path('device-login/', device_login.as_view(), name='device_login')
+    path('device-login/', DeviceLoginView.as_view(), name='device_login')
 ]
