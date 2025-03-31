@@ -65,8 +65,7 @@ INSTALLED_APPS = [
     "agriculture",
     "projects",
     'dashboard',
-    "documents",
-    "devices"
+    "documents"
 ]
 
 REST_FRAMEWORK = {
