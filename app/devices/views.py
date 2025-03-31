@@ -7,6 +7,10 @@ from rest_framework.response import Response
 from .models import Device
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
+from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
+from bot_manager.models import Room
+from django.utils import timezone
+from bot_manager.serializers import RoomSerializer
 
 
 # Hàm tạo mã code random
@@ -59,3 +63,124 @@ class DeviceLoginView(APIView):
             'refresh_token': str(refresh),
             'username': user.username
         })
+
+
+class FetchRoomChatsView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def post(self, request):
+        limit = int(request.data.get('limit', 20))
+        user_id = request.data.get('user_id')
+
+        # Validate required fields
+        if user_id is None:
+            return Response({'status': False, 'message': 'user_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Fetch random rooms
+        rooms = list(Room.objects.all())
+        random.shuffle(rooms)
+        rooms = rooms[:limit]
+
+        if request.user and request.user.is_authenticated:
+            print('auth')
+            pass
+            # rooms.insert(0, new_room_data_serialized)  # Add the new room to the beginning of the list
+
+        else:
+            new_room_data = {
+                'id': 9000,
+                'admin_id': 0,
+                'photo': 'default_photo_url',  # Replace this with a real photo URL
+                'title': 'Sức Khỏe (Health) ',
+                'desc': 'New room added for authenticated user',
+                'interest_ids': '1,2,3',  # Replace with real interest data
+                'is_private': 0,
+                'is_join_request_enable': 1,
+                'total_member': 1,
+                'created_at': timezone.now(),
+                'updated_at': timezone.now()
+            }
+
+            new_room_instance = Room(**new_room_data)
+            new_room_serializer = RoomSerializer(new_room_instance)
+            new_room_data_serialized = new_room_serializer.data
+            new_room_data_serialized['private_user_id'] = user_id  # Add private_user_id directly in serialized data
+            new_room_data_serialized['userRoomStatus'] = 5
+            rooms.insert(0, new_room_data_serialized)  # Add the new room to the beginning of the list
+
+            new_room_data = {
+                'id': 9001,
+                'admin_id': 0,
+                'photo': 'default_photo_url',  # Replace this with a real photo URL
+                'title': 'Học Tập (Education)',
+                'desc': 'New room added for authenticated user',
+                'interest_ids': '1,2,3',  # Replace with real interest data
+                'is_private': 0,
+                'is_join_request_enable': 1,
+                'total_member': 1,
+                'created_at': timezone.now(),
+                'updated_at': timezone.now()
+            }
+
+            new_room_instance = Room(**new_room_data)
+            new_room_serializer = RoomSerializer(new_room_instance)
+            new_room_data_serialized = new_room_serializer.data
+            new_room_data_serialized['private_user_id'] = user_id  # Add private_user_id directly in serialized data
+            new_room_data_serialized['userRoomStatus'] = 5
+            # rooms.insert(0, new_room_instance)  # Add the new room to the beginning of the list
+            rooms.insert(1, new_room_data_serialized)  # Add the new room to the beginning of the list
+
+            new_room_data = {
+                'id': 9002,
+                'admin_id': 0,
+                'photo': 'default_photo_url',  # Replace this with a real photo URL
+                'title': 'Kỷ niệm (Galery)',
+                'desc': 'New room added for authenticated user',
+                'interest_ids': '7,8',  # Replace with real interest data
+                'is_private': 0,
+                'is_join_request_enable': 1,
+                'total_member': 1,
+                'created_at': timezone.now(),
+                'updated_at': timezone.now()
+            }
+
+            new_room_instance = Room(**new_room_data)
+            new_room_instance.user_room_status = 5
+            new_room_serializer = RoomSerializer(new_room_instance)
+            new_room_data_serialized = new_room_serializer.data
+            new_room_data_serialized['private_user_id'] = user_id  # Add private_user_id directly in serialized data
+            new_room_data_serialized['userRoomStatus'] = 5
+            # rooms.insert(0, new_room_instance)  # Add the new room to the beginning of the list
+            rooms.insert(2, new_room_data_serialized)  # Add the new room to the beginning of the list
+            new_room_data = {
+                'id': 9003,
+                'admin_id': 0,
+                'photo': 'default_photo_url',  # Replace this with a real photo URL
+                'title': 'Sức Khỏe (Gia đình)',
+                'desc': 'New room added for authenticated user',
+                'interest_ids': '7,8',  # Replace with real interest data
+                'is_private': 0,
+                'is_join_request_enable': 1,
+                'total_member': 1,
+                'created_at': timezone.now(),
+                'updated_at': timezone.now()
+            }
+
+            new_room_instance = Room(**new_room_data)
+            new_room_instance.user_room_status = 5
+            new_room_serializer = RoomSerializer(new_room_instance)
+            new_room_data_serialized = new_room_serializer.data
+            new_room_data_serialized['private_user_id'] = user_id  # Add private_user_id directly in serialized data
+            new_room_data_serialized['userRoomStatus'] = 5
+            # rooms.insert(0, new_room_instance)  # Add the new room to the beginning of the list
+            rooms.insert(3, new_room_data_serialized)  # Add the new room to the beginning of the list
+        room_serializer = RoomSerializer(rooms, many=True)
+
+        response_data = {
+            'status': True,
+            'message': 'Fetched random rooms successfully',
+            'data': room_serializer.data,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
