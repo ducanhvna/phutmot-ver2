@@ -15,6 +15,6 @@ urlpatterns = [
     # re_path('createtask/', taskcreate, name='task_create2'),
     re_path('api/get_details', views.get_details, name='detail_timesheet'),
     path('api/employee/search/', views.UserProfileAPIView.as_view(), name='employee_search'),
-    path('apiv2/', include('devices.urls')),
+    # path('apiv2/', include('devices.urls')),
     re_path(r'^.*\.*', views.pages, name='pages'),
 ]
