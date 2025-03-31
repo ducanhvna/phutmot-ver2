@@ -47,4 +47,9 @@ def device_login(request):
     from rest_framework_simplejwt.tokens import RefreshToken
     refresh = RefreshToken.for_user(user)
 
-    return Response({'token': str(refresh.access_token), 'username': user.username})
+    return Response({
+        'access_token': str(refresh.access_token),
+        'refresh_token': str(refresh),
+        'username': user.username
+    })
+
