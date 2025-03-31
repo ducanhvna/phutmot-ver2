@@ -588,6 +588,7 @@ class FetchRandomRoomsView(APIView):
                 title = f"Room by {request.user.username} (Odoo authentication failed)"
 
             new_room_data = {
+                'id': 0,
                 'admin_id': request.user.id,
                 'photo': 'default_photo_url',  # Replace this with a real photo URL
                 'title': title,

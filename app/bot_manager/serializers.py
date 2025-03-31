@@ -157,7 +157,7 @@ class RoomSerializer(serializers.ModelSerializer):
 
     def get_userRoomStatus(self, obj):
         # Logic để trả về giá trị của userRoomStatus
-        return obj.user_room_status if hasattr(obj, 'user_room_status') else 5 if obj.id > 8000 else 0
+        return obj.user_room_status if hasattr(obj, 'user_room_status') else 0
 
     def get_is_mute(self, obj):
         # Logic để trả về giá trị của is_mute (0 hoặc 1)
