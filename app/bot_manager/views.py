@@ -657,9 +657,9 @@ class FetchRandomRoomsView(APIView):
                 'id': 9002,
                 'admin_id': 0,
                 'photo': 'default_photo_url',  # Replace this with a real photo URL
-                'title': 'Kỷ niệm (Education)',
+                'title': 'Kỷ niệm (Galery)',
                 'desc': 'New room added for authenticated user',
-                'interest_ids': '1,2,3',  # Replace with real interest data
+                'interest_ids': '7,8',  # Replace with real interest data
                 'is_private': 0,
                 'is_join_request_enable': 1,
                 'total_member': 1,
@@ -675,6 +675,28 @@ class FetchRandomRoomsView(APIView):
             new_room_data_serialized['userRoomStatus'] = 5
             # rooms.insert(0, new_room_instance)  # Add the new room to the beginning of the list
             rooms.insert(2, new_room_data_serialized)  # Add the new room to the beginning of the list
+            new_room_data = {
+                'id': 9003,
+                'admin_id': 0,
+                'photo': 'default_photo_url',  # Replace this with a real photo URL
+                'title': 'Sức Khỏe (Gia đình)',
+                'desc': 'New room added for authenticated user',
+                'interest_ids': '7,8',  # Replace with real interest data
+                'is_private': 0,
+                'is_join_request_enable': 1,
+                'total_member': 1,
+                'created_at': timezone.now(),
+                'updated_at': timezone.now()
+            }
+
+            new_room_instance = Room(**new_room_data)
+            new_room_instance.user_room_status = 5
+            new_room_serializer = RoomSerializer(new_room_instance)
+            new_room_data_serialized = new_room_serializer.data
+            new_room_data_serialized['private_user_id'] = user_id  # Add private_user_id directly in serialized data
+            new_room_data_serialized['userRoomStatus'] = 5
+            # rooms.insert(0, new_room_instance)  # Add the new room to the beginning of the list
+            rooms.insert(3, new_room_data_serialized)  # Add the new room to the beginning of the list
         room_serializer = RoomSerializer(rooms, many=True)
 
         response_data = {
