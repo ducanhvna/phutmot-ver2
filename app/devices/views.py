@@ -5,8 +5,6 @@ from rest_framework.views import APIView
 from django.utils.decorators import method_decorator
 from rest_framework.response import Response
 from .models import Device
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.permissions import AllowAny
 
 
 # Hàm tạo mã code random
