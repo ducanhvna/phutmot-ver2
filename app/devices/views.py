@@ -22,7 +22,7 @@ def generate_random_username():
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class DeviceLoginView(APIView):
+class LoginView(APIView):
     authentication_classes = []  # Bỏ qua xác thực cho endpoint này
     permission_classes = (AllowAny,)
 
