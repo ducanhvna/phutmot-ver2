@@ -6,5 +6,5 @@ app_name = "devices"
 
 
 urlpatterns = [
-    path('device-login/', device_login.as_view(), name='device_login')
+    path('device-login/', device_login, name='device_login')
 ]
