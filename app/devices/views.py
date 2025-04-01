@@ -35,6 +35,7 @@ class DeviceLoginView(APIView):
         device_id = request.data.get('device_id')
         device_name = request.data.get('device_name')
         os_version = request.data.get('os_version')
+        platform = request.data.get('platform')
 
         if not all([device_id, device_name, os_version]):
             return Response({'error': 'Missing device information'}, status=400)
@@ -54,7 +55,11 @@ class DeviceLoginView(APIView):
             device.save()
         else:
             user = device.user
-
+        info = device.info
+        if info.get('platform', '') != platform:
+           info['platform'] = platform
+           device.info = info
+           device.save()
         # Tạo JWT token (sử dụng thư viện rest_framework_simplejwt)
         from rest_framework_simplejwt.tokens import RefreshToken
         refresh = RefreshToken.for_user(user)
