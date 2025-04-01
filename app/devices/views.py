@@ -348,4 +348,9 @@ class ProductCategoryAPIView(APIView):
             'PHOTOBOOK_MOPHANG_30x30': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
         }
         serialized_data = {key: ProductCategorySerializer(value).data for key, value in raw_data.items()}
-        return Response(serialized_data)
+        response_data = {
+            'status': True,
+            'message': 'Fetched random rooms successfully',
+            'data': serialized_data,
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
