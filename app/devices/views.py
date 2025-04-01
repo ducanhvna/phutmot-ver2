@@ -366,7 +366,7 @@ class PriceAPIView(APIView):
         }
         response_data = {
             'status': True,
-            'message': 'Fetched random rooms successfully',
+            'message': 'Fetched Price successfully',
             'data': raw_data,
         }
         return Response(response_data, status=status.HTTP_200_OK)
