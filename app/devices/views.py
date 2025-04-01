@@ -346,4 +346,4 @@ class ProductCategoryAPIView(APIView):
             'PHOTOBOOK_MOPHANG_25X25': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
             'PHOTOBOOK_MOPHANG_30x30': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
         }
-        return Response(data)
+        return Response(data, content_type="application/json")
