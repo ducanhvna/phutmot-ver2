@@ -329,3 +329,21 @@ class FetchUserChatsView(APIView):
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+class ProductCategoryAPIView(APIView):
+    permission_classes = [AllowAny]
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def get(self, request, *args, **kwargs):
+        data = {
+            'PHOTOBOOK_MOCONG_15X15': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
+            'PHOTOBOOK_MOCONG_20X20': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
+            'PHOTOBOOK_MOCONG_25X25': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
+            'PHOTOBOOK_MOCONG_30X30': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
+            'PHOTOBOOK_MOPHANG_15X15': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
+            'PHOTOBOOK_MOPHANG_20X20': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
+            'PHOTOBOOK_MOPHANG_25X25': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
+            'PHOTOBOOK_MOPHANG_30x30': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
+        }
+        return Response(data)
