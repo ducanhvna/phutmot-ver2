@@ -214,7 +214,7 @@ class FetchUserChatsView(APIView):
                 'id': 9010,
                 'admin_id': 0,
                 'photo': 'default_photo_url',  # Replace this with a real photo URL
-                'title': 'Bản thân ',
+                'title': 'Hồ sơ cá nhân ',
                 'desc': 'New room added for authenticated user',
                 'interest_ids': '1,2,3',  # Replace with real interest data
                 'is_private': 0,
@@ -235,8 +235,8 @@ class FetchUserChatsView(APIView):
                 'id': 9011,
                 'admin_id': 0,
                 'photo': 'default_photo_url',  # Replace this with a real photo URL
-                'title': 'Vợ',
-                'desc': 'Thông tin cá nhân vợ',
+                'title': 'Gia đình nhỏ',
+                'desc': 'Thông tin cá nhân vợ, chồng, con cái',
                 'interest_ids': '1,2,3',  # Replace with real interest data
                 'is_private': 0,
                 'is_join_request_enable': 1,
@@ -257,8 +257,8 @@ class FetchUserChatsView(APIView):
                 'id': 9012,
                 'admin_id': 0,
                 'photo': 'default_photo_url',  # Replace this with a real photo URL
-                'title': 'Ông',
-                'desc': 'New room added for authenticated user',
+                'title': 'Gia đình hai bên nội ngoại',
+                'desc': 'Gia đình hai bên nội ngoại',
                 'interest_ids': '7,8',  # Replace with real interest data
                 'is_private': 0,
                 'is_join_request_enable': 1,
@@ -279,7 +279,7 @@ class FetchUserChatsView(APIView):
                 'id': 9013,
                 'admin_id': 0,
                 'photo': 'default_photo_url',  # Replace this with a real photo URL
-                'title': 'Bà',
+                'title': 'Các mối quan hệ khác',
                 'desc': 'New room added for authenticated user',
                 'interest_ids': '7,8',  # Replace with real interest data
                 'is_private': 0,
@@ -297,6 +297,7 @@ class FetchUserChatsView(APIView):
             new_room_data_serialized['userRoomStatus'] = 5
             # rooms.insert(0, new_room_instance)  # Add the new room to the beginning of the list
             rooms.insert(3, new_room_data_serialized)  # Add the new room to the beginning of the list
+
         room_serializer = RoomSerializer(rooms, many=True)
 
         response_data = {
