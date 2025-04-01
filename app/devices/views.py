@@ -12,6 +12,7 @@ from bot_manager.models import Room
 from django.utils import timezone
 from rest_framework import status
 from bot_manager.serializers import RoomSerializer
+from .serializers import ProductCategorySerializer
 
 
 # Hàm tạo mã code random
@@ -336,7 +337,7 @@ class ProductCategoryAPIView(APIView):
     parser_classes = (JSONParser, FormParser, MultiPartParser)
 
     def get(self, request, *args, **kwargs):
-        data = {
+        raw_data = {
             'PHOTOBOOK_MOCONG_15X15': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
             'PHOTOBOOK_MOCONG_20X20': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
             'PHOTOBOOK_MOCONG_25X25': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
@@ -346,4 +347,5 @@ class ProductCategoryAPIView(APIView):
             'PHOTOBOOK_MOPHANG_25X25': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
             'PHOTOBOOK_MOPHANG_30x30': {'ToiDa': 10, 'ThemTrang': 10, 'KhoiTaoThemTrang': 12, 'GiaTrang': 12, 'GiaBan': 10, 'Indi_ID_Trang': 10, 'Indi_ID': 10, 'so_trang_mac_dinh': 10},
         }
-        return Response(data, content_type="application/json")
+        serialized_data = {key: ProductCategorySerializer(value).data for key, value in raw_data.items()}
+        return Response(serialized_data)
