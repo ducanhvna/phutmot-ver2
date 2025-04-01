@@ -57,9 +57,9 @@ class DeviceLoginView(APIView):
             user = device.user
         info = device.info
         if info.get('platform', '') != platform:
-           info['platform'] = platform
-           device.info = info
-           device.save()
+            info['platform'] = platform
+            device.info = info
+            device.save()
         # Tạo JWT token (sử dụng thư viện rest_framework_simplejwt)
         from rest_framework_simplejwt.tokens import RefreshToken
         refresh = RefreshToken.for_user(user)
