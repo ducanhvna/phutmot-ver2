@@ -354,3 +354,19 @@ class ProductCategoryAPIView(APIView):
             'data': serialized_data,
         }
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+class PriceAPIView(APIView):
+    permission_classes = [AllowAny]
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def get(self, request, *args, **kwargs):
+        raw_data = {
+            'price': 100
+        }
+        response_data = {
+            'status': True,
+            'message': 'Fetched random rooms successfully',
+            'data': raw_data,
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
