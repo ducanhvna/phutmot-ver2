@@ -413,3 +413,25 @@ class fetchRoomDetailView(APIView):
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+class AiDataSupportView(APIView):
+    permission_classes = [AllowAny]
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def post(self, request):
+        # limit = int(request.data.get('limit', 20))
+        room_id = int(request.data.get('room_id', 0))
+        raw_data = {
+            'id': room_id,
+            'data': [{'id': 'SK','name': 'Hồ sơ sức khoẻ cá nhân',
+                'data': [{'name': 'Sơ yếu lý lịch', 'data': [{'message': 'lorémiu'}]}]
+                }
+            ]
+        }
+        response_data = {
+            'status': True,
+            'message': 'Fetched Price successfully',
+            'data': raw_data,
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
