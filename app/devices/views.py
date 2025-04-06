@@ -379,10 +379,6 @@ class fetchRoomDetailView(APIView):
     def post(self, request):
         limit = int(request.data.get('limit', 20))
         room_id = int(request.data.get('room_id', 0))
-        # Fetch random rooms
-        rooms = list(Room.objects.all())
-        random.shuffle(rooms)
-        rooms = rooms[:limit]
 
         if request.user and request.user.is_authenticated:
             print('auth')
@@ -409,16 +405,11 @@ class fetchRoomDetailView(APIView):
             new_room_data_serialized = new_room_serializer.data
             new_room_data_serialized['private_user_id'] = 0  # Add private_user_id directly in serialized data
             new_room_data_serialized['userRoomStatus'] = 5
-            rooms.insert(0, new_room_data_serialized)  # Add the new room to the beginning of the list
-            # rooms.insert(0, new_room_instance)  # Add the new room to the beginning of the list
-            rooms.insert(3, new_room_data_serialized)  # Add the new room to the beginning of the list
-
-        room_serializer = RoomSerializer(rooms, many=True)
 
         response_data = {
             'status': True,
             'message': 'Fetched room detail successfully',
-            'data': room_serializer.data,
+            'data': new_room_data_serialized.data,
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
