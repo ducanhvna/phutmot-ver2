@@ -5,6 +5,7 @@ from .views import (
     FetchUserChatsView,
     ProductCategoryAPIView,
     PriceAPIView,
+    fetchRoomDetailView
 )
 
 
@@ -16,5 +17,6 @@ urlpatterns = [
     path('fetchRoomChats/', FetchRoomChatsView.as_view(), name='fetch_room_chats'),
     path('fetchUserChats/', FetchUserChatsView.as_view(), name='fetch_user_chats'),
     path('fetchProductPods/', ProductCategoryAPIView.as_view(), name='fetch_pod_products'),
-    path('fetchProductPrice/', PriceAPIView.as_view(), name='fetch_price_products')
+    path('fetchProductPrice/', PriceAPIView.as_view(), name='fetch_price_products'),
+    path('fetchRoomDetail/', fetchRoomDetailView.as_view(), name='fetch_room_detail')
 ]

@@ -370,3 +370,55 @@ class PriceAPIView(APIView):
             'data': raw_data,
         }
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+class fetchRoomDetailView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+    def post(self, request):
+        limit = int(request.data.get('limit', 20))
+        room_id = int(request.data.get('room_id', 0))
+        # Fetch random rooms
+        rooms = list(Room.objects.all())
+        random.shuffle(rooms)
+        rooms = rooms[:limit]
+
+        if request.user and request.user.is_authenticated:
+            print('auth')
+            pass
+            # rooms.insert(0, new_room_data_serialized)  # Add the new room to the beginning of the list
+
+        else:
+            new_room_data = {
+                'id': room_id,
+                'admin_id': 0,
+                'photo': 'default_photo_url',  # Replace this with a real photo URL
+                'title': 'Hồ sơ cá nhân ',
+                'desc': 'New room added for authenticated user',
+                'interest_ids': '1,2,3',  # Replace with real interest data
+                'is_private': 0,
+                'is_join_request_enable': 1,
+                'total_member': 1,
+                'created_at': timezone.now(),
+                'updated_at': timezone.now()
+            }
+
+            new_room_instance = Room(**new_room_data)
+            new_room_serializer = RoomSerializer(new_room_instance)
+            new_room_data_serialized = new_room_serializer.data
+            new_room_data_serialized['private_user_id'] = 0  # Add private_user_id directly in serialized data
+            new_room_data_serialized['userRoomStatus'] = 5
+            rooms.insert(0, new_room_data_serialized)  # Add the new room to the beginning of the list
+            # rooms.insert(0, new_room_instance)  # Add the new room to the beginning of the list
+            rooms.insert(3, new_room_data_serialized)  # Add the new room to the beginning of the list
+
+        room_serializer = RoomSerializer(rooms, many=True)
+
+        response_data = {
+            'status': True,
+            'message': 'Fetched room detail successfully',
+            'data': room_serializer.data,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
