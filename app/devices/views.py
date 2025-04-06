@@ -424,10 +424,7 @@ class AiDataSupportView(APIView):
         room_id = int(request.data.get('room_id', 0))
         raw_data = {
             'id': room_id,
-            'data': [{'id': 'SK','name': 'Hồ sơ sức khoẻ cá nhân',
-                'data': [{'name': 'Sơ yếu lý lịch', 'data': [{'message': 'lorémiu'}]}]
-                }
-            ]
+            'data': [{'id': 'SK','name': 'Hồ sơ sức khoẻ cá nhân', 'data': [{'name': 'Sơ yếu lý lịch', 'data': [{'message': 'lorémiu'}]}]}]
         }
         response_data = {
             'status': True,
