@@ -68,7 +68,8 @@ class DeviceLoginView(APIView):
         return Response({
             'access_token': str(refresh.access_token),
             'refresh_token': str(refresh),
-            'username': user.username
+            'username': user.username,
+            'info': info
         })
 
 
