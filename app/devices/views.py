@@ -377,7 +377,7 @@ class fetchRoomDetailView(APIView):
     parser_classes = (JSONParser, FormParser, MultiPartParser)
 
     def post(self, request):
-        limit = int(request.data.get('limit', 20))
+        # limit = int(request.data.get('limit', 20))
         room_id = int(request.data.get('room_id', 0))
 
         if request.user and request.user.is_authenticated:
