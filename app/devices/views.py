@@ -409,7 +409,7 @@ class fetchRoomDetailView(APIView):
         response_data = {
             'status': True,
             'message': 'Fetched room detail successfully',
-            'data': new_room_data_serialized.data,
+            'data': new_room_data_serialized,
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
