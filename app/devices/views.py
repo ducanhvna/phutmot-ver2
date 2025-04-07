@@ -430,14 +430,52 @@ class AiDataSupportView(APIView):
         if room_id == 9010:
             raw_data = {
                 'id': room_id,
-                'data': [{'id': 'SELF', 'name': 'thông tin cá nhân', 'data': [{'name': 'Họ tên', 'data': [{'message': 'lorémiu'}]}]},
-                    {'id': 'WIFE', 'name': 'thông tin vợ/chồng', 'data': [{'name': 'Họ tên', 'data': [{'message': 'lorémiu'}]}]},
-                    {'id': 'CHILD', 'name': 'thông tin các con', 'data': [{'name': '..', 'data': [{'message': 'lorémiu'}]}]},
-                    {'id': 'PARENT', 'name': 'thông tin bố mẹ', 'data': [{'name': '..', 'data': [{'message': 'lorémiu'}]}]},
-                    {'id': 'CHILD', 'name': 'thông tin các con nuôi', 'data': [{'name': '..', 'data': [{'message': 'lorémiu'}]}]},
-                    {'id': 'CHILD', 'name': 'thông tin bố mẹ nuôi', 'data': [{'name': '..', 'data': [{'message': 'lorémiu'}]}]},
+                'data': [
+                    {
+                        'id': 'SELF',
+                        'name': 'thông tin cá nhân',
+                        'data': [
+                            {'name': 'Họ tên', 'data': [{'message': 'lorémiu'}]}
+                        ]
+                    },
+                    {
+                        'id': 'WIFE',
+                        'name': 'thông tin vợ/chồng',
+                        'data': [
+                            {'name': 'Họ tên', 'data': [{'message': 'lorémiu'}]}
+                        ]
+                    },
+                    {
+                        'id': 'CHILD',
+                        'name': 'thông tin các con',
+                        'data': [
+                            {'name': '..', 'data': [{'message': 'lorémiu'}]}
+                        ]
+                    },
+                    {
+                        'id': 'PARENT',
+                        'name': 'thông tin bố mẹ',
+                        'data': [
+                            {'name': '..', 'data': [{'message': 'lorémiu'}]}
+                        ]
+                    },
+                    {
+                        'id': 'CHILD',
+                        'name': 'thông tin các con nuôi',
+                        'data': [
+                            {'name': '..', 'data': [{'message': 'lorémiu'}]}
+                        ]
+                    },
+                    {
+                        'id': 'CHILD',
+                        'name': 'thông tin bố mẹ nuôi',
+                        'data': [
+                            {'name': '..', 'data': [{'message': 'lorémiu'}]}
+                        ]
+                    },
                 ]
             }
+
         response_data = {
             'status': True,
             'message': 'Fetched AI Data successfully',
