@@ -427,9 +427,20 @@ class AiDataSupportView(APIView):
             'id': room_id,
             'data': [{'id': 'SK', 'name': 'Hồ sơ sức khoẻ cá nhân', 'data': [{'name': 'Sơ yếu lý lịch', 'data': [{'message': 'lorémiu'}]}]}]
         }
+        if room_id == 9010:
+            raw_data = {
+                'id': room_id,
+                'data': [{'id': 'SELF', 'name': 'thông tin cá nhân', 'data': [{'name': 'Họ tên', 'data': [{'message': 'lorémiu'}]}]},
+                    {'id': 'WIFE', 'name': 'thông tin vợ/chồng', 'data': [{'name': 'Họ tên', 'data': [{'message': 'lorémiu'}]}]},
+                    {'id': 'CHILD', 'name': 'thông tin các con', 'data': [{'name': '..', 'data': [{'message': 'lorémiu'}]}]},
+                    {'id': 'PARENT', 'name': 'thông tin bố mẹ', 'data': [{'name': '..', 'data': [{'message': 'lorémiu'}]}]},
+                    {'id': 'CHILD', 'name': 'thông tin các con nuôi', 'data': [{'name': '..', 'data': [{'message': 'lorémiu'}]}]},
+                    {'id': 'CHILD', 'name': 'thông tin bố mẹ nuôi', 'data': [{'name': '..', 'data': [{'message': 'lorémiu'}]}]},
+                ]
+            }
         response_data = {
             'status': True,
-            'message': 'Fetched Price successfully',
+            'message': 'Fetched AI Data successfully',
             'data': raw_data,
         }
         return Response(response_data, status=status.HTTP_200_OK)
