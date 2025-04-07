@@ -64,7 +64,7 @@ class DeviceLoginView(APIView):
         # Tạo JWT token (sử dụng thư viện rest_framework_simplejwt)
         from rest_framework_simplejwt.tokens import RefreshToken
         refresh = RefreshToken.for_user(user)
-
+        info['id'] = device.id
         return Response({
             'access_token': str(refresh.access_token),
             'refresh_token': str(refresh),
