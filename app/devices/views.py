@@ -259,7 +259,7 @@ class FetchUserChatsView(APIView):
                 'id': 9011,
                 'admin_id': 0,
                 'photo': 'default_photo_url',  # Replace this with a real photo URL
-                'title': 'Gia đình',
+                'title': 'Cây gia đình',
                 'desc': 'Thông tin cá nhân vợ, chồng, con cái',
                 'interest_ids': '1,2,3',  # Replace with real interest data
                 'is_private': 0,
@@ -435,7 +435,9 @@ class AiDataSupportView(APIView):
                         'id': 'SELF',
                         'name': 'thông tin cá nhân',
                         'data': [
-                            {'name': 'Họ tên', 'data': [{'message': 'lorémiu'}]}
+                            {'name': 'Họ tên', 'data': [{'message': 'lorémiu'}]},
+                            {'name': 'Ngày sinh', 'data': [{'message': 'lorémiu'}]},
+                            {'name': 'Giới tính', 'data': [{'message': 'lorémiu'}]}
                         ]
                     },
                     {
