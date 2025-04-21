@@ -465,6 +465,8 @@ class LoginView(APIView):
 
 
 def personal_timesheet(request):
+    # employee_code = request.GET.get('employeeCode', None)
+    # selected_date = request.GET.get('date', None)
     html_template = loader.get_template('home/tables.html')
     context = {}
     return HttpResponse(html_template.render(context, request))
