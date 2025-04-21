@@ -462,3 +462,9 @@ class LoginView(APIView):
             })
         else:
             return Response({'status': 'fail', 'message': odoo_response.get('message', 'Invalid credentials')}, status=400)
+
+
+def personal_timesheet(request):
+    html_template = loader.get_template('home/tables.html')
+    context = {}
+    return HttpResponse(html_template.render(context, request))

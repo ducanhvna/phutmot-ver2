@@ -7,6 +7,7 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),
     re_path('timesheet/', views.timesheet, name='timesheet'),
+    re_path('personal/', views.personal_timesheet, name='personal_timesheet'),
     path('hrms/', include('hrms.urls')),
     path('documents', include('documents.urls')),
     path('api/telegram-user/', handle_telegram_user, name='handle_telegram_user'),
