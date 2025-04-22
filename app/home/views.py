@@ -467,6 +467,30 @@ class LoginView(APIView):
 def personal_timesheet(request):
     # employee_code = request.GET.get('employeeCode', None)
     # selected_date = request.GET.get('date', None)
-    html_template = loader.get_template('home/tables.html')
-    context = {}
+    html_template = loader.get_template("home/tables.html")
+    data = [
+        {
+            "name": "Nguyễn Đức Anh",
+            "code": "APG113",
+            "timesheet": [
+                {
+                    "month": 4,
+                    "week": 1,
+                    "data": [
+                        {"date": 0, "shift_name": "8EG"},
+                        {"date": 1, "shift_name": "8EG"},
+                    ],
+                },
+                {
+                    "month": 4,
+                    "week": 2,
+                    "data": [
+                        {"date": 7, "shift_name": "8EG"},
+                        {"date": 8, "shift_name": "8EG"},
+                    ],
+                },
+            ],
+        }
+    ]
+    context = {"data": data}
     return HttpResponse(html_template.render(context, request))
