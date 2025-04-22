@@ -470,6 +470,9 @@ def split_data_by_week(data, month, year):
     for entry in data:
         try:
             entry_date = datetime.strptime(entry["date"], "%Y-%m-%d")
+            entry['month'] = entry_date.month
+            entry['year'] = entry_date.year
+            entry['day'] = entry_date.day
             if (entry_date.month == month) and (entry_date.year == year):
                 week_number = entry_date.isocalendar()[1]  # Lấy số tuần trong năm
             if not (f"{week_number}" in weeks):
