@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile.prod
     command: gunicorn hello_django.asgi:application --bind 0.0.0.0:8000 -k uvicorn.workers.UvicornWorker
     volumes:
-      - ./staticfiles:/home/app/web/staticfiles
+      - ./staticfiles:/home/app/web/staticfiles:rw
       - ./mediafiles:/home/app/web/mediafiles
     expose:
       - 8000
