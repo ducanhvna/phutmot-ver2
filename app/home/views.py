@@ -529,6 +529,8 @@ def personal_timesheet(request):
             "name": emplyee.info.get("name", "-"),
             "code": emplyee.employee_code,
             "job_title": emplyee.info.get("job_title", "-"),
+            "month": start_date.month,
+            "year": start_date.year,
             "timesheet": [
                 {
                     "month": start_date.month,

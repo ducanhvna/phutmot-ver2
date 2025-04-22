@@ -350,6 +350,9 @@
         <div class="row">
           <p>{{ employee.job_title }}</p>
         </div>
+        <div class="row">
+          <p>{{ employee.month }}/{{ employee.year }}</p>
+        </div>
       </div>
       <div class="col-md-10">
         {% for timesheet in employee.timesheet %}
