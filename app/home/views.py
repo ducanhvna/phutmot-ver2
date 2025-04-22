@@ -484,7 +484,7 @@ def personal_timesheet(request):
     # last_month = datetime(year=year, month=month, day=1) - timedelta(days=1)
     # attendance = Attendance.objects.get(code=f'{2630}', start_date__month=last_month.month, start_date__year=last_month.year)
     # start_date = attendance.start_date + timedelta(days=1)
-    employees = Employee.objects.filter(employee_code=code)
+    employees = Employee.objects.all()
     # scheduling = Scheduling.objects.get(employee_code='code', start_date=start_date)
     html_template = loader.get_template("home/tables.html")
     data = [
@@ -493,7 +493,7 @@ def personal_timesheet(request):
             "code": emplyee['code'],
             "timesheet": [
                 {
-                    "month": 3,
+                    "month": emplyee.start_date.month,
                     "week": 1,
                     "data": [
                         {"date": 0, "shift_name": "8EG"},
