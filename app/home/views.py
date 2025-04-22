@@ -505,7 +505,10 @@ def personal_timesheet(request):
     data = []
     for emplyee in employees:
         start_date = emplyee.start_date
-        scheduling = Scheduling.objects.get(employee_code='code', start_date=start_date)
+        try:
+            scheduling = Scheduling.objects.get(employee_code=code, start_date=start_date)
+        except:
+            scheduling = []
         split_data = split_data_by_week(scheduling, start_date.month, start_date.year)
 
         # for week, entries in result.items():
