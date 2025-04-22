@@ -487,30 +487,32 @@ def personal_timesheet(request):
     employees = Employee.objects.all()
     # scheduling = Scheduling.objects.get(employee_code='code', start_date=start_date)
     html_template = loader.get_template("home/tables.html")
-    data = [
-        {
-            "name": emplyee['name'],
-            "code": emplyee['code'],
-            "timesheet": [
-                {
-                    "month": emplyee.start_date.month,
-                    "week": 1,
-                    "data": [
-                        {"date": 0, "shift_name": "8EG"},
-                        {"date": 1, "shift_name": "8EG"},
-                    ],
-                },
-                {
-                    "month": 4,
-                    "week": 2,
-                    "data": [
-                        {"date": 7, "shift_name": "8EG"},
-                        {"date": 8, "shift_name": "8EG"},
-                    ],
-                },
-            ],
-        }
-        for emplyee in employees
-    ]
+    data = []
+    for emplyee in employees:
+        item = [
+            {
+                "name": emplyee['name'],
+                "code": emplyee['code'],
+                "timesheet": [
+                    {
+                        "month": emplyee.start_date.month,
+                        "week": 1,
+                        "data": [
+                            {"date": 0, "shift_name": "8EG"},
+                            {"date": 1, "shift_name": "8EG"},
+                        ],
+                    },
+                    {
+                        "month": 4,
+                        "week": 2,
+                        "data": [
+                            {"date": 7, "shift_name": "8EG"},
+                            {"date": 8, "shift_name": "8EG"},
+                        ],
+                    },
+                ],
+            }
+        ]
+        data.append(item)
     context = {"data": data}
     return HttpResponse(html_template.render(context, request))
