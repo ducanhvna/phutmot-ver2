@@ -534,7 +534,11 @@ def personal_timesheet(request):
                     "month": start_date.month,
                     "week": week,
                     "data": [
-                        {"date": 0, "shift_name": entry.get("shift_name", "-")}
+                        {
+                            "date": 0,
+                            "shift_name": entry.get("shift_name", "-"),
+                            "id": entry.get("id", ""),
+                        }
                         for entry in entries
                     ],
                 }
