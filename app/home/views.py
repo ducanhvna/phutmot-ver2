@@ -466,36 +466,34 @@ class LoginView(APIView):
 
 def personal_timesheet(request):
     # Lấy tham số từ query string
-    # code = request.GET.get('code', 'APG230321013')
-    # month = request.GET.get('month', None)
-    # year = request.GET.get('year', None)
+    code = request.GET.get('code', 'APG230321013')
+    month = request.GET.get('month', None)
+    year = request.GET.get('year', None)
 
-    # # if not code:
-    # #     return HttpResponse("Code is required", status=400)
-    # # Lấy tháng và năm hiện tại nếu không được cung cấp
-    # if not month:
-    #     month = datetime.now().month
-    # else:
-    #     month = int(month)
-    # if not year:
-    #     year = datetime.now().year
-    # else:
-    #     year = int(year)
+    # if not code:
+    #     return HttpResponse("Code is required", status=400)
+    # Lấy tháng và năm hiện tại nếu không được cung cấp
+    if not month:
+        month = datetime.now().month
+    else:
+        month = int(month)
+    if not year:
+        year = datetime.now().year
+    else:
+        year = int(year)
     # last_month = datetime(year=year, month=month, day=1) - timedelta(days=1)
     # attendance = Attendance.objects.get(code=f'{2630}', start_date__month=last_month.month, start_date__year=last_month.year)
     # start_date = attendance.start_date + timedelta(days=1)
-    employees = Employee.objects.all()
+    employees = Employee.objects.filter(employee_code=code)
     # scheduling = Scheduling.objects.get(employee_code='code', start_date=start_date)
     html_template = loader.get_template("home/tables.html")
-    data = []
-    for emplyee in employees:
-        item = {
-            # "name": emplyee.info.get("name", "Nguyễn Đức Anh"),
-            "name": "Anh",
-            "code": emplyee.info.get("code", "-"),
+    data = [
+        {
+            "name": emplyee.info.get("name", "-"),
+            "code": emplyee.employee_code,
             "timesheet": [
                 {
-                    "month": emplyee.start_date.month,
+                    "month": 3,
                     "week": 1,
                     "data": [
                         {"date": 0, "shift_name": "8EG"},
@@ -512,7 +510,7 @@ def personal_timesheet(request):
                 },
             ],
         }
-
-        data.append(item)
+        for emplyee in employees
+    ]
     context = {"data": data}
     return HttpResponse(html_template.render(context, request))
