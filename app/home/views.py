@@ -512,7 +512,9 @@ def personal_timesheet(request):
                 start_date__month=start_date.month,
                 start_date__year=start_date.year,
             )
-            split_data = split_data_by_week(scheduling, start_date.month, start_date.year)
+            split_data = split_data_by_week(
+                scheduling.scheduling_records, start_date.month, start_date.year
+            )
         except Exception:
             scheduling = None
 
