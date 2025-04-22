@@ -538,6 +538,7 @@ def personal_timesheet(request):
                             "date": 0,
                             "shift_name": entry.get("shift_name", "-"),
                             "id": entry.get("id", ""),
+                            "day": entry.get("day", ""),
                         }
                         for entry in entries
                     ],
