@@ -507,7 +507,11 @@ def personal_timesheet(request):
         start_date = emplyee.start_date
         split_data = defaultdict(lambda: defaultdict(list))
         try:
-            scheduling = Scheduling.objects.get(employee_code=code, start_date=start_date)
+            scheduling = Scheduling.objects.get(
+                employee_code=code,
+                start_date__month=start_date.month,
+                start_date__year=start_date.year,
+            )
             split_data = split_data_by_week(scheduling, start_date.month, start_date.year)
         except Exception:
             scheduling = None
