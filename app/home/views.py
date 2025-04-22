@@ -466,13 +466,13 @@ class LoginView(APIView):
 
 
 def split_data_by_week(data, month, year):
-    weeks = defaultdict(list)
+    weeks = defaultdict(lambda: defaultdict(list))
     for entry in data:
         try:
             entry_date = datetime.strptime(entry["date"], "%Y-%m-%d")
             if (entry_date.month == month) and (entry_date.year == year):
                 week_number = entry_date.isocalendar()[1]  # Lấy số tuần trong năm
-                weeks[f"{week_number}"].append(entry)
+                weeks[f"w{week_number}"].append(entry)
         except ValueError:
             print(f"Lỗi: Định dạng ngày tháng không hợp lệ ({entry['date']})")
 
