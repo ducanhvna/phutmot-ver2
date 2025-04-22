@@ -490,8 +490,8 @@ def personal_timesheet(request):
     data = []
     for emplyee in employees:
         item = {
-            "name": emplyee["name"],
-            "code": emplyee["code"],
+            "name": emplyee.info.get("name", "Nguyễn Đức Anh"),
+            "code": emplyee.info.get("code", "-"),
             "timesheet": [
                 {
                     "month": emplyee.start_date.month,
