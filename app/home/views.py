@@ -490,7 +490,8 @@ def personal_timesheet(request):
     data = []
     for emplyee in employees:
         item = {
-            "name": emplyee.info.get("name", "Nguyễn Đức Anh"),
+            # "name": emplyee.info.get("name", "Nguyễn Đức Anh"),
+            "name": "Anh",
             "code": emplyee.info.get("code", "-"),
             "timesheet": [
                 {
