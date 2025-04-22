@@ -27,6 +27,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from .models import TelegramUser
 import xmlrpc.client
+from collections import defaultdict
 
 ERP_URL = "http://odoo17:8069"
 ERP_DB = "odoo"
@@ -464,6 +465,20 @@ class LoginView(APIView):
             return Response({'status': 'fail', 'message': odoo_response.get('message', 'Invalid credentials')}, status=400)
 
 
+def split_data_by_week(data, month, year):
+    weeks = defaultdict(list)
+    for entry in data:
+        try:
+            entry_date = datetime.strptime(entry["date"], "%Y-%m-%d")
+            if (entry_date.month == month) and (entry_date.year == year):
+                week_number = entry_date.isocalendar()[1]  # Lấy số tuần trong năm
+                weeks[week_number].append(entry)
+        except ValueError:
+            print(f"Lỗi: Định dạng ngày tháng không hợp lệ ({entry['date']})")
+
+    return dict(weeks)
+
+
 def personal_timesheet(request):
     # Lấy tham số từ query string
     code = request.GET.get('code', 'APG230321013')
@@ -485,32 +500,32 @@ def personal_timesheet(request):
     # attendance = Attendance.objects.get(code=f'{2630}', start_date__month=last_month.month, start_date__year=last_month.year)
     # start_date = attendance.start_date + timedelta(days=1)
     employees = Employee.objects.filter(employee_code=code)
-    # scheduling = Scheduling.objects.get(employee_code='code', start_date=start_date)
+
     html_template = loader.get_template("home/tables.html")
-    data = [
-        {
+    data = []
+    for emplyee in employees:
+        start_date = emplyee.start_date
+        scheduling = Scheduling.objects.get(employee_code='code', start_date=start_date)
+        split_data = split_data_by_week(scheduling, start_date.month, start_date.year)
+
+        # for week, entries in result.items():
+        item = {
             "name": emplyee.info.get("name", "-"),
             "code": emplyee.employee_code,
+            "job_title": emplyee.info.get("job_title", "-"),
             "timesheet": [
                 {
-                    "month": 3,
-                    "week": 1,
+                    "month": start_date.month,
+                    "week": week,
                     "data": [
-                        {"date": 0, "shift_name": "8EG"},
-                        {"date": 1, "shift_name": "8EG"},
+                        {"date": 0, "shift_name": entry.get("shift_name", "-")}
+                        for entry in entries
                     ],
-                },
-                {
-                    "month": 4,
-                    "week": 2,
-                    "data": [
-                        {"date": 7, "shift_name": "8EG"},
-                        {"date": 8, "shift_name": "8EG"},
-                    ],
-                },
+                }
+                for week, entries in split_data.items()
             ],
         }
-        for emplyee in employees
-    ]
+        data.append(item)
+
     context = {"data": data}
     return HttpResponse(html_template.render(context, request))
