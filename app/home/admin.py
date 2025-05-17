@@ -2,7 +2,6 @@ from django.contrib import admin
 from .models import Company, UserProfile, TelegramUser
 from django.utils.html import format_html
 import json
-from django_celery_results.models import TaskResult
 
 
 @admin.register(Company)
@@ -37,10 +36,3 @@ class UserProfileAdmin(admin.ModelAdmin):
 class TelegramUserAdmin(admin.ModelAdmin):
     list_display = ('user', 'telegram_id', 'telegram_username', 'first_name', 'last_name', 'language_code')
     search_fields = ('telegram_username', 'first_name', 'last_name')
-
-
-@admin.register(TaskResult)
-class TaskResultAdmin(admin.ModelAdmin):
-    list_display = ('task_id', 'status', 'result', 'date_done')
-    search_fields = ('task_id', 'status')
-    ordering = ('-date_done',)
