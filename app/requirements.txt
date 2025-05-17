@@ -20,3 +20,4 @@ unidecode
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
+django_celery_results

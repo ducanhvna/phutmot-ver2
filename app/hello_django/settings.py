@@ -18,11 +18,14 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 CELERY_BROKER_URL = 'redis://redis:6379/0'
-CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+# CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'django-db'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -66,7 +69,8 @@ INSTALLED_APPS = [
     "projects",
     'dashboard',
     "documents",
-    "devices"
+    "devices",
+    'django_celery_results',
 ]
 
 REST_FRAMEWORK = {
