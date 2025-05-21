@@ -20,7 +20,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from .utils.odoo_client import OdooClient
 from rest_framework.permissions import AllowAny
 from django.utils.decorators import method_decorator
@@ -452,14 +452,25 @@ class LoginView(APIView):
             user, created = User.objects.get_or_create(username=username)
             if created:
                 user.set_password(password)
+                user.email = odoo_response.get('email', '')  # Giả định Odoo trả về email
                 user.save()
+
+            # Gán nhóm (roles) dựa trên thông tin từ Odoo
+            role_name = odoo_response.get('role', 'user')  # Giả định Odoo có thông tin role
+            group, _ = Group.objects.get_or_create(name=role_name)
+            user.groups.add(group)
 
             # Tạo token JWT cho người dùng
             refresh = RefreshToken.for_user(user)
+
             return Response({
                 'status': 'success',
                 'access_token': str(refresh.access_token),
-                'refresh_token': str(refresh)
+                'refresh_token': str(refresh),
+                'name': user.get_full_name() or username,
+                'email': user.email,
+                'roles': [group.name for group in user.groups.all()],  # Trả về danh sách roles
+                'avatar': f"https://i.pravatar.cc/150?img={user.id % 70}"  # Giả lập avatar
             })
         else:
             return Response({'status': 'fail', 'message': odoo_response.get('message', 'Invalid credentials')}, status=400)
