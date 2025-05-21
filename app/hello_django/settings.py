@@ -218,3 +218,5 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://hinosoft.com"
 ]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
