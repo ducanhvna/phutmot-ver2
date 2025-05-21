@@ -467,10 +467,12 @@ class LoginView(APIView):
                 'status': 'success',
                 'access_token': str(refresh.access_token),
                 'refresh_token': str(refresh),
-                'name': user.get_full_name() or username,
-                'email': user.email,
-                'roles': [group.name for group in user.groups.all()],  # Trả về danh sách roles
-                'avatar': f"https://i.pravatar.cc/150?img={user.id % 70}"  # Giả lập avatar
+                'user': {
+                    'name': user.get_full_name() or username,
+                    'email': user.email,
+                    'roles': [group.name for group in user.groups.all()],  # Trả về danh sách roles
+                    'avatar': f"https://i.pravatar.cc/150?img={user.id % 70}"  # Giả lập avatar
+                }
             })
         else:
             return Response({'status': 'fail', 'message': odoo_response.get('message', 'Invalid credentials')}, status=400)
