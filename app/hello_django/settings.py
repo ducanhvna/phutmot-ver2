@@ -212,3 +212,9 @@ ERP_URL = "http://odoo17:8069"
 ERP_DB = "odoo"
 ERP_USERNAME = "admin"
 ERP_PASSWORD = "admin"
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3009",
+    "http://localhost:3000",
+    "https://hinosoft.com"
+]
