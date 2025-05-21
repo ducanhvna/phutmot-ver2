@@ -215,11 +215,11 @@ ERP_DB = "odoo"
 ERP_USERNAME = "admin"
 ERP_PASSWORD = "admin"
 CORS_ALLOW_ALL_ORIGINS = True  # Không cho phép tất cả
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3009",
-#     "http://localhost:3000",
-#     "https://hinosoft.com"
-# ]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3009",
+    "http://localhost:3000",
+    "https://hinosoft.com"
+]
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 CORS_ALLOW_HEADERS = ["Authorization", "Content-Type"]
 # CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
