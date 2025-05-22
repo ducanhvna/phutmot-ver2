@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: hrm_monthly_reports_app
+    volumes:
+      - .:/app           # Đồng bộ toàn bộ mã nguồn vào container
+      - /app/node_modules # Giữ node_modules trong container, tránh lỗi từ hệ thống chủ
+    ports:
+      - "3009:3000"
+    environment:
+      - NODE_ENV=production
+    # command: npm run dev
