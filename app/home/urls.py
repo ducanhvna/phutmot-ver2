@@ -1,5 +1,5 @@
 from django.urls import path, re_path, include
-from .views import LoginView, handle_telegram_user
+from .views import LoginView, handle_telegram_user, EmployeeWithSchedulingListAPIView
 from . import views
 # from hrms.views import taskcreate
 
@@ -18,4 +18,5 @@ urlpatterns = [
     path('api/employee/search/', views.UserProfileAPIView.as_view(), name='employee_search'),
     path('apiv2/', include('devices.urls')),
     re_path(r'^.*\.*', views.pages, name='pages'),
+    path('api/hrms/employees/', EmployeeWithSchedulingListAPIView.as_view(), name='employee_with_scheduling_list'),
 ]

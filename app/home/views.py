@@ -13,6 +13,7 @@ from django.http import JsonResponse
 from dashboard.models import Fleet
 from rest_framework import generics
 from .serializers import UserProfileSerializer
+from hrms.serializers import EmployeeWithSchedulingSerializer
 from django.db.models import Q, Func, F
 from unidecode import unidecode
 import requests
@@ -28,6 +29,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import TelegramUser
 import xmlrpc.client
 from collections import defaultdict
+from rest_framework.pagination import PageNumberPagination
 
 ERP_URL = "http://odoo17:8069"
 ERP_DB = "odoo"
@@ -565,3 +567,37 @@ def personal_timesheet(request):
 
     context = {"data": data}
     return HttpResponse(html_template.render(context, request))
+
+
+class EmployeeWithSchedulingListAPIView(APIView):
+    def get(self, request):
+        # Lấy các tham số filter
+        name = request.GET.get('name')
+        employee_code = request.GET.get('employee_code')
+        time_keeping_code = request.GET.get('time_keeping_code')
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        queryset = Employee.objects.all()
+        # Tìm kiếm theo tên (trong info['name'] hoặc info['full_name'])
+        if name:
+            name_unaccented = unidecode(name).lower()
+            queryset = queryset.filter(
+                Q(info__name__icontains=name) | Q(info__full_name__icontains=name) |
+                Q(info_unaccented__name__icontains=name_unaccented) | Q(info_unaccented__full_name__icontains=name_unaccented)
+            )
+        if employee_code:
+            queryset = queryset.filter(code__icontains=employee_code)
+        if time_keeping_code:
+            queryset = queryset.filter(time_keeping_code__icontains=time_keeping_code)
+        if start_date:
+            queryset = queryset.filter(start_date=start_date)
+        if end_date:
+            queryset = queryset.filter(end_date=end_date)
+
+        # Phân trang
+        paginator = PageNumberPagination()
+        paginator.page_size = int(request.GET.get('page_size', 20))
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = EmployeeWithSchedulingSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
