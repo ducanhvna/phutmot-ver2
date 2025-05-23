@@ -587,11 +587,10 @@ class EmployeeWithSchedulingListAPIView(APIView):
             next_month = datetime(year + 1, 1, 1)
         else:
             next_month = datetime(year, month + 1, 1)
-        start_date = first_day.strftime('%Y-%m-%d')
-        end_date = next_month.strftime('%Y-%m-%d')
+
         queryset = Employee.objects.all()
         # Tổng hợp search_conditions trước, sau đó filter một lần
-        search_conditions = Q(start_date=start_date) & Q(end_date=end_date)
+        search_conditions = Q(start_date__month=month) & Q(end_date__month=month) & Q(start_date__year=year) & Q(end_date__year=year)
         if name:
             name_unaccented = unidecode(name).lower()
             temp_condition = Q(info_unaccented__name__icontains=name_unaccented) | \
