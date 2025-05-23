@@ -570,6 +570,7 @@ def personal_timesheet(request):
 
 
 class EmployeeWithSchedulingListAPIView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         # Lấy các tham số filter
         name = request.GET.get('name')
@@ -589,9 +590,9 @@ class EmployeeWithSchedulingListAPIView(APIView):
             queryset = queryset.filter(search_conditions)
 
         if employee_code:
-            queryset = queryset.filter(code__icontains=employee_code)
+            queryset = queryset.filter(info__code__icontains=employee_code)
         if time_keeping_code:
-            queryset = queryset.filter(time_keeping_code__icontains=time_keeping_code)
+            queryset = queryset.filter(info__time_keeping_code__icontains=time_keeping_code)
         if start_date:
             queryset = queryset.filter(start_date=start_date)
         if end_date:

@@ -17,6 +17,6 @@ urlpatterns = [
     re_path('api/get_details', views.get_details, name='detail_timesheet'),
     path('api/employee/search/', views.UserProfileAPIView.as_view(), name='employee_search'),
     path('apiv2/', include('devices.urls')),
+    path('api/hrms/employee_scheduling/', EmployeeWithSchedulingListAPIView.as_view(), name='employee_with_scheduling_list'),
     re_path(r'^.*\.*', views.pages, name='pages'),
-    path('api/hrms/employees/', EmployeeWithSchedulingListAPIView.as_view(), name='employee_with_scheduling_list'),
 ]
