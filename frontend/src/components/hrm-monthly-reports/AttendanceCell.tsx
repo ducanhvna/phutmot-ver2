@@ -9,7 +9,7 @@ function isAttendanceComplete(record: AttendanceRecord): boolean {
 
 // Helper: tính outside_minutes cho AttendanceRecord
 function getOutsideMinutes(record: AttendanceRecord): number {
-  return Math.round((record.total_shift_work_time * 480) - record.attendance_late - record.leave_early);
+  return Math.round((record.total_shift_work_time * 60) - record.attendance_late - record.leave_early);
 }
 
 const AttendanceCell: React.FC<{ record: AttendanceRecord; onClick: () => void }> = ({ record, onClick }) => {
