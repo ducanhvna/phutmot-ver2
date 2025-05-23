@@ -33,17 +33,29 @@ export default function HrmMonthlyReportShow({ params }: { params: { id: string 
       return;
     }
 
-    // Gọi API nếu attendanceId hợp lệ
-    var data = fetchDetail(attendanceId!);
-
-    if (!data) {
-      console.warn(`Không tìm thấy dữ liệu cho Attendance ID: ${attendanceId}`);
+    // Lấy token từ cookie sau khi login
+    const getTokenFromCookie = () => {
+      if (typeof document === "undefined") return "";
+      const match = document.cookie.match(/(?:^|; )access_token=([^;]*)/);
+      return match ? decodeURIComponent(match[1]) : "";
+    };
+    const token = getTokenFromCookie();
+    if (!token) {
+      console.error("Không tìm thấy access_token trong cookie!");
+      setIsLoading(false);
       return;
     }
-    setEventDetail(data as AttendanceRecord); // Ép kiểu hợp lệ
 
-    setIsLoading(false);
-
+    // Gọi API nếu attendanceId hợp lệ và có token
+    fetchDetail(attendanceId, token).then((data) => {
+      if (!data) {
+        console.warn(`Không tìm thấy dữ liệu cho Attendance ID: ${attendanceId}`);
+        setIsLoading(false);
+        return;
+      }
+      setEventDetail(data as AttendanceRecord);
+      setIsLoading(false);
+    });
   }, [params.id]);
 
   return (

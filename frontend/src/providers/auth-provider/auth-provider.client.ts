@@ -20,6 +20,18 @@ const mockUsers = [
   },
 ];
 
+// Hàm lấy access_token an toàn từ cookie "auth"
+export const getAccessTokenFromCookie = (): string => {
+  const auth = Cookies.get("auth");
+  if (!auth) return "";
+  try {
+    const parsed = JSON.parse(auth);
+    return parsed.access_token || "";
+  } catch {
+    return "";
+  }
+};
+
 export const authProviderClient: AuthProvider = {
   login: async ({ email, username, password, remember }) => {
     try {
@@ -29,9 +41,10 @@ export const authProviderClient: AuthProvider = {
         // const user = mockUsers.find((u) => u.email === email);
         const user = response.data.user; // Assuming the user data is returned in the response
         if (user) {
+          // Đảm bảo access_token luôn là string
           const authData = {
             ...user,
-            token: response.data.access_token,
+            access_token: String(response.data.access_token),
           };
 
           Cookies.set("auth", JSON.stringify(authData), {
