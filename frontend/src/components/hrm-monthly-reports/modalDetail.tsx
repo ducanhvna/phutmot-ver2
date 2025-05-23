@@ -54,16 +54,21 @@ const ModalDetail: React.FC<{ eventDetail: any }> = ({ eventDetail }) => {
     }, 1000);
   };
 
+  // Helper: tính trạng thái hoàn thành (is_complete) cho AttendanceRecord
+  function isAttendanceComplete(record: any): boolean {
+    return record.total_work_time < record.actual_total_work_time;
+  }
+
   return (
     <>
       <Title level={5}>Ca làm việc</Title>
       <p>{eventDetail?.shift || "Không có ca làm việc"}</p>
 
       <Title level={5}>Số phút làm việc</Title>
-      <p>{eventDetail?.minutes_worked || 0} phút</p>
+      <p>{eventDetail?.total_work_time || 0} phút</p>
 
       <Title level={5}>Trạng thái</Title>
-      <p>{eventDetail?.is_complete ? "Hoàn thành" : "Chưa hoàn thành"}</p>
+      <p>{isAttendanceComplete(eventDetail) ? "Hoàn thành" : "Chưa hoàn thành"}</p>
 
       <Title level={4}>Giải trình lý do</Title>
 

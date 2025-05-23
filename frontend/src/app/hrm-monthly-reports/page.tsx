@@ -10,6 +10,13 @@ import { getAccessTokenFromCookie } from "@/providers/auth-provider/auth-provide
 const MonthlyReportPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [total, setTotal] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 20; // hoặc giá trị mặc định bạn muốn
+
+  // Tính month và year từ selectedDate
+  const month = selectedDate.getMonth() + 1;
+  const year = selectedDate.getFullYear();
 
   useEffect(() => {
     let token = getAccessTokenFromCookie();
@@ -17,10 +24,15 @@ const MonthlyReportPage: React.FC = () => {
       token = "dumy_token"; // Dummy token for testing
     }
     if (!token) return;
-    const month = selectedDate.getMonth() + 1;
-    const year = selectedDate.getFullYear();
-    fetchEmployees(token, month, year).then(setEmployees);
-  }, [selectedDate]);
+    fetchEmployees(token, currentPage, pageSize, month, year).then((data) => {
+      setEmployees(data.results);
+      setTotal(data.count);
+    });
+  }, [selectedDate, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   return (
     <div>
@@ -28,7 +40,10 @@ const MonthlyReportPage: React.FC = () => {
       <div className={styles.datePickerWrapper}>
         <DatePicker
           selected={selectedDate}
-          onChange={(date: Date | null) => setSelectedDate(date || new Date())}
+          onChange={(date: Date | null) => {
+            setSelectedDate(date || new Date());
+            setCurrentPage(1); // reset về trang 1 khi đổi tháng
+          }}
           dateFormat="MM/yyyy"
           showMonthYearPicker
           showFullMonthYearPicker
@@ -41,6 +56,10 @@ const MonthlyReportPage: React.FC = () => {
         employees={employees}
         month={selectedDate.getMonth() + 1}
         year={selectedDate.getFullYear()}
+        total={total}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
       />
     </div>
   );
