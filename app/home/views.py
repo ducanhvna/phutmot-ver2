@@ -575,26 +575,31 @@ class EmployeeWithSchedulingListAPIView(APIView):
     def get(self, request):
         # Lấy các tham số filter
         name = request.GET.get('name')
-        employee_code = request.GET.get('employee_code')
-        time_keeping_code = request.GET.get('time_keeping_code')
-        start_date = request.GET.get('start_date')
-        end_date = request.GET.get('end_date')
-
+        from datetime import date
+        today = date.today()
+        # Mặc định là tháng/năm hiện tại nếu không truyền lên
+        # Lấy month và year từ request, nếu không có thì lấy tháng/năm hiện tại
+        month = int(request.GET.get('month', today.month))
+        year = int(request.GET.get('year', today.year))
+        # Luôn tính start_date và end_date dựa trên month/year
+        first_day = datetime(year, month, 1)
+        if month == 12:
+            next_month = datetime(year + 1, 1, 1)
+        else:
+            next_month = datetime(year, month + 1, 1)
+        start_date = first_day.strftime('%Y-%m-%d')
+        end_date = next_month.strftime('%Y-%m-%d')
         queryset = Employee.objects.all()
-        # Tìm kiếm theo tên (trong info['name'] hoặc info['full_name'])
+        # Tổng hợp search_conditions trước, sau đó filter một lần
+        search_conditions = Q(start_date=start_date) & Q(end_date=end_date)
         if name:
             name_unaccented = unidecode(name).lower()
-            search_conditions = Q(info_unaccented__name__icontains=name) | \
-                Q(info_unaccented__full_name__icontains=name) | \
-                Q(info_unaccented__name__icontains=name_unaccented) | \
+            temp_condition = Q(info_unaccented__name__icontains=name_unaccented) | \
                 Q(info_unaccented__full_name__icontains=name_unaccented) | \
-                Q(info_unaccented__code__icontains=employee_code) | \
-                Q(info_unaccented__time_keeping_code__icontains=time_keeping_code)
-            queryset = queryset.filter(search_conditions)
-        if start_date:
-            queryset = queryset.filter(start_date=start_date)
-        if end_date:
-            queryset = queryset.filter(end_date=end_date)
+                Q(info_unaccented__code__icontains=name_unaccented) | \
+                Q(info_unaccented__time_keeping_code__icontains=name_unaccented)
+            search_conditions &= temp_condition
+        queryset = Employee.objects.filter(search_conditions)
 
         # Phân trang trước khi join scheduling để giảm số lượng employee xử lý
         paginator = PageNumberPagination()
