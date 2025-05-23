@@ -601,7 +601,8 @@ class EmployeeWithSchedulingListAPIView(APIView):
 
         # Lấy scheduling theo employee_code, start_date, end_date
         schedulings = Scheduling.objects.filter(
-            employee_code__in=employee_codes
+            employee_code__in=employee_codes, start_date__month=month, end_date__month=month,
+            start_date__year=year, end_date__year=year
         )
         # Gom schedulings theo employee_code
         scheduling_map = {}
