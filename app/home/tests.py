@@ -4,6 +4,7 @@ from rest_framework.test import APITestCase
 from hrms.models import Employee, Scheduling
 from datetime import date
 
+
 class EmployeeWithSchedulingAPITestCase(APITestCase):
     def setUp(self):
         # Tạo dữ liệu mẫu cho Employee và Scheduling
@@ -12,7 +13,7 @@ class EmployeeWithSchedulingAPITestCase(APITestCase):
             start_date=date(2024, 5, 1),
             end_date=date(2024, 5, 31),
             time_keeping_code="TKC001",
-            info={"name": "Nguyễn Văn A", "full_name": "Nguyễn Văn A", "time_keeping_code":"TKC001", "code":"EMP001",},
+            info={"name": "Nguyễn Văn A", "full_name": "Nguyễn Văn A", "time_keeping_code": "TKC001", "code": "EMP001"}
         )
         Scheduling.objects.create(
             employee_code="EMP001",

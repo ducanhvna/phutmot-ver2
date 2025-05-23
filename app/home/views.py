@@ -571,6 +571,7 @@ def personal_timesheet(request):
 
 class EmployeeWithSchedulingListAPIView(APIView):
     permission_classes = [AllowAny]
+
     def get(self, request):
         # Lấy các tham số filter
         name = request.GET.get('name')
