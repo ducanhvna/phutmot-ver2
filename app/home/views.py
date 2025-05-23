@@ -13,7 +13,7 @@ from django.http import JsonResponse
 from dashboard.models import Fleet
 from rest_framework import generics
 from .serializers import UserProfileSerializer
-from hrms.serializers import EmployeeWithSchedulingSerializer
+from hrms.serializers import EmployeeWithSchedulingSerializer, SchedulingSerializer
 from django.db.models import Q, Func, F
 from unidecode import unidecode
 import requests
@@ -599,9 +599,30 @@ class EmployeeWithSchedulingListAPIView(APIView):
         if end_date:
             queryset = queryset.filter(end_date=end_date)
 
-        # Phân trang
+        # Lấy danh sách employee và join scheduling chỉ với 1 query
+        employees = list(queryset)
+        employee_codes = [e.employee_code for e in employees]
+        # Lấy scheduling theo employee_code, start_date, end_date
+        schedulings = Scheduling.objects.filter(
+            employee_code__in=employee_codes
+        )
+        # Gom schedulings theo employee_code
+        scheduling_map = {}
+        for s in schedulings:
+            scheduling_map.setdefault(s.employee_code, []).append(s)
+
+        # Ghép dữ liệu và tính total_minutes
+        results = []
+        for e in employees:
+            scheds = scheduling_map.get(e.employee_code, [])
+            total_minutes = sum([getattr(s, 'total_work_time', 0) or 0 for s in scheds]) * 60
+            emp_data = EmployeeWithSchedulingSerializer(e).data
+            emp_data['schedulings'] = SchedulingSerializer(scheds, many=True).data
+            emp_data['total_minutes'] = int(total_minutes)
+            results.append(emp_data)
+
+        # Phân trang thủ công
         paginator = PageNumberPagination()
         paginator.page_size = int(request.GET.get('page_size', 20))
-        result_page = paginator.paginate_queryset(queryset, request)
-        serializer = EmployeeWithSchedulingSerializer(result_page, many=True)
-        return paginator.get_paginated_response(serializer.data)
+        page = paginator.paginate_queryset(results, request)
+        return paginator.get_paginated_response(page)

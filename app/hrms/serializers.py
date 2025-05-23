@@ -17,16 +17,17 @@ class SchedulingSerializer(serializers.ModelSerializer):
 
 
 class EmployeeWithSchedulingSerializer(serializers.ModelSerializer):
-    scheduling = serializers.SerializerMethodField()
+    schedulings = serializers.SerializerMethodField()
+    total_minutes = serializers.SerializerMethodField()
 
     class Meta:
         model = Employee
-        fields = '__all__'  # sẽ trả về tất cả trường của Employee + scheduling
+        fields = '__all__'  # sẽ trả về tất cả trường của Employee + schedulings + total_minutes
 
-    def get_scheduling(self, obj):
-        schedulings = Scheduling.objects.filter(
-            employee_code=obj.employee_code,
-            start_date=obj.start_date,
-            end_date=obj.end_date
-        )
-        return SchedulingSerializer(schedulings, many=True).data
+    def get_schedulings(self, obj):
+        # Hàm này sẽ không dùng nữa khi dùng join ngoài view
+        return []
+
+    def get_total_minutes(self, obj):
+        # Hàm này sẽ không dùng nữa khi dùng join ngoài view
+        return 0
