@@ -599,9 +599,13 @@ class EmployeeWithSchedulingListAPIView(APIView):
         if end_date:
             queryset = queryset.filter(end_date=end_date)
 
-        # Lấy danh sách employee và join scheduling chỉ với 1 query
-        employees = list(queryset)
+        # Phân trang trước khi join scheduling để giảm số lượng employee xử lý
+        paginator = PageNumberPagination()
+        paginator.page_size = int(request.GET.get('page_size', 20))
+        page_employees = paginator.paginate_queryset(queryset, request)
+        employees = list(page_employees)
         employee_codes = [e.employee_code for e in employees]
+
         # Lấy scheduling theo employee_code, start_date, end_date
         schedulings = Scheduling.objects.filter(
             employee_code__in=employee_codes
@@ -621,8 +625,4 @@ class EmployeeWithSchedulingListAPIView(APIView):
             emp_data['total_minutes'] = int(total_minutes)
             results.append(emp_data)
 
-        # Phân trang thủ công
-        paginator = PageNumberPagination()
-        paginator.page_size = int(request.GET.get('page_size', 20))
-        page = paginator.paginate_queryset(results, request)
-        return paginator.get_paginated_response(page)
+        return paginator.get_paginated_response(results)
