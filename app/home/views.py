@@ -582,10 +582,12 @@ class EmployeeWithSchedulingListAPIView(APIView):
         # Tìm kiếm theo tên (trong info['name'] hoặc info['full_name'])
         if name:
             name_unaccented = unidecode(name).lower()
-            queryset = queryset.filter(
-                Q(info__name__icontains=name) | Q(info__full_name__icontains=name) |
-                Q(info_unaccented__name__icontains=name_unaccented) | Q(info_unaccented__full_name__icontains=name_unaccented)
-            )
+            search_conditions = Q(info__name__icontains=name) | \
+                Q(info__full_name__icontains=name) | \
+                Q(info_unaccented__name__icontains=name_unaccented) | \
+                Q(info_unaccented__full_name__icontains=name_unaccented)
+            queryset = queryset.filter(search_conditions)
+
         if employee_code:
             queryset = queryset.filter(code__icontains=employee_code)
         if time_keeping_code:
