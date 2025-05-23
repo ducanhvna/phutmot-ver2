@@ -581,14 +581,6 @@ class EmployeeWithSchedulingListAPIView(APIView):
         # Lấy month và year từ request, nếu không có thì lấy tháng/năm hiện tại
         month = int(request.GET.get('month', today.month))
         year = int(request.GET.get('year', today.year))
-        # Luôn tính start_date và end_date dựa trên month/year
-        first_day = datetime(year, month, 1)
-        if month == 12:
-            next_month = datetime(year + 1, 1, 1)
-        else:
-            next_month = datetime(year, month + 1, 1)
-
-        queryset = Employee.objects.all()
         # Tổng hợp search_conditions trước, sau đó filter một lần
         search_conditions = Q(start_date__month=month) & Q(end_date__month=month) & Q(start_date__year=year) & Q(end_date__year=year)
         if name:
