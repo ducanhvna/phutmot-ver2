@@ -13,7 +13,7 @@ from django.http import JsonResponse
 from dashboard.models import Fleet
 from rest_framework import generics
 from .serializers import UserProfileSerializer
-from hrms.serializers import EmployeeWithSchedulingSerializer, SchedulingSerializer
+from hrms.serializers import EmployeeWithSchedulingSerializer, SchedulingSerializer, EmployeeSerializer
 from django.db.models import Q, Func, F
 from unidecode import unidecode
 import requests
@@ -620,3 +620,33 @@ class EmployeeWithSchedulingListAPIView(APIView):
             results.append(emp_data)
 
         return paginator.get_paginated_response(results)
+
+
+class ListEmployeeAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        from datetime import date
+        today = date.today()
+        # Lấy month và year từ request, nếu không có thì lấy tháng/năm hiện tại
+        month = int(request.GET.get('month', today.month))
+        year = int(request.GET.get('year', today.year))
+        keyword = request.GET.get('keyword', '').strip()
+        # Tổng hợp search_conditions trước, sau đó filter một lần
+        search_conditions = Q(start_date__month=month) & Q(end_date__month=month) & Q(start_date__year=year) & Q(end_date__year=year)
+        if keyword:
+            keyword_unaccented = unidecode(keyword).lower()
+            temp_condition = Q(info_unaccented__name__icontains=keyword_unaccented) | \
+                Q(info_unaccented__full_name__icontains=keyword_unaccented) | \
+                Q(info_unaccented__code__icontains=keyword_unaccented) | \
+                Q(info_unaccented__time_keeping_code__icontains=keyword_unaccented) | \
+                Q(employee_code__icontains=keyword) | \
+                Q(time_keeping_code__icontains=keyword)
+            search_conditions &= temp_condition
+        queryset = Employee.objects.filter(search_conditions)
+
+        paginator = PageNumberPagination()
+        paginator.page_size = int(request.GET.get('page_size', 20))
+        page_employees = paginator.paginate_queryset(queryset, request)
+        serializer = EmployeeSerializer(page_employees, many=True)
+        return paginator.get_paginated_response(serializer.data)
