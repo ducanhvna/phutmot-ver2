@@ -1,5 +1,5 @@
 from django.urls import path, re_path, include
-from .views import LoginView, handle_telegram_user, EmployeeWithSchedulingListAPIView, EmployeeListAPIView, ListEmployeeAPIView
+from .views import LoginView, handle_telegram_user, EmployeeWithSchedulingListAPIView, ListEmployeeAPIView
 from . import views
 # from hrms.views import taskcreate
 
