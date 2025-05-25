@@ -298,3 +298,17 @@ MAIL_FROM=your@gmail.com
 MAIL_USE_TLS=true
 MAIL_USE_SSL=false
 ```
+
+## Lưu ý môi trường TEST_SQLITE khi chạy production (Docker)
+
+- **Chỉ sử dụng TEST_SQLITE=1 cho mục đích test, CI/CD hoặc phát triển local.**
+- Khi chạy production (trong Docker Compose hoặc server thật), cần đảm bảo biến môi trường `TEST_SQLITE` **không được set** (unset hoặc không khai báo trong docker-compose).
+- Nếu biến này tồn tại, backend sẽ luôn dùng SQLite thay vì Postgres, không đúng cho môi trường production thực tế.
+- Docker Compose mặc định không set TEST_SQLITE, bạn chỉ cần KHÔNG thêm dòng `TEST_SQLITE=1` vào phần environment của service backend.
+- Nếu đã từng set TEST_SQLITE trong môi trường host, hãy thêm dòng sau vào Dockerfile hoặc entrypoint để chắc chắn:
+
+```sh
+unset TEST_SQLITE
+```
+
+- Kiểm tra lại biến môi trường trong docker-compose.yml, Dockerfile, entrypoint.sh để đảm bảo không có TEST_SQLITE khi chạy production.

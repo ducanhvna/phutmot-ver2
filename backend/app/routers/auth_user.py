@@ -86,7 +86,11 @@ def register_user(data: UserRegisterRequest, background_tasks: BackgroundTasks, 
         is_verified=False,
         role=UserRoleEnum.EMPLOYEE
     )
-    if MAIL_SERVER and MAIL_FROM:
+    # Nếu là SQLite (test/local), tự động xác thực luôn
+    db_url = str(db.bind.url) if hasattr(db, 'bind') and db.bind else None
+    if db_url and db_url.startswith("sqlite"):
+        user.is_verified = True
+    if MAIL_SERVER and MAIL_FROM and not user.is_verified:
         db.add(user)
         db.commit()
         token = f"verify-{user.id}-{int(datetime.now(timezone.utc).timestamp())}"
@@ -100,7 +104,7 @@ def register_user(data: UserRegisterRequest, background_tasks: BackgroundTasks, 
         user.is_verified = True
         db.add(user)
         db.commit()
-        return {"msg": "User registered and auto-verified (no mail server)"}
+        return {"msg": "User registered and auto-verified (no mail server or sqlite)"}
 
 @router.post("/upgrade-plan")
 def upgrade_plan(data: UpgradePlanRequest, db: Session = Depends(get_db)):

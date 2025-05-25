@@ -1,0 +1,244 @@
+{
+    "superuser": {
+        "email": "admin@example.com",
+        "password": "admin123",
+        "full_name": "Admin User",
+        "company": {
+            "name": "APEC GROUP",
+            "companies": [
+                {
+                    "id": 1,
+                    "name": "My Company (San Francisco)",
+                    "is_ho": false,
+                    "mis_id": false,
+                    "write_date": "2023-08-17 10:21:30"
+                },
+                {
+                    "id": 2,
+                    "name": "PE Company",
+                    "is_ho": false,
+                    "mis_id": false,
+                    "write_date": "2023-08-17 10:21:30"
+                },
+                {
+                    "id": 3,
+                    "name": "Mandala Chăm Bay Mũi Né",
+                    "is_ho": false,
+                    "mis_id": "MHS-MN",
+                    "write_date": "2023-08-17 10:21:30"
+                },
+                {
+                    "id": 4,
+                    "name": "Mandala Hotel & Spa Phú Yên",
+                    "is_ho": false,
+                    "mis_id": "MHS-PY",
+                    "write_date": "2023-08-17 10:21:30"
+                },
+                {
+                    "id": 5,
+                    "name": "Công ty Cổ phần Quản lý Vận hành BĐS Mandala",
+                    "is_ho": false,
+                    "mis_id": "MEM",
+                    "write_date": "2023-11-10 01:12:42"
+                },
+                {
+                    "id": 6,
+                    "name": "My Company (Chicago",
+                    "is_ho": false,
+                    "mis_id": false,
+                    "write_date": "2023-11-12 12:07:25"
+                },
+                {
+                    "id": 7,
+                    "name": "CÔNG TY CỔ PHẦN QUẢN LÝ KHÁCH SẠN & DỊCH VỤ MANDALA - CHI NHÁNH HÒA BÌNH",
+                    "is_ho": false,
+                    "mis_id": "MHS-HB",
+                    "write_date": "2023-09-28 06:55:13"
+                },
+                {
+                    "id": 8,
+                    "name": "CÔNG TY CỔ PHẦN QUẢN LÝ KHÁCH SẠN & DỊCH VỤ MANDALA - CHI NHÁNH BẮC GIANG",
+                    "is_ho": false,
+                    "mis_id": "MHS-BG",
+                    "write_date": "2023-09-28 07:41:08"
+                },
+                {
+                    "id": 9,
+                    "name": "CÔNG TY CỔ PHẦN QUẢN LÝ KHÁCH SẠN & DỊCH VỤ MANDALA - CHI NHÁNH BẮC NINH",
+                    "is_ho": false,
+                    "mis_id": "MHS-BN",
+                    "write_date": "2024-12-18 01:22:00"
+                },
+                {
+                    "id": 10,
+                    "name": "HỘI SỞ",
+                    "is_ho": true,
+                    "mis_id": "HO",
+                    "write_date": "2023-11-13 06:10:20"
+                },
+                {
+                    "id": 13,
+                    "name": "CÔNG TY CỔ PHẦN APEC FINANCE",
+                    "is_ho": false,
+                    "mis_id": "APF",
+                    "write_date": "2023-11-02 07:29:50"
+                },
+                {
+                    "id": 14,
+                    "name": "Công ty Cổ phần Chứng khoán Châu Á Thái Bình Dương",
+                    "is_ho": false,
+                    "mis_id": "APS",
+                    "write_date": "2023-11-02 07:49:58"
+                },
+                {
+                    "id": 15,
+                    "name": "Công ty Cổ phần Đầu tư IDJ Việt Nam",
+                    "is_ho": false,
+                    "mis_id": "IDJ",
+                    "write_date": "2023-11-02 07:50:26"
+                },
+                {
+                    "id": 16,
+                    "name": "Công ty Cổ phần Du lịch và Khách sạn Mandala",
+                    "is_ho": false,
+                    "mis_id": "MDL",
+                    "write_date": "2023-11-02 07:50:54"
+                },
+                {
+                    "id": 17,
+                    "name": "Công ty Cổ phần Thương mại và Du lịch Kim Bôi",
+                    "is_ho": false,
+                    "mis_id": "KB",
+                    "write_date": "2023-11-02 07:51:31"
+                },
+                {
+                    "id": 18,
+                    "name": "Công ty TNHH Đầu tư Châu Á Thái Bình Dương Bắc Ninh",
+                    "is_ho": false,
+                    "mis_id": "APBN",
+                    "write_date": "2023-11-02 07:51:45"
+                },
+                {
+                    "id": 19,
+                    "name": "Công ty Cổ phần Tập đoàn APEC GROUP",
+                    "is_ho": false,
+                    "mis_id": "APG",
+                    "write_date": "2023-11-02 07:52:00"
+                },
+                {
+                    "id": 20,
+                    "name": "Công ty Cổ phần Đầu tư APEC Thái Nguyên",
+                    "is_ho": false,
+                    "mis_id": "APTN",
+                    "write_date": "2023-11-02 07:52:21"
+                },
+                {
+                    "id": 22,
+                    "name": "CÔNG TY CỔ PHẦN NƯỚC KHOÁNG CÚC PHƯƠNG",
+                    "is_ho": false,
+                    "mis_id": "CP",
+                    "write_date": "2023-11-02 07:53:00"
+                },
+                {
+                    "id": 23,
+                    "name": "Công ty Cổ phần Quản lý Khách sạn & Dịch vụ Mandala",
+                    "is_ho": false,
+                    "mis_id": "MHS",
+                    "write_date": "2023-11-02 07:53:14"
+                },
+                {
+                    "id": 24,
+                    "name": "Công ty Cổ phần APEC Land Huế",
+                    "is_ho": false,
+                    "mis_id": "APLH",
+                    "write_date": "2023-11-02 07:53:40"
+                },
+                {
+                    "id": 25,
+                    "name": "Công ty CP Đầu tư APEC Hòa Bình",
+                    "is_ho": false,
+                    "mis_id": "APHB",
+                    "write_date": "2023-11-02 07:53:58"
+                },
+                {
+                    "id": 26,
+                    "name": "Công ty Cổ phần Đầu tư Châu Á Thái Bình Dương",
+                    "is_ho": false,
+                    "mis_id": "API",
+                    "write_date": "2023-11-03 02:12:17"
+                },
+                {
+                    "id": 27,
+                    "name": "Công ty Cổ phần Đầu tư Quốc tế Dubai",
+                    "is_ho": false,
+                    "mis_id": "APDB",
+                    "write_date": "2024-03-11 05:17:18"
+                },
+                {
+                    "id": 29,
+                    "name": "Công ty Cổ phần E-Academy",
+                    "is_ho": false,
+                    "mis_id": "EAD",
+                    "write_date": "2024-08-16 03:23:27"
+                },
+                {
+                    "id": 30,
+                    "name": "Công ty Cổ phần Fourier Solution (FS)",
+                    "is_ho": false,
+                    "mis_id": "FS",
+                    "write_date": "2024-08-16 03:23:18"
+                },
+                {
+                    "id": 31,
+                    "name": "Công ty CP Quản lý Khách sạn & Dịch vụ Mandala - Chi nhánh Hải Dương (KS Mandala Hotel & Suites Hải Dương)",
+                    "is_ho": false,
+                    "mis_id": "MHS-HD",
+                    "write_date": "2024-05-31 07:44:02"
+                },
+                {
+                    "id": 32,
+                    "name": "CÔNG TY CỔ PHẦN SKYDRONE ART",
+                    "is_ho": false,
+                    "mis_id": "SDA",
+                    "write_date": "2024-09-05 06:05:59"
+                },
+                {
+                    "id": 33,
+                    "name": "CÔNG TY CỔ PHẦN GIÁO DỤC E-ACADEMY",
+                    "is_ho": false,
+                    "mis_id": "EADE",
+                    "write_date": "2025-01-22 09:43:38"
+                },
+                {
+                    "id": 34,
+                    "name": "CÔNG TY CỔ PHẦN SENIA HOTELS GROUP",
+                    "is_ho": false,
+                    "mis_id": "SHG",
+                    "write_date": "2025-01-22 09:44:36"
+                },
+                {
+                    "id": 35,
+                    "name": "CÔNG TY CỔ PHẦN GIÁO DỤC E-ACADEMY (EADE)",
+                    "is_ho": false,
+                    "mis_id": false,
+                    "write_date": "2025-01-22 09:49:55"
+                },
+                {
+                    "id": 36,
+                    "name": "CÔNG TY CỔ PHẦN SENIA HOTELS GROUP (SHG)",
+                    "is_ho": false,
+                    "mis_id": false,
+                    "write_date": "2025-01-22 09:50:18"
+                },
+                {
+                    "id": 37,
+                    "name": "CÔNG TY CỔ PHẦN TẬP ĐOÀN GIÁO DỤC UEP (UEP)",
+                    "is_ho": false,
+                    "mis_id": "UEP",
+                    "write_date": "2025-04-08 07:32:48"
+                }
+            ],
+            "max_write_date": null
+        }
+    }
+}
