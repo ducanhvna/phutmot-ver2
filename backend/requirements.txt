@@ -8,3 +8,7 @@ passlib[bcrypt]
 pandas
 openpyxl
 xlrd
+pytest
+httpx
+pydantic[email]
+python-multipart
