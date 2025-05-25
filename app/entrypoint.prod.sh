@@ -11,4 +11,7 @@ then
     echo "PostgreSQL started"
 fi
 
+# Collect static files (fix permission issues if needed)
+python manage.py collectstatic --noinput
+
 exec "$@"
