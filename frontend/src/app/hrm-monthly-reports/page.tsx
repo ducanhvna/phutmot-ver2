@@ -4,7 +4,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import styles from "./styles.module.css";
 import ScheduleTable from "@/components/hrm-monthly-reports/scheduleTable";
-import { fetchEmployees, Employee } from "@/providers/data-provider/employee-provider";
+import { fetchEmployeesWithScheduling, Employee } from "@/providers/data-provider/employee-provider";
 import { getAccessTokenFromCookie } from "@/providers/auth-provider/auth-provider.client";
 
 const MonthlyReportPage: React.FC = () => {
@@ -24,7 +24,7 @@ const MonthlyReportPage: React.FC = () => {
       token = "dumy_token"; // Dummy token for testing
     }
     if (!token) return;
-    fetchEmployees(token, currentPage, pageSize, month, year).then((data) => {
+    fetchEmployeesWithScheduling(token, currentPage, pageSize, month, year).then((data) => {
       setEmployees(data.results);
       setTotal(data.count);
     });

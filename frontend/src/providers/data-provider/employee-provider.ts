@@ -119,8 +119,31 @@ export interface Employee {
   schedulings: Scheduling[];
 }
 
-// Hàm lấy danh sách nhân viên từ API backend
+// Hàm lấy danh sách nhân viên (không scheduling)
 export const fetchEmployees = async (
+  token: string,
+  page?: number,
+  pageSize?: number,
+  month?: number,
+  year?: number
+): Promise<{ results: Employee[]; count: number; next: string | null; previous: string | null }> => {
+  let url = `${API_URL}/hrms/employees/?`;
+  const params = [];
+  if (page) params.push(`page=${page}`);
+  if (pageSize) params.push(`page_size=${pageSize}`);
+  if (month) params.push(`month=${month}`);
+  if (year) params.push(`year=${year}`);
+  url += params.join("&");
+  const response = await axios.get(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+// Hàm lấy danh sách nhân viên kèm scheduling (cho page report)
+export const fetchEmployeesWithScheduling = async (
   token: string,
   page?: number,
   pageSize?: number,

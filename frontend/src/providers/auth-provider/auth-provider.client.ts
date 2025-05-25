@@ -33,15 +33,13 @@ export const getAccessTokenFromCookie = (): string => {
 };
 
 export const authProviderClient: AuthProvider = {
-  login: async ({ email, username, password, remember }) => {
+  login: async ({ email, username, password, remember, setToken }) => {
     try {
       const response = await axios.post(`${API_URL}/login/`,{ username, password }, { withCredentials: true });
 
       if (response.data.access_token) {
-        // const user = mockUsers.find((u) => u.email === email);
-        const user = response.data.user; // Assuming the user data is returned in the response
+        const user = response.data.user;
         if (user) {
-          // Đảm bảo access_token luôn là string
           const authData = {
             ...user,
             access_token: String(response.data.access_token),
@@ -51,6 +49,11 @@ export const authProviderClient: AuthProvider = {
             expires: 30, // 30 days
             path: "/",
           });
+
+          // Nếu có setToken truyền vào (từ context), cập nhật luôn context
+          if (typeof setToken === "function") {
+            setToken(String(response.data.access_token));
+          }
 
           return {
             success: true,
@@ -76,29 +79,6 @@ export const authProviderClient: AuthProvider = {
       };
     }
   },
-  // login: async ({ email, username, password, remember }) => {
-  //   // Suppose we actually send a request to the back end here.
-  //   const user = mockUsers[0];
-
-  //   if (user) {
-  //     Cookies.set("auth", JSON.stringify(user), {
-  //       expires: 30, // 30 days
-  //       path: "/",
-  //     });
-  //     return {
-  //       success: true,
-  //       redirectTo: "/",
-  //     };
-  //   }
-
-  //   return {
-  //     success: false,
-  //     error: {
-  //       name: "LoginError",
-  //       message: "Invalid username or password",
-  //     },
-  //   };
-  // },
   logout: async () => {
     Cookies.remove("auth", { path: "/" });
     return {

@@ -13,6 +13,7 @@ import "@refinedev/antd/dist/reset.css";
 import { AppIcon } from "@components/app-icon";
 import { ColorModeContextProvider } from "@contexts/color-mode";
 import { authProviderClient } from "@providers/auth-provider/auth-provider.client";
+import { AuthProvider } from "@/providers/auth-provider/AuthContext";
 
 export const metadata: Metadata = {
   title: "Refine",
@@ -39,56 +40,63 @@ export default function RootLayout({
           <RefineKbarProvider>
             <AntdRegistry>
               <ColorModeContextProvider defaultMode={defaultMode}>
-                <DevtoolsProvider>
-                  <Refine
-                    routerProvider={routerProvider}
-                    dataProvider={dataProvider}
-                    notificationProvider={useNotificationProvider}
-                    authProvider={authProviderClient}
-                    resources={[
-                      {
-                        name: "hrm_monthly_reports",
-                        list: "/hrm-monthly-reports",
-                        create: "/hrm-monthly-reports/create",
-                        edit: "/hrm-monthly-reports/edit/:id",
-                        // show: "/hrm-monthly-reports/show/:id",
-                        meta: {
-                          canDelete: true,
+                <AuthProvider>
+                  <DevtoolsProvider>
+                    <Refine
+                      routerProvider={routerProvider}
+                      dataProvider={dataProvider}
+                      notificationProvider={useNotificationProvider}
+                      authProvider={authProviderClient}
+                      resources={[
+                        {
+                          name: "hrm_monthly_reports",
+                          list: "/hrm-monthly-reports",
+                          create: "/hrm-monthly-reports/create",
+                          edit: "/hrm-monthly-reports/edit/:id",
+                          // show: "/hrm-monthly-reports/show/:id",
+                          meta: {
+                            canDelete: true,
+                          },
                         },
-                      },
-                      {
-                        name: "blog_posts",
-                        list: "/blog-posts",
-                        create: "/blog-posts/create",
-                        edit: "/blog-posts/edit/:id",
-                        show: "/blog-posts/show/:id",
-                        meta: {
-                          canDelete: true,
+                        {
+                          name: "blog_posts",
+                          list: "/blog-posts",
+                          create: "/blog-posts/create",
+                          edit: "/blog-posts/edit/:id",
+                          show: "/blog-posts/show/:id",
+                          meta: {
+                            canDelete: true,
+                          },
                         },
-                      },
-                      {
-                        name: "categories",
-                        list: "/categories",
-                        create: "/categories/create",
-                        edit: "/categories/edit/:id",
-                        show: "/categories/show/:id",
-                        meta: {
-                          canDelete: true,
+                        {
+                          name: "categories",
+                          list: "/categories",
+                          create: "/categories/create",
+                          edit: "/categories/edit/:id",
+                          show: "/categories/show/:id",
+                          meta: {
+                            canDelete: true,
+                          },
                         },
-                      },
-                    ]}
-                    options={{
-                      syncWithLocation: true,
-                      warnWhenUnsavedChanges: true,
-                      useNewQueryKeys: true,
-                      projectId: "RGm3u5-HuHubA-HhAoVb",
-                      title: { text: "Refine Project", icon: <AppIcon /> },
-                    }}
-                  >
-                    {children}
-                    <RefineKbar />
-                  </Refine>
-                </DevtoolsProvider>
+                        {
+                          name: "employees",
+                          list: "/employees",
+                          meta: { canDelete: false },
+                        },
+                      ]}
+                      options={{
+                        syncWithLocation: true,
+                        warnWhenUnsavedChanges: true,
+                        useNewQueryKeys: true,
+                        projectId: "RGm3u5-HuHubA-HhAoVb",
+                        title: { text: "Refine Project", icon: <AppIcon /> },
+                      }}
+                    >
+                      {children}
+                      <RefineKbar />
+                    </Refine>
+                  </DevtoolsProvider>
+                </AuthProvider>
               </ColorModeContextProvider>
             </AntdRegistry>
           </RefineKbarProvider>

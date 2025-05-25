@@ -11,8 +11,8 @@ import json
 import calendar
 from django.http import JsonResponse
 from dashboard.models import Fleet
-from rest_framework import generics
-from .serializers import UserProfileSerializer
+from rest_framework import generics, permissions
+from .serializers import UserProfileSerializer, CompanySerializer
 from hrms.serializers import EmployeeWithSchedulingSerializer, SchedulingSerializer, EmployeeSerializer
 from django.db.models import Q, Func, F
 from unidecode import unidecode
@@ -26,10 +26,11 @@ from .utils.odoo_client import OdooClient
 from rest_framework.permissions import AllowAny
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from .models import TelegramUser
+from .models import TelegramUser, Company
 import xmlrpc.client
 from collections import defaultdict
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import serializers
 
 ERP_URL = "http://odoo17:8069"
 ERP_DB = "odoo"
@@ -570,7 +571,7 @@ def personal_timesheet(request):
 
 
 class EmployeeWithSchedulingListAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         # Lấy các tham số filter
@@ -649,4 +650,21 @@ class ListEmployeeAPIView(APIView):
         paginator.page_size = int(request.GET.get('page_size', 20))
         page_employees = paginator.paginate_queryset(queryset, request)
         serializer = EmployeeSerializer(page_employees, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
+class CompanyListAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        keyword = request.GET.get('keyword', '').strip()
+        temp_condition = Q()
+        if keyword:
+            # keyword_unaccented = unidecode(keyword).lower()
+            temp_condition = Q(company_name__icontains=keyword) | Q(company_code__icontains=keyword)
+        queryset = Company.objects.filter(temp_condition)
+        paginator = PageNumberPagination()
+        paginator.page_size = int(request.GET.get('page_size', 20))
+        page_companies = paginator.paginate_queryset(queryset, request)
+        serializer = CompanySerializer(page_companies, many=True)
         return paginator.get_paginated_response(serializer.data)
