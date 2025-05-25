@@ -7,14 +7,19 @@ from datetime import datetime, timezone
 from pydantic import BaseModel, EmailStr
 import os
 from urllib.parse import urlencode
+from dotenv import load_dotenv
 
-router = APIRouter(prefix="/api/user", tags=["user"])
+load_dotenv()
+
+router = APIRouter(prefix="/user", tags=["user"])
 
 MAIL_SERVER = os.getenv("MAIL_SERVER")
 MAIL_PORT = int(os.getenv("MAIL_PORT", "587"))
 MAIL_USERNAME = os.getenv("MAIL_USERNAME")
 MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
 MAIL_FROM = os.getenv("MAIL_FROM")
+MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "HRMS")
+APP_NAME = os.getenv("APP_NAME", "HRMS")
 MAIL_USE_TLS = os.getenv("MAIL_USE_TLS", "true").lower() == "true"
 MAIL_USE_SSL = os.getenv("MAIL_USE_SSL", "false").lower() == "true"
 
@@ -57,21 +62,37 @@ def register_user(data: UserRegisterRequest, db: Session = Depends(get_db), requ
         is_verified=False,
         role=UserRoleEnum.EMPLOYEE
     )
-    # Nếu có mail server thì tạo link xác thực, nếu không thì xác thực luôn
     if MAIL_SERVER and MAIL_FROM:
         db.add(user)
         db.commit()
-        # Tạo token xác thực đơn giản (có thể dùng JWT hoặc random)
         token = f"verify-{user.id}-{int(datetime.now(timezone.utc).timestamp())}"
-        # Lưu token vào info (hoặc tạo bảng riêng nếu cần)
         user.info = {"verify_token": token}
         db.commit()
-        # Tạo link xác thực
         base_url = str(request.base_url) if request else "http://localhost:8000/"
-        verify_link = f"{base_url}api/user/verify-email?token={token}&email={user.email}"
-        # Gửi mail (mock, thực tế cần tích hợp SMTP)
-        print(f"[DEBUG] Send verify link to {user.email}: {verify_link}")
-        # TODO: Gửi mail thực tế ở đây
+        verify_link = f"{base_url.rstrip('/').replace('/docs','')}/user/verify-email?token={token}&email={user.email}"
+        # Gửi mail xác nhận
+        try:
+            import smtplib
+            from email.mime.text import MIMEText
+            from email.mime.multipart import MIMEMultipart
+            msg = MIMEMultipart()
+            msg["From"] = f"{MAIL_FROM_NAME} <{MAIL_FROM}>"
+            msg["To"] = user.email
+            msg["Subject"] = f"Xác thực tài khoản {APP_NAME}"
+            body = f"Chào bạn,\n\nVui lòng xác thực tài khoản bằng link sau: {verify_link}\n\nTrân trọng,\n{MAIL_FROM_NAME}"
+            msg.attach(MIMEText(body, "plain"))
+            if MAIL_USE_SSL:
+                server = smtplib.SMTP_SSL(MAIL_SERVER, MAIL_PORT)
+            else:
+                server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
+                if MAIL_USE_TLS:
+                    server.starttls()
+            server.login(MAIL_USERNAME, MAIL_PASSWORD)
+            server.sendmail(MAIL_FROM, user.email, msg.as_string())
+            server.quit()
+            print(f"[OK] Sent verify email to {user.email}")
+        except Exception as e:
+            print(f"[ERROR] Failed to send verify email: {e}")
         return {"msg": "User registered. Please check your email to verify.", "verify_link": verify_link}
     else:
         user.is_verified = True
@@ -129,3 +150,12 @@ def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db)):
         db.commit()
         return {"msg": "Password reset successfully"}
     raise HTTPException(status_code=400, detail="Missing old_password or token")
+
+@router.get("/verify-email")
+def verify_email(token: str, email: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter_by(email=email).first()
+    if not user or not user.info or user.info.get("verify_token") != token:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+    user.is_verified = True
+    db.commit()
+    return {"msg": "Email verified successfully"}

@@ -13,3 +13,5 @@ httpx
 pydantic[email]
 python-multipart
 websockets
+requests
+python-dotenv

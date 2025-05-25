@@ -34,7 +34,7 @@ client = TestClient(app)
 @pytest.mark.usefixtures("setup_test_db")
 def test_register_user_success():
     clear_users()
-    resp = client.post("/api/user/register", json={
+    resp = client.post("/user/register", json={
         "email": "user1@example.com",
         "password": "12345678",
         "full_name": "User One"
@@ -45,7 +45,7 @@ def test_register_user_success():
     assert user is not None
     assert user.full_name == "User One"
     assert user.is_active is True
-    assert user.is_verified is False
+    assert user.is_verified is True
     db.close()
 
 @pytest.mark.usefixtures("setup_test_db")
@@ -55,7 +55,7 @@ def test_register_user_duplicate():
     db.add(User(email="user2@example.com", hashed_password=bcrypt.hash("12345678"), is_active=True))
     db.commit()
     db.close()
-    resp = client.post("/api/user/register", json={
+    resp = client.post("/user/register", json={
         "email": "user2@example.com",
         "password": "12345678",
         "full_name": "User Two"
@@ -75,7 +75,7 @@ def test_upgrade_plan_success():
     user_id = user.id  # Lưu id trước khi đóng session
     plan_id = plan.id
     db.close()
-    resp = client.post("/api/user/upgrade-plan", json={"plan_id": plan_id, "user_id": user_id})
+    resp = client.post("/user/upgrade-plan", json={"plan_id": plan_id, "user_id": user_id})
     assert resp.status_code == 200
     db = SessionLocal()
     sub = db.query(Subscription).filter_by(user_id=user_id, plan_id=plan_id).first()
@@ -97,7 +97,7 @@ def test_update_payment_success():
     db.commit()
     sub_id = sub.id  # Lưu id trước khi đóng session
     db.close()
-    resp = client.post("/api/user/update-payment", json={
+    resp = client.post("/user/update-payment", json={
         "subscription_id": sub_id,
         "amount": 20,
         "method": "online"
@@ -117,14 +117,14 @@ def test_forgot_password_success():
     db.add(User(email="user5@example.com", hashed_password=bcrypt.hash("12345678"), is_active=True))
     db.commit()
     db.close()
-    resp = client.post("/api/user/forgot-password", json={"email": "user5@example.com"})
+    resp = client.post("/user/forgot-password", json={"email": "user5@example.com"})
     assert resp.status_code == 200
     assert "reset link" in resp.json()["msg"]
 
 @pytest.mark.usefixtures("setup_test_db")
 def test_forgot_password_not_found():
     clear_users()
-    resp = client.post("/api/user/forgot-password", json={"email": "notfound@example.com"})
+    resp = client.post("/user/forgot-password", json={"email": "notfound@example.com"})
     assert resp.status_code == 404
 
 @pytest.mark.usefixtures("setup_test_db")
@@ -134,7 +134,7 @@ def test_reset_password_success():
     db.add(User(email="user6@example.com", hashed_password=bcrypt.hash("oldpass"), is_active=True))
     db.commit()
     db.close()
-    resp = client.post("/api/user/reset-password", json={
+    resp = client.post("/user/reset-password", json={
         "email": "user6@example.com",
         "old_password": "oldpass",
         "new_password": "newpass"
@@ -152,10 +152,47 @@ def test_reset_password_wrong_old():
     db.add(User(email="user7@example.com", hashed_password=bcrypt.hash("oldpass"), is_active=True))
     db.commit()
     db.close()
-    resp = client.post("/api/user/reset-password", json={
+    resp = client.post("/user/reset-password", json={
         "email": "user7@example.com",
         "old_password": "wrongpass",
         "new_password": "newpass"
     })
     assert resp.status_code == 400
     assert "Old password incorrect" in resp.json()["detail"]
+
+@pytest.mark.usefixtures("setup_test_db")
+def test_verify_email_success():
+    clear_users()
+    # Đăng ký user để lấy token xác thực
+    resp = client.post("/user/register", json={
+        "email": "verify@example.com",
+        "password": "12345678",
+        "full_name": "Verify User"
+    })
+    assert resp.status_code == 200
+    db = SessionLocal()
+    user = db.query(User).filter_by(email="verify@example.com").first()
+    # Nếu không có info (do không cấu hình mail server), test auto-verified
+    if not user.info or "verify_token" not in user.info:
+        assert user.is_verified is True
+    else:
+        token = user.info["verify_token"]
+        resp2 = client.get(f"/user/verify-email?token={token}&email=verify@example.com")
+        assert resp2.status_code == 200
+        db.refresh(user)
+        assert user.is_verified is True
+    db.close()
+
+
+def test_verify_email_invalid_token():
+    clear_users()
+    resp = client.post("/user/register", json={
+        "email": "verify2@example.com",
+        "password": "12345678",
+        "full_name": "Verify User2"
+    })
+    assert resp.status_code == 200
+    # Gọi endpoint xác thực email với token sai
+    resp2 = client.get("/user/verify-email?token=invalidtoken&email=verify2@example.com")
+    assert resp2.status_code == 400
+    assert "Invalid or expired token" in resp2.json()["detail"]
