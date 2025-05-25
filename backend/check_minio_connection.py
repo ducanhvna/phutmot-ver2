@@ -3,10 +3,19 @@ from minio import Minio
 from minio.error import S3Error
 from urllib.parse import urlparse, urlunparse
 
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9000")
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadmin")
 MINIO_BUCKET = os.getenv("MINIO_BUCKET", "etl-data")
+
+# Ưu tiên lấy MINIO_ENDPOINT từ biến môi trường, nếu không có thì:
+# - Nếu TEST_SQLITE=1 (test/unit), dùng localhost:9000
+# - Nếu môi trường thật, mặc định dùng 'minio:9000' (tên service docker-compose)
+if os.getenv("MINIO_ENDPOINT"):
+    MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
+elif os.getenv("TEST_SQLITE") == "1":
+    MINIO_ENDPOINT = "localhost:9000"
+else:
+    MINIO_ENDPOINT = "minio:9000"
 
 if __name__ == "__main__":
     try:

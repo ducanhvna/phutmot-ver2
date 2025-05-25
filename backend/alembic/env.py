@@ -9,8 +9,9 @@ from sqlalchemy import pool
 from sqlalchemy import create_engine
 
 from alembic import context
-from app.models import core
+from app.models import core, etl
 from app.models.hrms import employee
+from app.db import Base  # Thêm dòng này để lấy Base chung
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -24,7 +25,11 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
-target_metadata = core.Base.metadata
+# Gộp metadata của core, etl, hrms (employee)
+# Chỉ lấy metadata duy nhất từ Base chung
+# Đảm bảo tất cả model đã được import ở trên để Alembic nhận diện
+# Không dùng list metadata!
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
