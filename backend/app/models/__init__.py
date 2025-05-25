@@ -1,0 +1,3 @@
+# Thư mục chứa các SQLAlchemy models cho database
+# Để định nghĩa các SQLAlchemy models, tạo file riêng trong thư mục models, ví dụ: user.py, item.py, ...
+# Nếu có model cụ thể, hãy tạo file riêng như user.py, item.py trong app/models/.
