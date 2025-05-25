@@ -246,3 +246,55 @@ Kết quả test sẽ báo PASSED nếu nghiệp vụ đúng chuẩn.
 - Khi chạy `docker-compose up --build`, service FastAPI sẽ tự động migrate DB trước khi khởi động app.
 - Luôn đảm bảo DB Postgres production đồng bộ với models mới nhất, không cần migrate thủ công.
 - Nếu muốn test/dev với SQLite, chỉ cần chạy ngoài Docker và set lại biến môi trường `DATABASE_URL`.
+
+## Cấu hình mail server (xác thực email)
+
+- Để sử dụng chức năng xác thực email khi đăng ký, bạn cần cấu hình các biến môi trường sau:
+
+| Biến môi trường | Ý nghĩa |
+|-----------------|---------|
+| MAIL_SERVER     | Địa chỉ SMTP server |
+| MAIL_PORT       | Port SMTP (mặc định 587) |
+| MAIL_USERNAME   | Tài khoản SMTP |
+| MAIL_PASSWORD   | Mật khẩu SMTP |
+| MAIL_FROM       | Email gửi đi |
+| MAIL_USE_TLS    | true/false (mặc định true) |
+| MAIL_USE_SSL    | true/false (mặc định false) |
+
+**Ví dụ cấu hình cho Gmail:**
+```env
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your_gmail@gmail.com
+MAIL_PASSWORD=your_gmail_app_password
+MAIL_FROM=your_gmail@gmail.com
+MAIL_USE_TLS=true
+MAIL_USE_SSL=false
+```
+> Lưu ý: Gmail yêu cầu tạo App Password (không dùng mật khẩu tài khoản Google thông thường).
+
+**Ví dụ cấu hình cho Outlook:**
+```env
+MAIL_SERVER=smtp.office365.com
+MAIL_PORT=587
+MAIL_USERNAME=your_outlook@outlook.com
+MAIL_PASSWORD=your_outlook_password
+MAIL_FROM=your_outlook@outlook.com
+MAIL_USE_TLS=true
+MAIL_USE_SSL=false
+```
+
+- Nếu không cấu hình mail server, user sẽ được xác thực luôn khi đăng ký (auto-verified, phù hợp dev/test).
+- Nếu có mail server, hệ thống sẽ gửi link xác thực email khi đăng ký.
+
+Ví dụ cấu hình môi trường:
+
+```env
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your@gmail.com
+MAIL_PASSWORD=yourpassword
+MAIL_FROM=your@gmail.com
+MAIL_USE_TLS=true
+MAIL_USE_SSL=false
+```

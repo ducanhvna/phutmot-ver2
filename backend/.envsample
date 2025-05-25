@@ -1,0 +1,24 @@
+# Sample .env file for FastAPI multiprocessor project
+# Database
+DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/postgres
+
+# Mail server config (Gmail example)
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your_gmail@gmail.com
+MAIL_PASSWORD=your_gmail_app_password
+MAIL_FROM=your_gmail@gmail.com
+MAIL_USE_TLS=true
+MAIL_USE_SSL=false
+
+# Mail server config (Outlook example)
+#MAIL_SERVER=smtp.office365.com
+#MAIL_PORT=587
+#MAIL_USERNAME=your_outlook@outlook.com
+#MAIL_PASSWORD=your_outlook_password
+#MAIL_FROM=your_outlook@outlook.com
+#MAIL_USE_TLS=true
+#MAIL_USE_SSL=false
+
+# Other configs (add as needed)
+# ...
