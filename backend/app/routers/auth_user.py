@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Body, Request
+from fastapi import APIRouter, HTTPException, Depends, Body, Request, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models.core import User, UserRoleEnum, Subscription, ServicePlan, Payment, PaymentMethodEnum
@@ -50,8 +50,32 @@ class ResetPasswordRequest(BaseModel):
     old_password: str | None = None
     token: str | None = None  # Nếu dùng xác thực qua email
 
+def send_verify_email(to_email, verify_link):
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        msg = MIMEMultipart()
+        msg["From"] = f"{MAIL_FROM_NAME} <{MAIL_FROM}>"
+        msg["To"] = to_email
+        msg["Subject"] = f"Xác thực tài khoản {APP_NAME}"
+        body = f"Chào bạn,\n\nVui lòng xác thực tài khoản bằng link sau: {verify_link}\n\nTrân trọng,\n{MAIL_FROM_NAME}"
+        msg.attach(MIMEText(body, "plain"))
+        if MAIL_USE_SSL:
+            server = smtplib.SMTP_SSL(MAIL_SERVER, MAIL_PORT)
+        else:
+            server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
+            if MAIL_USE_TLS:
+                server.starttls()
+        server.login(MAIL_USERNAME, MAIL_PASSWORD)
+        server.sendmail(MAIL_FROM, to_email, msg.as_string())
+        server.quit()
+        print(f"[OK] Sent verify email to {to_email}")
+    except Exception as e:
+        print(f"[ERROR] Failed to send verify email: {e}")
+
 @router.post("/register")
-def register_user(data: UserRegisterRequest, db: Session = Depends(get_db), request: Request = None):
+def register_user(data: UserRegisterRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db), request: Request = None):
     if db.query(User).filter_by(email=data.email).first():
         raise HTTPException(status_code=400, detail="Email already exists")
     user = User(
@@ -70,29 +94,7 @@ def register_user(data: UserRegisterRequest, db: Session = Depends(get_db), requ
         db.commit()
         base_url = str(request.base_url) if request else "http://localhost:8000/"
         verify_link = f"{base_url.rstrip('/').replace('/docs','')}/user/verify-email?token={token}&email={user.email}"
-        # Gửi mail xác nhận
-        try:
-            import smtplib
-            from email.mime.text import MIMEText
-            from email.mime.multipart import MIMEMultipart
-            msg = MIMEMultipart()
-            msg["From"] = f"{MAIL_FROM_NAME} <{MAIL_FROM}>"
-            msg["To"] = user.email
-            msg["Subject"] = f"Xác thực tài khoản {APP_NAME}"
-            body = f"Chào bạn,\n\nVui lòng xác thực tài khoản bằng link sau: {verify_link}\n\nTrân trọng,\n{MAIL_FROM_NAME}"
-            msg.attach(MIMEText(body, "plain"))
-            if MAIL_USE_SSL:
-                server = smtplib.SMTP_SSL(MAIL_SERVER, MAIL_PORT)
-            else:
-                server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
-                if MAIL_USE_TLS:
-                    server.starttls()
-            server.login(MAIL_USERNAME, MAIL_PASSWORD)
-            server.sendmail(MAIL_FROM, user.email, msg.as_string())
-            server.quit()
-            print(f"[OK] Sent verify email to {user.email}")
-        except Exception as e:
-            print(f"[ERROR] Failed to send verify email: {e}")
+        background_tasks.add_task(send_verify_email, user.email, verify_link)
         return {"msg": "User registered. Please check your email to verify.", "verify_link": verify_link}
     else:
         user.is_verified = True
