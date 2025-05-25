@@ -149,3 +149,100 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
 - Index các trường thường truy vấn để tối ưu hiệu năng.
 - Dùng datetime timezone-aware (UTC) cho các trường thời gian.
 - Có thể tích hợp xác thực ngoài hoặc forward auth nếu cần.
+
+## Tạo Superuser (quyền quản trị hệ thống)
+
+Bạn có thể tạo superuser bằng script Python:
+
+```sh
+cd backend
+python -m app.create_superuser
+```
+
+Sau đó nhập email, password, full name (nếu muốn). Ví dụ:
+
+```text
+Email: admin@yourdomain.com
+Password: ********
+Full name (optional): Admin Root
+Superuser created: admin@yourdomain.com
+```
+
+Superuser sẽ có quyền truy cập toàn bộ hệ thống (is_superuser=True, is_staff=True, role=superadmin).
+
+> Lưu ý: Script này chỉ cần chạy 1 lần để tạo tài khoản quản trị đầu tiên.
+
+## Nghiệp vụ User (chuẩn Django, mở rộng)
+
+- User có các trường:
+  - email (unique, bắt buộc)
+  - hashed_password (mã hóa)
+  - full_name
+  - is_active (kích hoạt tài khoản)
+  - is_oauth, oauth_provider, oauth_id (hỗ trợ đăng nhập Google, Facebook...)
+  - role (admin, employee, buyer, superadmin)
+  - is_superuser (quyền full hệ thống, giống Django)
+  - is_staff (quản trị nội bộ, giống Django)
+  - last_login (lưu thời điểm đăng nhập cuối)
+  - date_joined (ngày tạo tài khoản)
+  - phone (số điện thoại, có thể dùng xác thực OTP)
+  - avatar (ảnh đại diện)
+  - address (địa chỉ)
+  - is_verified (đã xác thực email/phone)
+  - info (trường mở rộng JSON)
+- Có thể mở rộng thêm các trường khác như: giới tính, ngày sinh, trạng thái xác thực 2 lớp, v.v.
+- User có thể liên kết nhiều công ty (companies), nhiều subscription, nhiều payment.
+- Hỗ trợ phân quyền linh hoạt: superuser, staff, admin, employee, buyer.
+- Có thể tích hợp xác thực ngoài (OAuth, SSO, Google, Facebook, ...).
+- Đã có script tạo superuser (`app/create_superuser.py`) và hướng dẫn sử dụng trong README.md.
+- Đảm bảo bảo mật password (hash, không lưu plain text), có thể tích hợp xác thực 2 lớp (2FA) nếu cần.
+
+## Test tự động tạo superuser
+
+- Đã có test tự động kiểm tra nghiệp vụ tạo superuser (`tests/test_create_superuser.py`).
+- Test gồm:
+  - Tạo superuser mới, kiểm tra các trường quyền (`is_superuser`, `is_staff`, `role=superadmin`, `is_verified`).
+  - Thử tạo superuser trùng email, kiểm tra lỗi unique.
+- Test luôn xóa dữ liệu trước mỗi lần chạy để đảm bảo độc lập, dễ maintain/debug.
+- Để chạy test:
+
+```sh
+pytest tests/test_create_superuser.py
+```
+
+Kết quả test sẽ báo PASSED nếu nghiệp vụ đúng chuẩn.
+
+---
+
+## Tổng kết
+
+- Hệ thống đã chuẩn hóa models, API, test, migration, script tạo superuser, tài liệu chi tiết.
+- Toàn bộ test tự động đã PASSED, sẵn sàng mở rộng nghiệp vụ hoặc tích hợp thực tế.
+- Đảm bảo bảo mật, phân quyền, dễ maintain, CI/CD, production-ready.
+
+---
+
+## Triển khai production với Docker Compose (auto-migrate)
+
+- Để đảm bảo production luôn migrate DB đúng schema mới nhất, hệ thống đã cấu hình auto-migrate trong `docker-compose.yml`:
+
+```yaml
+  fastapi:
+    build: .
+    ports:
+      - "8979:8000"
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/postgres
+    depends_on:
+      - db
+      - minio
+    command: >
+      sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4"
+    networks:
+      - backend
+```
+
+- Khi chạy `docker-compose up --build`, service FastAPI sẽ tự động migrate DB trước khi khởi động app.
+- Luôn đảm bảo DB Postgres production đồng bộ với models mới nhất, không cần migrate thủ công.
+- Nếu muốn test/dev với SQLite, chỉ cần chạy ngoài Docker và set lại biến môi trường `DATABASE_URL`.
