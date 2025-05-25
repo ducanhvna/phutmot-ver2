@@ -17,8 +17,8 @@ class UserOut(UserBase):
     oauth_provider: Optional[str] = None
     role: Optional[str] = None
     username: Optional[str] = None  # Thêm username cho test WebSocket
-    class Config:
-        orm_mode = True
+    
+    model_config = dict(from_attributes=True)
 
 class CompanyBase(BaseModel):
     name: str
@@ -29,8 +29,7 @@ class CompanyCreate(CompanyBase):
 class CompanyOut(CompanyBase):
     id: int
     owner_id: int
-    class Config:
-        orm_mode = True
+    model_config = dict(from_attributes=True)
 
 class ServicePlanEnum(str, Enum):
     BASIC = "Basic"
@@ -45,8 +44,7 @@ class ServicePlanOut(BaseModel):
     description: Optional[str]
     price: float
     features: Optional[str]
-    class Config:
-        orm_mode = True
+    model_config = dict(from_attributes=True)
 
 class SubscriptionOut(BaseModel):
     id: int
@@ -56,8 +54,7 @@ class SubscriptionOut(BaseModel):
     start_date: datetime
     end_date: Optional[datetime]
     is_active: bool
-    class Config:
-        orm_mode = True
+    model_config = dict(from_attributes=True)
 
 class PaymentMethodEnum(str, Enum):
     ONLINE = "online"
@@ -70,5 +67,4 @@ class PaymentOut(BaseModel):
     method: PaymentMethodEnum
     status: str
     created_at: datetime
-    class Config:
-        orm_mode = True
+    model_config = dict(from_attributes=True)

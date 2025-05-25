@@ -91,4 +91,61 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
 - Để chạy production đa core: `uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4`
 - Có thể mở rộng thêm domain, tích hợp OAuth, lưu lịch sử chat vào DB, CI/CD, ...
 
----
+## Employee (Khách hàng/Người mua) Login qua EmployeeLogin
+
+- Cho phép khách hàng của công ty (employee/buyer) đăng nhập và lấy thông tin cá nhân chỉ dựa vào bảng `EmployeeLogin` (không cần tạo user ở bảng User chính).
+- Khi đăng nhập, API kiểm tra employee_code, company_id, password trong bảng `hrms_employee_login`.
+- Nếu hợp lệ, sinh JWT token chứa thông tin employee (employee_code, company_id, role=buyer).
+- Các API employee chỉ cần xác thực JWT này, không cần xác thực qua bảng User.
+- Có thể forward xác thực sang service auth khác nếu muốn (dễ tích hợp SSO, OAuth, ...).
+
+### API Employee Login
+
+- `POST /api/hrms/employee-login/auth` — Đăng nhập employee (buyer)
+- `GET /api/hrms/employee-login/me` — Lấy thông tin employee (buyer) từ JWT
+
+### Test tự động employee-login
+
+- Đã có test tự động cho toàn bộ API employee-login (`tests/test_hrms_buyer_auth.py`).
+- Test sẽ tạo employee, đăng nhập, lấy thông tin employee-login/me, kiểm tra unique, phân quyền, và xóa dữ liệu trước mỗi test.
+
+
+## HRMS (Quản lý nhân sự)
+
+- Quản lý nhân sự (HRMS) gồm các bảng:
+    - `Employee`: Thông tin nhân sự (employee_code, name, company_id, info...)
+    - `EmployeeLogin`: Đăng nhập nhân sự (employee_code, company_id, password)
+    - `EmployeeContract`: Hợp đồng lao động (employee_code, company_id, info, thời hạn...)
+    - `EmployeeAttendance`: Chấm công (employee_code, company_id, ngày, trạng thái, info...)
+    - `EmployeeShift`: Ca làm việc (employee_code, company_id, ngày, ca, info...)
+    - `EmployeeProject`: Quản lý dự án nhân sự (employee_code, company_id, tháng, năm, info dạng JSONB)
+- Các bảng đều có index cho các trường thường truy vấn, dùng JSON/JSONB cho info mở rộng.
+- API CRUD cho từng bảng, prefix `/api/hrms`, xác thực JWT, phân quyền theo vai trò (admin, employee, buyer).
+- Đảm bảo unique theo employee_code, tháng, năm, company_id cho các bảng liên quan (ví dụ: EmployeeProject).
+- Test tự động cho toàn bộ API HRMS (`tests/test_hrms_employee.py`), bao gồm tạo, sửa, xóa, truy vấn, kiểm tra unique, phân quyền.
+- Khi test, dữ liệu HRMS được xóa trước mỗi test để tránh lỗi unique constraint.
+- Có thể mở rộng thêm trường info, tích hợp xác thực ngoài, hoặc đồng bộ dữ liệu với hệ thống HR khác.
+
+### API HRMS
+
+- `POST /api/hrms/employee` — Tạo nhân sự
+- `GET /api/hrms/employee` — Danh sách nhân sự
+- `PUT /api/hrms/employee/{id}` — Sửa thông tin nhân sự
+- `DELETE /api/hrms/employee/{id}` — Xóa nhân sự
+- `POST /api/hrms/employee-login` — Tạo thông tin đăng nhập nhân sự
+- `GET /api/hrms/employee-login` — Danh sách đăng nhập nhân sự
+- ... (tương tự cho contract, attendance, shift, project)
+
+
+### Test tự động
+
+- Đã có test tự động cho toàn bộ API HRMS (`tests/test_hrms_employee.py`).
+- Test sẽ tạo nhân sự, đăng nhập, hợp đồng, chấm công, ca làm việc, dự án, kiểm tra unique, phân quyền, và xóa dữ liệu trước mỗi test.
+
+
+### Lưu ý kỹ thuật
+
+- Sử dụng JSON/JSONB cho info mở rộng, dễ tích hợp các trường động.
+- Index các trường thường truy vấn để tối ưu hiệu năng.
+- Dùng datetime timezone-aware (UTC) cho các trường thời gian.
+- Có thể tích hợp xác thực ngoài hoặc forward auth nếu cần.

@@ -17,5 +17,4 @@ class ETLJobOut(ETLJobBase):
     started_at: Optional[datetime]
     finished_at: Optional[datetime]
     result: Optional[Any]
-    class Config:
-        orm_mode = True
+    model_config = dict(from_attributes=True)
