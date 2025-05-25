@@ -24,5 +24,5 @@ def schedule_pending_etl_jobs():
     finally:
         db.close()
 
-scheduler.add_job(schedule_pending_etl_jobs, "interval", minutes=20)
+scheduler.add_job(schedule_pending_etl_jobs, "interval", minutes=5)
 scheduler.start()
