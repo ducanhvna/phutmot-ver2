@@ -11,10 +11,12 @@ class UserCreate(UserBase):
     password: str
 
 class UserOut(UserBase):
-    id: int
-    is_active: bool
-    is_oauth: bool
-    oauth_provider: Optional[str]
+    id: Optional[int] = None
+    is_active: Optional[bool] = True
+    is_oauth: Optional[bool] = False
+    oauth_provider: Optional[str] = None
+    role: Optional[str] = None
+    username: Optional[str] = None  # Thêm username cho test WebSocket
     class Config:
         orm_mode = True
 
