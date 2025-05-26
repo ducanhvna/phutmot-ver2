@@ -43,6 +43,35 @@ services:
     entrypoint: sh /minio-init.sh
     networks:
       - backend
+  celeryworker:
+    build: .
+    command: celery -A app.utils.etl_scheduler worker --loglevel=info
+    depends_on:
+      - db
+      - fastapi
+      - redis
+    env_file:
+      - .env
+    networks:
+      - backend
+  celerybeat:
+    build: .
+    command: celery -A app.utils.etl_scheduler beat --loglevel=info
+    depends_on:
+      - db
+      - fastapi
+      - redis
+    env_file:
+      - .env
+    networks:
+      - backend
+  redis:
+    image: redis:7
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
 
 volumes:
   postgres_data:

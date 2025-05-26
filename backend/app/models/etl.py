@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, J
 from sqlalchemy.orm import relationship
 from app.db import Base, engine
 from datetime import datetime
+from app.models.core import Company
 # Tương thích JSON/JSONB cho SQLite và Postgres
 try:
     from sqlalchemy.dialects.postgresql import JSONB

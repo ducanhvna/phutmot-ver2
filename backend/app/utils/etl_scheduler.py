@@ -4,7 +4,8 @@ from app.db import SessionLocal
 from app.models.etl import ETLJob
 from app.routers.etl import run_etl_job
 from datetime import datetime
-from apscheduler.schedulers.background import BackgroundScheduler
+from celery import Celery
+from celery.schedules import crontab
 
 # Cho phép override DB cho test: nếu TEST_SQLITE=1 thì dùng sqlite
 if os.getenv("TEST_SQLITE") == "1":
@@ -13,8 +14,14 @@ if os.getenv("TEST_SQLITE") == "1":
     engine = create_engine("sqlite:///test.db", connect_args={"check_same_thread": False})
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-scheduler = BackgroundScheduler()
+# Khởi tạo Celery
+celery_app = Celery(
+    "etl_tasks",
+    broker=os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0"),
+    backend=os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/0"),
+)
 
+@celery_app.task
 def schedule_pending_etl_jobs():
     db: Session = SessionLocal()
     try:
@@ -24,5 +31,10 @@ def schedule_pending_etl_jobs():
     finally:
         db.close()
 
-scheduler.add_job(schedule_pending_etl_jobs, "interval", minutes=3)
-scheduler.start()
+# Đăng ký task chạy mỗi 3 phút
+celery_app.conf.beat_schedule = {
+    'run-etl-every-3-minutes': {
+        'task': 'app.utils.etl_scheduler.schedule_pending_etl_jobs',
+        'schedule': crontab(minute='*/3'),
+    },
+}

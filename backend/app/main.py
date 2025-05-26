@@ -7,7 +7,6 @@ from app.routers.hrms.buyer_auth import router
 from app.routers.hrms.employee_info import employee_info_router
 from app.routers.auth_user import router as auth_user_router
 from dotenv import load_dotenv
-from app.utils import etl_scheduler  # Kích hoạt scheduler ETL định kỳ
 
 load_dotenv()
 

@@ -16,3 +16,5 @@ websockets
 requests
 python-dotenv
 apscheduler
+celery
+redis
