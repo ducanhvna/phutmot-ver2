@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.db import SessionLocal
 from app.models.etl import ETLJob
 from app.schemas.etl import ETLJobCreate, ETLJobOut
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 import time
 
@@ -23,12 +23,20 @@ def run_etl_job(job_id: int, db: Session):
     job.status = "running"
     job.started_at = datetime.utcnow()
     db.commit()
-    # Giả lập ETL: lấy config, thực hiện ETL, cập nhật result
     try:
-        # TODO: Thực hiện ETL thực tế ở đây
-        time.sleep(2)  # Giả lập thời gian ETL
+        # Lấy ngày đầu và cuối tháng hiện tại
+        now = datetime.utcnow()
+        startdate = now.replace(day=1).strftime("%Y-%m-%d")
+        # Lấy ngày cuối tháng
+        if now.month == 12:
+            next_month = now.replace(year=now.year+1, month=1, day=1)
+        else:
+            next_month = now.replace(month=now.month+1, day=1)
+        enddate = (next_month - timedelta(days=1)).strftime("%Y-%m-%d")
+        from app.utils.etl_odoo_to_minio import extract_from_odoo_and_save_to_minio
+        data, url = extract_from_odoo_and_save_to_minio(startdate=startdate, enddate=enddate)
         job.status = "success"
-        job.result = {"message": "ETL completed successfully"}
+        job.result = {"message": "ETL completed successfully", "url": url}
     except Exception as e:
         job.status = "failed"
         job.result = {"error": str(e)}
