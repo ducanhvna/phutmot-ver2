@@ -3,6 +3,7 @@ import xmlrpc.client
 import pandas as pd
 from minio import Minio
 from datetime import datetime
+import tempfile
 
 ODOO_BASE_URL = "https://hrm.mandalahotel.com.vn"
 ODOO_DB = "apechrm_product_v3"
@@ -131,7 +132,11 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
             client.make_bucket(MINIO_BUCKET)
     except Exception:
         pass  # Nếu bucket đã tồn tại do race condition, bỏ qua lỗi
-    file_path = f"/tmp/odoo_raw_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    # Sử dụng thư mục tạm hợp lệ trên mọi hệ điều hành
+    tmp_dir = tempfile.gettempdir()
+    if not os.path.exists(tmp_dir):
+        os.makedirs(tmp_dir, exist_ok=True)
+    file_path = os.path.join(tmp_dir, f"odoo_raw_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
     with pd.ExcelWriter(file_path) as writer:
         for key, value in data.items():
             df = pd.DataFrame(value)
@@ -222,7 +227,10 @@ def load_to_minio(data, report_name):
         }}'''
         client.set_bucket_policy(MINIO_BUCKET, public_policy)
     # Lưu nhiều file báo cáo excel (mỗi sheet 1 loại dữ liệu)
-    file_path = f"/tmp/{report_name}.xlsx"
+    tmp_dir = tempfile.gettempdir()
+    if not os.path.exists(tmp_dir):
+        os.makedirs(tmp_dir, exist_ok=True)
+    file_path = os.path.join(tmp_dir, f"{report_name}.xlsx")
     with pd.ExcelWriter(file_path) as writer:
         for key, df in data.items():
             if isinstance(df, pd.DataFrame):
@@ -231,7 +239,7 @@ def load_to_minio(data, report_name):
     # Ngoài file tổng hợp, xuất thêm từng file nhỏ nếu cần
     for key, df in data.items():
         if isinstance(df, pd.DataFrame) and not df.empty:
-            sub_file = f"/tmp/{report_name}_{key}.xlsx"
+            sub_file = os.path.join(tmp_dir, f"{report_name}_{key}.xlsx")
             df.to_excel(sub_file, index=False)
             client.fput_object(MINIO_BUCKET, f"{report_name}_{key}.xlsx", sub_file)
     # Trả về link public tải về qua port 9000 và 9001

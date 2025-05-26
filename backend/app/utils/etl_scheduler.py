@@ -21,10 +21,31 @@ celery_app = Celery(
     backend=os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/0"),
 )
 
+def ensure_initial_etl_job(db: Session):
+    """Đảm bảo luôn có ít nhất 1 job ETL trong DB, nếu chưa có thì tạo job mẫu cho ngày hôm nay."""
+    from app.models.etl import ETLJob
+    today = datetime.today().date()
+    # Kiểm tra đã có job cho hôm nay chưa (chỉ tính job pending, active)
+    job = db.query(ETLJob).filter(
+        ETLJob.scheduled_date == today,
+        ETLJob.status == "pending",
+        ETLJob.is_active == True
+    ).first()
+    if not job:
+        job = ETLJob(
+            name=f"ETL Job {today}",
+            scheduled_date=today,
+            status="pending",
+            is_active=True
+        )
+        db.add(job)
+        db.commit()
+
 @celery_app.task
 def schedule_pending_etl_jobs():
     db: Session = SessionLocal()
     try:
+        ensure_initial_etl_job(db)
         jobs = db.query(ETLJob).filter(ETLJob.status == "pending", ETLJob.is_active == True).all()
         for job in jobs:
             run_etl_job(job.id, db)
