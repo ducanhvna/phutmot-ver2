@@ -312,3 +312,18 @@ unset TEST_SQLITE
 ```
 
 - Kiểm tra lại biến môi trường trong docker-compose.yml, Dockerfile, entrypoint.sh để đảm bảo không có TEST_SQLITE khi chạy production.
+
+## Xoá data
+### Dừng toàn bộ container
+docker-compose down
+
+### Xóa volume dữ liệu Postgres
+docker volume rm backend_postgres_data
+
+### Xóa toàn bộ file migration cũ
+rm -f alembic/versions/*.py
+
+### Khởi động lại (tự động migrate nếu entrypoint.sh hoặc command đã có alembic upgrade head)
+docker-compose up --build
+alembic revision --autogenerate -m "init all tables"
+alembic upgrade head
