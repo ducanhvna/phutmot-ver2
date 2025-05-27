@@ -21,9 +21,10 @@ def extract_employees(models, uid, limit, offset=0, startdate=None, enddate=None
                 'company_id', 'code', 'department_id', 'time_keeping_code', 'job_title',
                 'probationary_contract_termination_date', 'severance_day', 'workingday',
                 'probationary_salary_rate', 'resource_calendar_id', 'date_sign', 'level']
-    domain = []
     if startdate and enddate:
-        domain = ['&', ('create_date', '>=', startdate), ('create_date', '<=', enddate)]
+        domain = ["&", ("create_date", ">=", startdate), ("create_date", "<=", enddate)]
+    else:
+        domain = []
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.employee', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
 def extract_contracts(models, uid, limit, offset=0, startdate=None, enddate=None):
@@ -31,35 +32,36 @@ def extract_contracts(models, uid, limit, offset=0, startdate=None, enddate=None
         'id', 'name', 'employee_id', 'date_start', 'date_end', 'wage', 'state',
         'minutes_per_day', 'employee_code', 'resource_calendar_id'
     ]
-    domain = []
     if startdate and enddate:
-        domain = ['&', ('date_start', '>=', startdate), ('date_start', '<=', enddate)]
+        domain = ["&", ("date_start", ">=", startdate), ("date_start", "<=", enddate)]
+    else:
+        domain = []
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.contract', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
 def extract_companies(models, uid, limit, offset=0):
     fields = ['id', 'name', 'partner_id', 'email', 'phone', 'is_ho', 'mis_id']
-    return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'res.company', 'search_read', [[], fields], {'limit': limit, 'offset': offset})
+    domain = []
+    return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'res.company', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
 def extract_leaves(models, uid, limit, offset=0, startdate=None, enddate=None):
     fields = ['id', 'name', 'employee_id', 'holiday_status_id', 'date_from', 'date_to', 'state']
-    domain = []
     if startdate and enddate:
-        domain = ['&', ('date_from', '>=', startdate), ('date_from', '<=', enddate)]
+        domain = ["&", ("date_from", ">=", startdate), ("date_from", "<=", enddate)]
+    else:
+        domain = []
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.leave', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
 def extract_attendance(models, uid, limit, offset=0, startdate=None, enddate=None):
     fields = ['id', 'employee_id', 'check_in', 'check_out', 'worked_hours']
-    domain = []
     if startdate and enddate:
-        domain = ['&', ('check_in', '>=', startdate), ('check_in', '<=', enddate)]
+        domain = ["&", ("check_in", ">=", startdate), ("check_in", "<=", enddate)]
+    else:
+        domain = []
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.attendance', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
 def extract_upload_attendance(models, uid, limit, offset=0, startdate=None, enddate=None):
     fields = ['id', 'year', 'month', 'template', 'company_id', 'department_id', 'url']
-    domain = []
-    if startdate and enddate:
-        # Giả sử filter theo year/month nếu có, hoặc bỏ qua nếu không phù hợp
-        pass
+    domain = []  # Không filter theo ngày
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.upload.attendance', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
 def extract_kpi_weekly_report_summary(models, uid, limit, offset=0, startdate=None, enddate=None):
@@ -70,9 +72,10 @@ def extract_kpi_weekly_report_summary(models, uid, limit, offset=0, startdate=No
         'compensation_status_week_1', 'compensation_status_week_2', 'compensation_status_week_3',
         'compensation_status_week_4', 'compensation_status_week_5', 'book_review_compensation_status'
     ]
-    domain = []
     if startdate and enddate:
-        domain = ['&', ('date', '>=', startdate), ('date', '<=', enddate)]
+        domain = ["&", ("date", ">=", startdate), ("date", "<=", enddate)]
+    else:
+        domain = []
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'kpi.weekly.report.summary', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
 def extract_hr_weekly_report(models, uid, limit, offset=0, startdate=None, enddate=None):
@@ -80,31 +83,77 @@ def extract_hr_weekly_report(models, uid, limit, offset=0, startdate=None, endda
         'employee_code', 'department_id', 'employee_id', 'company_id', 'create_date',
         'job_title', 'date', 'state', 'from_date', 'to_date'
     ]
-    domain = []
     if startdate and enddate:
-        domain = ['&', ('date', '>=', startdate), ('date', '<=', enddate)]
+        domain = ["&", ("date", ">=", startdate), ("date", "<=", enddate)]
+    else:
+        domain = []
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.weekly.report', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
+
+def extract_al_report(models, uid, limit, offset=0, startdate=None, enddate=None):
+    fields = [
+        'id','year', 'date_calculate_leave', 'employee_id', 'company_id','employee_code','department_id','standard_day',
+        'workingday','date_sign','date_apply_leave','severance_day','seniority_leave', 'job_title', 
+        'family_leave','leave_increase_by_seniority_leave','leave_day','leave_year',
+        'remaining_leave','january','february','march','april','may','june','july',
+        'august','september','october','november','december','leave_used','remaining_leave_minute',
+        'remaining_leave_day','note','file','employee_ho','part_time_company_id'
+    ]
+    if startdate and enddate:
+        domain = ["&", ("date_calculate_leave", ">=", startdate), ("date_calculate_leave", "<=", enddate)]
+    else:
+        domain = []
+    return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.al.report', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
+
+def extract_cl_report(models, uid, limit, offset=0, startdate=None, enddate=None):
+    fields = [
+        'id','year', 'date_calculate', 'employee_id', 'tier','employee_code','department_id','job_title',
+        'workingday','date_sign','contract_type_id','severance_day',
+        'increase_probationary_1','increase_official_1','used_probationary_1','used_official_1','overtime_probationary_1', 'overtime_official_1',
+        'increase_probationary_2','increase_official_2','used_probationary_2','used_official_2','overtime_probationary_2', 'overtime_official_2',
+        'increase_probationary_3','increase_official_3','used_probationary_3','used_official_3','overtime_probationary_3', 'overtime_official_3',
+        'increase_probationary_4','increase_official_4','used_probationary_4','used_official_4','overtime_probationary_4', 'overtime_official_4',
+        'increase_probationary_5','increase_official_5','used_probationary_5','used_official_5','overtime_probationary_5', 'overtime_official_5',
+        'increase_probationary_6','increase_official_6','used_probationary_6','used_official_6','overtime_probationary_6', 'overtime_official_6',
+        'increase_probationary_7','increase_official_7','used_probationary_7','used_official_7','overtime_probationary_7', 'overtime_official_7',
+        'increase_probationary_8','increase_official_8','used_probationary_8','used_official_8','overtime_probationary_8', 'overtime_official_8',
+        'increase_probationary_9','increase_official_9','used_probationary_9','used_official_9','overtime_probationary_9', 'overtime_official_9',
+        'increase_probationary_10','increase_official_10','used_probationary_10','used_official_10','overtime_probationary_10', 'overtime_official_10',
+        'increase_probationary_11','increase_official_11','used_probationary_11','used_official_11','overtime_probationary_11', 'overtime_official_11',
+        'increase_probationary_12','increase_official_12','used_probationary_12','used_official_12','overtime_probationary_12', 'overtime_official_12',
+        'remaining_total_day', 'remaining_probationary_minute', 'remaining_official_minute', 'remaining_total_minute',
+        'company_name', 'company_sid', 'employee_name', 'AUTO-CALCULATE-HOLIDAY', 'NIGHT-HOLIDAY-WAGE'
+    ]
+    if startdate and enddate:
+        domain = ["&", ("date_calculate", ">=", startdate), ("date_calculate", "<=", enddate)]
+    else:
+        domain = []
+    return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.cl.report', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
 # 1. Extract tổng hợp với phân trang
 
 def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=None):
     if not startdate or not enddate:
         raise ValueError("startdate và enddate là bắt buộc nhập")
+    print(f"[ETL] Đang kết nối Odoo: {ODOO_BASE_URL}, DB: {ODOO_DB}, USER: {ODOO_USERNAME}")
     common = xmlrpc.client.ServerProxy(f"{ODOO_BASE_URL}/xmlrpc/2/common")
     uid = common.authenticate(ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD, {})
+    print(f"[ETL] UID sau khi authenticate: {uid}")
+    if not uid:
+        raise RuntimeError("Không authenticate được với Odoo. Kiểm tra lại thông tin đăng nhập!")
     models = xmlrpc.client.ServerProxy(f"{ODOO_BASE_URL}/xmlrpc/2/object")
     # Phân trang lấy dữ liệu
     def fetch_all(extract_func, **kwargs):
         all_data = []
         offset = 0
         while True:
-            batch = extract_func(models, uid, pagesize, offset, **kwargs)
+            batch = extract_func(models, uid, 100, offset, **kwargs)  # Force batch_size/pagesize=100
+            print(f"[ETL] {extract_func.__name__} offset={offset} batch_size={len(batch) if batch else 0}")
             if not batch:
                 break
             all_data.extend(batch)
-            if len(batch) < pagesize:
+            if len(batch) < 100:
                 break
-            offset += pagesize
+            offset += 100
         return all_data
     employees = fetch_all(extract_employees, startdate=startdate, enddate=enddate)
     contracts = fetch_all(extract_contracts, startdate=startdate, enddate=enddate)
@@ -114,6 +163,8 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
     upload_attendance = fetch_all(extract_upload_attendance, startdate=startdate, enddate=enddate)
     kpi_weekly_report_summary = fetch_all(extract_kpi_weekly_report_summary, startdate=startdate, enddate=enddate)
     hr_weekly_report = fetch_all(extract_hr_weekly_report, startdate=startdate, enddate=enddate)
+    al_report = fetch_all(extract_al_report, startdate=startdate, enddate=enddate)
+    cl_report = fetch_all(extract_cl_report, startdate=startdate, enddate=enddate)
     data = {
         "employees": employees,
         "contracts": contracts,
@@ -123,6 +174,8 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
         "upload_attendance": upload_attendance,
         "kpi_weekly_report_summary": kpi_weekly_report_summary,
         "hr_weekly_report": hr_weekly_report,
+        "al_report": al_report,
+        "cl_report": cl_report,
     }
     # Save raw data to Excel and upload to MinIO
     client = Minio(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, secure=False)
@@ -199,6 +252,16 @@ def transform(data):
     if not df_hr_weekly.empty and "date" in df_hr_weekly:
         df_hr_weekly["date"] = pd.to_datetime(df_hr_weekly["date"], errors="coerce")
     result["hr_weekly_report"] = df_hr_weekly
+    # AL Report
+    df_al_report = pd.DataFrame(data["al_report"])
+    if not df_al_report.empty:
+        df_al_report["year"] = pd.to_datetime(df_al_report["year"], format="%Y", errors="coerce")
+    result["al_report"] = df_al_report
+    # CL Report
+    df_cl_report = pd.DataFrame(data["cl_report"])
+    if not df_cl_report.empty:
+        df_cl_report["year"] = pd.to_datetime(df_cl_report["year"], format="%Y", errors="coerce")
+    result["cl_report"] = df_cl_report
     # Có thể bổ sung merge, join, tính toán tổng hợp ở đây nếu cần
     return result
 
