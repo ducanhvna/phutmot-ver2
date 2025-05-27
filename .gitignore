@@ -4,3 +4,4 @@ etc/sessions/
 etc/filestore/
 postgre_dj_data/
 myenv
+*.pyc
