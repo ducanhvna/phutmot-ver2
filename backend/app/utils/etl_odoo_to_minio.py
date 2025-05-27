@@ -4,6 +4,18 @@ import pandas as pd
 from minio import Minio
 from datetime import datetime
 import tempfile
+from .report_exporters import (
+    export_al_cl_report_department,
+    export_sumary_attendance_report,
+    export_sumary_attendance_report_department,
+    export_late_in_5_miniutes_report_ho,
+    export_feed_report,
+    export_kpi_weekly_report_ho,
+    export_kpi_weekly_report,
+    export_al_cl_report_ho,
+    export_al_cl_report,
+    export_al_cl_report_severance,
+)
 
 ODOO_BASE_URL = "https://hrm.mandalahotel.com.vn"
 ODOO_DB = "apechrm_product_v3"
@@ -60,7 +72,8 @@ def extract_attendance(models, uid, limit, offset=0, startdate=None, enddate=Non
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.attendance', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
 def extract_upload_attendance(models, uid, limit, offset=0, startdate=None, enddate=None):
-    fields = ['id', 'year', 'month', 'template', 'company_id', 'department_id', 'url']
+    fields = ['id', 'year', 'month', 'template', 'company_id', 'department_id', 'url'
+    ]
     domain = []  # Không filter theo ngày
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.upload.attendance', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
@@ -289,30 +302,34 @@ def load_to_minio(data, report_name):
             ]
         }}'''
         client.set_bucket_policy(MINIO_BUCKET, public_policy)
-    # Lưu nhiều file báo cáo excel (mỗi sheet 1 loại dữ liệu)
     tmp_dir = tempfile.gettempdir()
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir, exist_ok=True)
-    file_path = os.path.join(tmp_dir, f"{report_name}.xlsx")
-    with pd.ExcelWriter(file_path) as writer:
-        for key, df in data.items():
-            if isinstance(df, pd.DataFrame):
-                df.to_excel(writer, sheet_name=key[:31], index=False)
-    client.fput_object(MINIO_BUCKET, f"{report_name}.xlsx", file_path)
-    # Ngoài file tổng hợp, xuất thêm từng file nhỏ nếu cần
-    for key, df in data.items():
-        if isinstance(df, pd.DataFrame) and not df.empty:
-            sub_file = os.path.join(tmp_dir, f"{report_name}_{key}.xlsx")
-            df.to_excel(sub_file, index=False)
-            client.fput_object(MINIO_BUCKET, f"{report_name}_{key}.xlsx", sub_file)
-    # Trả về link public tải về qua port 9000 và 9001
+    # Gọi các hàm export báo cáo
+    export_funcs = [
+        export_al_cl_report_department,
+        export_sumary_attendance_report,
+        export_sumary_attendance_report_department,
+        export_late_in_5_miniutes_report_ho,
+        export_feed_report,
+        export_kpi_weekly_report_ho,
+        export_kpi_weekly_report,
+        export_al_cl_report_ho,
+        export_al_cl_report,
+        export_al_cl_report_severance,
+    ]
     public_host = os.getenv("MINIO_PUBLIC_HOST", "localhost")
-    public_url_9000 = f"http://{public_host}:9000/{MINIO_BUCKET}/{report_name}.xlsx?response-content-disposition=attachment"
-    public_port = os.getenv("MINIO_PUBLIC_PORT", "9001")
-    public_url_9001 = f"http://{public_host}:{public_port}/{MINIO_BUCKET}/{report_name}.xlsx?response-content-disposition=attachment"
-    print(f"[ETL] Link download trực tiếp (port 9000, luôn tải về): {public_url_9000}")
-    print(f"[ETL] Link download trực tiếp (port 9001, UI/gateway): {public_url_9001}")
-    return public_url_9000
+    links = {}
+    for func in export_funcs:
+        try:
+            file_path = func(data, tmp_dir)
+            if file_path and os.path.exists(file_path):
+                object_name = os.path.basename(file_path)
+                client.fput_object(MINIO_BUCKET, object_name, file_path)
+                links[object_name] = f"http://{public_host}:9000/{MINIO_BUCKET}/{object_name}?response-content-disposition=attachment"
+        except Exception as ex:
+            print(f"[ETL] Export or upload failed for {func.__name__}: {ex}")
+    return links
 
 # 4. ETL Job
 def etl_job(startdate=None, enddate=None):
