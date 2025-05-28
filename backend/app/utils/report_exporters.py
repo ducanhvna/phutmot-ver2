@@ -21,7 +21,8 @@ def export_al_cl_report_department(data, output_dir, data_key='al_report'):
     # Tạo file cho từng công ty
     company_files = []
     for company, group_company in df.groupby('company_name'):
-        file_path = os.path.join(output_dir, f"al_cl_report_department_{str(company)[:20].replace('/', '_').replace('\\', '_')}.xlsx")
+        safe_company = str(company)[:20].replace('/', '_').replace('\\', '_')
+        file_path = os.path.join(output_dir, f"al_cl_report_department_{safe_company}.xlsx")
         with pd.ExcelWriter(file_path) as writer:
             for dept, group_dept in group_company.groupby('department_name'):
                 if not group_dept.empty:
