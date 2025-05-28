@@ -70,3 +70,41 @@ def test_etl_extract_errors():
     # Kiểm tra không có lỗi nghiêm trọng (status == 'lỗi' là fail)
     serious_errors = [e for e in extract_errors if e.get('status') == 'lỗi']
     assert not serious_errors, f"Có lỗi nghiêm trọng khi extract: {serious_errors}"
+
+def test_export_all_reports_with_real_data():
+    """
+    Test export các báo cáo với dữ liệu thật, ghi file vào test_result thay vì MinIO.
+    """
+    import pandas as pd
+    from app.utils import etl_odoo_to_minio
+    from app.utils import report_exporters
+    from datetime import datetime
+    import os
+    # Lấy dữ liệu thật từ Odoo, dùng transform để chuẩn hóa
+    startdate = "2025-04-01"
+    enddate = "2025-04-10"
+    raw_data, _ = etl_odoo_to_minio.extract_from_odoo_and_save_to_minio(startdate=startdate, enddate=enddate)
+    clean_data = etl_odoo_to_minio.transform(raw_data)
+    # Thư mục ghi file test
+    test_result_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../test_result'))
+    if not os.path.exists(test_result_dir):
+        os.makedirs(test_result_dir)
+    # Danh sách hàm export và tên file mong đợi
+    export_cases = [
+        (report_exporters.export_al_cl_report_department, {'data_key': 'al_report'}, 'al_cl_report_department.xlsx'),
+        (report_exporters.export_sumary_attendance_report, {'data_key': 'apec_attendance_report'}, 'sumary_attendance_report.xlsx'),
+        (report_exporters.export_sumary_attendance_report_department, {'data_key': 'apec_attendance_report'}, 'sumary_attendance_report_department.xlsx'),
+        (report_exporters.export_late_in_5_miniutes_report_ho, {}, 'late_in_5_miniutes_report_ho.xlsx'),
+        (report_exporters.export_feed_report, {}, 'feed_report.xlsx'),
+        (report_exporters.export_kpi_weekly_report_ho, {}, 'kpi_weekly_report_ho.xlsx'),
+        (report_exporters.export_kpi_weekly_report, {}, 'kpi_weekly_report.xlsx'),
+        (report_exporters.export_al_cl_report_ho, {}, 'al_cl_report_ho.xlsx'),
+        (report_exporters.export_al_cl_report, {}, 'al_cl_report.xlsx'),
+        (report_exporters.export_al_cl_report_severance, {}, 'al_cl_report_severance.xlsx'),
+    ]
+    for func, kwargs, expected_filename in export_cases:
+        # Gọi hàm export, truyền clean_data, test_result_dir, và kwargs nếu có
+        file_path = func(clean_data, test_result_dir, **kwargs) if kwargs else func(clean_data, test_result_dir)
+        # Kiểm tra file đã được tạo
+        assert os.path.exists(file_path), f"File {expected_filename} không được tạo ra!"
+        # Có thể kiểm tra thêm: file không rỗng, sheet name, ... nếu muốn

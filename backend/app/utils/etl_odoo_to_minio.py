@@ -456,9 +456,12 @@ def transform(data):
     return result
 
 # 3. Load to MinIO (public-read, truy cập qua port 9000 sẽ tải về trực tiếp)
-def load_to_minio(data, report_name):
+def load_to_minio(data, report_date=None):
+    """
+    Lưu từng loại báo cáo cho từng công ty lên MinIO, đặt tên chuẩn.
+    report_date: string yyyy-mm-dd hoặc None (mặc định lấy ngày hiện tại)
+    """
     client = Minio(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, secure=False)
-    # Đảm bảo bucket tồn tại
     if not client.bucket_exists(MINIO_BUCKET):
         client.make_bucket(MINIO_BUCKET)
     # Đảm bảo bucket policy là public-read
@@ -482,30 +485,49 @@ def load_to_minio(data, report_name):
     tmp_dir = tempfile.gettempdir()
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir, exist_ok=True)
-    # Gọi các hàm export báo cáo
-    export_funcs = [
-        export_al_cl_report_department,
-        export_sumary_attendance_report,
-        export_sumary_attendance_report_department,
-        export_late_in_5_miniutes_report_ho,
-        export_feed_report,
-        export_kpi_weekly_report_ho,
-        export_kpi_weekly_report,
-        export_al_cl_report_ho,
-        export_al_cl_report,
-        export_al_cl_report_severance,
-    ]
     public_host = os.getenv("MINIO_PUBLIC_HOST", "localhost")
     links = {}
-    for func in export_funcs:
-        try:
-            file_path = func(data, tmp_dir)
-            if file_path and os.path.exists(file_path):
-                object_name = os.path.basename(file_path)
-                client.fput_object(MINIO_BUCKET, object_name, file_path)
-                links[object_name] = f"http://{public_host}:9000/{MINIO_BUCKET}/{object_name}?response-content-disposition=attachment"
-        except Exception as ex:
-            print(f"[ETL] Export or upload failed for {func.__name__}: {ex}")
+    # Danh sách các loại báo cáo và hàm export tương ứng
+    report_types = [
+        ("apec_attendance_report", export_sumary_attendance_report, "apec_attendance_report"),
+        ("al_report", export_al_cl_report, "al_cl_report"),
+        ("feed_report", export_feed_report, "feed_report"),
+        ("kpi_weekly_report_summary", export_kpi_weekly_report_ho, "kpi_weekly_report_ho"),
+        ("late_in_5_miniutes", export_late_in_5_miniutes_report_ho, "late_in_5_miniutes_report_ho"),
+        # ... bổ sung các loại báo cáo khác nếu cần ...
+    ]
+    if not report_date:
+        report_date = datetime.now().strftime("%Y-%m-%d")
+    for data_key, export_func, report_type in report_types:
+        df = data.get(data_key)
+        if not isinstance(df, pd.DataFrame) or df.empty:
+            continue
+        # Group theo công ty
+        company_col = None
+        for col in ["company", "company_name"]:
+            if col in df.columns:
+                company_col = col
+                break
+        if not company_col:
+            continue
+        for company, group in df.groupby(company_col):
+            if not isinstance(group, pd.DataFrame) or group.empty:
+                continue
+            safe_company = str(company).replace("/", "_").replace("\\", "_").replace(" ", "_")
+            file_name = f"{safe_company}__{report_type}__{report_date}.xlsx"
+            file_path = os.path.join(tmp_dir, file_name)
+            # Gọi hàm export, truyền đúng data_key nếu cần
+            export_func({data_key: group}, tmp_dir, data_key=data_key) if 'data_key' in export_func.__code__.co_varnames else export_func({data_key: group}, tmp_dir)
+            # Nếu file đã đúng tên thì không cần rename
+            if not os.path.exists(file_path):
+                # Tìm file vừa tạo trong tmp_dir (có thể tên khác do hàm export mock)
+                for f in os.listdir(tmp_dir):
+                    if f.endswith('.xlsx') and report_type in f and (safe_company in f or len(df[company_col].unique())==1):
+                        os.rename(os.path.join(tmp_dir, f), file_path)
+                        break
+            if os.path.exists(file_path):
+                client.fput_object(MINIO_BUCKET, file_name, file_path)
+                links[file_name] = f"http://{public_host}:9000/{MINIO_BUCKET}/{file_name}?response-content-disposition=attachment"
     return links
 
 # 4. ETL Job
