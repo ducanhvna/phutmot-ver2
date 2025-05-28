@@ -327,3 +327,46 @@ rm -f alembic/versions/*.py
 docker-compose up --build
 alembic revision --autogenerate -m "init all tables"
 alembic upgrade head
+
+## Nghiệp vụ mới & Thay đổi ETL/Báo cáo (2025-05)
+
+### 1. Refactor ETL Odoo → MinIO
+- Chuẩn hóa quy trình ETL: extract, transform, load, xuất báo cáo tổng hợp từ Odoo sang MinIO.
+- Chỉ extract đúng bảng, đúng fields, ghi nhận lỗi extract (field/model không tồn tại) cho từng model, trả về extract_errors.
+- Loại bỏ hoàn toàn key 'attendance', chỉ dùng 'apec_attendance_report' cho báo cáo chấm công.
+- Bổ sung extract bảng `hr.attendance.trans`.
+- Test ETL kiểm tra extract_errors, ghi file lỗi ra `test_result/etl_extract_errors.xlsx`.
+
+### 2. Refactor xuất báo cáo & lưu trữ
+- Mỗi loại báo cáo/mỗi công ty là 1 file riêng biệt, đặt tên chuẩn: `{company}__{report_type}__{date}.xlsx`.
+- Không sinh file phòng ban, không gộp nhiều loại vào 1 file.
+- Lưu metadata (json) xác định vị trí dữ liệu phòng ban trong file công ty, phục vụ API truy xuất động.
+- API xuất báo cáo động: cho phép xuất/gộp báo cáo theo công ty, phòng ban, tập đoàn khi user yêu cầu.
+
+### 3. API động xuất báo cáo (ví dụ)
+- `GET /api/report/company?company_id=1&type=apec_attendance_report&date=2025-05-28` — Xuất báo cáo chấm công cho 1 công ty.
+- `GET /api/report/department?company_id=1&department_id=2&type=apec_attendance_report&date=2025-05-28` — Cắt dữ liệu phòng ban từ file công ty.
+- `GET /api/report/group?type=apec_attendance_report&date=2025-05-28` — Gộp nhiều công ty cho 1 loại báo cáo.
+
+#### Ví dụ curl (PowerShell)
+```powershell
+# Xuất báo cáo chấm công cho 1 công ty (curl)
+curl -Method GET "http://localhost:8000/api/report/company?company_id=1&type=apec_attendance_report&date=2025-05-28" -Headers @{Authorization="Bearer <token>"}
+
+# Xuất báo cáo phòng ban (curl)
+curl -Method GET "http://localhost:8000/api/report/department?company_id=1&department_id=2&type=apec_attendance_report&date=2025-05-28" -Headers @{Authorization="Bearer <token>"}
+
+# Xuất báo cáo tập đoàn (curl)
+curl -Method GET "http://localhost:8000/api/report/group?type=apec_attendance_report&date=2025-05-28" -Headers @{Authorization="Bearer <token>"}
+
+# ---
+# PowerShell chuẩn: dùng Invoke-RestMethod
+# Xuất báo cáo chấm công cho 1 công ty
+Invoke-RestMethod -Uri "http://localhost:8000/api/report/company?company_id=1&type=apec_attendance_report&date=2025-05-28" -Headers @{Authorization="Bearer <token>"} -Method GET -OutFile "report.xlsx"
+
+# Xuất báo cáo phòng ban
+Invoke-RestMethod -Uri "http://localhost:8000/api/report/department?company_id=1&department_id=2&type=apec_attendance_report&date=2025-05-28" -Headers @{Authorization="Bearer <token>"} -Method GET -OutFile "report_department.xlsx"
+
+# Xuất báo cáo tập đoàn
+Invoke-RestMethod -Uri "http://localhost:8000/api/report/group?type=apec_attendance_report&date=2025-05-28" -Headers @{Authorization="Bearer <token>"} -Method GET -OutFile "report_group.xlsx"
+```
