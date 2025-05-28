@@ -1,3 +1,18 @@
+# Module-level functions for direct import in other files
+
+def process_report_raw(row):
+    """Module-level wrapper for HrmExcelFile.process_report_raw."""
+    return HrmExcelFile.process_report_raw(HrmExcelFile, row)
+
+def find_couple(row, list_out_leave_for_work=None):
+    """Module-level wrapper for HrmExcelFile.find_couple."""
+    if list_out_leave_for_work is None:
+        list_out_leave_for_work = []
+    return HrmExcelFile.find_couple(HrmExcelFile, row, list_out_leave_for_work)
+
+def find_couple_out_in(row):
+    """Module-level wrapper for HrmExcelFile.find_couple_out_in."""
+    return HrmExcelFile.find_couple_out_in(HrmExcelFile, row)
 import http
 import sys
 import requests
@@ -18,8 +33,8 @@ from collections import Counter
 import xmlrpc.client
 from openpyxl.styles.fills import PatternFill
 from openpyxl.styles import Font, colors
-from apps.home.unities.unities import float_to_hours, init_media_subfoder_report, copy_to_default_storage
-from apps.home.unities.reportfile import REPORT_LINK
+from unities.unities import float_to_hours, init_media_subfoder_report
+from unities.reportfile import REPORT_LINK
 from dateutil.relativedelta import relativedelta
 from openpyxl import load_workbook
 import logging

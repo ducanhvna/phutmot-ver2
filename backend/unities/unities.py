@@ -1,8 +1,9 @@
 import pandas as pd
-from django.conf import settings
 import os
 from shutil import copyfile
-# from django.core.files.storage import default_storage
+
+# --- Tự động lấy MEDIA_ROOT từ biến môi trường hoặc giá trị mặc định ---
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT', '/tmp/mediafiles')
 
 def nearest(items, pivot):
     print('item vao')
@@ -16,7 +17,7 @@ def float_to_hours(float_time_hour):
     return int(hours), int(minutes), int(seconds)
 
 def init_media_subfoder_report(user_name, sub_folder):
-    media_dir = settings.MEDIA_ROOT
+    media_dir = MEDIA_ROOT
     output_report_folder = os.path.join(media_dir, 'output_report')
     isExist = os.path.exists(output_report_folder)
     if not isExist:
@@ -31,14 +32,8 @@ def init_media_subfoder_report(user_name, sub_folder):
         os.makedirs(output_report_folder)
     return output_report_folder
 
-# old_file_path = '/Users/dungbui299/Documents/github/black-dashboard-django-master 3/11-0/al_last_report.xlsx'
-#     new_file_name = 'test.xlsx'
-#     media_dir = settings.MEDIA_ROOT
-    # print(media_dir)
+# Nếu cần copy_to_default_storage, có thể định nghĩa lại hàm này ở đây
 # def copy_to_default_storage(old_file_path, new_file_name, media_dir):
 #     new_file_path = os.path.join(media_dir, new_file_name)
 #     copyfile(old_file_path, new_file_path)
-#     # file = default_storage.open(new_file_name)
-#     file_url = default_storage.url(os.path.relpath(new_file_path, settings.MEDIA_ROOT))
-#     print(file_url)
-#     return file_url
+#     return new_file_path

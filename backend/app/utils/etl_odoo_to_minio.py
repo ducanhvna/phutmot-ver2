@@ -155,6 +155,41 @@ def extract_cl_report(models, uid, limit, offset=0, startdate=None, enddate=None
         domain = []
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.cl.report', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
+def extract_apec_attendance_report(models, uid, limit, offset=0, startdate=None, enddate=None, fields=None):
+    default_fields = [
+        'id', 'employee_name', 'date', 'shift_name', 'employee_code', 'company', 'additional_company',
+        'shift_start', 'shift_end', 'rest_start', 'rest_end', 'rest_shift', 'probation_completion_wage',
+        'total_shift_work_time', 'total_work_time', 'time_keeping_code', 'kid_time',
+        'department', 'attendance_attempt_1', 'attendance_attempt_2', 'minutes_working_reduced',
+        'attendance_attempt_3', 'attendance_attempt_4', 'attendance_attempt_5',
+        'attendance_attempt_6', 'attendance_attempt_7', 'attendance_attempt_8',
+        'attendance_attempt_9', 'attendance_attempt_10', 'attendance_attempt_11',
+        'attendance_attempt_12', 'attendance_attempt_13', 'attendance_attempt_14',
+        'attendance_inout_1', 'attendance_inout_2', 'attendance_inout_3',
+        'attendance_inout_4', 'attendance_inout_5', 'attendance_inout_6',
+        'attendance_inout_7', 'attendance_inout_8', 'attendance_inout_9', 'amount_al_reserve', 'amount_cl_reserve',
+        'attendance_inout_10', 'attendance_inout_11', 'attendance_inout_12',
+        'attendance_inout_13', 'attendance_inout_14', 'attendance_inout_15', 'actual_total_work_time', 'standard_working_day',
+        'attendance_attempt_15', 'last_attendance_attempt', 'attendance_inout_last', 'night_hours_normal', 'night_hours_holiday', 'probation_wage_rate',
+        'split_shift', 'missing_checkin_break', 'leave_early', 'attendance_late', 'night_shift', 'minute_worked_day_holiday',
+        'total_attendance', 'ot_holiday', 'ot_normal'
+    ]
+    fields = fields or default_fields
+    if startdate and enddate:
+        domain = ["&", ("date", ">=", startdate), ("date", "<=", enddate)]
+    else:
+        domain = []
+    return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.apec.attendance.report', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
+
+def extract_attendance_trans(models, uid, limit, offset=0, startdate=None, enddate=None, fields=None):
+    default_fields = ['id', 'name', 'day', 'time', 'in_out']
+    fields = fields or default_fields
+    if startdate and enddate:
+        domain = ["&", ("day", ">=", startdate), ("day", "<=", enddate)]
+    else:
+        domain = []
+    return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.attendance.trans', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
+
 # 1. Extract tổng hợp với phân trang
 
 def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=None):
@@ -175,26 +210,40 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
         extract_companies: 'res.company',
         extract_leaves: 'hr.leave',
         extract_attendance: 'hr.attendance',
+        extract_apec_attendance_report: 'hr.apec.attendance.report',
         extract_upload_attendance: 'hr.upload.attendance',
         extract_kpi_weekly_report_summary: 'kpi.weekly.report.summary',
         extract_hr_weekly_report: 'hr.weekly.report',
         extract_al_report: 'hr.al.report',
         extract_cl_report: 'hr.cl.report',
+        extract_attendance_trans: 'hr.attendance.trans',
     }
     def fetch_all(extract_func, fields, **kwargs):
         all_data = []
         offset = 0
-        # --- Lấy model name và loại bỏ các trường không tồn tại ---
+        errors = []
         model_name = extract_func_to_model.get(extract_func)
         if model_name:
             try:
-                # Lấy valid fields từ Odoo
                 valid_fields = set(models.execute_kw(
                     ODOO_DB, uid, ODOO_PASSWORD, model_name, 'fields_get', [], {}).keys())
                 filtered_fields = [f for f in fields if f in valid_fields]
+                missing_fields = [f for f in fields if f not in valid_fields]
+                for f in missing_fields:
+                    errors.append({
+                        'model': model_name,
+                        'field': f,
+                        'status': 'thiếu',
+                        'message': f"Field '{f}' không tồn tại trên model '{model_name}'"
+                    })
             except Exception as ex:
-                print(f"[ETL] Warning: Không kiểm tra được fields cho model {model_name}: {ex}")
                 filtered_fields = fields
+                errors.append({
+                    'model': model_name,
+                    'field': None,
+                    'status': 'lỗi',
+                    'message': f"Không kiểm tra được fields cho model {model_name}: {ex}"
+                })
         else:
             filtered_fields = fields
         while True:
@@ -206,7 +255,7 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
             if len(batch) < 100:
                 break
             offset += 100
-        return all_data
+        return all_data, errors
     # Khai báo fields cho từng extract
     employees_fields = ['id', 'name', 'user_id', 'employee_ho', 'part_time_company_id', 'part_time_department_id',
                 'company_id', 'code', 'department_id', 'time_keeping_code', 'job_title',
@@ -257,28 +306,63 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
         'remaining_total_day', 'remaining_probationary_minute', 'remaining_official_minute', 'remaining_total_minute',
         'company_name', 'company_sid', 'employee_name', 'AUTO-CALCULATE-HOLIDAY', 'NIGHT-HOLIDAY-WAGE'
     ]
+    apec_attendance_fields = [
+        'id', 'employee_name', 'date', 'shift_name', 'employee_code', 'company', 'additional_company',
+        'shift_start', 'shift_end', 'rest_start', 'rest_end', 'rest_shift', 'probation_completion_wage',
+        'total_shift_work_time', 'total_work_time', 'time_keeping_code', 'kid_time',
+        'department', 'attendance_attempt_1', 'attendance_attempt_2', 'minutes_working_reduced',
+        'attendance_attempt_3', 'attendance_attempt_4', 'attendance_attempt_5',
+        'attendance_attempt_6', 'attendance_attempt_7', 'attendance_attempt_8',
+        'attendance_attempt_9', 'attendance_attempt_10', 'attendance_attempt_11',
+        'attendance_attempt_12', 'attendance_attempt_13', 'attendance_attempt_14',
+        'attendance_inout_1', 'attendance_inout_2', 'attendance_inout_3',
+        'attendance_inout_4', 'attendance_inout_5', 'attendance_inout_6',
+        'attendance_inout_7', 'attendance_inout_8', 'attendance_inout_9', 'amount_al_reserve', 'amount_cl_reserve',
+        'attendance_inout_10', 'attendance_inout_11', 'attendance_inout_12',
+        'attendance_inout_13', 'attendance_inout_14', 'attendance_inout_15', 'actual_total_work_time', 'standard_working_day',
+        'attendance_attempt_15', 'last_attendance_attempt', 'attendance_inout_last', 'night_hours_normal', 'night_hours_holiday', 'probation_wage_rate',
+        'split_shift', 'missing_checkin_break', 'leave_early', 'attendance_late', 'night_shift', 'minute_worked_day_holiday',
+        'total_attendance', 'ot_holiday', 'ot_normal'
+    ]
+    attendance_trans_fields = ['id', 'name', 'day', 'time', 'in_out']
     # Gọi extract với fields truyền vào
-    employees = fetch_all(extract_employees, employees_fields, startdate=startdate, enddate=enddate)
-    contracts = fetch_all(extract_contracts, contracts_fields, startdate=startdate, enddate=enddate)
-    companies = fetch_all(extract_companies, companies_fields)  # Không filter ngày
-    leaves = fetch_all(extract_leaves, leaves_fields, startdate=startdate, enddate=enddate)
-    attendance = fetch_all(extract_attendance, attendance_fields, startdate=startdate, enddate=enddate)
-    upload_attendance = fetch_all(extract_upload_attendance, upload_attendance_fields, startdate=startdate, enddate=enddate)
-    kpi_weekly_report_summary = fetch_all(extract_kpi_weekly_report_summary, kpi_weekly_report_summary_fields, startdate=startdate, enddate=enddate)
-    hr_weekly_report = fetch_all(extract_hr_weekly_report, hr_weekly_report_fields, startdate=startdate, enddate=enddate)
-    al_report = fetch_all(extract_al_report, al_report_fields, startdate=startdate, enddate=enddate)
-    cl_report = fetch_all(extract_cl_report, cl_report_fields, startdate=startdate, enddate=enddate)
+    employees, extract_errors = fetch_all(extract_employees, employees_fields, startdate=startdate, enddate=enddate)
+    contracts, err = fetch_all(extract_contracts, contracts_fields, startdate=startdate, enddate=enddate)
+    extract_errors.extend(err)
+    companies, err = fetch_all(extract_companies, companies_fields)
+    extract_errors.extend(err)
+    leaves, err = fetch_all(extract_leaves, leaves_fields, startdate=startdate, enddate=enddate)
+    extract_errors.extend(err)
+    attendance, err = fetch_all(extract_attendance, attendance_fields, startdate=startdate, enddate=enddate)
+    extract_errors.extend(err)
+    upload_attendance, err = fetch_all(extract_upload_attendance, upload_attendance_fields)
+    extract_errors.extend(err)
+    kpi_weekly_report_summary, err = fetch_all(extract_kpi_weekly_report_summary, kpi_weekly_report_summary_fields, startdate=startdate, enddate=enddate)
+    extract_errors.extend(err)
+    hr_weekly_report, err = fetch_all(extract_hr_weekly_report, hr_weekly_report_fields, startdate=startdate, enddate=enddate)
+    extract_errors.extend(err)
+    al_report, err = fetch_all(extract_al_report, al_report_fields, startdate=startdate, enddate=enddate)
+    extract_errors.extend(err)
+    cl_report, err = fetch_all(extract_cl_report, cl_report_fields, startdate=startdate, enddate=enddate)
+    extract_errors.extend(err)
+    apec_attendance_report, err = fetch_all(extract_apec_attendance_report, apec_attendance_fields, startdate=startdate, enddate=enddate)
+    extract_errors.extend(err)
+    attendance_trans, err = fetch_all(extract_attendance_trans, attendance_trans_fields, startdate=startdate, enddate=enddate)
+    extract_errors.extend(err)
     data = {
-        "employees": employees,
-        "contracts": contracts,
-        "companies": companies,
-        "leaves": leaves,
-        "attendance": attendance,
-        "upload_attendance": upload_attendance,
-        "kpi_weekly_report_summary": kpi_weekly_report_summary,
-        "hr_weekly_report": hr_weekly_report,
-        "al_report": al_report,
-        "cl_report": cl_report,
+        'employees': employees,
+        'contracts': contracts,
+        'companies': companies,
+        'leaves': leaves,
+        'attendance': attendance,
+        'upload_attendance': upload_attendance,
+        'kpi_weekly_report_summary': kpi_weekly_report_summary,
+        'hr_weekly_report': hr_weekly_report,
+        'al_report': al_report,
+        'cl_report': cl_report,
+        'apec_attendance_report': apec_attendance_report,
+        'attendance_trans': attendance_trans,
+        'extract_errors': extract_errors,
     }
     # Save raw data to Excel and upload to MinIO
     client = Minio(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, secure=False)
@@ -365,6 +449,9 @@ def transform(data):
     if not df_cl_report.empty:
         df_cl_report["year"] = pd.to_datetime(df_cl_report["year"], format="%Y", errors="coerce")
     result["cl_report"] = df_cl_report
+    # APEC Attendance Report
+    df_apec_attendance = pd.DataFrame(data["apec_attendance_report"])
+    result["apec_attendance_report"] = df_apec_attendance
     # Có thể bổ sung merge, join, tính toán tổng hợp ở đây nếu cần
     return result
 

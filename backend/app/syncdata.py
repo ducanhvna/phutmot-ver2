@@ -8,7 +8,7 @@ from app.db import SessionLocal
 from app.models.core import User, Company, UserRoleEnum
 from passlib.hash import bcrypt
 
-INIT_DATA_PATH = os.path.join(os.path.dirname(__file__), 'initData.json')
+INIT_DATA_PATH =  'initData.json'
 
 def sync_data():
     with open(INIT_DATA_PATH, 'r') as f:

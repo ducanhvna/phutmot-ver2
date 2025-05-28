@@ -2,12 +2,12 @@ import pandas as pd
 import os
 from openpyxl import Workbook
 
-def export_al_cl_report_department(data, output_dir):
+def export_al_cl_report_department(data, output_dir, data_key='al_report'):
     """
     Xuất báo cáo AL/CL theo từng phòng ban, mỗi sheet là 1 phòng ban.
     """
     file_path = os.path.join(output_dir, 'al_cl_report_department.xlsx')
-    df = data.get('al_report')
+    df = data.get(data_key)
     if not isinstance(df, pd.DataFrame) or df.empty:
         # Nếu không có dữ liệu, tạo file rỗng
         with pd.ExcelWriter(file_path) as writer:
@@ -24,12 +24,12 @@ def export_al_cl_report_department(data, output_dir):
             group.to_excel(writer, sheet_name=sheet_name, index=False)
     return file_path
 
-def export_sumary_attendance_report(data, output_dir):
+def export_sumary_attendance_report(data, output_dir, data_key='attendance'):
     """
     Xuất báo cáo tổng hợp chấm công, mỗi sheet là 1 công ty.
     """
     file_path = os.path.join(output_dir, 'sumary_attendance_report.xlsx')
-    df = data.get('attendance')
+    df = data.get(data_key)
     if not isinstance(df, pd.DataFrame) or df.empty:
         with pd.ExcelWriter(file_path) as writer:
             pd.DataFrame().to_excel(writer, sheet_name='No Data', index=False)
@@ -51,12 +51,12 @@ def export_sumary_attendance_report(data, output_dir):
             group.to_excel(writer, sheet_name=sheet_name, index=False)
     return file_path
 
-def export_sumary_attendance_report_department(data, output_dir):
+def export_sumary_attendance_report_department(data, output_dir, data_key='attendance'):
     """
     Xuất báo cáo tổng hợp chấm công theo phòng ban, mỗi sheet là 1 phòng ban của 1 công ty.
     """
     file_path = os.path.join(output_dir, 'sumary_attendance_report_department.xlsx')
-    df = data.get('attendance')
+    df = data.get(data_key)
     if not isinstance(df, pd.DataFrame) or df.empty:
         with pd.ExcelWriter(file_path) as writer:
             pd.DataFrame().to_excel(writer, sheet_name='No Data', index=False)
