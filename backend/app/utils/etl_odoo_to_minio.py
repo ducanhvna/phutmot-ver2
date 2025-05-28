@@ -16,7 +16,7 @@ from .report_exporters import (
     export_al_cl_report,
     export_al_cl_report_severance,
 )
-from .transform_helpers import add_name_field
+from .transform_helpers import add_name_field, calculate_actual_work_time_ho_row
 
 import sys
 import os
@@ -499,6 +499,9 @@ def transform(data):
     result["cl_report"] = df_cl_report
     # APEC Attendance Report (thay thế attendance)
     df_apec_attendance = pd.DataFrame(data["apec_attendance_report"])
+    # Nếu có trường 'couple' và các attendance_attempt, sinh thêm cột 'actual_work_time_ho'
+    if not df_apec_attendance.empty and 'couple' in df_apec_attendance.columns:
+        df_apec_attendance['actual_work_time_ho'] = df_apec_attendance.apply(calculate_actual_work_time_ho_row, axis=1)
     result["apec_attendance_report"] = df_apec_attendance
     # Shifts: bổ sung trường company_name
     list_shifts = data.get("shifts", [])
