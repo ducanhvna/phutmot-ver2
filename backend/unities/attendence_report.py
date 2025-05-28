@@ -12,7 +12,7 @@ from collections import Counter
 import xmlrpc.client
 from openpyxl.styles.fills import PatternFill
 from openpyxl.styles import Font, colors
-from apps.home.unities.unities import float_to_hours
+from unities.unities import float_to_hours
 import glob
 from openpyxl import load_workbook
 from pathlib import Path
@@ -1810,8 +1810,7 @@ class AttendenceReportModel():
             current_program = min(real_time_out, end_work_date_time, end_night_date_time) - \
                     max(real_time_in, end_rest_date_time, start_night_date_time)
             stage_second = max(0, current_program.total_seconds()/60.0)
-            # print('{}: night after now: {} - {} - {} -night - {}- {} - real - {} - {} '.format(row['name_employee'] ,row['name'], \
-            #                     stage_fist, stage_second, start_night_date_time, end_night_date_time, row['start_work_date_time'], row['end_work_date_time']))
+
             stage_night =  int(stage_fist + stage_second)
 
             end_night_date_time = start_work_date_time.replace(hour=6, minute=0, second=0)
@@ -1824,9 +1823,6 @@ class AttendenceReportModel():
             current_program = min(real_time_out, end_work_date_time, end_night_date_time) - \
                     max(real_time_in, end_rest_date_time, start_night_date_time)
             stage_second = max(0, current_program.total_seconds()/60.0)
-            # print('{}: night before now: {} - {} - {} -night - {}- {} - real - {} - {} '.format(row['name_employee'] ,row['name'], \
-            #                     stage_fist, stage_second, start_night_date_time, end_night_date_time, row['start_work_date_time'], row['end_work_date_time']))
-            
             stage_morning = int(stage_fist + stage_second)
             return stage_night + stage_morning
 
@@ -1873,7 +1869,6 @@ class AttendenceReportModel():
 
         r = requests.post(url, data=json.dumps(data), headers=headers)
         print(r.json())
-        data = r.json()
         # get list company
         ids = self.models.execute_kw(self.db, self.uid, self.password, 'res.company', 'search', [[("mis_id", "=", company_mis_id)]], {})
         list_company  = self.models.execute_kw(self.db, self.uid, self.password, 'res.company', 'read', [ids], {'fields': ['id', 'name']})

@@ -2,7 +2,7 @@ import pandas as pd
 from django.conf import settings
 import os
 from shutil import copyfile
-from django.core.files.storage import default_storage
+# from django.core.files.storage import default_storage
 
 def nearest(items, pivot):
     print('item vao')
@@ -35,10 +35,10 @@ def init_media_subfoder_report(user_name, sub_folder):
 #     new_file_name = 'test.xlsx'
 #     media_dir = settings.MEDIA_ROOT
     # print(media_dir)
-def copy_to_default_storage(old_file_path, new_file_name, media_dir):
-    new_file_path = os.path.join(media_dir, new_file_name)
-    copyfile(old_file_path, new_file_path)
-    # file = default_storage.open(new_file_name)
-    file_url = default_storage.url(os.path.relpath(new_file_path, settings.MEDIA_ROOT))
-    print(file_url)
-    return file_url
+# def copy_to_default_storage(old_file_path, new_file_name, media_dir):
+#     new_file_path = os.path.join(media_dir, new_file_name)
+#     copyfile(old_file_path, new_file_path)
+#     # file = default_storage.open(new_file_name)
+#     file_url = default_storage.url(os.path.relpath(new_file_path, settings.MEDIA_ROOT))
+#     print(file_url)
+#     return file_url
