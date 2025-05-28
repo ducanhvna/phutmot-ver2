@@ -83,6 +83,17 @@ export default function RootLayout({
                           list: "/employees",
                           meta: { canDelete: false },
                         },
+                        {
+                          name: "companies",
+                          list: "/companies",
+                          create: "/companies/create",
+                          meta: { canDelete: false },
+                        },
+                        {
+                          name: "reports",
+                          list: "/reports",
+                          meta: { canDelete: false },
+                        },
                       ]}
                       options={{
                         syncWithLocation: true,

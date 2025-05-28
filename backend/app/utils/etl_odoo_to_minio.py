@@ -16,6 +16,7 @@ from .report_exporters import (
     export_al_cl_report,
     export_al_cl_report_severance,
 )
+from .transform_helpers import add_name_field
 
 import sys
 import os
@@ -81,7 +82,8 @@ def extract_attendance(models, uid, limit, offset=0, startdate=None, enddate=Non
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.attendance', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
 def extract_upload_attendance(models, uid, limit, offset=0, startdate=None, enddate=None, fields=None):
-    default_fields = ['id', 'year', 'month', 'template', 'company_id', 'department_id', 'url']
+    default_fields = ['id', 'year', 'month', 'template', 'company_id', 'department_id', 'url'
+    ]
     fields = fields or default_fields
     domain = []
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.upload.attendance', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
@@ -190,6 +192,17 @@ def extract_attendance_trans(models, uid, limit, offset=0, startdate=None, endda
         domain = []
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.attendance.trans', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
+def extract_shifts(models, uid, limit, offset=0, fields=None):
+    default_fields = [
+        'id', 'name', 'start_work_time', 'end_work_time', 'total_work_time',
+        'start_rest_time', 'end_rest_time', 'company_id', 'rest_shifts', 'fix_rest_time',
+        'night', 'night_eat', 'dinner', 'lunch', 'breakfast', 'efficiency_factor',
+        'minutes_working_not_reduced'
+    ]
+    fields = fields or default_fields
+    domain = []
+    return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'shifts', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
+
 # 1. Extract tổng hợp với phân trang
 
 def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=None):
@@ -217,6 +230,7 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
         extract_al_report: 'hr.al.report',
         extract_cl_report: 'hr.cl.report',
         extract_attendance_trans: 'hr.attendance.trans',
+        extract_shifts: 'shifts',
     }
     def fetch_all(extract_func, fields, **kwargs):
         all_data = []
@@ -325,6 +339,12 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
         'total_attendance', 'ot_holiday', 'ot_normal'
     ]
     attendance_trans_fields = ['id', 'name', 'day', 'time', 'in_out']
+    shifts_fields = [
+        'id', 'name', 'start_work_time', 'end_work_time', 'total_work_time',
+        'start_rest_time', 'end_rest_time', 'company_id', 'rest_shifts', 'fix_rest_time',
+        'night', 'night_eat', 'dinner', 'lunch', 'breakfast', 'efficiency_factor',
+        'minutes_working_not_reduced'
+    ]
     # Gọi extract với fields truyền vào
     employees, extract_errors = fetch_all(extract_employees, employees_fields, startdate=startdate, enddate=enddate)
     contracts, err = fetch_all(extract_contracts, contracts_fields, startdate=startdate, enddate=enddate)
@@ -349,6 +369,8 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
     extract_errors.extend(err)
     attendance_trans, err = fetch_all(extract_attendance_trans, attendance_trans_fields, startdate=startdate, enddate=enddate)
     extract_errors.extend(err)
+    shifts, err = fetch_all(extract_shifts, shifts_fields)
+    extract_errors.extend(err)
     data = {
         'employees': employees,
         'contracts': contracts,
@@ -362,6 +384,7 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
         'cl_report': cl_report,
         'apec_attendance_report': apec_attendance_report,
         'attendance_trans': attendance_trans,
+        'shifts': shifts,
         'extract_errors': extract_errors,
     }
     # Save raw data to Excel and upload to MinIO
@@ -400,13 +423,24 @@ def transform(data):
     # Chuẩn hóa, loại bỏ test, merge dữ liệu, tính toán tổng hợp
     result = {}
     # Employees
-    df_emp = pd.DataFrame(data["employees"])
+    list_employees = data["employees"]
+    add_name_field(list_employees, id_field="company_id", name_field="company_name")
+    add_name_field(list_employees, id_field="department_id", name_field="department_name")
+    add_name_field(list_employees, id_field="user_id", name_field="user_name")
+    add_name_field(list_employees, id_field="part_time_company_id", name_field="part_time_company_name")
+    add_name_field(list_employees, id_field="part_time_department_id", name_field="part_time_department_name")
+    add_name_field(list_employees, id_field="resource_calendar_id", name_field="resource_calendar_name")
+    df_emp = pd.DataFrame(list_employees)
     if not df_emp.empty:
         df_emp = df_emp.drop_duplicates(subset=["id"])
         df_emp = df_emp[~df_emp["name"].str.lower().str.contains("test")]
     result["employees"] = df_emp
     # Contracts
-    df_contracts = pd.DataFrame(data["contracts"])
+    list_contracts = data["contracts"]
+    add_name_field(list_contracts, id_field="employee_id", name_field="employee_name")
+    add_name_field(list_contracts, id_field="company_id", name_field="company_name")
+    add_name_field(list_contracts, id_field="resource_calendar_id", name_field="resource_calendar_name")
+    df_contracts = pd.DataFrame(list_contracts)
     if not df_contracts.empty:
         df_contracts["date_start"] = pd.to_datetime(df_contracts["date_start"], errors="coerce")
         df_contracts["date_end"] = pd.to_datetime(df_contracts["date_end"], errors="coerce")
@@ -415,19 +449,20 @@ def transform(data):
     df_companies = pd.DataFrame(data["companies"])
     result["companies"] = df_companies
     # Leaves
-    df_leaves = pd.DataFrame(data["leaves"])
+    list_leaves = data["leaves"]
+    add_name_field(list_leaves, id_field="employee_id", name_field="employee_name")
+    add_name_field(list_leaves, id_field="company_id", name_field="company_name")
+    add_name_field(list_leaves, id_field="department_id", name_field="department_name")
+    df_leaves = pd.DataFrame(list_leaves)
     if not df_leaves.empty:
         df_leaves["date_from"] = pd.to_datetime(df_leaves["date_from"], errors="coerce")
         df_leaves["date_to"] = pd.to_datetime(df_leaves["date_to"], errors="coerce")
     result["leaves"] = df_leaves
-    # Attendance (BỎ, thay bằng apec_attendance_report)
-    # df_attendance = pd.DataFrame(data["attendance"])
-    # if not df_attendance.empty:
-    #     df_attendance["check_in"] = pd.to_datetime(df_attendance["check_in"], errors="coerce")
-    #     df_attendance["check_out"] = pd.to_datetime(df_attendance["check_out"], errors="coerce")
-    # result["attendance"] = df_attendance
     # Upload Attendance
-    df_upload_attendance = pd.DataFrame(data["upload_attendance"])
+    list_upload_attendance = data["upload_attendance"]
+    add_name_field(list_upload_attendance, id_field="company_id", name_field="company_name")
+    add_name_field(list_upload_attendance, id_field="department_id", name_field="department_name")
+    df_upload_attendance = pd.DataFrame(list_upload_attendance)
     result["upload_attendance"] = df_upload_attendance
     # KPI Weekly Report Summary
     df_kpi_weekly = pd.DataFrame(data["kpi_weekly_report_summary"])
@@ -435,23 +470,41 @@ def transform(data):
         df_kpi_weekly["date"] = pd.to_datetime(df_kpi_weekly["date"], errors="coerce")
     result["kpi_weekly_report_summary"] = df_kpi_weekly
     # HR Weekly Report
-    df_hr_weekly = pd.DataFrame(data["hr_weekly_report"])
+    list_hr_weekly = data["hr_weekly_report"]
+    add_name_field(list_hr_weekly, id_field="employee_id", name_field="employee_name")
+    add_name_field(list_hr_weekly, id_field="company_id", name_field="company_name")
+    add_name_field(list_hr_weekly, id_field="department_id", name_field="department_name")
+    df_hr_weekly = pd.DataFrame(list_hr_weekly)
     if not df_hr_weekly.empty and "date" in df_hr_weekly:
         df_hr_weekly["date"] = pd.to_datetime(df_hr_weekly["date"], errors="coerce")
     result["hr_weekly_report"] = df_hr_weekly
     # AL Report
-    df_al_report = pd.DataFrame(data["al_report"])
+    list_al_report = data["al_report"]
+    add_name_field(list_al_report, id_field="employee_id", name_field="employee_name")
+    add_name_field(list_al_report, id_field="company_id", name_field="company_name")
+    add_name_field(list_al_report, id_field="department_id", name_field="department_name")
+    add_name_field(list_al_report, id_field="part_time_company_id", name_field="part_time_company_name")
+    df_al_report = pd.DataFrame(list_al_report)
     if not df_al_report.empty:
         df_al_report["year"] = pd.to_datetime(df_al_report["year"], format="%Y", errors="coerce")
     result["al_report"] = df_al_report
     # CL Report
-    df_cl_report = pd.DataFrame(data["cl_report"])
+    list_cl_report = data["cl_report"]
+    add_name_field(list_cl_report, id_field="employee_id", name_field="employee_name")
+    add_name_field(list_cl_report, id_field="company_id", name_field="company_name")
+    add_name_field(list_cl_report, id_field="department_id", name_field="department_name")
+    df_cl_report = pd.DataFrame(list_cl_report)
     if not df_cl_report.empty:
         df_cl_report["year"] = pd.to_datetime(df_cl_report["year"], format="%Y", errors="coerce")
     result["cl_report"] = df_cl_report
     # APEC Attendance Report (thay thế attendance)
     df_apec_attendance = pd.DataFrame(data["apec_attendance_report"])
     result["apec_attendance_report"] = df_apec_attendance
+    # Shifts: bổ sung trường company_name
+    list_shifts = data.get("shifts", [])
+    add_name_field(list_shifts, id_field="company_id", name_field="company_name")
+    result["shifts"] = pd.DataFrame(list_shifts)
+    # Bổ sung cho các dữ liệu khác có *_id nếu cần
     # Có thể bổ sung merge, join, tính toán tổng hợp ở đây nếu cần
     return result
 
