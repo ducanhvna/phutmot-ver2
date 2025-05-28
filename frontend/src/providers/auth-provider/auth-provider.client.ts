@@ -35,7 +35,12 @@ export const getAccessTokenFromCookie = (): string => {
 export const authProviderClient: AuthProvider = {
   login: async ({ email, username, password, remember, setToken }) => {
     try {
-      const response = await axios.post(`${API_URL}/login/`,{ username, password }, { withCredentials: true });
+      // Đúng chuẩn OAuth2PasswordRequestForm: truyền form-urlencoded
+      const response = await axios.post(
+        `${API_URL}/auth/login/`,
+        new URLSearchParams({ username, password }),
+        { withCredentials: true }
+      );
 
       if (response.data.access_token) {
         const user = response.data.user;

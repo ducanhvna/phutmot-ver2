@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useLogin, useRegister } from "@refinedev/core";
 import {
   Row,
@@ -25,6 +25,30 @@ export const AuthPage: React.FC<AuthPageProps> = ({ type = "login" }) => {
   const [form] = Form.useForm();
   const { mutate: login } = useLogin();
   const { mutate: register } = useRegister();
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  const handleLogin = async (values: any) => {
+    setApiError(null);
+    try {
+      await login(values, {
+        onError: (error: any) => {
+          // Xử lý lỗi trả về từ backend
+          if (error?.response?.data?.detail && Array.isArray(error.response.data.detail)) {
+            // FastAPI validation error dạng list
+            setApiError(
+              error.response.data.detail.map((d: any) => d.msg).join("; ")
+            );
+          } else if (error?.response?.data?.detail) {
+            setApiError(error.response.data.detail);
+          } else {
+            setApiError("Đăng nhập thất bại. Vui lòng thử lại.");
+          }
+        },
+      });
+    } catch (e) {
+      setApiError("Đăng nhập thất bại. Vui lòng thử lại.");
+    }
+  };
 
   const CardTitle = (
     <Title level={3} className="title">
@@ -54,7 +78,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ type = "login" }) => {
                   } else if (type === "forgotPassword") {
                     console.log("Forgot password request:", values);
                   } else {
-                    login(values);
+                    handleLogin(values);
                   }
                 }}
                 requiredMark={false}
@@ -139,6 +163,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ type = "login" }) => {
                       </a>
                     </div>
                   </>
+                )}
+
+                {apiError && (
+                  <div style={{ color: "red", marginTop: 8, marginBottom: 8 }}>{apiError}</div>
                 )}
 
                 <Button type="primary" size="large" htmlType="submit" block>

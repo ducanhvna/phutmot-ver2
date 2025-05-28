@@ -18,3 +18,4 @@ python-dotenv
 apscheduler
 celery
 redis
+minio

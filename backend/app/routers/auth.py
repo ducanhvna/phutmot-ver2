@@ -6,6 +6,7 @@ from app.models.core import User
 from app.utils.auth import get_password_hash, verify_password, create_access_token
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import List
+from datetime import datetime, timedelta
 
 router = APIRouter()
 
@@ -33,5 +34,18 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     user = db.query(User).filter(User.email == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Incorrect email or password")
-    access_token = create_access_token({"sub": user.email})
-    return {"access_token": access_token, "token_type": "bearer"}
+    expires_delta = timedelta(days=30)  # 30 ngày giống frontend
+    expires_at = (datetime.utcnow() + expires_delta).isoformat() + "Z"
+    access_token = create_access_token({"sub": user.email}, expires_delta=expires_delta)
+    user_info = {
+        "name": user.full_name or user.email,
+        "email": user.email,
+        "roles": [user.role] if hasattr(user, "role") and user.role else ["user"],
+        "avatar": f"https://i.pravatar.cc/150?img={user.id % 70}",
+    }
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "expires_at": expires_at,
+        "user": user_info,
+    }
