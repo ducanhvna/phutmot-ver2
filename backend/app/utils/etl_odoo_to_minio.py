@@ -333,8 +333,8 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
     extract_errors.extend(err)
     leaves, err = fetch_all(extract_leaves, leaves_fields, startdate=startdate, enddate=enddate)
     extract_errors.extend(err)
-    attendance, err = fetch_all(extract_attendance, attendance_fields, startdate=startdate, enddate=enddate)
-    extract_errors.extend(err)
+    # attendance, err = fetch_all(extract_attendance, attendance_fields, startdate=startdate, enddate=enddate)
+    # extract_errors.extend(err)
     upload_attendance, err = fetch_all(extract_upload_attendance, upload_attendance_fields)
     extract_errors.extend(err)
     kpi_weekly_report_summary, err = fetch_all(extract_kpi_weekly_report_summary, kpi_weekly_report_summary_fields, startdate=startdate, enddate=enddate)
@@ -354,7 +354,7 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
         'contracts': contracts,
         'companies': companies,
         'leaves': leaves,
-        'attendance': attendance,
+        # 'attendance': attendance,  # BỎ HOÀN TOÀN attendance
         'upload_attendance': upload_attendance,
         'kpi_weekly_report_summary': kpi_weekly_report_summary,
         'hr_weekly_report': hr_weekly_report,
@@ -420,12 +420,12 @@ def transform(data):
         df_leaves["date_from"] = pd.to_datetime(df_leaves["date_from"], errors="coerce")
         df_leaves["date_to"] = pd.to_datetime(df_leaves["date_to"], errors="coerce")
     result["leaves"] = df_leaves
-    # Attendance
-    df_attendance = pd.DataFrame(data["attendance"])
-    if not df_attendance.empty:
-        df_attendance["check_in"] = pd.to_datetime(df_attendance["check_in"], errors="coerce")
-        df_attendance["check_out"] = pd.to_datetime(df_attendance["check_out"], errors="coerce")
-    result["attendance"] = df_attendance
+    # Attendance (BỎ, thay bằng apec_attendance_report)
+    # df_attendance = pd.DataFrame(data["attendance"])
+    # if not df_attendance.empty:
+    #     df_attendance["check_in"] = pd.to_datetime(df_attendance["check_in"], errors="coerce")
+    #     df_attendance["check_out"] = pd.to_datetime(df_attendance["check_out"], errors="coerce")
+    # result["attendance"] = df_attendance
     # Upload Attendance
     df_upload_attendance = pd.DataFrame(data["upload_attendance"])
     result["upload_attendance"] = df_upload_attendance
@@ -449,7 +449,7 @@ def transform(data):
     if not df_cl_report.empty:
         df_cl_report["year"] = pd.to_datetime(df_cl_report["year"], format="%Y", errors="coerce")
     result["cl_report"] = df_cl_report
-    # APEC Attendance Report
+    # APEC Attendance Report (thay thế attendance)
     df_apec_attendance = pd.DataFrame(data["apec_attendance_report"])
     result["apec_attendance_report"] = df_apec_attendance
     # Có thể bổ sung merge, join, tính toán tổng hợp ở đây nếu cần
