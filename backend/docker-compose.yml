@@ -40,7 +40,7 @@ services:
       - MINIO_ROOT_USER=minioadmin
       - MINIO_ROOT_PASSWORD=minioadmin
     volumes:
-      - minio_data:/data
+      - ./minio_data:/data
       - ./minio-init.sh:/minio-init.sh
     entrypoint: sh /minio-init.sh
     networks:
