@@ -103,32 +103,40 @@ def export_sumary_attendance_report_department(data, output_dir, data_key='atten
                 pd.DataFrame().to_excel(writer, sheet_name='No Data', index=False)
     return file_path
 
-def export_late_in_5_miniutes_report_ho(data, output_dir):
+def export_late_in_5_miniutes_report(data, output_dir):
     """
-    Xuất báo cáo đi muộn dưới 5 phút cho khối HO, mỗi sheet là 1 công ty.
+    Xuất báo cáo đi muộn dưới 5 phút, mỗi công ty là 1 file riêng biệt.
     """
-    file_path = os.path.join(output_dir, 'late_in_5_miniutes_report_ho.xlsx')
-    df = data.get('late_in_5_miniutes')
-    if not isinstance(df, pd.DataFrame) or df.empty:
+    # Hỗ trợ cả trường hợp data là dict chứa DataFrame hoặc trực tiếp là DataFrame
+    df = data.get('late_in_5_miniutes') if isinstance(data, dict) else data
+    if df is None or not isinstance(df, pd.DataFrame) or df.empty:
+        file_path = os.path.join(output_dir, 'late_in_5_miniutes_report_No_Data.xlsx')
         with pd.ExcelWriter(file_path) as writer:
             pd.DataFrame().to_excel(writer, sheet_name='No Data', index=False)
-        return file_path
-
-    # Group theo company hoặc company_name
+        return [file_path]
+    # Xác định cột group theo công ty
     if 'company' in df.columns:
         group_col = 'company'
     elif 'company_name' in df.columns:
         group_col = 'company_name'
     else:
-        # Nếu không có cột group, xuất 1 sheet
+        file_path = os.path.join(output_dir, 'late_in_5_miniutes_report_No_Group.xlsx')
         df.to_excel(file_path, index=False)
-        return file_path
-
-    with pd.ExcelWriter(file_path) as writer:
-        for company, group in df.groupby(group_col):
-            sheet_name = str(company)[:31].replace('/', '_').replace('\\', '_')
-            group.to_excel(writer, sheet_name=sheet_name, index=False)
-    return file_path
+        return [file_path]
+    file_paths = []
+    for company, group in df.groupby(group_col):
+        if not group.empty:
+            safe_company = str(company)[:20].replace('/', '_').replace('\\', '_')
+            file_path = os.path.join(output_dir, f"late_in_5_miniutes_report_{safe_company}.xlsx")
+            with pd.ExcelWriter(file_path) as writer:
+                group.to_excel(writer, sheet_name='Data', index=False)
+            file_paths.append(file_path)
+    if not file_paths:
+        file_path = os.path.join(output_dir, 'late_in_5_miniutes_report_No_Data.xlsx')
+        with pd.ExcelWriter(file_path) as writer:
+            pd.DataFrame().to_excel(writer, sheet_name='No Data', index=False)
+        return [file_path]
+    return file_paths
 
 def export_feed_report(data, output_dir):
     """

@@ -94,7 +94,7 @@ def test_export_all_reports_with_real_data():
         (report_exporters.export_al_cl_report_department, {'data_key': 'al_report'}, 'al_cl_report_department.xlsx'),
         (report_exporters.export_sumary_attendance_report, {'data_key': 'apec_attendance_report'}, 'sumary_attendance_report.xlsx'),
         (report_exporters.export_sumary_attendance_report_department, {'data_key': 'apec_attendance_report'}, 'sumary_attendance_report_department.xlsx'),
-        (report_exporters.export_late_in_5_miniutes_report_ho, {}, 'late_in_5_miniutes_report_ho.xlsx'),
+        (report_exporters.export_late_in_5_miniutes_report, {}, 'late_in_5_miniutes_report.xlsx'),
         (report_exporters.export_feed_report, {}, 'feed_report.xlsx'),
         (report_exporters.export_kpi_weekly_report_ho, {}, 'kpi_weekly_report_ho.xlsx'),
         (report_exporters.export_kpi_weekly_report, {}, 'kpi_weekly_report.xlsx'),

@@ -8,7 +8,7 @@ from .report_exporters import (
     export_al_cl_report_department,
     export_sumary_attendance_report,
     export_sumary_attendance_report_department,
-    export_late_in_5_miniutes_report_ho,
+    export_late_in_5_miniutes_report,
     export_feed_report,
     export_kpi_weekly_report_ho,
     export_kpi_weekly_report,
@@ -396,7 +396,7 @@ def load_to_minio(data, report_date=None):
         ("al_report", export_al_cl_report, "al_cl_report"),
         ("feed_report", export_feed_report, "feed_report"),
         ("kpi_weekly_report_summary", export_kpi_weekly_report_ho, "kpi_weekly_report_ho"),
-        ("late_in_5_miniutes", export_late_in_5_miniutes_report_ho, "late_in_5_miniutes_report_ho"),
+        ("late_in_5_miniutes", export_late_in_5_miniutes_report, "late_in_5_miniutes_report_ho"),
         # ... bổ sung các loại báo cáo khác nếu cần ...
     ]
     if not report_date:
