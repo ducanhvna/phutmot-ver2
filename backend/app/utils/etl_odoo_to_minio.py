@@ -16,7 +16,7 @@ from .report_exporters import (
     export_al_cl_report,
     export_al_cl_report_severance,
 )
-from .transform_helpers import add_name_field, calculate_actual_work_time_ho_row
+from .transform_helpers import add_name_field, calculate_actual_work_time_ho_row, process_report_raw, transform_apec_attendance_report
 
 import sys
 import os
@@ -486,7 +486,7 @@ def transform(data):
     add_name_field(list_al_report, id_field="part_time_company_id", name_field="part_time_company_name")
     df_al_report = pd.DataFrame(list_al_report)
     if not df_al_report.empty:
-        df_al_report["year"] = pd.to_datetime(df_al_report["year"], format="%Y", errors="coerce")
+        df_al_report["date_calculate_leave"] = pd.to_datetime(df_al_report["date_calculate_leave"])
     result["al_report"] = df_al_report
     # CL Report
     list_cl_report = data["cl_report"]
@@ -495,13 +495,16 @@ def transform(data):
     add_name_field(list_cl_report, id_field="department_id", name_field="department_name")
     df_cl_report = pd.DataFrame(list_cl_report)
     if not df_cl_report.empty:
-        df_cl_report["year"] = pd.to_datetime(df_cl_report["year"], format="%Y", errors="coerce")
+        df_cl_report["date_calculate"] = pd.to_datetime(df_cl_report["date_calculate"])
     result["cl_report"] = df_cl_report
+
     # APEC Attendance Report (thay thế attendance)
     df_apec_attendance = pd.DataFrame(data["apec_attendance_report"])
-    # Nếu có trường 'couple' và các attendance_attempt, sinh thêm cột 'actual_work_time_ho'
-    if not df_apec_attendance.empty and 'couple' in df_apec_attendance.columns:
-        df_apec_attendance['actual_work_time_ho'] = df_apec_attendance.apply(calculate_actual_work_time_ho_row, axis=1)
+    # Sử dụng transform_apec_attendance_report để sinh couple, couple_out_in, tổng out_ho, các trường datetime
+    if not df_apec_attendance.empty:
+        df_apec_attendance = transform_apec_attendance_report(df_apec_attendance)
+        if 'couple' in df_apec_attendance.columns:
+            df_apec_attendance['actual_work_time_ho'] = df_apec_attendance.apply(calculate_actual_work_time_ho_row, axis=1)
     result["apec_attendance_report"] = df_apec_attendance
     # Shifts: bổ sung trường company_name
     list_shifts = data.get("shifts", [])

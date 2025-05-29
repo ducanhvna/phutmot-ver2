@@ -1,3 +1,21 @@
+import pandas as pd
+from datetime import timedelta
+
+def float_to_hours(float_time_hour):
+    """
+    Chuyển đổi số thực giờ (float) sang tuple (giờ, phút, giây).
+    Ví dụ: 8.5 -> (8, 30, 0)
+    """
+    if float_time_hour is None or pd.isnull(float_time_hour):
+        return 0, 0, 0
+    try:
+        h = int(float_time_hour)
+        m = int((float_time_hour - h) * 60)
+        s = int(round(((float_time_hour - h) * 60 - m) * 60))
+        return h, m, s
+    except Exception:
+        return 0, 0, 0
+
 def add_name_field(data_list, id_field='company_id'):
     """
     Bổ sung trường *_name cho mỗi dict trong data_list dựa vào id_field dạng [id, name].
@@ -59,3 +77,233 @@ def calculate_actual_work_time_ho_row(row):
         update_data_item = calculate_actual_work_time_couple(row, real_time_in, real_time_out)
         result += update_data_item['total_work_time']
     return result
+
+def process_report_raw(row):
+    """
+    Tính toán và sinh các trường datetime liên quan đến ca làm việc cho 1 dòng báo cáo chấm công.
+    Đầu vào: row (dict hoặc Series) cần có các trường: date, start_work_time, end_work_time, start_rest_time, end_rest_time, shift_start, shift_end, rest_start, rest_end
+    Đầu ra: tuple (shift_start_datetime, shift_end_datetime, rest_start_datetime, rest_end_datetime)
+    """
+    shift_start_datetime = None
+    shift_end_datetime = None
+    rest_start_datetime = None
+    rest_end_datetime = None
+    try:
+        start_work_time = row.get('start_work_time', None)
+        if pd.isnull(start_work_time) or start_work_time is None:
+            start_work_time = row.get('shift_start', None)
+        end_work_time = row.get('end_work_time', None)
+        if pd.isnull(end_work_time) or end_work_time is None:
+            end_work_time = row.get('shift_end', None)
+        start_rest_time = row.get('start_rest_time', None)
+        if pd.isnull(start_rest_time) or start_rest_time is None:
+            start_rest_time = row.get('rest_start', None)
+        end_rest_time = row.get('end_rest_time', None)
+        if pd.isnull(end_rest_time) or end_rest_time is None:
+            end_rest_time = row.get('rest_end', None)
+        h, m, s = float_to_hours(start_work_time)
+        shift_start_datetime = row['date'].replace(hour=h, minute=m, second=s)
+        h, m, s = float_to_hours(end_work_time)
+        shift_end_datetime = row['date'].replace(hour=h, minute=m, second=s)
+        if end_work_time is not None and start_work_time is not None and end_work_time < start_work_time:
+            shift_end_datetime = shift_end_datetime + timedelta(days=1)
+        h, m, s = float_to_hours(start_rest_time)
+        rest_start_datetime = row['date'].replace(hour=h, minute=m, second=s)
+        if start_rest_time is not None and start_work_time is not None and start_rest_time < start_work_time:
+            rest_start_datetime = rest_start_datetime + timedelta(days=1)
+        h, m, s = float_to_hours(end_rest_time)
+        rest_end_datetime = row['date'].replace(hour=h, minute=m, second=s)
+        if end_rest_time is not None and start_work_time is not None and end_rest_time < start_work_time:
+            rest_end_datetime = rest_end_datetime + timedelta(days=1)
+    except Exception as ex:
+        # Có thể log lỗi nếu cần
+        pass
+    return shift_start_datetime, shift_end_datetime, rest_start_datetime, rest_end_datetime
+
+def find_couple(row, list_out_leave_for_work=None):
+    """
+    Sinh trường 'couple' cho 1 dòng báo cáo chấm công (apec_attendance_report).
+    Nếu list_out_leave_for_work không truyền vào thì mặc định là [].
+    Trả về list các cặp (in_index, out_index) ứng với các lần vào/ra hợp lệ.
+    """
+    result = [[]]
+    time_stack = []
+    flags = []
+    for index in range(1, 16):
+        flags.append('')
+    if list_out_leave_for_work is None:
+        list_out_leave_for_work = []
+    for leave_item in list_out_leave_for_work:
+        min_delete_index = 16
+        max_delete_index = -1
+        for index in range(15, 0, -1):
+            att_attempt = row.get(f'attendance_attempt_{index}')
+            if att_attempt is not None and \
+                leave_item.get('attendance_missing_from') is not None and \
+                leave_item.get('attendance_missing_to') is not None and \
+                (att_attempt >= leave_item['attendance_missing_from']) and \
+                (att_attempt <= leave_item['attendance_missing_to']):
+                flags[index] = 'x'  # delete
+            if min_delete_index < index:
+                min_delete_index = index
+            if max_delete_index < index:
+                max_delete_index = index
+        # (logic xóa các attendance theo flags nếu cần)
+    for index in range(1, 16):
+        attendance_attempt = row.get(f'attendance_attempt_{index}')
+        attendance_inout = row.get(f'attendance_inout_{index}')
+        if attendance_inout == 'I':
+            time_stack.append(index)
+        elif attendance_inout == 'O':
+            if len(time_stack) > 0:
+                result[0].append((time_stack[len(time_stack) - 1], index))
+            time_stack = []
+    return result
+
+def find_couple_out_in_row(row):
+    """
+    Tìm các cặp (O, I) và tổng số phút out_ho cho 1 dòng báo cáo chấm công (apec_attendance_report).
+    Trả về tuple (couple_out_in, total_out_ho)
+    """
+    result = [[]]
+    time_stack = []
+    flags = []
+    total_out_minute = 0
+    for index in range(1, 16):
+        flags.append('')
+    for index in range(1, 16):
+        attendance_attempt = row.get(f'attendance_attempt_{index}')
+        attendance_inout = row.get(f'attendance_inout_{index}')
+        if attendance_inout == 'O':
+            time_stack.append(index)
+        elif attendance_inout == 'I':
+            if len(time_stack) > 0:
+                result[0].append((time_stack[-1], index))
+                in_index = time_stack[-1]
+                out_index = index
+                real_time_in = row.get(f'attendance_attempt_{in_index}')
+                real_time_out = row.get(f'attendance_attempt_{out_index}')
+                update_data_item = calculate_actual_work_time_couple_for_out_in(row, real_time_in, real_time_out)
+                total_out_minute += update_data_item['total_work_time']
+            time_stack = []
+    return result, total_out_minute
+
+def calculate_actual_work_time_couple_for_out_in(row, real_time_in, real_time_out):
+    """
+    Hàm phụ trợ tính thời gian làm việc thực tế cho 1 cặp out-in (O-I).
+    """
+    night_work_time = 0
+    fix_rest_time = row.get('fix_rest_time', False)
+    try:
+        if (real_time_in is None) or (real_time_in == '') or (real_time_out is None) or (real_time_out == ''):
+            res = 0
+        else:
+            start_work_date_time = row['shift_start_datetime'].replace(second=0)
+            end_work_date_time = row['shift_end_datetime'].replace(second=0)
+            start_rest_date_time = row['rest_start_datetime'].replace(second=0)
+            end_rest_date_time = row['rest_end_datetime'].replace(second=0)
+            current_program = min(real_time_out.replace(second=0), start_rest_date_time) - max(real_time_in.replace(second=0), start_work_date_time)
+            stage_fist = max(0, current_program.total_seconds()//60.0)
+            current_program = min(real_time_out.replace(second=0), end_work_date_time) - max(real_time_in.replace(second=0), end_rest_date_time)
+            stage_second = max(0, current_program.total_seconds()//60.0)
+            res = int(stage_fist + stage_second)
+            if fix_rest_time:
+                res = min(res, 480)
+    except Exception:
+        res = 0
+    return {'total_work_time': res, 'night_hours_normal': night_work_time}
+
+def transform_apec_attendance_report(df, df_old=None):
+    """
+    Transform cho df apec_attendance_report: sinh couple, couple_out_in, tổng out_ho, các trường datetime, attendance_attempt, ...
+    df_old: DataFrame chứa dữ liệu gốc để mapping attendance_attempt nếu cần
+    """
+    if df.empty:
+        return df
+    # Sinh các trường datetime ca làm việc
+    df[['shift_start_datetime','shift_end_datetime', 'rest_start_datetime', 'rest_end_datetime']] = df.apply(process_report_raw, axis=1, result_type='expand')
+    # Sinh couple (I-O)
+    df['couple'] = df.apply(lambda row: find_couple_row(row), axis=1)
+    # Sinh couple_out_in (O-I) và tổng out_ho
+    df[['couple_out_in', 'total_out_ho']] = df.apply(lambda row: pd.Series(find_couple_out_in_row(row)), axis=1)
+    # Nếu có df_old, sinh các trường attendance_attempt, attendance_inout, last_attendance_attempt, night_shift...
+    if df_old is not None:
+        df[['has_attendance', 'min_time_out', 'max_time_in']] = df.apply(lambda row: pd.Series(get_scheduling_time_row(row, df_old)), axis=1)
+    return df
+
+def find_couple_row(row):
+    """
+    Hàm sinh couple (I-O) cho 1 dòng, tương tự find_couple nhưng không cần list_out_leave_for_work.
+    """
+    result = [[]]
+    time_stack = []
+    for index in range(1, 16):
+        attendance_attempt = row.get(f'attendance_attempt_{index}')
+        attendance_inout = row.get(f'attendance_inout_{index}')
+        if attendance_inout == 'I':
+            time_stack.append(index)
+        elif attendance_inout == 'O':
+            if len(time_stack) > 0:
+                result[0].append((time_stack[-1], index))
+            time_stack = []
+    return result
+
+def get_scheduling_time_row(row, df_old):
+    """
+    Sinh các trường attendance_attempt_{i}, attendance_inout_{i}, last_attendance_attempt, night_shift,... cho 1 dòng từ df_old.
+    Trả về tuple (has_attendance, min_time_out, max_time_in)
+    """
+    import pandas as pd
+    has_attendance = False
+    min_time_out = None
+    max_time_in = None
+    data = df_old[(df_old['Ngày'] == row['date_str']) & (df_old['time_keeping_code'] == row['time_keeping_code'])]
+    update_data = {f'attendance_attempt_{i}': False for i in range(1, 16)}
+    update_data.update({f'attendance_inout_{i}': False for i in range(1, 16)})
+    update_data['last_attendance_attempt'] = False
+    update_data['night_shift'] = False
+    t_fist = None
+    t_last = None
+    t_mid_array = []
+    inout_mid_array = []
+    len_df = len(data['Giờ']) if 'Giờ' in data else 0
+    if len_df > 1:
+        t_last = data.iloc[len_df - 1]['Giờ']
+    index_col = 1
+    if len_df > 0:
+        t_fist = data.iloc[0]['Giờ']
+        for idx, item in data.iterrows():
+            update_data[f'attendance_attempt_{index_col}'] = item['Giờ']
+            update_data[f'attendance_inout_{index_col}'] = item['in_out']
+            if item['Giờ'] != t_fist and item['Giờ'] != t_last:
+                t_mid_array.append(item['Giờ'])
+                inout_mid_array.append(item['in_out'])
+            update_data['last_attendance_attempt'] = item['Giờ']
+            index_col = min(15, index_col + 1)
+    max_time_in = t_fist
+    # Sinh couple
+    update_data['couple'] = find_couple_row(update_data)
+    update_data['fix_rest_time'] = row['fix_rest_time'] if pd.notnull(row['fix_rest_time']) else False
+    try:
+        if max_time_in is not None and max_time_in.replace(second=0) < row['shift_start_datetime']:
+            max_time_in = max([a for a in data['Giờ'] if a.replace(second=0) <= row['shift_start_datetime']])
+    except Exception as ex:
+        print("nho ti ti: ", ex)
+    min_time_out = t_last
+    try:
+        if min_time_out is not None and min_time_out.replace(second=0) > row['shift_end_datetime']:
+            min_time_out = min([a for a in data['Giờ'] if a.replace(second=0) >= row['shift_end_datetime']])
+    except Exception as ex:
+        print("Hoi kho nhi: ", ex)
+    update_data['id'] = row['id']
+    update_data['shift_name'] = row['shift_name']
+    update_data['rest_shift'] = row['rest_shift']
+    update_data['total_shift_work_time'] = row['total_shift_work_time']
+    update_data['shift_start_datetime'] = row['shift_start_datetime']
+    update_data['shift_end_datetime'] = row['shift_end_datetime']
+    update_data['rest_start_datetime'] = row['rest_start_datetime']
+    update_data['rest_end_datetime'] = row['rest_end_datetime']
+    # Tính actual_work_time_ho
+    update_data_result = calculate_actual_work_time_ho_row(update_data)
+    # Trả về tuple (has_attendance, min_time_out, max_time_in)
+    return has_attendance, min_time_out, max_time_in
