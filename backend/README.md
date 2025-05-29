@@ -328,6 +328,10 @@ docker-compose up --build
 alembic revision --autogenerate -m "init all tables"
 alembic upgrade head
 
+### Update lại model
+docker compose exec fastapi alembic revision --autogenerate -m "add summary_report_monthly"
+docker compose exec fastapi alembic upgrade head
+
 ## Nghiệp vụ mới & Thay đổi ETL/Báo cáo (2025-05)
 
 ### 1. Refactor ETL Odoo → MinIO
