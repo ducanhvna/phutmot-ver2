@@ -9,13 +9,9 @@ from sqlalchemy import pool
 from sqlalchemy import create_engine
 
 from alembic import context
-# Import trực tiếp các class model để Alembic chắc chắn nhận diện
-from app.models.core import User, Company, ServicePlan, Subscription, Payment
-from app.models.etl import ETLJob
-from app.models.hrms.employee import (
-    Employee, EmployeeLogin, EmployeeContract, EmployeeAttendance, EmployeeShift, EmployeeProject
-)
-from app.db import Base  # Thêm dòng này để lấy Base chung
+from app.models import core
+from app.models import etl  # Đảm bảo Alembic nhận diện ETLJob và các bảng ETL
+from app.db import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -28,22 +24,7 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from myapp import mymodel
-# Gộp metadata của core, etl, hrms (employee) nhưng loại trùng
-from app.models import core, etl
-from app.models.hrms import employee
-metadatas = []
-if hasattr(core, 'Base') and core.Base.metadata not in metadatas:
-    metadatas.append(core.Base.metadata)
-if hasattr(etl, 'Base') and etl.Base.metadata not in metadatas:
-    metadatas.append(etl.Base.metadata)
-if hasattr(employee, 'Base') and employee.Base.metadata not in metadatas:
-    metadatas.append(employee.Base.metadata)
-# Nếu chỉ có 1 metadata thì truyền trực tiếp, nếu nhiều thì truyền list
-if len(metadatas) == 1:
-    target_metadata = metadatas[0]
-else:
-    target_metadata = metadatas
+target_metadata = core.Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
