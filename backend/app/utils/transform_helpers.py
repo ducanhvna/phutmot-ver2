@@ -16,16 +16,17 @@ def float_to_hours(float_time_hour):
     except Exception:
         return 0, 0, 0
 
-def add_name_field(data_list, id_field='company_id'):
+def add_name_field(data_list, id_field='company_id', name_field=None):
     """
     Bổ sung trường *_name cho mỗi dict trong data_list dựa vào id_field dạng [id, name].
     Nếu không có hoặc lỗi, gán False.
     id_field: tên trường id (vd: company_id, department_id, ...)
-    name_field sẽ tự động là id_field thay '_id' cuối cùng bằng '_name'.
+    name_field: tên trường name muốn thêm, nếu None sẽ tự động là id_field thay '_id' cuối cùng bằng '_name'.
     """
     if not id_field.endswith('_id'):
         raise ValueError('id_field phải kết thúc bằng _id')
-    name_field = id_field[:-3] + '_name'
+    if name_field is None:
+        name_field = id_field[:-3] + '_name'
     for item in data_list:
         try:
             name_value = item[id_field][1]
