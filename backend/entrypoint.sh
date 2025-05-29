@@ -10,9 +10,8 @@ echo "PostgreSQL started"
 
 # Thử migrate, nếu lỗi sẽ xóa bảng alembic_version rồi migrate lại (chỉ nên dùng khi thực sự cần thiết)
 alembic upgrade head || {
-  echo "Alembic migrate failed, trying to reset alembic_version...";
-  psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h db -c "DROP TABLE IF EXISTS alembic_version CASCADE;" || true
-  alembic upgrade head
+  echo "Alembic migrate failed!";
+  exit 1
 }
 
 # Sync superuser and company data nếu cần (nên kiểm tra logic tránh trùng lặp)
