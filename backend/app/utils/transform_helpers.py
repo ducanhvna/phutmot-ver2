@@ -308,3 +308,35 @@ def get_scheduling_time_row(row, df_old):
     update_data_result = calculate_actual_work_time_ho_row(update_data)
     # Trả về tuple (has_attendance, min_time_out, max_time_in)
     return has_attendance, min_time_out, max_time_in
+
+def add_mis_id_by_company_id(data, companies):
+    """
+    Bổ sung trường mis_id vào data (list[dict] hoặc DataFrame) dựa vào company_id, mapping từ companies (list[dict] hoặc DataFrame).
+    """
+    # Chuẩn hóa companies thành dict: id -> mis_id
+    if isinstance(companies, pd.DataFrame):
+        company_map = {row['id']: row['mis_id'] for _, row in companies.iterrows() if 'id' in row and 'mis_id' in row}
+    else:
+        company_map = {c['id']: c.get('mis_id') for c in companies if 'id' in c}
+    # Xử lý cho list dict
+    if isinstance(data, list):
+        for item in data:
+            cid = None
+            if isinstance(item.get('company_id'), (list, tuple)) and len(item['company_id']) > 0:
+                cid = item['company_id'][0]
+            elif isinstance(item.get('company_id'), int):
+                cid = item['company_id']
+            if cid is not None and cid in company_map:
+                item['mis_id'] = company_map[cid]
+            else:
+                item['mis_id'] = None
+        return data
+    # Xử lý cho DataFrame
+    elif isinstance(data, pd.DataFrame) and 'company_id' in data.columns:
+        def get_cid(val):
+            if isinstance(val, (list, tuple)) and len(val) > 0:
+                return val[0]
+            return val
+        data['mis_id'] = data['company_id'].apply(lambda cid: company_map.get(get_cid(cid), None))
+        return data
+    return data

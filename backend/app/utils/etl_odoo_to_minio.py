@@ -16,7 +16,7 @@ from .report_exporters import (
     export_al_cl_report,
     export_al_cl_report_severance,
 )
-from .transform_helpers import add_name_field, calculate_actual_work_time_ho_row, process_report_raw, transform_apec_attendance_report
+from .transform_helpers import add_name_field, calculate_actual_work_time_ho_row, process_report_raw, transform_apec_attendance_report, add_mis_id_by_company_id
 from .extract_helpers import (
     extract_employees,
     extract_contracts,
@@ -274,6 +274,8 @@ def transform(data):
     add_name_field(list_employees, id_field="part_time_company_id", name_field="part_time_company_name")
     add_name_field(list_employees, id_field="part_time_department_id", name_field="part_time_department_name")
     add_name_field(list_employees, id_field="resource_calendar_id", name_field="resource_calendar_name")
+    # Bổ sung mis_id
+    add_mis_id_by_company_id(list_employees, data["companies"])
     df_emp = pd.DataFrame(list_employees)
     if not df_emp.empty:
         df_emp = df_emp.drop_duplicates(subset=["id"])
@@ -284,6 +286,7 @@ def transform(data):
     add_name_field(list_contracts, id_field="employee_id", name_field="employee_name")
     add_name_field(list_contracts, id_field="company_id", name_field="company_name")
     add_name_field(list_contracts, id_field="resource_calendar_id", name_field="resource_calendar_name")
+    add_mis_id_by_company_id(list_contracts, data["companies"])
     df_contracts = pd.DataFrame(list_contracts)
     if not df_contracts.empty:
         df_contracts["date_start"] = pd.to_datetime(df_contracts["date_start"], errors="coerce")
@@ -297,6 +300,7 @@ def transform(data):
     add_name_field(list_leaves, id_field="employee_id", name_field="employee_name")
     add_name_field(list_leaves, id_field="company_id", name_field="company_name")
     add_name_field(list_leaves, id_field="department_id", name_field="department_name")
+    add_mis_id_by_company_id(list_leaves, data["companies"])
     df_leaves = pd.DataFrame(list_leaves)
     if not df_leaves.empty:
         df_leaves["date_from"] = pd.to_datetime(df_leaves["date_from"], errors="coerce")
@@ -306,6 +310,7 @@ def transform(data):
     list_upload_attendance = data["upload_attendance"]
     add_name_field(list_upload_attendance, id_field="company_id", name_field="company_name")
     add_name_field(list_upload_attendance, id_field="department_id", name_field="department_name")
+    add_mis_id_by_company_id(list_upload_attendance, data["companies"])
     df_upload_attendance = pd.DataFrame(list_upload_attendance)
     result["upload_attendance"] = df_upload_attendance
     # KPI Weekly Report Summary
@@ -318,6 +323,7 @@ def transform(data):
     add_name_field(list_hr_weekly, id_field="employee_id", name_field="employee_name")
     add_name_field(list_hr_weekly, id_field="company_id", name_field="company_name")
     add_name_field(list_hr_weekly, id_field="department_id", name_field="department_name")
+    add_mis_id_by_company_id(list_hr_weekly, data["companies"])
     df_hr_weekly = pd.DataFrame(list_hr_weekly)
     if not df_hr_weekly.empty and "date" in df_hr_weekly:
         df_hr_weekly["date"] = pd.to_datetime(df_hr_weekly["date"], errors="coerce")
@@ -328,6 +334,7 @@ def transform(data):
     add_name_field(list_al_report, id_field="company_id", name_field="company_name")
     add_name_field(list_al_report, id_field="department_id", name_field="department_name")
     add_name_field(list_al_report, id_field="part_time_company_id", name_field="part_time_company_name")
+    add_mis_id_by_company_id(list_al_report, data["companies"])
     df_al_report = pd.DataFrame(list_al_report)
     if not df_al_report.empty:
         df_al_report["date_calculate_leave"] = pd.to_datetime(df_al_report["date_calculate_leave"])
@@ -337,11 +344,11 @@ def transform(data):
     add_name_field(list_cl_report, id_field="employee_id", name_field="employee_name")
     add_name_field(list_cl_report, id_field="company_id", name_field="company_name")
     add_name_field(list_cl_report, id_field="department_id", name_field="department_name")
+    add_mis_id_by_company_id(list_cl_report, data["companies"])
     df_cl_report = pd.DataFrame(list_cl_report)
     if not df_cl_report.empty:
         df_cl_report["date_calculate"] = pd.to_datetime(df_cl_report["date_calculate"])
     result["cl_report"] = df_cl_report
-
     # APEC Attendance Report (thay thế attendance)
     df_apec_attendance = pd.DataFrame(data["apec_attendance_report"])
     # Sử dụng transform_apec_attendance_report để sinh couple, couple_out_in, tổng out_ho, các trường datetime
@@ -349,10 +356,13 @@ def transform(data):
         df_apec_attendance = transform_apec_attendance_report(df_apec_attendance)
         if 'couple' in df_apec_attendance.columns:
             df_apec_attendance['actual_work_time_ho'] = df_apec_attendance.apply(calculate_actual_work_time_ho_row, axis=1)
+        # Bổ sung mis_id cho DataFrame
+        add_mis_id_by_company_id(df_apec_attendance, data["companies"])
     result["apec_attendance_report"] = df_apec_attendance
-    # Shifts: bổ sung trường company_name
+    # Shifts: bổ sung trường company_name và mis_id
     list_shifts = data.get("shifts", [])
     add_name_field(list_shifts, id_field="company_id", name_field="company_name")
+    add_mis_id_by_company_id(list_shifts, data["companies"])
     result["shifts"] = pd.DataFrame(list_shifts)
     # Bổ sung cho các dữ liệu khác có *_id nếu cần
     # Có thể bổ sung merge, join, tính toán tổng hợp ở đây nếu cần
