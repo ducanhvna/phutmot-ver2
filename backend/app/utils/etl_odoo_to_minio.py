@@ -106,13 +106,13 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
             filtered_fields = fields
         while True:
             batch = extract_func(models, uid, 100, offset, fields=filtered_fields, **kwargs)
-            print(f"[ETL] {extract_func.__name__} offset={offset} batch_size={len(batch) if batch else 0}")
             if not batch:
                 break
             all_data.extend(batch)
             if len(batch) < 100:
                 break
             offset += 100
+        print(f"[ETL] {extract_func.__name__} offset={offset} batch_size={len(all_data) if all_data else 0}")
         return all_data, errors
     # Khai báo fields cho từng extract
     employees_fields = ['id', 'name', 'user_id', 'employee_ho', 'part_time_company_id', 'part_time_department_id',
