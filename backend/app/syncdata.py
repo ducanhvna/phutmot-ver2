@@ -48,6 +48,9 @@ def sync_data():
         db.refresh(main_company)
         print(f"Main company {main_company.name} created.")
     else:
+        main_company.info = {k: v for k, v in company_data.items() if k not in ['name', 'companies']}
+        db.add(main_company)
+        db.commit()
         print(f"Main company {company_data.get('name')} already exists.")
     # Sync sub-companies
     companies = company_data.get('companies', [])
