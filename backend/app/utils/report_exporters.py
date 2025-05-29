@@ -41,31 +41,37 @@ def export_al_cl_report_department(data, output_dir, data_key='al_report'):
 
 def export_sumary_attendance_report(data, output_dir, data_key='attendance'):
     """
-    Xuất báo cáo tổng hợp chấm công, mỗi sheet là 1 công ty.
+    Xuất báo cáo tổng hợp chấm công, mỗi công ty là 1 file riêng biệt.
     """
-    file_path = os.path.join(output_dir, 'sumary_attendance_report.xlsx')
     df = data.get(data_key)
-    with pd.ExcelWriter(file_path) as writer:
-        if not isinstance(df, pd.DataFrame) or df.empty:
+    file_paths = []
+    if not isinstance(df, pd.DataFrame) or df.empty:
+        file_path = os.path.join(output_dir, 'sumary_attendance_report_No_Data.xlsx')
+        with pd.ExcelWriter(file_path) as writer:
             pd.DataFrame().to_excel(writer, sheet_name='No Data', index=False)
-        else:
-            # Nếu có dữ liệu, group theo company (hoặc trường phù hợp)
-            if 'company' in df.columns:
-                group_col = 'company'
-            elif 'company_name' in df.columns:
-                group_col = 'company_name'
-            else:
-                df.to_excel(writer, sheet_name='No Data', index=False)
-                return file_path
-            has_data = False
-            for company, group in df.groupby(group_col):
-                if not group.empty:
-                    sheet_name = str(company)[:31].replace('/', '_').replace('\\', '_')
-                    group.to_excel(writer, sheet_name=sheet_name, index=False)
-                    has_data = True
-            if not has_data:
-                pd.DataFrame().to_excel(writer, sheet_name='No Data', index=False)
-    return file_path
+        return [file_path]
+    # Xác định cột group theo công ty
+    if 'company' in df.columns:
+        group_col = 'company'
+    elif 'company_name' in df.columns:
+        group_col = 'company_name'
+    else:
+        file_path = os.path.join(output_dir, 'sumary_attendance_report_No_Group.xlsx')
+        df.to_excel(file_path, index=False)
+        return [file_path]
+    for company, group in df.groupby(group_col):
+        if not group.empty:
+            safe_company = str(company)[:20].replace('/', '_').replace('\\', '_')
+            file_path = os.path.join(output_dir, f"sumary_attendance_report_{safe_company}.xlsx")
+            with pd.ExcelWriter(file_path) as writer:
+                group.to_excel(writer, sheet_name='Data', index=False)
+            file_paths.append(file_path)
+    if not file_paths:
+        file_path = os.path.join(output_dir, 'sumary_attendance_report_No_Data.xlsx')
+        with pd.ExcelWriter(file_path) as writer:
+            pd.DataFrame().to_excel(writer, sheet_name='No Data', index=False)
+        return [file_path]
+    return file_paths
 
 def export_sumary_attendance_report_department(data, output_dir, data_key='attendance'):
     """

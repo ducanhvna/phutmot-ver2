@@ -106,5 +106,9 @@ def test_export_all_reports_with_real_data():
         # Gọi hàm export, truyền clean_data, test_result_dir, và kwargs nếu có
         file_path = func(clean_data, test_result_dir, **kwargs) if kwargs else func(clean_data, test_result_dir)
         # Kiểm tra file đã được tạo
-        assert os.path.exists(file_path), f"File {expected_filename} không được tạo ra!"
+        if isinstance(file_path, list):
+            for fp in file_path:
+                assert os.path.exists(fp), f"File {fp} không được tạo ra!"
+        else:
+            assert os.path.exists(file_path), f"File {expected_filename} không được tạo ra!"
         # Có thể kiểm tra thêm: file không rỗng, sheet name, ... nếu muốn
