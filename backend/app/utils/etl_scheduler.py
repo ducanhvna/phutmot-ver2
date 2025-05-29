@@ -24,13 +24,19 @@ celery_app = Celery(
 def ensure_initial_etl_job(db: Session):
     """Đảm bảo luôn có ít nhất 1 job ETL pending, active trong DB, nếu chưa có thì tạo job mẫu."""
     from app.models.etl import ETLJob
+    from app.models.core import Company
     job = db.query(ETLJob).filter(
         ETLJob.status == "pending",
         ETLJob.is_active == True
     ).first()
     if not job:
+        # Lấy company đầu tiên làm mặc định nếu chưa có
+        company = db.query(Company).first()
+        if not company:
+            raise Exception("No company found in database")
         job = ETLJob(
-            name=f"ETL Job Auto",
+            company_id=company.id,
+            name="ETL Job Auto",
             status="pending",
             is_active=True
         )
