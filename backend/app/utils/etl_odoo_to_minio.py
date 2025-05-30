@@ -404,6 +404,9 @@ def load_to_minio(data, report_date=None):
     Lưu từng loại báo cáo cho từng công ty lên MinIO, đặt tên chuẩn.
     report_date: string yyyy-mm-dd hoặc None (mặc định lấy ngày hiện tại)
     """
+    if not report_date:
+        report_date = datetime.now().strftime("%Y%m%d")
+    report_time = datetime.now().strftime("%H%M%S")
     # Save raw data to Excel and upload to MinIO
     client = Minio(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, secure=False)
     # Luôn tạo bucket nếu chưa có (xử lý race condition)
@@ -425,7 +428,8 @@ def load_to_minio(data, report_date=None):
     if employees_dict:
         from .report_exporters import export_json_report
         file_name = f"employees_dict__{report_date}.json"
-        file_path = export_json_report(employees_dict, tmp_dir, file_name)
+        file_name_on_disk = f"employees_dict__{report_date}_{report_time}.json"
+        file_path = export_json_report(employees_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
@@ -434,7 +438,8 @@ def load_to_minio(data, report_date=None):
     if contracts_dict:
         from .report_exporters import export_json_report
         file_name = f"contracts_dict__{report_date}.json"
-        file_path = export_json_report(contracts_dict, tmp_dir, file_name)
+        file_name_on_disk = f"contracts_dict__{report_date}_{report_time}.json"
+        file_path = export_json_report(contracts_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
@@ -443,7 +448,8 @@ def load_to_minio(data, report_date=None):
     if leaves_dict:
         from .report_exporters import export_json_report
         file_name = f"leaves_dict__{report_date}.json"
-        file_path = export_json_report(leaves_dict, tmp_dir, file_name)
+        file_name_on_disk = f"leaves_dict__{report_date}_{report_time}.json"
+        file_path = export_json_report(leaves_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
@@ -452,7 +458,8 @@ def load_to_minio(data, report_date=None):
     if kpi_weekly_report_summary_dict:
         from .report_exporters import export_json_report
         file_name = f"kpi_weekly_report_summary_dict__{report_date}.json"
-        file_path = export_json_report(kpi_weekly_report_summary_dict, tmp_dir, file_name)
+        file_name_on_disk = f"kpi_weekly_report_summary_dict__{report_date}_{report_time}.json"
+        file_path = export_json_report(kpi_weekly_report_summary_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
@@ -461,7 +468,8 @@ def load_to_minio(data, report_date=None):
     if hr_weekly_report_dict:
         from .report_exporters import export_json_report
         file_name = f"hr_weekly_report_dict__{report_date}.json"
-        file_path = export_json_report(hr_weekly_report_dict, tmp_dir, file_name)
+        file_name_on_disk = f"hr_weekly_report_dict__{report_date}_{report_time}.json"
+        file_path = export_json_report(hr_weekly_report_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
@@ -470,7 +478,8 @@ def load_to_minio(data, report_date=None):
     if al_report_dict:
         from .report_exporters import export_json_report
         file_name = f"al_report_dict__{report_date}.json"
-        file_path = export_json_report(al_report_dict, tmp_dir, file_name)
+        file_name_on_disk = f"al_report_dict__{report_date}_{report_time}.json"
+        file_path = export_json_report(al_report_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
@@ -479,7 +488,8 @@ def load_to_minio(data, report_date=None):
     if cl_report_dict:
         from .report_exporters import export_json_report
         file_name = f"cl_report_dict__{report_date}.json"
-        file_path = export_json_report(cl_report_dict, tmp_dir, file_name)
+        file_name_on_disk = f"cl_report_dict__{report_date}_{report_time}.json"
+        file_path = export_json_report(cl_report_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
@@ -488,7 +498,8 @@ def load_to_minio(data, report_date=None):
     if attendance_trans_dict:
         from .report_exporters import export_json_report
         file_name = f"attendance_trans_dict__{report_date}.json"
-        file_path = export_json_report(attendance_trans_dict, tmp_dir, file_name)
+        file_name_on_disk = f"attendance_trans_dict__{report_date}_{report_time}.json"
+        file_path = export_json_report(attendance_trans_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
@@ -497,7 +508,8 @@ def load_to_minio(data, report_date=None):
     if shifts_dict:
         from .report_exporters import export_json_report
         file_name = f"shifts_dict__{report_date}.json"
-        file_path = export_json_report(shifts_dict, tmp_dir, file_name)
+        file_name_on_disk = f"shifts_dict__{report_date}_{report_time}.json"
+        file_path = export_json_report(shifts_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
@@ -506,7 +518,8 @@ def load_to_minio(data, report_date=None):
     if apec_attendance_report_dict:
         from .report_exporters import export_json_report
         file_name = f"apec_attendance_report_dict__{report_date}.json"
-        file_path = export_json_report(apec_attendance_report_dict, tmp_dir, file_name)
+        file_name_on_disk = f"apec_attendance_report_dict__{report_date}_{report_time}.json"
+        file_path = export_json_report(apec_attendance_report_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
@@ -519,8 +532,7 @@ def load_to_minio(data, report_date=None):
         ("late_in_5_miniutes", export_late_in_5_miniutes_report, "late_in_5_miniutes_report_ho"),
         # ... bổ sung các loại báo cáo khác nếu cần ...
     ]
-    if not report_date:
-        report_date = datetime.now().strftime("%Y-%m-%d")
+    
     for data_key, export_func, report_type in report_types:
         df = data.get(data_key)
         if not isinstance(df, pd.DataFrame) or df.empty:
@@ -557,7 +569,8 @@ def load_to_minio(data, report_date=None):
                 continue
             safe_company = str(company).replace("/", "_").replace("\\", "_").replace(" ", "_")
             file_name = f"{safe_company}__{report_type}__{report_date}.xlsx"
-            file_path = os.path.join(tmp_dir, file_name)
+            file_name_on_disk = f"{safe_company}__{report_type}__{report_date}_{report_time}.xlsx"
+            file_path = os.path.join(tmp_dir, file_name_on_disk)
             # Gọi hàm export, truyền đúng data_key nếu cần
             export_func({data_key: group}, tmp_dir, data_key=data_key) if 'data_key' in export_func.__code__.co_varnames else export_func({data_key: group}, tmp_dir)
             # Nếu file đã đúng tên thì không cần rename
@@ -587,7 +600,7 @@ def etl_job(startdate=None, enddate=None):
         print(f"[ETL] Extract Success.")
         clean_data = transform(raw_data, startdate=startdate, enddate=enddate)
         print(f"[ETL] Transform Success.")
-        report_url = load_to_minio(clean_data, f"hrms_etl_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+        report_url = load_to_minio(clean_data, f"hrms_etl_report_{datetime.now().strftime('%Y%m%d')}")
         print(f"[ETL] Success. Raw: {raw_url} | Report: {report_url}")
         return True
     except Exception as e:

@@ -31,6 +31,7 @@ def add_name_field(data_list, id_field='company_id', name_field=None):
         try:
             name_value = item[id_field][1]
             item[name_field] = name_value
+            item[id_field] = item[id_field][0]
         except Exception:
             item[name_field] = False
     return data_list
