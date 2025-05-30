@@ -56,8 +56,8 @@ def schedule_pending_etl_jobs():
 
 # Đăng ký task chạy mỗi 3 phút
 celery_app.conf.beat_schedule = {
-    'run-etl-every-5-minutes': {
+    'run-etl-every-9-minutes': {
         'task': 'app.utils.etl_scheduler.schedule_pending_etl_jobs',
-        'schedule': crontab(minute='*/5'),
+        'schedule': crontab(minute='*/9'),
     },
 }
