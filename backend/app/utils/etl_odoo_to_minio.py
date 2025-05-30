@@ -264,7 +264,7 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
     return data, url
 
 # 2. Transform
-def transform(data):
+def transform(data, startdate=None, enddate=None):
     # Chuẩn hóa, loại bỏ test, merge dữ liệu, tính toán tổng hợp
     result = {}
     # Employees
@@ -283,7 +283,7 @@ def transform(data):
         df_emp = df_emp[~df_emp["name"].str.lower().str.contains("test")]
     result["employees"] = df_emp
     # Chuẩn hóa employees_dict (dict theo code)
-    from .transform_helpers import employees_list_to_dict
+    from .transform_helpers import employees_list_to_dict, contracts_list_to_dict
     result["employees_dict"] = employees_list_to_dict(df_emp)
     # Contracts
     list_contracts = data["contracts"]
@@ -296,6 +296,8 @@ def transform(data):
         df_contracts["date_start"] = pd.to_datetime(df_contracts["date_start"], errors="coerce")
         df_contracts["date_end"] = pd.to_datetime(df_contracts["date_end"], errors="coerce")
     result["contracts"] = df_contracts
+    # Chuẩn hóa contracts_dict (dict theo employee_code)
+    result["contracts_dict"] = contracts_list_to_dict(df_contracts, enddate=pd.to_datetime(enddate) if enddate else None)
     # Companies
     df_companies = pd.DataFrame(data["companies"])
     result["companies"] = df_companies
@@ -310,6 +312,9 @@ def transform(data):
         df_leaves["date_from"] = pd.to_datetime(df_leaves["date_from"], errors="coerce")
         df_leaves["date_to"] = pd.to_datetime(df_leaves["date_to"], errors="coerce")
     result["leaves"] = df_leaves
+    # Chuẩn hóa leaves_dict (dict theo employee_code)
+    from .transform_helpers import leaves_list_to_dict
+    result["leaves_dict"] = leaves_list_to_dict(df_leaves)
     # Upload Attendance
     list_upload_attendance = data["upload_attendance"]
     add_name_field(list_upload_attendance, id_field="company_id", name_field="company_name")
@@ -322,6 +327,9 @@ def transform(data):
     if not df_kpi_weekly.empty and "date" in df_kpi_weekly:
         df_kpi_weekly["date"] = pd.to_datetime(df_kpi_weekly["date"], errors="coerce")
     result["kpi_weekly_report_summary"] = df_kpi_weekly
+    # Chuẩn hóa kpi_weekly_report_summary_dict (dict theo employee_code)
+    from .transform_helpers import kpi_weekly_report_summary_list_to_dict
+    result["kpi_weekly_report_summary_dict"] = kpi_weekly_report_summary_list_to_dict(df_kpi_weekly)
     # HR Weekly Report
     list_hr_weekly = data["hr_weekly_report"]
     add_name_field(list_hr_weekly, id_field="employee_id", name_field="employee_name")
@@ -332,6 +340,9 @@ def transform(data):
     if not df_hr_weekly.empty and "date" in df_hr_weekly:
         df_hr_weekly["date"] = pd.to_datetime(df_hr_weekly["date"], errors="coerce")
     result["hr_weekly_report"] = df_hr_weekly
+    # Chuẩn hóa hr_weekly_report_dict (dict theo employee_code)
+    from .transform_helpers import hr_weekly_report_list_to_dict
+    result["hr_weekly_report_dict"] = hr_weekly_report_list_to_dict(df_hr_weekly)
     # AL Report
     list_al_report = data["al_report"]
     add_name_field(list_al_report, id_field="employee_id", name_field="employee_name")
@@ -343,6 +354,9 @@ def transform(data):
     if not df_al_report.empty:
         df_al_report["date_calculate_leave"] = pd.to_datetime(df_al_report["date_calculate_leave"])
     result["al_report"] = df_al_report
+    # Chuẩn hóa al_report_dict (dict theo employee_code, giảm dần theo date_calculate_leave)
+    from .transform_helpers import al_report_list_to_dict
+    result["al_report_dict"] = al_report_list_to_dict(df_al_report)
     # CL Report
     list_cl_report = data["cl_report"]
     add_name_field(list_cl_report, id_field="employee_id", name_field="employee_name")
@@ -353,6 +367,9 @@ def transform(data):
     if not df_cl_report.empty:
         df_cl_report["date_calculate"] = pd.to_datetime(df_cl_report["date_calculate"])
     result["cl_report"] = df_cl_report
+    # Chuẩn hóa cl_report_dict (dict theo employee_code, giảm dần theo date_calculate)
+    from .transform_helpers import cl_report_list_to_dict
+    result["cl_report_dict"] = cl_report_list_to_dict(df_cl_report)
     # APEC Attendance Report (thay thế attendance)
     df_apec_attendance = pd.DataFrame(data["apec_attendance_report"])
     # Sử dụng transform_apec_attendance_report để sinh couple, couple_out_in, tổng out_ho, các trường datetime
@@ -368,8 +385,14 @@ def transform(data):
     add_name_field(list_shifts, id_field="company_id", name_field="company_name")
     add_mis_id_by_company_id(list_shifts, data["companies"])
     result["shifts"] = pd.DataFrame(list_shifts)
+    # Chuẩn hóa shifts_dict (dict theo mis_id)
+    from .transform_helpers import shifts_list_to_dict
+    result["shifts_dict"] = shifts_list_to_dict(result["shifts"])
     # Bổ sung cho các dữ liệu khác có *_id nếu cần
     # Có thể bổ sung merge, join, tính toán tổng hợp ở đây nếu cần
+    # Chuẩn hóa attendance_trans_dict (dict theo name, giảm dần theo time)
+    from .transform_helpers import attendance_trans_list_to_dict
+    result["attendance_trans_dict"] = attendance_trans_list_to_dict(pd.DataFrame(data["attendance_trans"]))
     return result
 
 # 3. Load to MinIO (public-read, truy cập qua port 9000 sẽ tải về trực tiếp)
@@ -394,14 +417,84 @@ def load_to_minio(data, report_date=None):
         os.makedirs(tmp_dir, exist_ok=True)
     # public_host = os.getenv("MINIO_PUBLIC_HOST", "localhost")
     links = {}
-    # Lưu employees_dict (nếu có) ra file json chuẩn
+    # Lưu employees_dict (nếu có) ra file json chuẩn bằng export_json_report
     employees_dict = data.get("employees_dict")
     if employees_dict:
-        import json
+        from .report_exporters import export_json_report
         file_name = f"employees_dict__{report_date}.json"
-        file_path = os.path.join(tmp_dir, file_name)
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(employees_dict, f, ensure_ascii=False, indent=2)
+        file_path = export_json_report(employees_dict, tmp_dir, file_name)
+        client.fput_object(MINIO_BUCKET, file_name, file_path)
+        url = client.presigned_get_object(MINIO_BUCKET, file_name)
+        links[file_name] = url
+    # Lưu contracts_dict (nếu có) ra file json chuẩn hóa
+    contracts_dict = data.get("contracts_dict")
+    if contracts_dict:
+        from .report_exporters import export_json_report
+        file_name = f"contracts_dict__{report_date}.json"
+        file_path = export_json_report(contracts_dict, tmp_dir, file_name)
+        client.fput_object(MINIO_BUCKET, file_name, file_path)
+        url = client.presigned_get_object(MINIO_BUCKET, file_name)
+        links[file_name] = url
+    # Lưu leaves_dict (nếu có) ra file json chuẩn hóa
+    leaves_dict = data.get("leaves_dict")
+    if leaves_dict:
+        from .report_exporters import export_json_report
+        file_name = f"leaves_dict__{report_date}.json"
+        file_path = export_json_report(leaves_dict, tmp_dir, file_name)
+        client.fput_object(MINIO_BUCKET, file_name, file_path)
+        url = client.presigned_get_object(MINIO_BUCKET, file_name)
+        links[file_name] = url
+    # Lưu kpi_weekly_report_summary_dict (nếu có) ra file json chuẩn hóa
+    kpi_weekly_report_summary_dict = data.get("kpi_weekly_report_summary_dict")
+    if kpi_weekly_report_summary_dict:
+        from .report_exporters import export_json_report
+        file_name = f"kpi_weekly_report_summary_dict__{report_date}.json"
+        file_path = export_json_report(kpi_weekly_report_summary_dict, tmp_dir, file_name)
+        client.fput_object(MINIO_BUCKET, file_name, file_path)
+        url = client.presigned_get_object(MINIO_BUCKET, file_name)
+        links[file_name] = url
+    # Lưu hr_weekly_report_dict (nếu có) ra file json chuẩn hóa
+    hr_weekly_report_dict = data.get("hr_weekly_report_dict")
+    if hr_weekly_report_dict:
+        from .report_exporters import export_json_report
+        file_name = f"hr_weekly_report_dict__{report_date}.json"
+        file_path = export_json_report(hr_weekly_report_dict, tmp_dir, file_name)
+        client.fput_object(MINIO_BUCKET, file_name, file_path)
+        url = client.presigned_get_object(MINIO_BUCKET, file_name)
+        links[file_name] = url
+    # Lưu al_report_dict (nếu có) ra file json chuẩn hóa
+    al_report_dict = data.get("al_report_dict")
+    if al_report_dict:
+        from .report_exporters import export_json_report
+        file_name = f"al_report_dict__{report_date}.json"
+        file_path = export_json_report(al_report_dict, tmp_dir, file_name)
+        client.fput_object(MINIO_BUCKET, file_name, file_path)
+        url = client.presigned_get_object(MINIO_BUCKET, file_name)
+        links[file_name] = url
+    # Lưu cl_report_dict (nếu có) ra file json chuẩn hóa
+    cl_report_dict = data.get("cl_report_dict")
+    if cl_report_dict:
+        from .report_exporters import export_json_report
+        file_name = f"cl_report_dict__{report_date}.json"
+        file_path = export_json_report(cl_report_dict, tmp_dir, file_name)
+        client.fput_object(MINIO_BUCKET, file_name, file_path)
+        url = client.presigned_get_object(MINIO_BUCKET, file_name)
+        links[file_name] = url
+    # Lưu attendance_trans_dict (nếu có) ra file json chuẩn hóa
+    attendance_trans_dict = data.get("attendance_trans_dict")
+    if attendance_trans_dict:
+        from .report_exporters import export_json_report
+        file_name = f"attendance_trans_dict__{report_date}.json"
+        file_path = export_json_report(attendance_trans_dict, tmp_dir, file_name)
+        client.fput_object(MINIO_BUCKET, file_name, file_path)
+        url = client.presigned_get_object(MINIO_BUCKET, file_name)
+        links[file_name] = url
+    # Lưu shifts_dict (nếu có) ra file json chuẩn hóa
+    shifts_dict = data.get("shifts_dict")
+    if shifts_dict:
+        from .report_exporters import export_json_report
+        file_name = f"shifts_dict__{report_date}.json"
+        file_path = export_json_report(shifts_dict, tmp_dir, file_name)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
@@ -480,7 +573,7 @@ def etl_job(startdate=None, enddate=None):
     try:
         raw_data, raw_url = extract_from_odoo_and_save_to_minio(startdate=startdate, enddate=enddate)
         print(f"[ETL] Extract Success.")
-        clean_data = transform(raw_data)
+        clean_data = transform(raw_data, startdate=startdate, enddate=enddate)
         print(f"[ETL] Transform Success.")
         report_url = load_to_minio(clean_data, f"hrms_etl_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
         print(f"[ETL] Success. Raw: {raw_url} | Report: {report_url}")

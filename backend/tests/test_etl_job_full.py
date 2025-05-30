@@ -24,7 +24,7 @@ def test_etl_job_full_real_services():
     # Chạy ETL và lấy kết quả
     from app.utils import etl_odoo_to_minio
     raw_data, raw_url = etl_odoo_to_minio.extract_from_odoo_and_save_to_minio(startdate=startdate, enddate=enddate)
-    clean_data = etl_odoo_to_minio.transform(raw_data)
+    clean_data = etl_odoo_to_minio.transform(raw_data, startdate="2024-01-01", enddate="2024-12-31")
     report_url = etl_odoo_to_minio.load_to_minio(clean_data, f"hrms_etl_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
     # Ghi file kết quả ra test_result
     test_result_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../test_result'))
@@ -48,6 +48,10 @@ def test_etl_job_full_real_services():
         for key, df in clean_data.items():
             if hasattr(df, 'to_excel'):
                 df.to_excel(writer, sheet_name=key[:31], index=False)
+    # Ghi kpi_weekly_report_summary_dict ra file để kiểm tra thủ công
+    if "kpi_weekly_report_summary_dict" in clean_data:
+        with open(os.path.join(test_result_dir, "test_kpi_weekly_report_summary_dict.json"), "w", encoding="utf-8") as f:
+            json.dump(clean_data["kpi_weekly_report_summary_dict"], f, ensure_ascii=False, indent=2)
     assert isinstance(report_url, dict) and len(report_url) > 0
 
 def test_etl_extract_errors():

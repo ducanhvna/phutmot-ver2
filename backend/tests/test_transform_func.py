@@ -14,7 +14,7 @@ def test_transform():
         "kpi_weekly_report_summary": [],
         "hr_weekly_report": []
     }
-    result = etl_odoo_to_minio.transform(data)
+    result = etl_odoo_to_minio.transform(data, startdate="2024-01-01", enddate="2024-12-31")
     assert "employees" in result
     df = result["employees"]
     assert df.shape[0] == 1  # Đã loại bỏ user test

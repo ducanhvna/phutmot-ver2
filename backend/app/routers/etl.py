@@ -39,7 +39,7 @@ def run_etl_job(job_id: int, db: Session):
         enddate = (next_month - timedelta(days=1)).strftime("%Y-%m-%d")
         data, url = extract_from_odoo_and_save_to_minio(startdate=startdate, enddate=enddate)
         # if not data or not url:
-        clean_data = transform(data)
+        clean_data = transform(data, startdate=startdate, enddate=enddate)
         report_urls = load_to_minio(clean_data, f"hrms_etl_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
         # Tiền xử lý dữ liệu báo cáo
         # processed = process_report_raw(data)

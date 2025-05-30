@@ -349,3 +349,114 @@ def employees_list_to_dict(df_emp):
         return {}
     df_emp = df_emp.dropna(subset=["code"])
     return df_emp.set_index("code").to_dict(orient="index")
+
+def contracts_list_to_dict(df_contracts, enddate=None):
+    """
+    Chuẩn hóa contracts thành dict theo employee_code:
+    - contracts: list hợp đồng trong khoảng thời gian (lọc theo date_start, date_end)
+    - main_contract: hợp đồng mới nhất tính đến thời điểm enddate (date_start <= enddate, date_end >= enddate hoặc null)
+    """
+    if df_contracts is None or df_contracts.empty or "employee_code" not in df_contracts.columns:
+        return {}
+    contracts_dict = {}
+    for code, group in df_contracts.groupby("employee_code"):
+        contracts = group.sort_values("date_start").to_dict(orient="records")
+        main_contract = None
+        if enddate is not None:
+            # Lấy hợp đồng mới nhất có date_start <= enddate và (date_end >= enddate hoặc date_end null)
+            group_valid = group[(group["date_start"] <= enddate) & ((group["date_end"].isnull()) | (group["date_end"] >= enddate))]
+            if not group_valid.empty:
+                main_contract = group_valid.sort_values("date_start").iloc[-1].to_dict()
+        contracts_dict[code] = {
+            "contracts": contracts,
+            "main_contract": main_contract
+        }
+    return contracts_dict
+
+def leaves_list_to_dict(df_leaves):
+    """
+    Chuẩn hóa leaves thành dict theo employee_code: mỗi key là employee_code, value là list các đơn nghỉ phép.
+    """
+    if df_leaves is None or df_leaves.empty or "employee_code" not in df_leaves.columns:
+        return {}
+    leaves_dict = {}
+    for code, group in df_leaves.groupby("employee_code"):
+        leaves_dict[code] = group.to_dict(orient="records")
+    return leaves_dict
+
+def kpi_weekly_report_summary_list_to_dict(df_kpi):
+    """
+    Chuẩn hóa kpi_weekly_report_summary thành dict theo employee_code:
+    - Mỗi key là employee_code, value là list các bản ghi kpi_weekly_report_summary tương ứng.
+    """
+    if df_kpi is None or df_kpi.empty or "employee_code" not in df_kpi.columns:
+        return {}
+    kpi_dict = {}
+    for code, group in df_kpi.groupby("employee_code"):
+        kpi_dict[code] = group.to_dict(orient="records")
+    return kpi_dict
+
+def hr_weekly_report_list_to_dict(df_hr):
+    """
+    Chuẩn hóa hr_weekly_report thành dict theo employee_code:
+    - Mỗi key là employee_code, value là list các bản ghi hr_weekly_report tương ứng.
+    """
+    if df_hr is None or df_hr.empty or "employee_code" not in df_hr.columns:
+        return {}
+    hr_dict = {}
+    for code, group in df_hr.groupby("employee_code"):
+        hr_dict[code] = group.to_dict(orient="records")
+    return hr_dict
+
+def al_report_list_to_dict(df_al):
+    """
+    Chuẩn hóa al_report thành dict theo employee_code:
+    - Mỗi key là employee_code, value là list các bản ghi al_report tương ứng, sắp xếp giảm dần theo date_calculate_leave.
+    """
+    if df_al is None or df_al.empty or "employee_code" not in df_al.columns:
+        return {}
+    al_dict = {}
+    for code, group in df_al.groupby("employee_code"):
+        group_sorted = group.sort_values("date_calculate_leave", ascending=False)
+        al_dict[code] = group_sorted.to_dict(orient="records")
+    return al_dict
+
+def cl_report_list_to_dict(df_cl):
+    """
+    Chuẩn hóa cl_report thành dict theo employee_code:
+    - Mỗi key là employee_code, value là list các bản ghi cl_report tương ứng, sắp xếp giảm dần theo date_calculate.
+    """
+    if df_cl is None or df_cl.empty or "employee_code" not in df_cl.columns:
+        return {}
+    cl_dict = {}
+    for code, group in df_cl.groupby("employee_code"):
+        group_sorted = group.sort_values("date_calculate", ascending=False)
+        cl_dict[code] = group_sorted.to_dict(orient="records")
+    return cl_dict
+
+def attendance_trans_list_to_dict(df_att):
+    """
+    Chuẩn hóa attendance_trans thành dict theo name:
+    - Mỗi key là name, value là list các bản ghi attendance_trans tương ứng, sắp xếp giảm dần theo time.
+    """
+    if df_att is None or df_att.empty or "name" not in df_att.columns:
+        return {}
+    att_dict = {}
+    for name, group in df_att.groupby("name"):
+        group_sorted = group.sort_values("time", ascending=False)
+        att_dict[name] = group_sorted.to_dict(orient="records")
+    return att_dict
+
+def shifts_list_to_dict(df_shifts):
+    """
+    Chuẩn hóa shifts thành dict 2 tầng: mis_id -> name -> list các bản ghi shifts tương ứng.
+    """
+    if df_shifts is None or df_shifts.empty or "mis_id" not in df_shifts.columns or "name" not in df_shifts.columns:
+        return {}
+    shifts_dict = {}
+    for mis_id, group_mis in df_shifts.groupby("mis_id"):
+        name_dict = {}
+        for name, group_name in group_mis.groupby("name"):
+            name_dict[name] = group_name.to_dict(orient="records")
+        shifts_dict[mis_id] = name_dict
+    return shifts_dict

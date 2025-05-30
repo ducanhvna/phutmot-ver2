@@ -222,4 +222,6 @@ def test_etl_job_with_date(monkeypatch):
     monkeypatch.setattr(etl_odoo_to_minio, 'extract_from_odoo_and_save_to_minio', lambda startdate=None, enddate=None: ("data", "url"))
     monkeypatch.setattr(etl_odoo_to_minio, 'transform', lambda d: d)
     monkeypatch.setattr(etl_odoo_to_minio, 'load_to_minio', lambda d, n: "url")
+    # Sử dụng ngày giả định cho test
+    result = etl_odoo_to_minio.transform(data, startdate="2024-01-01", enddate="2024-12-31")
     assert etl_odoo_to_minio.etl_job(startdate='2025-04-01', enddate='2025-04-03') is True

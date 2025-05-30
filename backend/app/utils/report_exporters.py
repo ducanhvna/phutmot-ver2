@@ -232,4 +232,16 @@ def export_al_cl_report_severance(data, output_dir):
     df.to_excel(file_path, index=False)
     return file_path
 
+def export_json_report(data: dict, output_dir: str, file_name: str):
+    """
+    Lưu dict chuẩn hóa ra file json với tên file_name trong output_dir.
+    """
+    import json
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
+    file_path = os.path.join(output_dir, file_name)
+    with open(file_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    return file_path
+
 # ... Các hàm export khác sẽ được bổ sung tương tự ...
