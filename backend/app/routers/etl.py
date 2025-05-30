@@ -38,9 +38,9 @@ def run_etl_job(job_id: int, db: Session):
             next_month = now.replace(month=now.month+1, day=1)
         enddate = (next_month - timedelta(days=1)).strftime("%Y-%m-%d")
         data, url = extract_from_odoo_and_save_to_minio(startdate=startdate, enddate=enddate)
-        if not data or not url:
-            clean_data = transform(data)
-            report_url = load_to_minio(clean_data, f"hrms_etl_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+        # if not data or not url:
+        clean_data = transform(data)
+        report_urls = load_to_minio(clean_data, f"hrms_etl_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
         # Tiền xử lý dữ liệu báo cáo
         # processed = process_report_raw(data)
         # couple = find_couple(processed)
@@ -49,6 +49,7 @@ def run_etl_job(job_id: int, db: Session):
         job.result = {
             "message": "ETL completed successfully",
             "url": url,
+            "report_urls": report_urls,
             # "processed_preview": str(processed)[:500],
             # "couple_preview": str(couple)[:500],
             # "couple_out_in_preview": str(couple_out_in)[:500]

@@ -479,7 +479,9 @@ def load_to_minio(data, report_date=None):
 def etl_job(startdate=None, enddate=None):
     try:
         raw_data, raw_url = extract_from_odoo_and_save_to_minio(startdate=startdate, enddate=enddate)
+        print(f"[ETL] Extract Success.")
         clean_data = transform(raw_data)
+        print(f"[ETL] Transform Success.")
         report_url = load_to_minio(clean_data, f"hrms_etl_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
         print(f"[ETL] Success. Raw: {raw_url} | Report: {report_url}")
         return True
