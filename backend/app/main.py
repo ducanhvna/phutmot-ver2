@@ -8,6 +8,7 @@ from app.routers.hrms.employee_info import employee_info_router
 from app.routers.auth_user import router as auth_user_router
 from app.routers.companies import router as companies_router
 from app.routers.hrms import summary_report_monthly_router
+from app.routers.file_metadata import router as file_metadata_router
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -38,6 +39,7 @@ app.include_router(employee_info_router)
 app.include_router(auth_user_router)
 app.include_router(companies_router)
 app.include_router(summary_report_monthly_router)
+app.include_router(file_metadata_router)
 
 @app.get("/healthcheck", response_model=HealthcheckResponse)
 def healthcheck():
