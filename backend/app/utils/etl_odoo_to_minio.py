@@ -428,7 +428,7 @@ def load_to_minio(data, report_date=None):
     if employees_dict:
         from .report_exporters import export_json_report
         file_name = f"employees_dict__{report_date}.json"
-        file_name_on_disk = f"employees_dict__{report_date}_{report_time}.json"
+        file_name_on_disk = f"employees_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(employees_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -447,7 +447,7 @@ def load_to_minio(data, report_date=None):
     if contracts_dict:
         from .report_exporters import export_json_report
         file_name = f"contracts_dict__{report_date}.json"
-        file_name_on_disk = f"contracts_dict__{report_date}_{report_time}.json"
+        file_name_on_disk = f"contracts_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(contracts_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -457,7 +457,7 @@ def load_to_minio(data, report_date=None):
     if leaves_dict:
         from .report_exporters import export_json_report
         file_name = f"leaves_dict__{report_date}.json"
-        file_name_on_disk = f"leaves_dict__{report_date}_{report_time}.json"
+        file_name_on_disk = f"leaves_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(leaves_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -467,7 +467,7 @@ def load_to_minio(data, report_date=None):
     if kpi_weekly_report_summary_dict:
         from .report_exporters import export_json_report
         file_name = f"kpi_weekly_report_summary_dict__{report_date}.json"
-        file_name_on_disk = f"kpi_weekly_report_summary_dict__{report_date}_{report_time}.json"
+        file_name_on_disk = f"kpi_weekly_report_summary_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(kpi_weekly_report_summary_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -477,7 +477,7 @@ def load_to_minio(data, report_date=None):
     if hr_weekly_report_dict:
         from .report_exporters import export_json_report
         file_name = f"hr_weekly_report_dict__{report_date}.json"
-        file_name_on_disk = f"hr_weekly_report_dict__{report_date}_{report_time}.json"
+        file_name_on_disk = f"hr_weekly_report_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(hr_weekly_report_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -487,7 +487,7 @@ def load_to_minio(data, report_date=None):
     if al_report_dict:
         from .report_exporters import export_json_report
         file_name = f"al_report_dict__{report_date}.json"
-        file_name_on_disk = f"al_report_dict__{report_date}_{report_time}.json"
+        file_name_on_disk = f"al_report_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(al_report_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -497,7 +497,7 @@ def load_to_minio(data, report_date=None):
     if cl_report_dict:
         from .report_exporters import export_json_report
         file_name = f"cl_report_dict__{report_date}.json"
-        file_name_on_disk = f"cl_report_dict__{report_date}_{report_time}.json"
+        file_name_on_disk = f"cl_report_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(cl_report_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -507,7 +507,7 @@ def load_to_minio(data, report_date=None):
     if attendance_trans_dict:
         from .report_exporters import export_json_report
         file_name = f"attendance_trans_dict__{report_date}.json"
-        file_name_on_disk = f"attendance_trans_dict__{report_date}_{report_time}.json"
+        file_name_on_disk = f"attendance_trans_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(attendance_trans_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -517,7 +517,7 @@ def load_to_minio(data, report_date=None):
     if shifts_dict:
         from .report_exporters import export_json_report
         file_name = f"shifts_dict__{report_date}.json"
-        file_name_on_disk = f"shifts_dict__{report_date}_{report_time}.json"
+        file_name_on_disk = f"shifts_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(shifts_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -527,7 +527,7 @@ def load_to_minio(data, report_date=None):
     if apec_attendance_report_dict:
         from .report_exporters import export_json_report
         file_name = f"apec_attendance_report_dict__{report_date}.json"
-        file_name_on_disk = f"apec_attendance_report_dict__{report_date}_{report_time}.json"
+        file_name_on_disk = f"apec_attendance_report_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(apec_attendance_report_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -578,7 +578,7 @@ def load_to_minio(data, report_date=None):
                 continue
             safe_company = str(company).replace("/", "_").replace("\\", "_").replace(" ", "_")
             file_name = f"{safe_company}__{report_type}__{report_date}.xlsx"
-            file_name_on_disk = f"{safe_company}__{report_type}__{report_date}_{report_time}.xlsx"
+            file_name_on_disk = f"{safe_company}__{report_type}__{report_date}__{report_time}.xlsx"
             file_path = os.path.join(tmp_dir, file_name_on_disk)
             # Gọi hàm export, truyền đúng data_key nếu cần
             export_func({data_key: group}, tmp_dir, data_key=data_key) if 'data_key' in export_func.__code__.co_varnames else export_func({data_key: group}, tmp_dir)
@@ -600,6 +600,38 @@ def load_to_minio(data, report_date=None):
                 url = client.presigned_get_object(MINIO_BUCKET, file_name)
                 # links[file_name] = f"http://{public_host}:9000/{MINIO_BUCKET}/{file_name}?response-content-disposition=attachment"
                 links[file_name] = url
+    # Lưu metadata file vào bảng FileMetadata
+    from app.db import SessionLocal
+    from app.models.file_metadata import FileMetadata
+    session = SessionLocal()
+    try:
+        for file_name, url in links.items():
+            # Parse company_id và report_type từ file_name nếu có thể, hoặc truyền vào từ context ngoài
+            # Ví dụ: "1__apec_attendance_report__20240530.xlsx" => company_id=1, report_type=apec_attendance_report
+            parts = file_name.split("__")
+            company_id = None
+            report_type = None
+            if len(parts) >= 2:
+                try:
+                    company_id = int(parts[0]) if parts[0].isdigit() else None
+                except Exception:
+                    company_id = None
+                report_type = parts[1]
+            # Lưu metadata vào DB
+            meta = FileMetadata(
+                company_id=company_id,
+                report_type=report_type,
+                file_url=url,
+                file_name=file_name,
+                created_by="etl",
+                info={}
+            )
+            session.add(meta)
+        session.commit()
+    except Exception as ex:
+        print(f"[ETL] Save file metadata to DB failed: {ex}")
+    finally:
+        session.close()
     return links
 
 # 4. ETL Job
