@@ -3,3 +3,4 @@
 # Nếu có model cụ thể, hãy tạo file riêng như user.py, item.py trong app/models/.
 from .hrms.summary_report_monthly import SummaryReportMonthlyReport
 from .hrms.employee import Employee, EmployeeLogin, EmployeeContract, EmployeeAttendance, EmployeeShift, EmployeeProject
+from .file_metadata import FileMetadata
