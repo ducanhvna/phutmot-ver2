@@ -340,3 +340,12 @@ def add_mis_id_by_company_id(data, companies):
         data['mis_id'] = data['company_id'].apply(lambda cid: company_map.get(get_cid(cid), None))
         return data
     return data
+
+def employees_list_to_dict(df_emp):
+    """
+    Chuyển DataFrame employees về dict theo code (bỏ các dòng không có code).
+    """
+    if df_emp is None or df_emp.empty or "code" not in df_emp.columns:
+        return {}
+    df_emp = df_emp.dropna(subset=["code"])
+    return df_emp.set_index("code").to_dict(orient="index")

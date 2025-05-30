@@ -124,7 +124,8 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
         'minutes_per_day', 'employee_code', 'resource_calendar_id'
     ]
     companies_fields = ['id', 'name', 'partner_id', 'email', 'phone', 'is_ho', 'mis_id']
-    leaves_fields = ['id', 'name', 'employee_id', 'holiday_status_id', 'date_from', 'date_to', 'state']
+    leaves_fields = ['id', 'name', 'employee_id', 'holiday_status_id', 'date_from', 'date_to', 'state'
+    ]
     attendance_fields = ['id', 'employee_id', 'check_in', 'check_out', 'worked_hours']
     upload_attendance_fields = ['id', 'year', 'month', 'template', 'company_id', 'department_id', 'url']
     kpi_weekly_report_summary_fields = [
@@ -281,6 +282,9 @@ def transform(data):
         df_emp = df_emp.drop_duplicates(subset=["id"])
         df_emp = df_emp[~df_emp["name"].str.lower().str.contains("test")]
     result["employees"] = df_emp
+    # Chuẩn hóa employees_dict (dict theo code)
+    from .transform_helpers import employees_list_to_dict
+    result["employees_dict"] = employees_list_to_dict(df_emp)
     # Contracts
     list_contracts = data["contracts"]
     add_name_field(list_contracts, id_field="employee_id", name_field="employee_name")
@@ -374,32 +378,33 @@ def load_to_minio(data, report_date=None):
     Lưu từng loại báo cáo cho từng công ty lên MinIO, đặt tên chuẩn.
     report_date: string yyyy-mm-dd hoặc None (mặc định lấy ngày hiện tại)
     """
+    # Save raw data to Excel and upload to MinIO
     client = Minio(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, secure=False)
-    if not client.bucket_exists(MINIO_BUCKET):
-        client.make_bucket(MINIO_BUCKET)
-    # Đảm bảo bucket policy là public-read
+    # Luôn tạo bucket nếu chưa có (xử lý race condition)
     try:
-        policy = client.get_bucket_policy(MINIO_BUCKET)
-        if '"Effect":"Allow"' not in policy or '"Principal":"*"' not in policy:
-            raise Exception('Bucket policy chưa phải public-read')
+        if not client.bucket_exists(MINIO_BUCKET):
+            client.make_bucket(MINIO_BUCKET)
     except Exception:
-        public_policy = f'''{{
-            "Version": "2012-10-17",
-            "Statement": [
-                {{
-                    "Effect": "Allow",
-                    "Principal": "*",
-                    "Action": ["s3:GetObject"],
-                    "Resource": ["arn:aws:s3:::{MINIO_BUCKET}/*"]
-                }}
-            ]
-        }}'''
-        client.set_bucket_policy(MINIO_BUCKET, public_policy)
+        pass  # Nếu bucket đã tồn tại do race condition, bỏ qua lỗi
+    # Sử dụng thư mục tạm hợp lệ trên mọi hệ điều hành
     tmp_dir = tempfile.gettempdir()
     if not os.path.exists(tmp_dir):
+            os.makedirs(tmp_dir, exist_ok=True)
+    if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir, exist_ok=True)
-    public_host = os.getenv("MINIO_PUBLIC_HOST", "localhost")
+    # public_host = os.getenv("MINIO_PUBLIC_HOST", "localhost")
     links = {}
+    # Lưu employees_dict (nếu có) ra file json chuẩn
+    employees_dict = data.get("employees_dict")
+    if employees_dict:
+        import json
+        file_name = f"employees_dict__{report_date}.json"
+        file_path = os.path.join(tmp_dir, file_name)
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(employees_dict, f, ensure_ascii=False, indent=2)
+        client.fput_object(MINIO_BUCKET, file_name, file_path)
+        url = client.presigned_get_object(MINIO_BUCKET, file_name)
+        links[file_name] = url
     # Danh sách các loại báo cáo và hàm export tương ứng
     report_types = [
         ("apec_attendance_report", export_sumary_attendance_report, "apec_attendance_report"),
@@ -423,6 +428,25 @@ def load_to_minio(data, report_date=None):
                 break
         if not company_col:
             continue
+        
+        # file_path = os.path.join(tmp_dir, f"odoo_raw_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
+        # with pd.ExcelWriter(file_path) as writer:
+        #     for key, value in data.items():
+        #         df = pd.DataFrame(value)
+        #         df.to_excel(writer, sheet_name=key, index=False)
+        # object_name = os.path.basename(file_path)
+        # # Đảm bảo file thực sự được upload lên MinIO
+        # client.fput_object(MINIO_BUCKET, object_name, file_path)
+        # # Kiểm tra lại object vừa upload
+        # found = False
+        # for obj in client.list_objects(MINIO_BUCKET, prefix=object_name):
+        #     if obj.object_name == object_name:
+        #         found = True
+        #         break
+        # if not found:
+        #     raise RuntimeError(f"File {object_name} was not uploaded to MinIO bucket {MINIO_BUCKET}")
+        # url = client.presigned_get_object(MINIO_BUCKET, object_name)
+
         for company, group in df.groupby(company_col):
             if not isinstance(group, pd.DataFrame) or group.empty:
                 continue
@@ -440,7 +464,15 @@ def load_to_minio(data, report_date=None):
                         break
             if os.path.exists(file_path):
                 client.fput_object(MINIO_BUCKET, file_name, file_path)
-                links[file_name] = f"http://{public_host}:9000/{MINIO_BUCKET}/{file_name}?response-content-disposition=attachment"
+                for obj in client.list_objects(MINIO_BUCKET, prefix=file_name):
+                    if obj.object_name == file_name:
+                        found = True
+                        break
+                if not found:
+                    raise RuntimeError(f"File {file_name} was not uploaded to MinIO bucket {MINIO_BUCKET}")
+                url = client.presigned_get_object(MINIO_BUCKET, file_name)
+                # links[file_name] = f"http://{public_host}:9000/{MINIO_BUCKET}/{file_name}?response-content-disposition=attachment"
+                links[file_name] = url
     return links
 
 # 4. ETL Job

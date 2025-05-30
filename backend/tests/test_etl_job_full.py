@@ -1,4 +1,4 @@
-import pytest
+import pytest, json
 from app.utils.etl_odoo_to_minio import etl_job
 import os
 
@@ -30,6 +30,8 @@ def test_etl_job_full_real_services():
     test_result_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../test_result'))
     if not os.path.exists(test_result_dir):
         os.makedirs(test_result_dir)
+    with open(os.path.join(test_result_dir, "test_employee_dic_result.json"), "w", encoding="utf-8") as f:
+        json.dump(clean_data['employees_dict'], f, ensure_ascii=False, indent=2)
     # Ghi các link file báo cáo ra Excel
     if isinstance(report_url, dict):
         df_links = pd.DataFrame(list(report_url.items()), columns=["file", "url"])

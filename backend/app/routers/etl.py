@@ -6,10 +6,10 @@ from app.schemas.etl import ETLJobCreate, ETLJobOut
 from datetime import datetime, timedelta
 from typing import List
 import time
-from app.utils.etl_odoo_to_minio import extract_from_odoo_and_save_to_minio, extract_leaves
+from app.utils.etl_odoo_to_minio import extract_from_odoo_and_save_to_minio, extract_leaves, transform, load_to_minio
 import xmlrpc.client
 from app.utils.etl_odoo_to_minio import ODOO_BASE_URL, ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD
-from unities.hrms_excel_file import process_report_raw, find_couple, find_couple_out_in
+# from unities.hrms_excel_file import process_report_raw, find_couple, find_couple_out_in
 
 router = APIRouter()
 
@@ -38,17 +38,20 @@ def run_etl_job(job_id: int, db: Session):
             next_month = now.replace(month=now.month+1, day=1)
         enddate = (next_month - timedelta(days=1)).strftime("%Y-%m-%d")
         data, url = extract_from_odoo_and_save_to_minio(startdate=startdate, enddate=enddate)
+        if not data or not url:
+            clean_data = transform(data)
+            report_url = load_to_minio(clean_data, f"hrms_etl_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
         # Tiền xử lý dữ liệu báo cáo
-        processed = process_report_raw(data)
-        couple = find_couple(processed)
-        couple_out_in = find_couple_out_in(processed)
+        # processed = process_report_raw(data)
+        # couple = find_couple(processed)
+        # couple_out_in = find_couple_out_in(processed)
         job.status = "success"
         job.result = {
             "message": "ETL completed successfully",
             "url": url,
-            "processed_preview": str(processed)[:500],
-            "couple_preview": str(couple)[:500],
-            "couple_out_in_preview": str(couple_out_in)[:500]
+            # "processed_preview": str(processed)[:500],
+            # "couple_preview": str(couple)[:500],
+            # "couple_out_in_preview": str(couple_out_in)[:500]
         }
     except Exception as e:
         job.status = "failed"
