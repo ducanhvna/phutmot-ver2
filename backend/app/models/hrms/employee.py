@@ -10,6 +10,9 @@ try:
 except ImportError:
     JSONType = JSON
 from sqlalchemy.sql import func
+from sqlalchemy.orm import Session
+from app.models.hrms.employee import Employee
+from app.models.core import Company
 
 class Employee(Base):
     __tablename__ = "hrms_employee"
@@ -78,3 +81,36 @@ class EmployeeProject(Base):
     created_by = Column(String)
     created_at = Column(DateTime, server_default=func.now())
     __table_args__ = (UniqueConstraint("employee_code", "month", "year", "company_id", name="uq_employee_project"),)
+
+def bulk_upsert_employees_dict_to_db(employees_dict: dict, db: Session, created_by=None):
+    """
+    Bulk upsert employees_dict vào bảng Employee.
+    - employee_code là key
+    - company_id: lấy company có name='APEC', nếu không có thì lấy company đầu tiên
+    - info: value của dict
+    - Nếu trùng (employee_code, company_id) thì update info
+    """
+    # Lấy company_id
+    company = db.query(Company).filter(Company.name == 'APEC GROUP').first()
+    if not company:
+        company = db.query(Company).first()
+    if not company:
+        raise Exception("No company found in DB!")
+    company_id = company.id
+    from sqlalchemy.dialects.postgresql import insert
+    to_upsert = []
+    for employee_code, info in employees_dict.items():
+        to_upsert.append({
+            'employee_code': employee_code,
+            'company_id': company_id,
+            'info': info,
+            'created_by': created_by or 'etl',
+        })
+    stmt = insert(Employee).values(to_upsert)
+    update_dict = {c.name: c for c in stmt.excluded if c.name not in ['employee_code', 'company_id']}
+    stmt = stmt.on_conflict_do_update(
+        index_elements=['employee_code', 'company_id'],
+        set_=update_dict
+    )
+    db.execute(stmt)
+    db.commit()

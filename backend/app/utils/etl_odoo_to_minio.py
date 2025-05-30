@@ -433,6 +433,15 @@ def load_to_minio(data, report_date=None):
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
+        # Bulk upsert vào DB sau khi lưu file json employees_dict
+        try:
+            from app.db import SessionLocal
+            from app.models.hrms.employee import bulk_upsert_employees_dict_to_db
+            db = SessionLocal()
+            bulk_upsert_employees_dict_to_db(employees_dict, db, created_by="etl")
+            db.close()
+        except Exception as ex:
+            print(f"[ETL] Bulk upsert employees_dict to DB failed: {ex}")
     # Lưu contracts_dict (nếu có) ra file json chuẩn hóa
     contracts_dict = data.get("contracts_dict")
     if contracts_dict:
