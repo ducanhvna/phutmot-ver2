@@ -13,7 +13,7 @@ class CompanyOut(BaseModel):
     owner_id: Optional[int] = None
     info: Optional[dict] = None
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 @router.get("/", response_model=List[CompanyOut])
 def list_companies(db: Session = Depends(get_db)):
