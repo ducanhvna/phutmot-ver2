@@ -11,7 +11,6 @@ except ImportError:
     JSONType = JSON
 from sqlalchemy.sql import func
 from sqlalchemy.orm import Session
-from app.models.hrms.employee import Employee
 from app.models.core import Company
 
 class Employee(Base):
