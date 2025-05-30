@@ -235,13 +235,29 @@ def export_al_cl_report_severance(data, output_dir):
 def export_json_report(data: dict, output_dir: str, file_name: str):
     """
     Lưu dict chuẩn hóa ra file json với tên file_name trong output_dir.
+    Tự động chuyển các kiểu datetime, Timestamp, numpy types về string hoặc native cho JSON.
     """
     import json
+    import numpy as np
+    import pandas as pd
+    from datetime import datetime, date
+    def default_serializer(obj):
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        if isinstance(obj, (np.integer, np.floating)):
+            return obj.item()
+        if isinstance(obj, pd.Timestamp):
+            return obj.isoformat()
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, dict)):
+            return list(obj)
+        return str(obj)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir, exist_ok=True)
     file_path = os.path.join(output_dir, file_name)
     with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+        json.dump(data, f, ensure_ascii=False, indent=2, default=default_serializer)
     return file_path
 
 # ... Các hàm export khác sẽ được bổ sung tương tự ...

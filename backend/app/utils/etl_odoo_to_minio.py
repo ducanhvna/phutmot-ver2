@@ -380,6 +380,9 @@ def transform(data, startdate=None, enddate=None):
         # Bổ sung mis_id cho DataFrame
         add_mis_id_by_company_id(df_apec_attendance, data["companies"])
     result["apec_attendance_report"] = df_apec_attendance
+    # Chuẩn hóa apec_attendance_report_dict (dict theo employee_code, tăng dần theo date)
+    from .transform_helpers import apec_attendance_report_list_to_dict
+    result["apec_attendance_report_dict"] = apec_attendance_report_list_to_dict(df_apec_attendance)
     # Shifts: bổ sung trường company_name và mis_id
     list_shifts = data.get("shifts", [])
     add_name_field(list_shifts, id_field="company_id", name_field="company_name")
@@ -495,6 +498,15 @@ def load_to_minio(data, report_date=None):
         from .report_exporters import export_json_report
         file_name = f"shifts_dict__{report_date}.json"
         file_path = export_json_report(shifts_dict, tmp_dir, file_name)
+        client.fput_object(MINIO_BUCKET, file_name, file_path)
+        url = client.presigned_get_object(MINIO_BUCKET, file_name)
+        links[file_name] = url
+    # Lưu apec_attendance_report_dict (nếu có) ra file json chuẩn hóa
+    apec_attendance_report_dict = data.get("apec_attendance_report_dict")
+    if apec_attendance_report_dict:
+        from .report_exporters import export_json_report
+        file_name = f"apec_attendance_report_dict__{report_date}.json"
+        file_path = export_json_report(apec_attendance_report_dict, tmp_dir, file_name)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url

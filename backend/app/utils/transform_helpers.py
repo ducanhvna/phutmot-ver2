@@ -460,3 +460,16 @@ def shifts_list_to_dict(df_shifts):
             name_dict[name] = group_name.to_dict(orient="records")
         shifts_dict[mis_id] = name_dict
     return shifts_dict
+
+def apec_attendance_report_list_to_dict(df_apec):
+    """
+    Chuẩn hóa apec_attendance_report thành dict theo employee_code:
+    - Mỗi key là employee_code, value là list các bản ghi apec_attendance_report tương ứng, sắp xếp tăng dần theo date.
+    """
+    if df_apec is None or df_apec.empty or "employee_code" not in df_apec.columns:
+        return {}
+    apec_dict = {}
+    for code, group in df_apec.groupby("employee_code"):
+        group_sorted = group.sort_values("date", ascending=True)
+        apec_dict[code] = group_sorted.to_dict(orient="records")
+    return apec_dict
