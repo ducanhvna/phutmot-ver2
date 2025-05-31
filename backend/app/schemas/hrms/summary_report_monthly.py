@@ -3,7 +3,8 @@ from typing import Optional, Any
 from datetime import datetime
 
 class SummaryReportMonthlyReportBase(BaseModel):
-    company_id: int
+    employee_id: Optional[int] = None
+    employee_code: str
     month: int
     year: int
     info: dict = Field(default_factory=dict)

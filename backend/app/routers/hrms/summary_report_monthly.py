@@ -1,5 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, cast, String
+from fastapi.responses import JSONResponse
+
 from app.db import get_db
 from app.models.hrms.summary_report_monthly import SummaryReportMonthlyReport
 from app.schemas.hrms.summary_report_monthly import (
@@ -16,14 +19,38 @@ def create_summary_report_monthly(data: SummaryReportMonthlyReportCreate, db: Se
     db.refresh(obj)
     return obj
 
-@router.get("/summary-report-monthly", response_model=list[SummaryReportMonthlyReportOut])
-def list_summary_report_monthly(company_id: int, month: int = None, year: int = None, db: Session = Depends(get_db)):
-    query = db.query(SummaryReportMonthlyReport).filter(SummaryReportMonthlyReport.company_id == company_id)
+@router.get("/summary-report-monthly")
+def list_summary_report_monthly(
+    page: int = 1,
+    pagesize: int = 20,
+    employee_code: str = None,
+    search: str = None,
+    month: int = None,
+    year: int = None,
+    db: Session = Depends(get_db)
+):
+    query = db.query(SummaryReportMonthlyReport)
+    if employee_code:
+        query = query.filter(SummaryReportMonthlyReport.employee_code == employee_code)
     if month is not None:
         query = query.filter(SummaryReportMonthlyReport.month == month)
     if year is not None:
         query = query.filter(SummaryReportMonthlyReport.year == year)
-    return query.all()
+    if search:
+        query = query.filter(
+            or_(
+                cast(SummaryReportMonthlyReport.info, String).ilike(f"%{search}%"),
+                SummaryReportMonthlyReport.employee_code.ilike(f"%{search}%")
+            )
+        )
+    total = query.count()
+    items = query.offset((page-1)*pagesize).limit(pagesize).all()
+    return {
+        "total": total,
+        "page": page,
+        "pagesize": pagesize,
+        "items": items
+    }
 
 @router.get("/summary-report-monthly/{report_id}", response_model=SummaryReportMonthlyReportOut)
 def get_summary_report_monthly(report_id: int, db: Session = Depends(get_db)):

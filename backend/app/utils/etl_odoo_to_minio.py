@@ -532,6 +532,22 @@ def load_to_minio(data, report_date=None):
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
+        # Bulk upsert vào DB sau khi lưu file json apec_attendance_report_dict
+        try:
+            from app.db import SessionLocal
+            from app.models.hrms.summary_report_monthly import bulk_upsert_summary_report_dict_to_db
+            db = SessionLocal()
+            # Parse month, year từ report_date
+            if isinstance(report_date, str) and len(report_date) >= 6:
+                year = int(report_date[:4])
+                month = int(report_date[4:6])
+            else:
+                year = datetime.now().year
+                month = datetime.now().month
+            bulk_upsert_summary_report_dict_to_db(apec_attendance_report_dict, db, created_by="etl", month=month, year=year)
+            db.close()
+        except Exception as ex:
+            print(f"[ETL] Bulk upsert apec_attendance_report_dict to DB failed: {ex}")
     # Danh sách các loại báo cáo và hàm export tương ứng
     report_types = [
         ("apec_attendance_report", export_sumary_attendance_report, "apec_attendance_report"),
