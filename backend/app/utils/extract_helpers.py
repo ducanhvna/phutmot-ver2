@@ -13,12 +13,12 @@ def extract_employees(models, uid, limit, offset=0, startdate=None, enddate=None
     default_fields = ['id', 'name', 'user_id', 'employee_ho', 'part_time_company_id', 'part_time_department_id',
                 'company_id', 'code', 'department_id', 'time_keeping_code', 'job_title',
                 'probationary_contract_termination_date', 'severance_day', 'workingday',
-                'probationary_salary_rate', 'resource_calendar_id', 'date_sign', 'level']
+                'probationary_salary_rate', 'resource_calendar_id', 'date_sign', 'level', 'active']
     fields = fields or default_fields
     # if startdate and enddate:
     #     domain = ["&", ("create_date", ">=", startdate), ("create_date", "<=", enddate)]
     # else:
-    domain = []
+    domain = [['active', 'in', [True, False]]]
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.employee', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
 def extract_contracts(models, uid, limit, offset=0, startdate=None, enddate=None, fields=None):
