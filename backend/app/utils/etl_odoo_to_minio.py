@@ -427,8 +427,8 @@ def load_to_minio(data, report_date=None):
     employees_dict = data.get("employees_dict")
     if employees_dict:
         from .report_exporters import export_json_report
-        file_name = f"employees_dict__{report_date}.json"
-        file_name_on_disk = f"employees_dict__{report_date}__{report_time}.json"
+        file_name = f"1__employees_dict__{report_date}.json"
+        file_name_on_disk = f"1__employees_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(employees_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -446,8 +446,8 @@ def load_to_minio(data, report_date=None):
     contracts_dict = data.get("contracts_dict")
     if contracts_dict:
         from .report_exporters import export_json_report
-        file_name = f"contracts_dict__{report_date}.json"
-        file_name_on_disk = f"contracts_dict__{report_date}__{report_time}.json"
+        file_name = f"1__contracts_dict__{report_date}.json"
+        file_name_on_disk = f"1__contracts_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(contracts_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -456,8 +456,8 @@ def load_to_minio(data, report_date=None):
     leaves_dict = data.get("leaves_dict")
     if leaves_dict:
         from .report_exporters import export_json_report
-        file_name = f"leaves_dict__{report_date}.json"
-        file_name_on_disk = f"leaves_dict__{report_date}__{report_time}.json"
+        file_name = f"1__leaves_dict__{report_date}.json"
+        file_name_on_disk = f"1__leaves_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(leaves_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -466,8 +466,8 @@ def load_to_minio(data, report_date=None):
     kpi_weekly_report_summary_dict = data.get("kpi_weekly_report_summary_dict")
     if kpi_weekly_report_summary_dict:
         from .report_exporters import export_json_report
-        file_name = f"kpi_weekly_report_summary_dict__{report_date}.json"
-        file_name_on_disk = f"kpi_weekly_report_summary_dict__{report_date}__{report_time}.json"
+        file_name = f"1__kpi_weekly_report_summary_dict__{report_date}.json"
+        file_name_on_disk = f"1__kpi_weekly_report_summary_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(kpi_weekly_report_summary_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -476,8 +476,8 @@ def load_to_minio(data, report_date=None):
     hr_weekly_report_dict = data.get("hr_weekly_report_dict")
     if hr_weekly_report_dict:
         from .report_exporters import export_json_report
-        file_name = f"hr_weekly_report_dict__{report_date}.json"
-        file_name_on_disk = f"hr_weekly_report_dict__{report_date}__{report_time}.json"
+        file_name = f"1__hr_weekly_report_dict__{report_date}.json"
+        file_name_on_disk = f"1__hr_weekly_report_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(hr_weekly_report_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -486,8 +486,8 @@ def load_to_minio(data, report_date=None):
     al_report_dict = data.get("al_report_dict")
     if al_report_dict:
         from .report_exporters import export_json_report
-        file_name = f"al_report_dict__{report_date}.json"
-        file_name_on_disk = f"al_report_dict__{report_date}__{report_time}.json"
+        file_name = f"1__al_report_dict__{report_date}.json"
+        file_name_on_disk = f"1_al_report_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(al_report_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -496,8 +496,8 @@ def load_to_minio(data, report_date=None):
     cl_report_dict = data.get("cl_report_dict")
     if cl_report_dict:
         from .report_exporters import export_json_report
-        file_name = f"cl_report_dict__{report_date}.json"
-        file_name_on_disk = f"cl_report_dict__{report_date}__{report_time}.json"
+        file_name = f"1__cl_report_dict__{report_date}.json"
+        file_name_on_disk = f"1__cl_report_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(cl_report_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -506,8 +506,8 @@ def load_to_minio(data, report_date=None):
     attendance_trans_dict = data.get("attendance_trans_dict")
     if attendance_trans_dict:
         from .report_exporters import export_json_report
-        file_name = f"attendance_trans_dict__{report_date}.json"
-        file_name_on_disk = f"attendance_trans_dict__{report_date}__{report_time}.json"
+        file_name = f"1__attendance_trans_dict__{report_date}.json"
+        file_name_on_disk = f"1__attendance_trans_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(attendance_trans_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -516,8 +516,8 @@ def load_to_minio(data, report_date=None):
     shifts_dict = data.get("shifts_dict")
     if shifts_dict:
         from .report_exporters import export_json_report
-        file_name = f"shifts_dict__{report_date}.json"
-        file_name_on_disk = f"shifts_dict__{report_date}__{report_time}.json"
+        file_name = f"1__shifts_dict__{report_date}.json"
+        file_name_on_disk = f"1__shifts_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(shifts_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
@@ -525,29 +525,30 @@ def load_to_minio(data, report_date=None):
     # Lưu apec_attendance_report_dict (nếu có) ra file json chuẩn hóa
     apec_attendance_report_dict = data.get("apec_attendance_report_dict")
     if apec_attendance_report_dict:
+
+        # Bulk upsert vào DB sau khi lưu file json apec_attendance_report_dict
+        from app.db import SessionLocal
+        from app.models.hrms.summary_report_monthly import bulk_upsert_summary_report_dict_to_db
+        db = SessionLocal()
+        year = 2025
+        month = 5
+        # Parse month, year từ report_date
+        # if isinstance(report_date, str) and len(report_date) >= 6:
+        #     year = int(report_date[:4])
+        #     month = int(report_date[4:6])
+        print(f"Upserting month {month} year {year} summary reports to DB...")
+        bulk_upsert_summary_report_dict_to_db(apec_attendance_report_dict, db, created_by="etl", month=month, year=year)
+        db.close()
+
         from .report_exporters import export_json_report
-        file_name = f"apec_attendance_report_dict__{report_date}.json"
-        file_name_on_disk = f"apec_attendance_report_dict__{report_date}__{report_time}.json"
+        file_name = f"1__apec_attendance_report_dict__{report_date}.json"
+        file_name_on_disk = f"1__apec_attendance_report_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(apec_attendance_report_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
-        # Bulk upsert vào DB sau khi lưu file json apec_attendance_report_dict
-        try:
-            from app.db import SessionLocal
-            from app.models.hrms.summary_report_monthly import bulk_upsert_summary_report_dict_to_db
-            db = SessionLocal()
-            # Parse month, year từ report_date
-            if isinstance(report_date, str) and len(report_date) >= 6:
-                year = int(report_date[:4])
-                month = int(report_date[4:6])
-            else:
-                year = datetime.now().year
-                month = datetime.now().month
-            bulk_upsert_summary_report_dict_to_db(apec_attendance_report_dict, db, created_by="etl", month=month, year=year)
-            db.close()
-        except Exception as ex:
-            print(f"[ETL] Bulk upsert apec_attendance_report_dict to DB failed: {ex}")
+        # except Exception as ex:
+        #     print(f"[ETL] Bulk upsert apec_attendance_report_dict to DB failed: {ex}")
     # Danh sách các loại báo cáo và hàm export tương ứng
     report_types = [
         ("apec_attendance_report", export_sumary_attendance_report, "apec_attendance_report"),

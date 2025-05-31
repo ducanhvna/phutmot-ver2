@@ -3,7 +3,7 @@ from typing import Optional, Any
 from datetime import datetime
 
 class FileMetadataBase(BaseModel):
-    company_id: int
+    company_id: Optional[int] = None
     report_type: str
     file_url: str
     file_name: str

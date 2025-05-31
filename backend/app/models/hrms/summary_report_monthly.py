@@ -37,6 +37,7 @@ def bulk_upsert_summary_report_dict_to_db(summary_report_dict: dict, db: Session
     - info: value của dict
     - Nếu trùng (employee_id, month, year) thì update info
     """
+    print(f"Upserting {len(summary_report_dict)} month {month} year {year} summary reports to DB...")
     # Lấy công ty APEC GROUP (hoặc công ty đầu tiên)
     company = db.query(Company).filter(Company.name == 'APEC GROUP').first()
     if not company:
@@ -52,8 +53,11 @@ def bulk_upsert_summary_report_dict_to_db(summary_report_dict: dict, db: Session
         # Bỏ qua các key không phải employee_code hợp lệ (None, '', không phải str, hoặc không phải số/chuỗi mã nhân sự)
         if not employee_code or not isinstance(employee_code, str):
             continue
+        # Nếu employee_code là các key kỹ thuật như 'hrms', bỏ qua luôn
+        if employee_code.lower() in ["hrms", "summary", "report", "metadata", "info"]:
+            continue
         employee_id = emp_code_to_id.get(employee_code)
-        # Nếu employee_id không tìm thấy, chỉ cho phép None nếu DB cho phép nullable, nhưng tránh các key lạ như 'hrms'
+        # Nếu employee_id không tìm thấy, chỉ cho phép None nếu DB cho phép nullable, nhưng tránh các key lạ
         if employee_id is None and employee_code not in emp_code_to_id:
             continue  # Bỏ qua key lạ không phải employee_code hợp lệ
         to_upsert.append({
