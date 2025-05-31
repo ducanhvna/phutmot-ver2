@@ -85,27 +85,16 @@ def bulk_upsert_employees_dict_to_db(employees_dict: dict, db: Session, created_
     """
     Bulk upsert employees_dict vào bảng Employee.
     - employee_code là key
-    - company_id: lấy company có name='APEC', nếu không có thì lấy company đầu tiên
+    - company_id: lấy company có name='APEC GROUP', nếu không có thì lấy company đầu tiên
     - info: value của dict
     - Nếu trùng (employee_code, company_id) thì update info
     """
-    # Xử lý orphan: set NULL cho các bản ghi summary_report_monthly mà employee_id không còn tồn tại
-    from sqlalchemy import update
-    from app.models.hrms.summary_report_monthly import SummaryReportMonthlyReport
-    db.execute(
-        update(SummaryReportMonthlyReport)
-        .where(~SummaryReportMonthlyReport.employee_id.in_(
-            db.query(Employee.id)
-        ))
-        .values(employee_id=None)
-    )
-    db.commit()
     # Đồng bộ sequence id với max(id) hiện tại (chỉ với Postgres)
     from sqlalchemy import text
     db.execute(text(
         "SELECT setval('hrms_employee_id_seq', (SELECT COALESCE(MAX(id), 1) FROM hrms_employee))"
     ))
-    # Lấy company_id
+    # Lấy company_id giống logic summary_report_monthly
     company = db.query(Company).filter(Company.name == 'APEC GROUP').first()
     if not company:
         company = db.query(Company).first()
@@ -115,7 +104,6 @@ def bulk_upsert_employees_dict_to_db(employees_dict: dict, db: Session, created_
     from sqlalchemy.dialects.postgresql import insert
     to_upsert = []
     for employee_code, value in employees_dict.items():
-        # Lưu info là dict có key 'profiles' chứa list các hồ sơ
         to_upsert.append({
             'employee_code': employee_code,
             'company_id': company_id,
