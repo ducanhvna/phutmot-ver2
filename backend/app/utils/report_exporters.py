@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 from openpyxl import Workbook
+from app.models.file_metadata import save_file_metadata_list
 
 def export_al_cl_report_department(data, output_dir, data_key='al_report'):
     """
@@ -259,5 +260,3 @@ def export_json_report(data: dict, output_dir: str, file_name: str):
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2, default=default_serializer)
     return file_path
-
-# ... Các hàm export khác sẽ được bổ sung tương tự ...

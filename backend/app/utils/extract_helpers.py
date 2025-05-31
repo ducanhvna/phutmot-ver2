@@ -29,12 +29,12 @@ def extract_contracts(models, uid, limit, offset=0, startdate=None, enddate=None
     ] 
     fields = fields or default_fields
 
-    dt = datetime.strptime(enddate, "%Y-%m-%d")
-    # Tăng 1 tháng
+    # Lấy thời gian hiện tại làm dt
+    dt = datetime.now()
     year = dt.year + (dt.month // 12)
     month = dt.month % 12 + 1
     last_day = calendar.monthrange(year, month)[1]
-    enddate = f"{year:04d}-{month:02d}-{last_day:02d}"
+    enddate = datetime(year, month, last_day).strftime("%Y-%m-%d")
     # Bổ sung domain: (date_start <= enddate) & ((active=True)|(active=False))
     domain = ["&", ("date_start", "<=", enddate), "|", ("active", "=", True), ("active", "=", False)]
 

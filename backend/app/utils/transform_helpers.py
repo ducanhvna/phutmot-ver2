@@ -1,5 +1,6 @@
 import pandas as pd
-from datetime import timedelta
+from datetime import timedelta, datetime
+import calendar
 
 def float_to_hours(float_time_hour):
     """
@@ -479,3 +480,39 @@ def apec_attendance_report_list_to_dict(df_apec):
         group_sorted = group.sort_values("date", ascending=True)
         apec_dict[code] = group_sorted.to_dict(orient="records")
     return apec_dict
+
+def contracts_list_to_dicts_by_month(df_contracts):
+    """
+    Trả về 3 dict:
+    - contracts_dict: hợp đồng có date_start <= ngày cuối cùng tháng hiện tại
+    - contracts_prev_dict: hợp đồng có date_start <= ngày cuối cùng tháng trước
+    - contracts_next_dict: hợp đồng có date_start <= ngày cuối cùng tháng sau
+    """
+    if df_contracts is None or df_contracts.empty or "employee_code" not in df_contracts.columns or "date_start" not in df_contracts.columns:
+        return {}, {}, {}
+    now = datetime.now()
+    # Ngày cuối cùng tháng hiện tại
+    last_day_this = calendar.monthrange(now.year, now.month)[1]
+    end_this = datetime(now.year, now.month, last_day_this)
+    # Ngày cuối cùng tháng trước
+    prev_month = now.month - 1 if now.month > 1 else 12
+    prev_year = now.year if now.month > 1 else now.year - 1
+    last_day_prev = calendar.monthrange(prev_year, prev_month)[1]
+    end_prev = datetime(prev_year, prev_month, last_day_prev)
+    # Ngày cuối cùng tháng sau
+    next_month = now.month + 1 if now.month < 12 else 1
+    next_year = now.year if now.month < 12 else now.year + 1
+    last_day_next = calendar.monthrange(next_year, next_month)[1]
+    end_next = datetime(next_year, next_month, last_day_next)
+    # Lọc hợp đồng
+    contracts_dict = {}
+    contracts_prev_dict = {}
+    contracts_next_dict = {}
+    for code, group in df_contracts.groupby("employee_code"):
+        group_this = group[group["date_start"] <= end_this]
+        group_prev = group[group["date_start"] <= end_prev]
+        group_next = group[group["date_start"] <= end_next]
+        contracts_dict[code] = group_this.sort_values("date_start").to_dict(orient="records")
+        contracts_prev_dict[code] = group_prev.sort_values("date_start").to_dict(orient="records")
+        contracts_next_dict[code] = group_next.sort_values("date_start").to_dict(orient="records")
+    return contracts_dict, contracts_prev_dict, contracts_next_dict

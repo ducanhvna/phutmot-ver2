@@ -283,7 +283,7 @@ def transform(data, startdate=None, enddate=None):
         df_emp = df_emp[~df_emp["name"].str.lower().str.contains("test")]
     result["employees"] = df_emp
     # Chuẩn hóa employees_dict (dict theo code)
-    from .transform_helpers import employees_list_to_dict, contracts_list_to_dict
+    from .transform_helpers import employees_list_to_dict, contracts_list_to_dicts_by_month
     result["employees_dict"] = employees_list_to_dict(df_emp)
     # Contracts
     list_contracts = data["contracts"]
@@ -296,8 +296,11 @@ def transform(data, startdate=None, enddate=None):
         df_contracts["date_start"] = pd.to_datetime(df_contracts["date_start"], errors="coerce")
         df_contracts["date_end"] = pd.to_datetime(df_contracts["date_end"], errors="coerce")
     result["contracts"] = df_contracts
-    # Chuẩn hóa contracts_dict (dict theo employee_code)
-    result["contracts_dict"] = contracts_list_to_dict(df_contracts, enddate=pd.to_datetime(enddate) if enddate else None)
+    # Chuẩn hóa contracts_dict (3 dict theo employee_code, theo tháng)
+    contracts_dict, contracts_prev_dict, contracts_next_dict = contracts_list_to_dicts_by_month(df_contracts)
+    result["contracts_dict"] = contracts_dict
+    result["contracts_prev_dict"] = contracts_prev_dict
+    result["contracts_next_dict"] = contracts_next_dict
     # Companies
     df_companies = pd.DataFrame(data["companies"])
     result["companies"] = df_companies
@@ -444,6 +447,8 @@ def load_to_minio(data, report_date=None):
             print(f"[ETL] Bulk upsert employees_dict to DB failed: {ex}")
     # Lưu contracts_dict (nếu có) ra file json chuẩn hóa
     contracts_dict = data.get("contracts_dict")
+    contracts_prev_dict = data.get("contracts_prev_dict")
+    contracts_next_dict = data.get("contracts_next_dict")
     if contracts_dict:
         from .report_exporters import export_json_report
         file_name = f"1__contracts_dict__{report_date}.json"
@@ -452,6 +457,22 @@ def load_to_minio(data, report_date=None):
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
+    if contracts_prev_dict:
+        from .report_exporters import export_json_report
+        file_name_prev = f"1__contracts_prev_dict__{report_date}.json"
+        file_name_on_disk_prev = f"1__contracts_prev_dict__{report_date}__{report_time}.json"
+        file_path_prev = export_json_report(contracts_prev_dict, tmp_dir, file_name_on_disk_prev)
+        client.fput_object(MINIO_BUCKET, file_name_prev, file_path_prev)
+        url_prev = client.presigned_get_object(MINIO_BUCKET, file_name_prev)
+        links[file_name_prev] = url_prev
+    if contracts_next_dict:
+        from .report_exporters import export_json_report
+        file_name_next = f"1__contracts_next_dict__{report_date}.json"
+        file_name_on_disk_next = f"1__contracts_next_dict__{report_date}__{report_time}.json"
+        file_path_next = export_json_report(contracts_next_dict, tmp_dir, file_name_on_disk_next)
+        client.fput_object(MINIO_BUCKET, file_name_next, file_path_next)
+        url_next = client.presigned_get_object(MINIO_BUCKET, file_name_next)
+        links[file_name_next] = url_next
     # Lưu leaves_dict (nếu có) ra file json chuẩn hóa
     leaves_dict = data.get("leaves_dict")
     if leaves_dict:
@@ -618,37 +639,8 @@ def load_to_minio(data, report_date=None):
                 # links[file_name] = f"http://{public_host}:9000/{MINIO_BUCKET}/{file_name}?response-content-disposition=attachment"
                 links[file_name] = url
     # Lưu metadata file vào bảng FileMetadata
-    from app.db import SessionLocal
-    from app.models.file_metadata import FileMetadata
-    session = SessionLocal()
-    try:
-        for file_name, url in links.items():
-            # Parse company_id và report_type từ file_name nếu có thể, hoặc truyền vào từ context ngoài
-            # Ví dụ: "1__apec_attendance_report__20240530.xlsx" => company_id=1, report_type=apec_attendance_report
-            parts = file_name.split("__")
-            company_id = None
-            report_type = None
-            if len(parts) >= 2:
-                try:
-                    company_id = int(parts[0]) if parts[0].isdigit() else None
-                except Exception:
-                    company_id = None
-                report_type = parts[1]
-            # Lưu metadata vào DB
-            meta = FileMetadata(
-                company_id=company_id,
-                report_type=report_type,
-                file_url=url,
-                file_name=file_name,
-                created_by="etl",
-                info={}
-            )
-            session.add(meta)
-        session.commit()
-    except Exception as ex:
-        print(f"[ETL] Save file metadata to DB failed: {ex}")
-    finally:
-        session.close()
+    from app.models.file_metadata import save_file_metadata_list
+    save_file_metadata_list(links)
     return links
 
 # 4. ETL Job
