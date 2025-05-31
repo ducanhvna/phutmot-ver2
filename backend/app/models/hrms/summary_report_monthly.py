@@ -49,7 +49,13 @@ def bulk_upsert_summary_report_dict_to_db(summary_report_dict: dict, db: Session
     emp_code_to_id = {e.employee_code: e.id for e in employees}
     to_upsert = []
     for employee_code, info in summary_report_dict.items():
+        # Bỏ qua các key không phải employee_code hợp lệ (None, '', không phải str, hoặc không phải số/chuỗi mã nhân sự)
+        if not employee_code or not isinstance(employee_code, str):
+            continue
         employee_id = emp_code_to_id.get(employee_code)
+        # Nếu employee_id không tìm thấy, chỉ cho phép None nếu DB cho phép nullable, nhưng tránh các key lạ như 'hrms'
+        if employee_id is None and employee_code not in emp_code_to_id:
+            continue  # Bỏ qua key lạ không phải employee_code hợp lệ
         to_upsert.append({
             'employee_id': employee_id,
             'employee_code': employee_code,
