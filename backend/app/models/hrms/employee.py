@@ -98,11 +98,12 @@ def bulk_upsert_employees_dict_to_db(employees_dict: dict, db: Session, created_
     company_id = company.id
     from sqlalchemy.dialects.postgresql import insert
     to_upsert = []
-    for employee_code, info in employees_dict.items():
+    for employee_code, value in employees_dict.items():
+        # Lưu info là dict có key 'profiles' chứa list các hồ sơ
         to_upsert.append({
             'employee_code': employee_code,
             'company_id': company_id,
-            'info': info,
+            'info': value,  # value = {'profiles': [...]}
             'created_by': created_by or 'etl',
         })
     stmt = insert(Employee).values(to_upsert)

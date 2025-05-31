@@ -345,14 +345,15 @@ def add_mis_id_by_company_id(data, companies):
 def employees_list_to_dict(df_emp):
     """
     Chuyển DataFrame employees về dict theo code (bỏ các dòng không có code).
-    Nếu code trùng lặp, mỗi code là 1 list các dict.
+    Mỗi code là 1 dict với key 'profiles' chứa list các dict profile (các dòng cùng code).
     """
     if df_emp is None or df_emp.empty or "code" not in df_emp.columns:
         return {}
     df_emp = df_emp.dropna(subset=["code"])
     emp_dict = {}
     for code, group in df_emp.groupby("code"):
-        emp_dict[code] = group.to_dict(orient="records")
+        profiles = group.to_dict(orient="records")
+        emp_dict[code] = {"profiles": profiles}
     return emp_dict
 
 def contracts_list_to_dict(df_contracts, enddate=None):
