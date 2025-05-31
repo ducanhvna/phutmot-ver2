@@ -15,10 +15,10 @@ def extract_employees(models, uid, limit, offset=0, startdate=None, enddate=None
                 'probationary_contract_termination_date', 'severance_day', 'workingday',
                 'probationary_salary_rate', 'resource_calendar_id', 'date_sign', 'level', 'active']
     fields = fields or default_fields
-    # if startdate and enddate:
-    #     domain = ["&", ("create_date", ">=", startdate), ("create_date", "<=", enddate)]
-    # else:
-    domain = [['active', 'in', [True, False]]]
+    if startdate and enddate:
+        domain = ["|", ("active", ">=", False), ("active", "=", True)]
+    else:
+        domain = []
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.employee', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
 def extract_contracts(models, uid, limit, offset=0, startdate=None, enddate=None, fields=None):
@@ -28,7 +28,7 @@ def extract_contracts(models, uid, limit, offset=0, startdate=None, enddate=None
     ]
     fields = fields or default_fields
     if startdate and enddate:
-        domain = ["&", ("date_start", ">=", startdate), ("date_start", "<=", enddate)]
+        domain = [("date_start", "<=", enddate)]
     else:
         domain = []
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.contract', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
