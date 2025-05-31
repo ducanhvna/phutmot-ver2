@@ -1,7 +1,8 @@
 import os
 import xmlrpc.client
 import pandas as pd
-from datetime import datetime
+import calendar
+from datetime import datetime, timedelta
 
 ODOO_BASE_URL = "https://hrm.mandalahotel.com.vn"
 ODOO_DB = "apechrm_product_v3"
@@ -24,13 +25,19 @@ def extract_employees(models, uid, limit, offset=0, startdate=None, enddate=None
 def extract_contracts(models, uid, limit, offset=0, startdate=None, enddate=None, fields=None):
     default_fields = [
         'id', 'name', 'employee_id', 'date_start', 'date_end', 'wage', 'state',
-        'minutes_per_day', 'employee_code', 'resource_calendar_id'
-    ]
+        'minutes_per_day', 'employee_code', 'resource_calendar_id', 'active', 'company_id', 'contract_type_id'
+    ] 
     fields = fields or default_fields
-    if startdate and enddate:
-        domain = [("date_start", "<=", enddate)]
-    else:
-        domain = []
+
+    dt = datetime.strptime(enddate, "%Y-%m-%d")
+    # Tăng 1 tháng
+    year = dt.year + (dt.month // 12)
+    month = dt.month % 12 + 1
+    last_day = calendar.monthrange(year, month)[1]
+    enddate = f"{year:04d}-{month:02d}-{last_day:02d}"
+    # Bổ sung domain: (date_start <= enddate) & ((active=True)|(active=False))
+    domain = ["&", ("date_start", "<=", enddate), "|", ("active", "=", True), ("active", "=", False)]
+
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.contract', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
 def extract_companies(models, uid, limit, offset=0, fields=None):
@@ -84,7 +91,8 @@ def extract_apec_attendance_report(models, uid, limit, offset=0, startdate=None,
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.apec.attendance.report', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
 
 def extract_upload_attendance(models, uid, limit, offset=0, startdate=None, enddate=None, fields=None):
-    default_fields = ['id', 'year', 'month', 'template', 'company_id', 'department_id', 'url']
+    default_fields = ['id', 'year', 'month', 'template', 'company_id', 'department_id', 'url'
+    ]
     fields = fields or default_fields
     domain = []
     return models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'hr.upload.attendance', 'search_read', [domain, fields], {'limit': limit, 'offset': offset})
