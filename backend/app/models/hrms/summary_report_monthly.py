@@ -20,7 +20,7 @@ except ImportError:
 class SummaryReportMonthlyReport(Base):
     __tablename__ = "hrms_summary_report_monthly"
     id = Column(Integer, primary_key=True, index=True)
-    employee_id = Column(Integer, ForeignKey("hrms_employee.id"), index=True, nullable=True)
+    employee_id = Column(Integer, ForeignKey("hrms_employee.id", ondelete="SET NULL"), index=True, nullable=True)
     employee = relationship("Employee")
     employee_code = Column(String, index=True)
     month = Column(Integer, index=True)
@@ -37,6 +37,11 @@ def bulk_upsert_summary_report_dict_to_db(summary_report_dict: dict, db: Session
     - info: value của dict
     - Nếu trùng (employee_id, month, year) thì update info
     """
+    # Đồng bộ sequence id với max(id) hiện tại (chỉ với Postgres)
+    from sqlalchemy import text
+    db.execute(text(
+        "SELECT setval('hrms_summary_report_monthly_id_seq', (SELECT COALESCE(MAX(id), 1) FROM hrms_summary_report_monthly))"
+    ))
     print(f"Upserting {len(summary_report_dict)} month {month} year {year} summary reports to DB...")
     # Lấy công ty APEC GROUP (hoặc công ty đầu tiên)
     company = db.query(Company).filter(Company.name == 'APEC GROUP').first()

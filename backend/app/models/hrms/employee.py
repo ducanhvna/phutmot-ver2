@@ -89,6 +89,22 @@ def bulk_upsert_employees_dict_to_db(employees_dict: dict, db: Session, created_
     - info: value của dict
     - Nếu trùng (employee_code, company_id) thì update info
     """
+    # Xử lý orphan: set NULL cho các bản ghi summary_report_monthly mà employee_id không còn tồn tại
+    from sqlalchemy import update
+    from app.models.hrms.summary_report_monthly import SummaryReportMonthlyReport
+    db.execute(
+        update(SummaryReportMonthlyReport)
+        .where(~SummaryReportMonthlyReport.employee_id.in_(
+            db.query(Employee.id)
+        ))
+        .values(employee_id=None)
+    )
+    db.commit()
+    # Đồng bộ sequence id với max(id) hiện tại (chỉ với Postgres)
+    from sqlalchemy import text
+    db.execute(text(
+        "SELECT setval('hrms_employee_id_seq', (SELECT COALESCE(MAX(id), 1) FROM hrms_employee))"
+    ))
     # Lấy company_id
     company = db.query(Company).filter(Company.name == 'APEC GROUP').first()
     if not company:
