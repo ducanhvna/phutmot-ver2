@@ -232,6 +232,8 @@ def transform_apec_attendance_report(df, df_old=None):
     # Nếu có df_old, sinh các trường attendance_attempt, attendance_inout, last_attendance_attempt, night_shift...
     if df_old is not None:
         df[['has_attendance', 'min_time_out', 'max_time_in']] = df.apply(lambda row: pd.Series(get_scheduling_time_row(row, df_old)), axis=1)
+    if 'couple' in df.columns:
+            df['actual_work_time_ho'] = df.apply(calculate_actual_work_time_ho_row, axis=1)
     return df
 
 def find_couple_row(row):

@@ -2,7 +2,9 @@ import os
 import xmlrpc.client
 import pandas as pd
 from minio import Minio
-from datetime import datetime
+# --- Bổ sung: Tính khoảng thời gian tháng hiện tại, tháng trước, tháng sau ---
+from datetime import datetime, timedelta
+import calendar
 import tempfile
 from .report_exporters import (
     export_al_cl_report_department,
@@ -14,9 +16,10 @@ from .report_exporters import (
     export_kpi_weekly_report,
     export_al_cl_report_ho,
     export_al_cl_report,
+    export_json_report,
     export_al_cl_report_severance,
 )
-from .transform_helpers import add_name_field, calculate_actual_work_time_ho_row, process_report_raw, transform_apec_attendance_report, add_mis_id_by_company_id, add_mis_id_by_company_name
+from .transform_helpers import add_name_field, process_report_raw, transform_apec_attendance_report, add_mis_id_by_company_id, add_mis_id_by_company_name
 from .extract_helpers import (
     extract_employees,
     extract_contracts,
@@ -50,6 +53,33 @@ MINIO_BUCKET = os.getenv("MINIO_BUCKET", "etl-data")
 # 1. Extract tổng hợp với phân trang
 
 def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=None):
+
+    now = datetime.now()
+    # Tháng hiện tại
+    first_day_this_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    last_day_this_month = now.replace(day=calendar.monthrange(now.year, now.month)[1], hour=23, minute=59, second=59, microsecond=999999)
+    # Tháng trước
+    prev_month = (now.month - 1) if now.month > 1 else 12
+    prev_year = now.year if now.month > 1 else now.year - 1
+    first_day_prev_month = first_day_this_month.replace(year=prev_year, month=prev_month)
+    last_day_prev_month = first_day_this_month - timedelta(seconds=1)
+    # Tháng sau
+    next_month = (now.month + 1) if now.month < 12 else 1
+    next_year = now.year if now.month < 12 else now.year + 1
+    first_day_next_month = (last_day_this_month + timedelta(seconds=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    last_day_next_month = first_day_next_month.replace(day=calendar.monthrange(next_year, next_month)[1], month=next_month, year=next_year, hour=23, minute=59, second=59, microsecond=999999)
+    # Lấy str theo định dạng YYYY-MM-DD
+    first_day_prev_month_str = first_day_prev_month.strftime('%Y-%m-%d')
+    last_day_prev_month_str = last_day_prev_month.strftime('%Y-%m-%d')
+    first_day_this_month_str = first_day_this_month.strftime('%Y-%m-%d')
+    last_day_this_month_str = last_day_this_month.strftime('%Y-%m-%d')
+    first_day_next_month_str = first_day_next_month.strftime('%Y-%m-%d')
+    last_day_next_month_str = last_day_next_month.strftime('%Y-%m-%d')
+    # In ra để debug
+    print(f"[ETL] Tháng trước: {first_day_prev_month_str} - {last_day_prev_month_str}")
+    print(f"[ETL] Tháng này: {first_day_this_month_str} - {last_day_this_month_str}")
+    print(f"[ETL] Tháng sau: {first_day_next_month_str} - {last_day_next_month_str}")
+
     if not startdate or not enddate:
         raise ValueError("startdate và enddate là bắt buộc nhập")
     print(f"[ETL] Đang kết nối Odoo: {ODOO_BASE_URL}, DB: {ODOO_DB}, USER: {ODOO_USERNAME}")
@@ -210,13 +240,21 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
     extract_errors.extend(err)
     cl_report, err = fetch_all(extract_cl_report, cl_report_fields, startdate=startdate, enddate=enddate)
     extract_errors.extend(err)
-    apec_attendance_report, err = fetch_all(extract_apec_attendance_report, apec_attendance_fields, startdate=startdate, enddate=enddate)
+    apec_attendance_prev_report, err = fetch_all(extract_apec_attendance_report, apec_attendance_fields, startdate=first_day_prev_month_str, enddate=last_day_prev_month_str)
     extract_errors.extend(err)
-    attendance_trans, err = fetch_all(extract_attendance_trans, attendance_trans_fields, startdate=startdate, enddate=enddate)
+    apec_attendance_report, err = fetch_all(extract_apec_attendance_report, apec_attendance_fields, startdate=first_day_this_month_str, enddate=last_day_this_month_str)
+    extract_errors.extend(err)
+    attendance_trans, err = fetch_all(extract_attendance_trans, attendance_trans_fields, startdate=first_day_prev_month_str, enddate=last_day_next_month_str)
     extract_errors.extend(err)
     shifts, err = fetch_all(extract_shifts, shifts_fields)
     extract_errors.extend(err)
     data = {
+        'first_day_this_month': first_day_this_month,
+        'last_day_this_month': last_day_this_month,
+        'first_day_prev_month': first_day_prev_month,
+        'last_day_prev_month': last_day_prev_month,
+        'first_day_next_month': first_day_next_month,
+        'last_day_next_month': last_day_next_month,
         'employees': employees,
         'contracts': contracts,
         'companies': companies,
@@ -228,11 +266,12 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
         'al_report': al_report,
         'cl_report': cl_report,
         'apec_attendance_report': apec_attendance_report,
+        'apec_attendance_prev_report': apec_attendance_prev_report,
         'attendance_trans': attendance_trans,
         'shifts': shifts,
         'extract_errors': extract_errors,
     }
-    # Save raw data to Excel and upload to MinIO
+    print("Save raw data to Excel and upload to MinIO...")
     client = Minio(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, secure=False)
     # Luôn tạo bucket nếu chưa có (xử lý race condition)
     try:
@@ -244,11 +283,24 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
     tmp_dir = tempfile.gettempdir()
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir, exist_ok=True)
-    file_path = os.path.join(tmp_dir, f"odoo_raw_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
+    file_path = os.path.join(tmp_dir, f"odoo_raw_{datetime.now().strftime('%Y%m%d')}.xlsx")
     with pd.ExcelWriter(file_path) as writer:
         for key, value in data.items():
-            df = pd.DataFrame(value)
-            df.to_excel(writer, sheet_name=key, index=False)
+            # Bỏ qua các giá trị là datetime, date, hoặc string (chỉ ghi DataFrame hoặc list/dict phù hợp)
+            if isinstance(value, (datetime, str)):
+                continue
+            # Nếu là list các dict hoặc list các list, convert sang DataFrame
+            if isinstance(value, list) and value and isinstance(value[0], (dict, list)):
+                df = pd.DataFrame(value)
+            elif isinstance(value, pd.DataFrame):
+                df = value
+            else:
+                # Bỏ qua các kiểu không phù hợp
+                continue
+            if not df.empty:
+                df.to_excel(writer, sheet_name=key, index=False)
+            else:
+                pd.DataFrame().to_excel(writer, sheet_name=key, index=False)
     object_name = os.path.basename(file_path)
     # Đảm bảo file thực sự được upload lên MinIO
     client.fput_object(MINIO_BUCKET, object_name, file_path)
@@ -375,16 +427,24 @@ def transform(data, startdate=None, enddate=None):
     result["cl_report_dict"] = cl_report_list_to_dict(df_cl_report)
     # APEC Attendance Report (thay thế attendance)
     # Bổ sung mis_id cho DataFrame
+    add_mis_id_by_company_name(data["apec_attendance_prev_report"], data["companies"])
+    df_apec_attendance_prev = pd.DataFrame(data["apec_attendance_prev_report"])
+    # Sử dụng transform_apec_attendance_report để sinh couple, couple_out_in, tổng out_ho, các trường datetime
+    if not df_apec_attendance_prev.empty:
+        df_apec_attendance_prev = transform_apec_attendance_report(df_apec_attendance_prev)
+    result["apec_attendance_report_prev"] = df_apec_attendance_prev
+    # Chuẩn hóa apec_attendance_report_dict (dict theo employee_code, tăng dần theo date)
+    from .transform_helpers import apec_attendance_report_list_to_dict
+    result["apec_attendance_report_prev_dict"] = apec_attendance_report_list_to_dict(df_apec_attendance_prev)
+
+    # Bổ sung mis_id cho DataFrame
     add_mis_id_by_company_name(data["apec_attendance_report"], data["companies"])
     df_apec_attendance = pd.DataFrame(data["apec_attendance_report"])
     # Sử dụng transform_apec_attendance_report để sinh couple, couple_out_in, tổng out_ho, các trường datetime
     if not df_apec_attendance.empty:
         df_apec_attendance = transform_apec_attendance_report(df_apec_attendance)
-        if 'couple' in df_apec_attendance.columns:
-            df_apec_attendance['actual_work_time_ho'] = df_apec_attendance.apply(calculate_actual_work_time_ho_row, axis=1)
     result["apec_attendance_report"] = df_apec_attendance
     # Chuẩn hóa apec_attendance_report_dict (dict theo employee_code, tăng dần theo date)
-    from .transform_helpers import apec_attendance_report_list_to_dict
     result["apec_attendance_report_dict"] = apec_attendance_report_list_to_dict(df_apec_attendance)
     # Shifts: bổ sung trường company_name và mis_id
     list_shifts = data.get("shifts", [])
@@ -407,6 +467,12 @@ def load_to_minio(data, report_date=None):
     Lưu từng loại báo cáo cho từng công ty lên MinIO, đặt tên chuẩn.
     report_date: string yyyy-mm-dd hoặc None (mặc định lấy ngày hiện tại)
     """
+    first_day_this_month = data.get("first_day_this_month")
+    last_day_this_month = data.get("last_day_this_month")
+    first_day_prev_month = data.get("first_day_prev_month")
+    last_day_prev_month = data.get("last_day_prev_month")
+    first_day_next_month = data.get("first_day_next_month")
+    last_day_next_month = data.get("last_day_next_month")
     if not report_date:
         report_date = datetime.now().strftime("%Y%m%d")
     report_time = datetime.now().strftime("%H%M%S")
@@ -429,7 +495,6 @@ def load_to_minio(data, report_date=None):
     # Lưu employees_dict (nếu có) ra file json chuẩn bằng export_json_report
     employees_dict = data.get("employees_dict")
     if employees_dict:
-        from .report_exporters import export_json_report
         file_name = f"1__employees_dict__{report_date}.json"
         file_name_on_disk = f"1__employees_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(employees_dict, tmp_dir, file_name_on_disk)
@@ -450,7 +515,6 @@ def load_to_minio(data, report_date=None):
     contracts_prev_dict = data.get("contracts_prev_dict")
     contracts_next_dict = data.get("contracts_next_dict")
     if contracts_dict:
-        from .report_exporters import export_json_report
         file_name = f"1__contracts_dict__{report_date}.json"
         file_name_on_disk = f"1__contracts_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(contracts_dict, tmp_dir, file_name_on_disk)
@@ -458,7 +522,6 @@ def load_to_minio(data, report_date=None):
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
     if contracts_prev_dict:
-        from .report_exporters import export_json_report
         file_name_prev = f"1__contracts_prev_dict__{report_date}.json"
         file_name_on_disk_prev = f"1__contracts_prev_dict__{report_date}__{report_time}.json"
         file_path_prev = export_json_report(contracts_prev_dict, tmp_dir, file_name_on_disk_prev)
@@ -466,7 +529,6 @@ def load_to_minio(data, report_date=None):
         url_prev = client.presigned_get_object(MINIO_BUCKET, file_name_prev)
         links[file_name_prev] = url_prev
     if contracts_next_dict:
-        from .report_exporters import export_json_report
         file_name_next = f"1__contracts_next_dict__{report_date}.json"
         file_name_on_disk_next = f"1__contracts_next_dict__{report_date}__{report_time}.json"
         file_path_next = export_json_report(contracts_next_dict, tmp_dir, file_name_on_disk_next)
@@ -476,7 +538,6 @@ def load_to_minio(data, report_date=None):
     # Lưu leaves_dict (nếu có) ra file json chuẩn hóa
     leaves_dict = data.get("leaves_dict")
     if leaves_dict:
-        from .report_exporters import export_json_report
         file_name = f"1__leaves_dict__{report_date}.json"
         file_name_on_disk = f"1__leaves_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(leaves_dict, tmp_dir, file_name_on_disk)
@@ -486,7 +547,6 @@ def load_to_minio(data, report_date=None):
     # Lưu kpi_weekly_report_summary_dict (nếu có) ra file json chuẩn hóa
     kpi_weekly_report_summary_dict = data.get("kpi_weekly_report_summary_dict")
     if kpi_weekly_report_summary_dict:
-        from .report_exporters import export_json_report
         file_name = f"1__kpi_weekly_report_summary_dict__{report_date}.json"
         file_name_on_disk = f"1__kpi_weekly_report_summary_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(kpi_weekly_report_summary_dict, tmp_dir, file_name_on_disk)
@@ -496,7 +556,6 @@ def load_to_minio(data, report_date=None):
     # Lưu hr_weekly_report_dict (nếu có) ra file json chuẩn hóa
     hr_weekly_report_dict = data.get("hr_weekly_report_dict")
     if hr_weekly_report_dict:
-        from .report_exporters import export_json_report
         file_name = f"1__hr_weekly_report_dict__{report_date}.json"
         file_name_on_disk = f"1__hr_weekly_report_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(hr_weekly_report_dict, tmp_dir, file_name_on_disk)
@@ -506,7 +565,6 @@ def load_to_minio(data, report_date=None):
     # Lưu al_report_dict (nếu có) ra file json chuẩn hóa
     al_report_dict = data.get("al_report_dict")
     if al_report_dict:
-        from .report_exporters import export_json_report
         file_name = f"1__al_report_dict__{report_date}.json"
         file_name_on_disk = f"1_al_report_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(al_report_dict, tmp_dir, file_name_on_disk)
@@ -516,7 +574,6 @@ def load_to_minio(data, report_date=None):
     # Lưu cl_report_dict (nếu có) ra file json chuẩn hóa
     cl_report_dict = data.get("cl_report_dict")
     if cl_report_dict:
-        from .report_exporters import export_json_report
         file_name = f"1__cl_report_dict__{report_date}.json"
         file_name_on_disk = f"1__cl_report_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(cl_report_dict, tmp_dir, file_name_on_disk)
@@ -526,7 +583,6 @@ def load_to_minio(data, report_date=None):
     # Lưu attendance_trans_dict (nếu có) ra file json chuẩn hóa
     attendance_trans_dict = data.get("attendance_trans_dict")
     if attendance_trans_dict:
-        from .report_exporters import export_json_report
         file_name = f"1__attendance_trans_dict__{report_date}.json"
         file_name_on_disk = f"1__attendance_trans_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(attendance_trans_dict, tmp_dir, file_name_on_disk)
@@ -536,7 +592,6 @@ def load_to_minio(data, report_date=None):
     # Lưu shifts_dict (nếu có) ra file json chuẩn hóa
     shifts_dict = data.get("shifts_dict")
     if shifts_dict:
-        from .report_exporters import export_json_report
         file_name = f"1__shifts_dict__{report_date}.json"
         file_name_on_disk = f"1__shifts_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(shifts_dict, tmp_dir, file_name_on_disk)
@@ -546,13 +601,12 @@ def load_to_minio(data, report_date=None):
     # Lưu apec_attendance_report_dict (nếu có) ra file json chuẩn hóa
     apec_attendance_report_dict = data.get("apec_attendance_report_dict")
     if apec_attendance_report_dict:
-
         # Bulk upsert vào DB sau khi lưu file json apec_attendance_report_dict
         from app.db import SessionLocal
         from app.models.hrms.summary_report_monthly import bulk_upsert_summary_report_dict_to_db
         db = SessionLocal()
-        year = 2025
-        month = 5
+        year = first_day_this_month.year if first_day_this_month else datetime.now().year
+        month = first_day_this_month.month if first_day_this_month else datetime.now().month
         # Parse month, year từ report_date
         # if isinstance(report_date, str) and len(report_date) >= 6:
         #     year = int(report_date[:4])
@@ -560,17 +614,37 @@ def load_to_minio(data, report_date=None):
         print(f"Upserting month {month} year {year} summary reports to DB...")
         bulk_upsert_summary_report_dict_to_db(apec_attendance_report_dict, db, created_by="etl", month=month, year=year)
         db.close()
-
-        from .report_exporters import export_json_report
         file_name = f"1__apec_attendance_report_dict__{report_date}.json"
         file_name_on_disk = f"1__apec_attendance_report_dict__{report_date}__{report_time}.json"
         file_path = export_json_report(apec_attendance_report_dict, tmp_dir, file_name_on_disk)
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
-        # except Exception as ex:
-        #     print(f"[ETL] Bulk upsert apec_attendance_report_dict to DB failed: {ex}")
-    # Lưu apec_attendance_report (báo cáo tổng hợp chấm công tháng APEC)
+    
+    # Lưu apec_attendance_report_dict (nếu có) ra file json chuẩn hóa
+    apec_attendance_report_prev_dict = data.get("apec_attendance_report_prev_dict")
+    if apec_attendance_report_prev_dict:
+        # Bulk upsert vào DB sau khi lưu file json apec_attendance_report_dict
+        from app.db import SessionLocal
+        from app.models.hrms.summary_report_monthly import bulk_upsert_summary_report_dict_to_db
+        db = SessionLocal()
+        year = first_day_prev_month.year
+        month = first_day_prev_month.month
+        # Parse month, year từ report_date
+        # if isinstance(report_date, str) and len(report_date) >= 6:
+        #     year = int(report_date[:4])
+        #     month = int(report_date[4:6])
+        print(f"Upserting month {month} year {year} summary reports to DB...")
+        bulk_upsert_summary_report_dict_to_db(apec_attendance_report_prev_dict, db, created_by="etl", month=month, year=year)
+        db.close()
+        file_name = f"1__apec_attendance_report_prev_dict__{report_date}.json"
+        file_name_on_disk = f"1__apec_attendance_report_prev_dict__{report_date}__{report_time}.json"
+        file_path = export_json_report(apec_attendance_report_prev_dict, tmp_dir, file_name_on_disk)
+        client.fput_object(MINIO_BUCKET, file_name, file_path)
+        url = client.presigned_get_object(MINIO_BUCKET, file_name)
+        links[file_name] = url
+
+
     df_apec_attendance = data.get("apec_attendance_report")
     if isinstance(df_apec_attendance, pd.DataFrame) and not df_apec_attendance.empty:
         from .report_exporters import export_summary_attendance_report
