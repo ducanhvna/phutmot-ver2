@@ -6,7 +6,7 @@ from datetime import datetime
 import tempfile
 from .report_exporters import (
     export_al_cl_report_department,
-    export_sumary_attendance_report,
+    export_summary_attendance_report,
     export_sumary_attendance_report_department,
     export_late_in_5_miniutes_report,
     export_feed_report,
@@ -16,7 +16,7 @@ from .report_exporters import (
     export_al_cl_report,
     export_al_cl_report_severance,
 )
-from .transform_helpers import add_name_field, calculate_actual_work_time_ho_row, process_report_raw, transform_apec_attendance_report, add_mis_id_by_company_id
+from .transform_helpers import add_name_field, calculate_actual_work_time_ho_row, process_report_raw, transform_apec_attendance_report, add_mis_id_by_company_id, add_mis_id_by_company_name
 from .extract_helpers import (
     extract_employees,
     extract_contracts,
@@ -374,14 +374,14 @@ def transform(data, startdate=None, enddate=None):
     from .transform_helpers import cl_report_list_to_dict
     result["cl_report_dict"] = cl_report_list_to_dict(df_cl_report)
     # APEC Attendance Report (thay thế attendance)
+    # Bổ sung mis_id cho DataFrame
+    add_mis_id_by_company_name(data["apec_attendance_report"], data["companies"])
     df_apec_attendance = pd.DataFrame(data["apec_attendance_report"])
     # Sử dụng transform_apec_attendance_report để sinh couple, couple_out_in, tổng out_ho, các trường datetime
     if not df_apec_attendance.empty:
         df_apec_attendance = transform_apec_attendance_report(df_apec_attendance)
         if 'couple' in df_apec_attendance.columns:
             df_apec_attendance['actual_work_time_ho'] = df_apec_attendance.apply(calculate_actual_work_time_ho_row, axis=1)
-        # Bổ sung mis_id cho DataFrame
-        add_mis_id_by_company_id(df_apec_attendance, data["companies"])
     result["apec_attendance_report"] = df_apec_attendance
     # Chuẩn hóa apec_attendance_report_dict (dict theo employee_code, tăng dần theo date)
     from .transform_helpers import apec_attendance_report_list_to_dict
@@ -570,9 +570,23 @@ def load_to_minio(data, report_date=None):
         links[file_name] = url
         # except Exception as ex:
         #     print(f"[ETL] Bulk upsert apec_attendance_report_dict to DB failed: {ex}")
+    # Lưu apec_attendance_report (báo cáo tổng hợp chấm công tháng APEC)
+    df_apec_attendance = data.get("apec_attendance_report")
+    if isinstance(df_apec_attendance, pd.DataFrame) and not df_apec_attendance.empty:
+        from .report_exporters import export_summary_attendance_report
+        file_paths = export_summary_attendance_report(
+            {"apec_attendance_report": df_apec_attendance},
+            tmp_dir,
+            data_key="apec_attendance_report"
+        )
+        for file_path in file_paths:
+            file_name = os.path.basename(file_path).replace(" ", "_")
+            client.fput_object(MINIO_BUCKET, file_name, file_path)
+            url = client.presigned_get_object(MINIO_BUCKET, file_name)
+            links[file_name] = url
     # Danh sách các loại báo cáo và hàm export tương ứng
     report_types = [
-        ("apec_attendance_report", export_sumary_attendance_report, "apec_attendance_report"),
+        # ("apec_attendance_report", export_summary_attendance_report, "apec_attendance_report"),
         ("al_report", export_al_cl_report, "al_cl_report"),
         ("feed_report", export_feed_report, "feed_report"),
         ("kpi_weekly_report_summary", export_kpi_weekly_report_ho, "kpi_weekly_report_ho"),
@@ -585,13 +599,13 @@ def load_to_minio(data, report_date=None):
         if not isinstance(df, pd.DataFrame) or df.empty:
             continue
         # Group theo công ty
-        company_col = None
-        for col in ["company", "company_name"]:
-            if col in df.columns:
-                company_col = col
-                break
-        if not company_col:
-            continue
+        company_col = 'mis_id'
+        # for col in ["company", "company_name"]:
+        #     if col in df.columns:
+        #         company_col = col
+        #         break
+        # if not company_col:
+        #     continue
         
         # file_path = os.path.join(tmp_dir, f"odoo_raw_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
         # with pd.ExcelWriter(file_path) as writer:

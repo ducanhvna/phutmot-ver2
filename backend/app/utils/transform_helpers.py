@@ -343,6 +343,33 @@ def add_mis_id_by_company_id(data, companies):
         return data
     return data
 
+def add_mis_id_by_company_name(data, companies):
+    """
+    Bổ sung trường mis_id vào data (list[dict] hoặc DataFrame) dựa vào company_name, mapping từ companies (list[dict] hoặc DataFrame).
+    """
+    # Chuẩn hóa companies thành dict: name -> mis_id
+    name_col = 'company'
+    if isinstance(data, pd.DataFrame):
+        name_col = 'company' if 'company' in data.columns else 'company_name'
+    if isinstance(companies, pd.DataFrame):
+        company_map = {row['name']: row['mis_id'] for _, row in companies.iterrows() if 'name' in row and 'mis_id' in row}
+    else:
+        company_map = {c['name']: c.get('mis_id') for c in companies if 'name' in c}
+    # Xử lý cho list dict
+    if isinstance(data, list):
+        for item in data:
+            cname = item.get(name_col)
+            if cname is not None and cname in company_map:
+                item['mis_id'] = company_map[cname]
+            else:
+                item['mis_id'] = None
+        return data
+    # Xử lý cho DataFrame
+    elif isinstance(data, pd.DataFrame) and name_col in data.columns:
+        data['mis_id'] = data[name_col].apply(lambda cname: company_map.get(cname, None))
+        return data
+    return data
+
 def employees_list_to_dict(df_emp):
     """
     Chuyển DataFrame employees về dict theo code (bỏ các dòng không có code).
