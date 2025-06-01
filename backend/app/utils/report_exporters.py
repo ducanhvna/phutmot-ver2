@@ -303,36 +303,53 @@ def export_summary_attendance_report(data, output_dir, data_key=None, template_p
             # Chỉ merge dòng 6 cho tiêu đề tổng, KHÔNG merge các dòng 9, 10, 11
             ws.merge_cells('A6:BK6')
             ws['A6'].value = f'Employee Type: All - Working Time: All - Pay Cycle: Month - Payment Period: {date_array[0].strftime("%d/%m/%Y")} - {date_array[-1].strftime("%d/%m/%Y")}'
-            start_row = 11
-            start_col = 33
-            # --- Bỏ merge các ô ở dòng 9, 10, 11, cột từ 33 trở đi (nếu có) ---
-            unmerge_rows = [start_row-2, start_row-1, start_row]
-            for row in unmerge_rows:
-                for col in range(start_col+1, start_col+32):
-                    cell = ws.cell(row=row, column=col)
-                    for merged_range in list(ws.merged_cells.ranges):
-                        if cell.coordinate in merged_range:
-                            ws.unmerge_cells(str(merged_range))
-            # Ghi thứ/ngày vào dòng 9, 10 (không merge các dòng này)
-            for date_item in date_array:
-                day_of_month = date_item.day
-                ws.cell(row=start_row-2, column=start_col + day_of_month).value = date_item.strftime('%A')[:3]
-                ws.cell(row=start_row-1, column=start_col + day_of_month).value = date_item
-            if date_array and date_array[-1].day < 31:
-                for add_item in range(date_array[-1].day + 1, 32):
-                    ws.cell(row=start_row-2, column=start_col + add_item).value = ''
-                    ws.cell(row=start_row-1, column=start_col + add_item).value = ''
-                    ws.cell(row=start_row, column=start_col + add_item).value = ''
-            # Ghi dữ liệu từng nhân viên: name vào cột 3, employee_code vào cột 2
-            name_col = 'name' if 'name' in group.columns else 'employee_name' if 'employee_name' in group.columns else None
-            code_col = 'employee_code' if 'employee_code' in group.columns else 'code' if 'code' in group.columns else None
-            if not name_col or not code_col:
-                raise KeyError("Không tìm thấy cột tên hoặc mã nhân viên trong dữ liệu!")
-            for sub_group_index, sub_group_data in group.groupby([name_col, code_col]):
-                ws.cell(row=start_row, column=2).value = sub_group_index[1]
-                ws.cell(row=start_row, column=3).value = sub_group_index[0]
-                # ...
-                start_row += 1
+            # Nếu không có cột department_name thì bỏ qua phần ghi tên phòng ban
+            if 'department_name' in group.columns:
+                start_row = 11
+                start_col = 33
+                # --- Bỏ merge các ô ở dòng 9, 10, 11, cột từ 33 trở đi (nếu có) ---
+                unmerge_rows = [start_row-2, start_row-1, start_row]
+                for row in unmerge_rows:
+                    for col in range(start_col+1, start_col+32):
+                        cell = ws.cell(row=row, column=col)
+                        for merged_range in list(ws.merged_cells.ranges):
+                            if cell.coordinate in merged_range:
+                                ws.unmerge_cells(str(merged_range))
+                # Ghi thứ/ngày vào dòng 9, 10 (không merge các dòng này)
+                for date_item in date_array:
+                    day_of_month = date_item.day
+                    ws.cell(row=start_row-2, column=start_col + day_of_month).value = date_item.strftime('%A')[:3]
+                    ws.cell(row=start_row-1, column=start_col + day_of_month).value = date_item
+                if date_array and date_array[-1].day < 31:
+                    for add_item in range(date_array[-1].day + 1, 32):
+                        ws.cell(row=start_row-2, column=start_col + add_item).value = ''
+                        ws.cell(row=start_row-1, column=start_col + add_item).value = ''
+                        ws.cell(row=start_row, column=start_col + add_item).value = ''
+                for dept, dept_group in group[group['department_name'].notnull() & (group['department_name'] != False)].groupby('department_name'):
+                    # In tên phòng ban
+                    ws.cell(row=start_row, column=1).value = dept
+                    start_row += 1    
+                    # Ghi dữ liệu từng nhân viên: name vào cột 3, employee_code vào cột 2
+                    name_col = 'name' if 'name' in group.columns else 'employee_name' if 'employee_name' in group.columns else None
+                    code_col = 'employee_code' if 'employee_code' in group.columns else 'code' if 'code' in group.columns else None
+                    if not name_col or not code_col:
+                        raise KeyError("Không tìm thấy cột tên hoặc mã nhân viên trong dữ liệu!")
+                    for sub_group_index, sub_group_data in dept_group.groupby([name_col, code_col]):
+                        ws.cell(row=start_row, column=2).value = sub_group_index[1]
+                        ws.cell(row=start_row, column=3).value = sub_group_index[0]
+                        # ...
+                        max_row_by_a_date = 0
+                        for date, date_data in sub_group_data.groupby('date'):
+                            date_value = datetime.strptime(date, '%Y-%m-%d') if isinstance(date, str) else date
+                            subrow_index = 0
+                            for row in date_data.iterrows():
+                                day_of_month = date_value.day
+                                col_index = start_col + day_of_month
+                                # Ghi dữ liệu vào ô tương ứng
+                                ws.cell(row=start_row + subrow_index, column=col_index).value = date_data['shift_name'].values[0] if 'shift_name' in date_data.columns else ''
+                                subrow_index += 1
+                            max_row_by_a_date = max(max_row_by_a_date, subrow_index)    
+                        start_row += max_row_by_a_date
             wb.save(file_path)
             # Nếu có minio_client thì upload lên MinIO và trả về url/metadata
             if minio_client and minio_bucket:
