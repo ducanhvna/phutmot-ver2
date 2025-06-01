@@ -245,8 +245,8 @@ def export_summary_attendance_report(data, output_dir, data_key=None, template_p
     if data_key is None:
         if 'apec_attendance_report' in data:
             data_key = 'apec_attendance_report'
-        elif 'attendance' in data:
-            data_key = 'attendance'
+        elif 'apec_attendance_report_prev' in data:
+            data_key = 'apec_attendance_report_prev'
         else:
             raise ValueError("Không tìm thấy key dữ liệu phù hợp trong dict data!")
     if template_path is None:
@@ -268,6 +268,7 @@ def export_summary_attendance_report(data, output_dir, data_key=None, template_p
         return [file_path]
     # Xác định cột group theo công ty
     group_col = 'mis_id' if 'mis_id' in df.columns else 'company_name' if 'company_name' in df.columns else None
+    department_col = 'department_name' if 'department_name' in df.columns else 'department' if 'department' in df.columns else None
     if not group_col:
         file_path = os.path.join(output_dir, 'summary_attendance_report_No_Group.xlsx')
         df.to_excel(file_path, index=False)
@@ -304,7 +305,7 @@ def export_summary_attendance_report(data, output_dir, data_key=None, template_p
             ws.merge_cells('A6:BK6')
             ws['A6'].value = f'Employee Type: All - Working Time: All - Pay Cycle: Month - Payment Period: {date_array[0].strftime("%d/%m/%Y")} - {date_array[-1].strftime("%d/%m/%Y")}'
             # Nếu không có cột department_name thì bỏ qua phần ghi tên phòng ban
-            if 'department_name' in group.columns:
+            if department_col:
                 start_row = 11
                 start_col = 33
                 # --- Bỏ merge các ô ở dòng 9, 10, 11, cột từ 33 trở đi (nếu có) ---
@@ -325,7 +326,7 @@ def export_summary_attendance_report(data, output_dir, data_key=None, template_p
                         ws.cell(row=start_row-2, column=start_col + add_item).value = ''
                         ws.cell(row=start_row-1, column=start_col + add_item).value = ''
                         ws.cell(row=start_row, column=start_col + add_item).value = ''
-                for dept, dept_group in group[group['department_name'].notnull() & (group['department_name'] != False)].groupby('department_name'):
+                for dept, dept_group in group[group[department_col].notnull() & (group[department_col] != False)].groupby(department_col):
                     # In tên phòng ban
                     ws.cell(row=start_row, column=1).value = dept
                     start_row += 1    
@@ -342,11 +343,11 @@ def export_summary_attendance_report(data, output_dir, data_key=None, template_p
                         for date, date_data in sub_group_data.groupby('date'):
                             date_value = datetime.strptime(date, '%Y-%m-%d') if isinstance(date, str) else date
                             subrow_index = 0
-                            for row in date_data.iterrows():
+                            for _, row in date_data.iterrows():
                                 day_of_month = date_value.day
                                 col_index = start_col + day_of_month
                                 # Ghi dữ liệu vào ô tương ứng
-                                ws.cell(row=start_row + subrow_index, column=col_index).value = date_data['shift_name'].values[0] if 'shift_name' in date_data.columns else ''
+                                ws.cell(row=start_row + subrow_index, column=col_index).value = row['shift_name'] if 'shift_name' in date_data.columns else ''
                                 subrow_index += 1
                             max_row_by_a_date = max(max_row_by_a_date, subrow_index)    
                         start_row += max_row_by_a_date

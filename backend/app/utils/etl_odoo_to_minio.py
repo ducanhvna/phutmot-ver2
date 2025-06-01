@@ -619,19 +619,10 @@ def load_to_minio(data, report_date=None):
         db = SessionLocal()
         year = first_day_this_month.year if first_day_this_month else datetime.now().year
         month = first_day_this_month.month if first_day_this_month else datetime.now().month
-        # Parse month, year từ report_date
-        # if isinstance(report_date, str) and len(report_date) >= 6:
-        #     year = int(report_date[:4])
-        #     month = int(report_date[4:6])
+
         print(f"Upserting month {month} year {year} summary reports to DB...")
         bulk_upsert_summary_report_dict_to_db(apec_attendance_report_dict, db, created_by="etl", month=month, year=year)
         db.close()
-        file_name = f"1__apec_attendance_report_dict__{report_date}.json"
-        file_name_on_disk = f"1__apec_attendance_report_dict__{report_date}__{report_time}.json"
-        file_path = export_json_report(apec_attendance_report_dict, tmp_dir, file_name_on_disk)
-        client.fput_object(MINIO_BUCKET, file_name, file_path)
-        url = client.presigned_get_object(MINIO_BUCKET, file_name)
-        links[file_name] = url
 
     print(f"Check Upserting Previous month summary reports to DB...")
     # Lưu apec_attendance_report_dict (nếu có) ra file json chuẩn hóa
@@ -646,25 +637,19 @@ def load_to_minio(data, report_date=None):
         # Parse month, year từ report_date
         bulk_upsert_summary_report_dict_to_db(apec_attendance_report_prev_dict, db, created_by="etl", month=month, year=year)
         db.close()
-        file_name = f"1__apec_attendance_report_prev_dict__{report_date}.json"
-        file_name_on_disk = f"1__apec_attendance_report_prev_dict__{report_date}__{report_time}.json"
-        file_path = export_json_report(apec_attendance_report_prev_dict, tmp_dir, file_name_on_disk)
-        client.fput_object(MINIO_BUCKET, file_name, file_path)
-        url = client.presigned_get_object(MINIO_BUCKET, file_name)
-        links[file_name] = url
 
-
-    df_apec_attendance = data.get("apec_attendance_report")
-    if isinstance(df_apec_attendance, pd.DataFrame) and not df_apec_attendance.empty:
+    df_apec_attendance_report_prev = data.get("apec_attendance_report_prev")
+    if isinstance(df_apec_attendance_report_prev, pd.DataFrame) and not df_apec_attendance_report_prev.empty:
         from .report_exporters import export_summary_attendance_report
         # Gọi hàm export_summary_attendance_report đã tối ưu, upload trực tiếp lên MinIO và trả về metadata/url
         result_list = export_summary_attendance_report(
-            {"apec_attendance_report": df_apec_attendance},
+            # {"apec_attendance_report_prev": df_apec_attendance_report_prev},
+            data,
             tmp_dir,
-            data_key="apec_attendance_report",
+            data_key="apec_attendance_report_prev",
             minio_client=client,
             minio_bucket=MINIO_BUCKET,
-            minio_prefix="attendance_report",
+            minio_prefix=f"attendance_report_{year}_{month}",
             remove_local_file=True
         )
         # Thêm các url vào links
@@ -687,31 +672,6 @@ def load_to_minio(data, report_date=None):
             continue
         # Group theo công ty
         company_col = 'mis_id'
-        # for col in ["company", "company_name"]:
-        #     if col in df.columns:
-        #         company_col = col
-        #         break
-        # if not company_col:
-        #     continue
-        
-        # file_path = os.path.join(tmp_dir, f"odoo_raw_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
-        # with pd.ExcelWriter(file_path) as writer:
-        #     for key, value in data.items():
-        #         df = pd.DataFrame(value)
-        #         df.to_excel(writer, sheet_name=key, index=False)
-        # object_name = os.path.basename(file_path)
-        # # Đảm bảo file thực sự được upload lên MinIO
-        # client.fput_object(MINIO_BUCKET, object_name, file_path)
-        # # Kiểm tra lại object vừa upload
-        # found = False
-        # for obj in client.list_objects(MINIO_BUCKET, prefix=object_name):
-        #     if obj.object_name == object_name:
-        #         found = True
-        #         break
-        # if not found:
-        #     raise RuntimeError(f"File {object_name} was not uploaded to MinIO bucket {MINIO_BUCKET}")
-        # url = client.presigned_get_object(MINIO_BUCKET, object_name)
-
         for company, group in df.groupby(company_col):
             if not isinstance(group, pd.DataFrame) or group.empty:
                 continue
