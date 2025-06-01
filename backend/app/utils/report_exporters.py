@@ -229,10 +229,11 @@ def export_json_report(data: dict, output_dir: str, file_name: str):
         json.dump(data, f, ensure_ascii=False, indent=2, default=default_serializer)
     return file_path
 
-def export_summary_attendance_report(data, output_dir, data_key=None, template_path=None, date_array=None):
+def export_summary_attendance_report(data, output_dir, data_key=None, template_path=None, date_array=None, minio_client=None, minio_bucket=None, minio_prefix=None, remove_local_file=True):
     """
     Xuất báo cáo tổng hợp chấm công từng công ty, sử dụng template Excel chuẩn.
     Mỗi công ty là 1 file, sheet đầu tiên sẽ được ghi dữ liệu tổng hợp.
+    Nếu truyền minio_client và minio_bucket thì upload từng file lên MinIO ngay sau khi tạo, trả về danh sách metadata hoặc url.
     """
     import pandas as pd
     import openpyxl
@@ -251,17 +252,33 @@ def export_summary_attendance_report(data, output_dir, data_key=None, template_p
     if template_path is None:
         template_path = os.path.join(os.path.dirname(__file__), 'template', 'Summary time attendant OK.xlsx')
     df = data.get(data_key)
-    file_paths = []
+    result_list = []
     if not isinstance(df, pd.DataFrame) or df.empty:
         file_path = os.path.join(output_dir, 'summary_attendance_report_No_Data.xlsx')
         with pd.ExcelWriter(file_path) as writer:
             pd.DataFrame().to_excel(writer, sheet_name='No Data', index=False)
+        if minio_client and minio_bucket:
+            minio_key = os.path.join(minio_prefix or '', os.path.basename(file_path))
+            minio_client.fput_object(minio_bucket, minio_key, file_path)
+            url = minio_client.presigned_get_object(minio_bucket, minio_key)
+            if remove_local_file:
+                os.remove(file_path)
+            result_list.append({'company': None, 'minio_key': minio_key, 'url': url})
+            return result_list
         return [file_path]
     # Xác định cột group theo công ty
     group_col = 'mis_id' if 'mis_id' in df.columns else 'company_name' if 'company_name' in df.columns else None
     if not group_col:
         file_path = os.path.join(output_dir, 'summary_attendance_report_No_Group.xlsx')
         df.to_excel(file_path, index=False)
+        if minio_client and minio_bucket:
+            minio_key = os.path.join(minio_prefix or '', os.path.basename(file_path))
+            minio_client.fput_object(minio_bucket, minio_key, file_path)
+            url = minio_client.presigned_get_object(minio_bucket, minio_key)
+            if remove_local_file:
+                os.remove(file_path)
+            result_list.append({'company': None, 'minio_key': minio_key, 'url': url})
+            return result_list
         return [file_path]
     # Nếu date_array không truyền vào thì lấy từ ngày đầu tháng đến cuối tháng hiện tại
     if date_array is None:
@@ -272,7 +289,7 @@ def export_summary_attendance_report(data, output_dir, data_key=None, template_p
     for company, group in df.groupby(group_col):
         if not group.empty:
             safe_company = str(company)[:20].replace('/', '_').replace('\\', '_')
-            file_path = os.path.join(output_dir, f"summary_attendance_report_{safe_company}.xlsx")
+            file_path = os.path.join(output_dir, f"1__summary_attendance_report_{safe_company}.xlsx")
             copyfile(template_path, file_path)
             wb = openpyxl.load_workbook(file_path)
             ws = wb.worksheets[0]
@@ -283,31 +300,61 @@ def export_summary_attendance_report(data, output_dir, data_key=None, template_p
             ws['C3'].value = ''
             ws.merge_cells('C4:Z4')
             ws['C4'].value = ''
+            # Chỉ merge dòng 6 cho tiêu đề tổng, KHÔNG merge các dòng 9, 10, 11
             ws.merge_cells('A6:BK6')
             ws['A6'].value = f'Employee Type: All - Working Time: All - Pay Cycle: Month - Payment Period: {date_array[0].strftime("%d/%m/%Y")} - {date_array[-1].strftime("%d/%m/%Y")}'
             start_row = 11
             start_col = 33
+            # --- Bỏ merge các ô ở dòng 9, 10, 11, cột từ 33 trở đi (nếu có) ---
+            unmerge_rows = [start_row-2, start_row-1, start_row]
+            for row in unmerge_rows:
+                for col in range(start_col+1, start_col+32):
+                    cell = ws.cell(row=row, column=col)
+                    for merged_range in list(ws.merged_cells.ranges):
+                        if cell.coordinate in merged_range:
+                            ws.unmerge_cells(str(merged_range))
+            # Ghi thứ/ngày vào dòng 9, 10 (không merge các dòng này)
             for date_item in date_array:
                 day_of_month = date_item.day
-                ws.cell(row=start_row-1, column=start_col + day_of_month).value = date_item
                 ws.cell(row=start_row-2, column=start_col + day_of_month).value = date_item.strftime('%A')[:3]
+                ws.cell(row=start_row-1, column=start_col + day_of_month).value = date_item
             if date_array and date_array[-1].day < 31:
                 for add_item in range(date_array[-1].day + 1, 32):
-                    ws.cell(row=start_row-1, column=start_col + add_item).value = ''
                     ws.cell(row=start_row-2, column=start_col + add_item).value = ''
+                    ws.cell(row=start_row-1, column=start_col + add_item).value = ''
                     ws.cell(row=start_row, column=start_col + add_item).value = ''
             # Ghi dữ liệu từng nhân viên: name vào cột 3, employee_code vào cột 2
-            for sub_group_index, sub_group_data in group.groupby(['name', 'employee_code']):
+            name_col = 'name' if 'name' in group.columns else 'employee_name' if 'employee_name' in group.columns else None
+            code_col = 'employee_code' if 'employee_code' in group.columns else 'code' if 'code' in group.columns else None
+            if not name_col or not code_col:
+                raise KeyError("Không tìm thấy cột tên hoặc mã nhân viên trong dữ liệu!")
+            for sub_group_index, sub_group_data in group.groupby([name_col, code_col]):
                 ws.cell(row=start_row, column=2).value = sub_group_index[1]
                 ws.cell(row=start_row, column=3).value = sub_group_index[0]
-                # Ghi các trường còn lại nếu cần (ví dụ: tổng hợp theo ngày, v.v.)
                 # ...
                 start_row += 1
             wb.save(file_path)
-            file_paths.append(file_path)
-    if not file_paths:
+            # Nếu có minio_client thì upload lên MinIO và trả về url/metadata
+            if minio_client and minio_bucket:
+                minio_key = os.path.join(minio_prefix or '', os.path.basename(file_path))
+                minio_client.fput_object(minio_bucket, minio_key, file_path)
+                url = minio_client.presigned_get_object(minio_bucket, minio_key)
+                if remove_local_file:
+                    os.remove(file_path)
+                result_list.append({'company': company, 'minio_key': minio_key, 'url': url})
+            else:
+                result_list.append(file_path)
+    if not result_list:
         file_path = os.path.join(output_dir, 'summary_attendance_report_No_Data.xlsx')
         with pd.ExcelWriter(file_path) as writer:
             pd.DataFrame().to_excel(writer, sheet_name='No Data', index=False)
+        if minio_client and minio_bucket:
+            minio_key = os.path.join(minio_prefix or '', os.path.basename(file_path))
+            minio_client.fput_object(minio_bucket, minio_key, file_path)
+            url = minio_client.presigned_get_object(minio_bucket, minio_key)
+            if remove_local_file:
+                os.remove(file_path)
+            result_list.append({'company': None, 'minio_key': minio_key, 'url': url})
+            return result_list
         return [file_path]
-    return file_paths
+    return result_list

@@ -50,6 +50,45 @@ MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadmin")
 MINIO_BUCKET = os.getenv("MINIO_BUCKET", "etl-data")
 
+def save_data_dict_to_excel_and_minio(data, minio_client, minio_bucket, prefix="odoo_raw"): 
+    """
+    Ghi dict data ra file Excel (lọc kiểu phù hợp), upload lên MinIO, trả về (file_path, object_name, url).
+    """
+    import pandas as pd
+    import tempfile
+    import os
+    from datetime import datetime
+    now = datetime.now()
+    tmp_dir = tempfile.gettempdir()
+    if not os.path.exists(tmp_dir):
+        os.makedirs(tmp_dir, exist_ok=True)
+    file_path = os.path.join(tmp_dir, f"{prefix}_{now.strftime('%Y%m%d')}.xlsx")
+    with pd.ExcelWriter(file_path) as writer:
+        for key, value in data.items():
+            if isinstance(value, (datetime, str)):
+                continue
+            if isinstance(value, list) and value and isinstance(value[0], (dict, list)):
+                df = pd.DataFrame(value)
+            elif isinstance(value, pd.DataFrame):
+                df = value
+            else:
+                continue
+            if not df.empty:
+                df.to_excel(writer, sheet_name=key, index=False)
+            else:
+                pd.DataFrame().to_excel(writer, sheet_name=key, index=False)
+    object_name = os.path.basename(file_path)
+    minio_client.fput_object(minio_bucket, object_name, file_path)
+    found = False
+    for obj in minio_client.list_objects(minio_bucket, prefix=object_name):
+        if obj.object_name == object_name:
+            found = True
+            break
+    if not found:
+        raise RuntimeError(f"File {object_name} was not uploaded to MinIO bucket {minio_bucket}")
+    url = minio_client.presigned_get_object(minio_bucket, object_name)
+    return file_path, object_name, url
+
 # 1. Extract tổng hợp với phân trang
 
 def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=None):
@@ -280,45 +319,19 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
     except Exception:
         pass  # Nếu bucket đã tồn tại do race condition, bỏ qua lỗi
     # Sử dụng thư mục tạm hợp lệ trên mọi hệ điều hành
-    tmp_dir = tempfile.gettempdir()
-    if not os.path.exists(tmp_dir):
-        os.makedirs(tmp_dir, exist_ok=True)
-    file_path = os.path.join(tmp_dir, f"odoo_raw_{datetime.now().strftime('%Y%m%d')}.xlsx")
-    with pd.ExcelWriter(file_path) as writer:
-        for key, value in data.items():
-            # Bỏ qua các giá trị là datetime, date, hoặc string (chỉ ghi DataFrame hoặc list/dict phù hợp)
-            if isinstance(value, (datetime, str)):
-                continue
-            # Nếu là list các dict hoặc list các list, convert sang DataFrame
-            if isinstance(value, list) and value and isinstance(value[0], (dict, list)):
-                df = pd.DataFrame(value)
-            elif isinstance(value, pd.DataFrame):
-                df = value
-            else:
-                # Bỏ qua các kiểu không phù hợp
-                continue
-            if not df.empty:
-                df.to_excel(writer, sheet_name=key, index=False)
-            else:
-                pd.DataFrame().to_excel(writer, sheet_name=key, index=False)
-    object_name = os.path.basename(file_path)
-    # Đảm bảo file thực sự được upload lên MinIO
-    client.fput_object(MINIO_BUCKET, object_name, file_path)
-    # Kiểm tra lại object vừa upload
-    found = False
-    for obj in client.list_objects(MINIO_BUCKET, prefix=object_name):
-        if obj.object_name == object_name:
-            found = True
-            break
-    if not found:
-        raise RuntimeError(f"File {object_name} was not uploaded to MinIO bucket {MINIO_BUCKET}")
-    url = client.presigned_get_object(MINIO_BUCKET, object_name)
+    file_path, object_name, url = save_data_dict_to_excel_and_minio(data, client, MINIO_BUCKET)
     return data, url
 
 # 2. Transform
 def transform(data, startdate=None, enddate=None):
     # Chuẩn hóa, loại bỏ test, merge dữ liệu, tính toán tổng hợp
-    result = {}
+    result = {'first_day_this_month': data['first_day_this_month'],
+              'last_day_this_month': data['last_day_this_month'],
+              'first_day_prev_month': data['first_day_prev_month'],
+              'last_day_prev_month': data['last_day_prev_month'],
+              'first_day_next_month': data['first_day_next_month'],
+              'last_day_next_month': data['last_day_next_month']}
+    # Xử lý dữ liệu nhân viên
     # Employees
     list_employees = data["employees"]
     add_name_field(list_employees, id_field="company_id", name_field="company_name")
@@ -482,14 +495,13 @@ def load_to_minio(data, report_date=None):
     try:
         if not client.bucket_exists(MINIO_BUCKET):
             client.make_bucket(MINIO_BUCKET)
+        _, _, transform_url = save_data_dict_to_excel_and_minio(data, client, MINIO_BUCKET, "transform_data")
     except Exception:
         pass  # Nếu bucket đã tồn tại do race condition, bỏ qua lỗi
     # Sử dụng thư mục tạm hợp lệ trên mọi hệ điều hành
     tmp_dir = tempfile.gettempdir()
     if not os.path.exists(tmp_dir):
             os.makedirs(tmp_dir, exist_ok=True)
-    if not os.path.exists(tmp_dir):
-        os.makedirs(tmp_dir, exist_ok=True)
     # public_host = os.getenv("MINIO_PUBLIC_HOST", "localhost")
     links = {}
     # Lưu employees_dict (nếu có) ra file json chuẩn bằng export_json_report
@@ -620,7 +632,8 @@ def load_to_minio(data, report_date=None):
         client.fput_object(MINIO_BUCKET, file_name, file_path)
         url = client.presigned_get_object(MINIO_BUCKET, file_name)
         links[file_name] = url
-    
+
+    print(f"Check Upserting Previous month summary reports to DB...")
     # Lưu apec_attendance_report_dict (nếu có) ra file json chuẩn hóa
     apec_attendance_report_prev_dict = data.get("apec_attendance_report_prev_dict")
     if apec_attendance_report_prev_dict:
@@ -631,10 +644,6 @@ def load_to_minio(data, report_date=None):
         year = first_day_prev_month.year
         month = first_day_prev_month.month
         # Parse month, year từ report_date
-        # if isinstance(report_date, str) and len(report_date) >= 6:
-        #     year = int(report_date[:4])
-        #     month = int(report_date[4:6])
-        print(f"Upserting month {month} year {year} summary reports to DB...")
         bulk_upsert_summary_report_dict_to_db(apec_attendance_report_prev_dict, db, created_by="etl", month=month, year=year)
         db.close()
         file_name = f"1__apec_attendance_report_prev_dict__{report_date}.json"
@@ -648,16 +657,20 @@ def load_to_minio(data, report_date=None):
     df_apec_attendance = data.get("apec_attendance_report")
     if isinstance(df_apec_attendance, pd.DataFrame) and not df_apec_attendance.empty:
         from .report_exporters import export_summary_attendance_report
-        file_paths = export_summary_attendance_report(
+        # Gọi hàm export_summary_attendance_report đã tối ưu, upload trực tiếp lên MinIO và trả về metadata/url
+        result_list = export_summary_attendance_report(
             {"apec_attendance_report": df_apec_attendance},
             tmp_dir,
-            data_key="apec_attendance_report"
+            data_key="apec_attendance_report",
+            minio_client=client,
+            minio_bucket=MINIO_BUCKET,
+            minio_prefix="attendance_report",
+            remove_local_file=True
         )
-        for file_path in file_paths:
-            file_name = os.path.basename(file_path).replace(" ", "_")
-            client.fput_object(MINIO_BUCKET, file_name, file_path)
-            url = client.presigned_get_object(MINIO_BUCKET, file_name)
-            links[file_name] = url
+        # Thêm các url vào links
+        for item in result_list:
+            if isinstance(item, dict) and 'url' in item and 'minio_key' in item:
+                links[item['minio_key']] = item['url']
     # Danh sách các loại báo cáo và hàm export tương ứng
     report_types = [
         # ("apec_attendance_report", export_summary_attendance_report, "apec_attendance_report"),
