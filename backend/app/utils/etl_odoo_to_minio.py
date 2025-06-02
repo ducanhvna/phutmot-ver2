@@ -19,7 +19,7 @@ from .report_exporters import (
     export_json_report,
     export_al_cl_report_severance,
 )
-from .transform_helpers import add_name_field, process_report_raw, transform_apec_attendance_report, add_mis_id_by_company_id, add_mis_id_by_company_name
+from .transform_helpers import add_name_field, process_report_raw, transform_apec_attendance_report, add_mis_id_by_company_id, add_mis_id_by_company_name, group_attendance_trans_by_shift
 from .extract_helpers import (
     extract_employees,
     extract_contracts,
@@ -473,6 +473,7 @@ def transform(data, startdate=None, enddate=None):
     # Chuẩn hóa attendance_trans_dict (dict theo name, giảm dần theo time)
     from .transform_helpers import attendance_trans_list_to_dict
     result["attendance_trans_dict"] = attendance_trans_list_to_dict(pd.DataFrame(data["attendance_trans"]))
+    group_attendance_trans_by_shift(result["apec_attendance_report_dict"], result["attendance_trans_dict"], result["employees_dict"] )
     return result
 
 # 3. Load to MinIO (public-read, truy cập qua port 9000 sẽ tải về trực tiếp)
