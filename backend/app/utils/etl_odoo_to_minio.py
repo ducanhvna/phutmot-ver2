@@ -189,8 +189,8 @@ def extract_from_odoo_and_save_to_minio(pagesize=100, startdate=None, enddate=No
                 'probationary_contract_termination_date', 'severance_day', 'workingday',
                 'probationary_salary_rate', 'resource_calendar_id', 'date_sign', 'level']
     contracts_fields = [
-        'id', 'name', 'employee_id', 'date_start', 'date_end', 'wage', 'state',
-        'minutes_per_day', 'employee_code', 'resource_calendar_id'
+        'id', 'name', 'employee_id', 'date_start', 'date_end', 'wage', 'state', 'salary_rate',
+        'minutes_per_day', 'employee_code', 'resource_calendar_id', 'contract_type_id'
     ]
     companies_fields = ['id', 'name', 'partner_id', 'email', 'phone', 'is_ho', 'mis_id']
     leaves_fields = ['id', 'name', 'employee_id', 'holiday_status_id', 'date_from', 'date_to', 'state'
@@ -354,6 +354,7 @@ def transform(data, startdate=None, enddate=None):
     list_contracts = data["contracts"]
     add_name_field(list_contracts, id_field="employee_id", name_field="employee_name")
     add_name_field(list_contracts, id_field="company_id", name_field="company_name")
+    add_name_field(list_contracts, id_field="contract_type_id", name_field="contract_type_name")
     add_name_field(list_contracts, id_field="resource_calendar_id", name_field="resource_calendar_name")
     add_mis_id_by_company_id(list_contracts, data["companies"])
     df_contracts = pd.DataFrame(list_contracts)
