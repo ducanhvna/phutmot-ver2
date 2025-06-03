@@ -30,9 +30,9 @@ class SummaryReportMonthlyReport(Base):
     __table_args__ = (UniqueConstraint("company_id", "employee_code", "month", "year", name="uq_summary_report_monthly"),)
 
 
-def bulk_upsert_summary_report_dict_to_db(summary_report_dict: dict, db: Session, created_by=None, month=None, year=None):
+def bulk_upsert_summary_report_dict_to_db(summary_report_dict: dict, db: Session, created_by=None, month=None, year=None, batch_size=400):
     """
-    Bulk upsert summary_report_dict vào bảng SummaryReportMonthlyReport.
+    Bulk upsert summary_report_dict vào bảng SummaryReportMonthlyReport theo batch để tránh OOM.
     - key là employee_code
     - info: value của dict
     - Nếu trùng (company_id, employee_code, month, year) thì update info
@@ -41,7 +41,6 @@ def bulk_upsert_summary_report_dict_to_db(summary_report_dict: dict, db: Session
     db.execute(text(
         "SELECT setval('hrms_summary_report_monthly_id_seq', (SELECT COALESCE(MAX(id), 1) FROM hrms_summary_report_monthly))"
     ))
-    # Lấy company_id giống logic employee
     from app.models.core import Company
     company = db.query(Company).filter(Company.name == 'APEC GROUP').first()
     if not company:
@@ -64,11 +63,15 @@ def bulk_upsert_summary_report_dict_to_db(summary_report_dict: dict, db: Session
             'info': info,
             'created_by': created_by or 'etl',
         })
-    stmt = insert(SummaryReportMonthlyReport).values(to_upsert)
-    update_dict = {c.name: c for c in stmt.excluded if c.name not in ['company_id', 'employee_code', 'month', 'year']}
-    stmt = stmt.on_conflict_do_update(
-        index_elements=['company_id', 'employee_code', 'month', 'year'],
-        set_=update_dict
-    )
-    db.execute(stmt)
-    db.commit()
+    total = len(to_upsert)
+    for i in range(0, total, batch_size):
+        batch = to_upsert[i:i+batch_size]
+        stmt = insert(SummaryReportMonthlyReport).values(batch)
+        update_dict = {c.name: c for c in stmt.excluded if c.name not in ['company_id', 'employee_code', 'month', 'year']}
+        stmt = stmt.on_conflict_do_update(
+            index_elements=['company_id', 'employee_code', 'month', 'year'],
+            set_=update_dict
+        )
+        db.execute(stmt)
+        db.commit()
+        print(f"Upserted batch {i//batch_size+1} ({len(batch)} records)")
