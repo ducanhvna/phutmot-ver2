@@ -473,7 +473,7 @@ def transform(data, startdate=None, enddate=None):
     # Chuẩn hóa attendance_trans_dict (dict theo name, giảm dần theo time)
     from .transform_helpers import attendance_trans_list_to_dict
     result["attendance_trans_dict"] = attendance_trans_list_to_dict(pd.DataFrame(data["attendance_trans"]))
-    group_attendance_trans_by_shift(result["apec_attendance_report_dict"], result["attendance_trans_dict"], result["employees_dict"] )
+    group_attendance_trans_by_shift(result["apec_attendance_report_prev_dict"], result["attendance_trans_dict"], result["employees_dict"] )
     return result
 
 # 3. Load to MinIO (public-read, truy cập qua port 9000 sẽ tải về trực tiếp)
@@ -645,8 +645,8 @@ def load_to_minio(data, report_date=None):
         from .report_exporters import export_summary_attendance_report
         # Gọi hàm export_summary_attendance_report đã tối ưu, upload trực tiếp lên MinIO và trả về metadata/url
         result_list = export_summary_attendance_report(
-            # {"apec_attendance_report_prev": df_apec_attendance_report_prev},
-            data,
+            {"apec_attendance_report_prev": df_apec_attendance_report_prev},
+            # data,
             tmp_dir,
             data_key="apec_attendance_report_prev",
             minio_client=client,
