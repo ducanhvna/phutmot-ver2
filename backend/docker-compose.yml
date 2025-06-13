@@ -21,8 +21,8 @@ services:
     depends_on:
       - db
     ports:
-      - "10018:8069"
-      - "20018:8072"
+      - "10017:8069"
+      - "20017:8072"
     tty: true
     command: --
     environment:
