@@ -545,3 +545,75 @@ def contracts_list_to_dicts_by_month(df_contracts):
         contracts_prev_dict[code] = group_prev.sort_values("date_start").to_dict(orient="records")
         contracts_next_dict[code] = group_next.sort_values("date_start").to_dict(orient="records")
     return contracts_dict, contracts_prev_dict, contracts_next_dict
+
+def group_attendance_trans_by_shift(apec_attendance_report_dict, attendance_trans_dict, employee_dict=None):
+    """
+    Gom nhóm các điểm chấm công (attendance_trans_dict) vào ca làm việc dựa trên mốc thời gian (points):
+    - apec_attendance_report_dict: key là employee_code, value là list các dict (attendance_report) có date, shift_start, shift_end, shift_name.
+    - attendance_trans_dict: key là time_keeping_code, value là list các bản ghi (dict) có 'time' (datetime string).
+    - employee_dict: key là employee_code, value là dict có key 'profiles' là list các employee dict, lấy phần tử đầu tiên để lấy 'time_keeping_code'.
+    - Xử lý ca xuyên đêm: nếu shift_end < shift_start thì shift_end + 24h, ngày ca vẫn lấy theo ngày shift_start.
+    - Tạo mảng points: mỗi phần tử là dict {'dt': datetime, 'date': ngày ca} gồm các mốc chia ca (midpoint giữa ca trước và ca sau).
+    - Với mỗi điểm chấm công, tìm mốc point_index phù hợp để gán về ngày ca tương ứng.
+    Trả về dict: key là (employee_code, ca_date, shift_name), value là list các điểm chấm công thuộc ca đó.
+    """
+    from collections import defaultdict
+    result = defaultdict(list)
+    if not apec_attendance_report_dict:
+        return result
+    for code, ca_list in apec_attendance_report_dict.items():
+        # ca_list: list các dict có date, shift_start, shift_end, shift_name
+        ca_list_sorted = sorted(ca_list, key=lambda x: pd.to_datetime(x['date']))
+        ca_objs = []
+        for ca in ca_list_sorted:
+            ca_date = pd.to_datetime(ca['date']).date()
+            s = float(ca.get('shift_start', 12.0)) if not pd.isnull(ca.get('shift_start', 12.0)) else 12.0
+            e = float(ca.get('shift_end', 12.0)) if not pd.isnull(ca.get('shift_end', 12.0)) else 12.0
+            if e < s:
+                e += 24.0
+            ca_objs.append({'date': ca_date, 'shift_start': s, 'shift_end': e, 'shift_name': ca.get('shift_name', '')})
+        if not ca_objs:
+            continue
+        # Tạo mảng points: các mốc chia ca (midpoint giữa ca trước và ca hiện tại)
+        points = []
+        for i, ca in enumerate(ca_objs):
+            if i == 0:
+                prev_end = ca['shift_start'] - 12.0
+                mid = (prev_end + ca['shift_start']) / 2.0
+                dt = datetime.combine(ca['date'], datetime.min.time()) + timedelta(hours=mid)
+                points.append({'dt': dt, 'date': ca['date']})
+            else:
+                prev = ca_objs[i-1]
+                mid = (prev['shift_end'] + ca['shift_start']) / 2.0
+                dt = datetime.combine(ca['date'], datetime.min.time()) + timedelta(hours=mid)
+                points.append({'dt': dt, 'date': ca['date']})
+        last = ca_objs[-1]
+        last_mid = (last['shift_end'] + (last['shift_end'] + 12.0)) / 2.0
+        dt = datetime.combine(last['date'], datetime.min.time()) + timedelta(hours=last_mid)
+        points.append({'dt': dt, 'date': last['date']})
+        points = sorted(points, key=lambda x: x['dt'])
+        # Lấy các điểm chấm công của nhân viên này
+        time_keeping_code = None
+        if employee_dict and code in employee_dict and employee_dict[code]:
+            emp_list = employee_dict[code].get('profiles', [])
+            if emp_list:
+                emp = emp_list[0]
+                time_keeping_code = emp.get('time_keeping_code')
+        punch_list = []
+        if time_keeping_code and time_keeping_code in attendance_trans_dict:
+            punch_list = attendance_trans_dict[time_keeping_code]
+        elif code in attendance_trans_dict:
+            punch_list = attendance_trans_dict[code]
+        punch_list = sorted(punch_list, key=lambda x: pd.to_datetime(x['time']))
+        point_index = 0
+        for punch in punch_list:
+            punch_dt = pd.to_datetime(punch['time'])
+            while point_index < len(points)-1 and punch_dt >= points[point_index+1]['dt']:
+                point_index += 1
+            ca_date = points[point_index]['date']
+            ca_info = next((c for c in ca_objs if c['date'] == ca_date), None)
+            shift_name = ca_info['shift_name'] if ca_info else ''
+            punch['date_by_shift'] = ca_date
+            punch['code'] = code
+            result[(code, ca_date, shift_name)].append(punch)
+    return dict(result)

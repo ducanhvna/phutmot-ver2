@@ -1,6 +1,43 @@
 version: '3.8'
-
 services:
+  db:
+    image: postgres:17
+    user: root
+    environment:
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo18@2024
+      - POSTGRES_DB=postgres
+    restart: always
+    volumes:
+      - ./postgresql:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - backend
+
+  odoo18:
+    image: odoo:18
+    user: root
+    depends_on:
+      - db
+    ports:
+      - "10018:8069"
+      - "20018:8072"
+    tty: true
+    command: --
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=odoo18@2024
+      - PIP_BREAK_SYSTEM_PACKAGES=1
+    volumes:
+      - ./entrypoint.sh:/entrypoint.sh
+      - ./addons:/mnt/extra-addons
+      - ./etc:/etc/odoo
+    restart: always
+    networks:
+      - backend
+
   fastapi:
     build: .
     ports:
@@ -9,27 +46,16 @@ services:
     depends_on:
       - db
       - minio
-    command: >
-      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4"
+    entrypoint: ["/bin/sh", "/app/entrypoint.web.sh"]
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
     networks:
       - backend
     env_file:
       - .env
     volumes:
       - ./alembic/versions:/app/alembic/versions
-  db:
-    image: postgres:16
-    restart: always
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./postgres_data:/var/lib/postgresql/data
-    networks:
-      - backend
+      - ./entrypoint.web.sh:/app/entrypoint.web.sh
+
   minio:
     image: minio/minio:latest
     container_name: minio
@@ -45,9 +71,11 @@ services:
     entrypoint: sh /minio-init.sh
     networks:
       - backend
+
   celeryworker:
     build: .
-    command: celery -A app.utils.etl_scheduler worker --loglevel=info
+    entrypoint: ["/bin/sh", "/app/entrypoint.web.sh"]
+    command: ["celery", "-A", "app.utils.etl_scheduler", "worker", "--loglevel=info"]
     depends_on:
       - db
       - fastapi
@@ -56,9 +84,13 @@ services:
       - .env
     networks:
       - backend
+    volumes:
+      - ./entrypoint.web.sh:/app/entrypoint.web.sh
+
   celerybeat:
     build: .
-    command: celery -A app.utils.etl_scheduler beat --loglevel=info
+    entrypoint: ["/bin/sh", "/app/entrypoint.web.sh"]
+    command: ["celery", "-A", "app.utils.etl_scheduler", "beat", "--loglevel=info"]
     depends_on:
       - db
       - fastapi
@@ -67,6 +99,9 @@ services:
       - .env
     networks:
       - backend
+    volumes:
+      - ./entrypoint.web.sh:/app/entrypoint.web.sh
+
   redis:
     image: redis:7
     restart: always
