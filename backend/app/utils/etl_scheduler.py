@@ -58,6 +58,6 @@ def schedule_pending_etl_jobs():
 celery_app.conf.beat_schedule = {
     'run-etl-every-9-minutes': {
         'task': 'app.utils.etl_scheduler.schedule_pending_etl_jobs',
-        'schedule': crontab(minute='*/9'),
+        'schedule': crontab(minute='*/900'),
     },
 }
