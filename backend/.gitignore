@@ -77,7 +77,7 @@ Thumbs.db
 # Data
 *.sqlite3
 *.db
-*.csv
+# *.csv
 *.xls
 *.xlsx
 *.parquet
