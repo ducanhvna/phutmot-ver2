@@ -32,7 +32,7 @@ services:
       - PIP_BREAK_SYSTEM_PACKAGES=1
     volumes:
       - ./entrypoint.sh:/entrypoint.sh
-      - ./addons:/mnt/extra-addons
+      # - ./addons:/mnt/extra-addons
       - ./etc:/etc/odoo
     restart: always
     networks:
