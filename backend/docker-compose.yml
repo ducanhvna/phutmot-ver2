@@ -9,7 +9,7 @@ services:
       - POSTGRES_DB=postgres
     restart: always
     volumes:
-      - ./postgresql:/var/lib/postgresql/data
+      - postgresql:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks:
@@ -38,23 +38,23 @@ services:
     networks:
       - backend
 
-  # fastapi:
-  #   build: .
-  #   ports:
-  #     - "8979:8000"
-  #   restart: always
-  #   depends_on:
-  #     - db
-  #     - minio
-  #   entrypoint: ["/bin/sh", "/app/entrypoint.web.sh"]
-  #   command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
-  #   networks:
-  #     - backend
-  #   env_file:
-  #     - .env
-  #   volumes:
-  #     - ./alembic/versions:/app/alembic/versions
-  #     - ./entrypoint.web.sh:/app/entrypoint.web.sh
+  fastapi:
+    build: .
+    ports:
+      - "8979:8000"
+    restart: always
+    depends_on:
+      - db
+      - minio
+    entrypoint: ["/bin/sh", "/app/entrypoint.web.sh"]
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+    networks:
+      - backend
+    env_file:
+      - .env
+    volumes:
+      - ./alembic/versions:/app/alembic/versions
+      - ./entrypoint.web.sh:/app/entrypoint.web.sh
 
   minio:
     image: minio/minio:latest
