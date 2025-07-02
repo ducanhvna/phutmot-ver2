@@ -19,3 +19,4 @@ apscheduler
 celery
 redis
 minio
+pyodbc
