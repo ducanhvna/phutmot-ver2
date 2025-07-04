@@ -5,3 +5,5 @@ from .hrms.summary_report_monthly import SummaryReportMonthlyReport
 from .hrms.employee import Employee, EmployeeLogin, EmployeeContract, EmployeeAttendance, EmployeeShift, EmployeeProject
 from .file_metadata import FileMetadata
 from .education.teacher_test_result_summary import TeacherTestResultSummary
+from .education.teacher_daily_leaning_log import TeacherDailyLeaningLog
+from .education.teacher_test_student_result import TeacherTestStudentResult

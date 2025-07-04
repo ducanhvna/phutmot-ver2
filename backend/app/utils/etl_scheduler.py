@@ -54,10 +54,17 @@ def schedule_pending_etl_jobs():
     finally:
         db.close()
 
+@celery_app.task
+def schedule_education_etl_jobs():
+    print("Scheduling education ETL jobs...")
 # Đăng ký task chạy mỗi 3 phút
 celery_app.conf.beat_schedule = {
     'run-etl-every-9-minutes': {
         'task': 'app.utils.etl_scheduler.schedule_pending_etl_jobs',
         'schedule': crontab(minute='*/900'),
+    },
+    'run-education-etl-every-3-minutes': {
+        'task': 'app.utils.etl_scheduler.schedule_education_etl_jobs',
+        'schedule': crontab(minute='*/3'),
     },
 }

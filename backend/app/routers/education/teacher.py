@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models.education.teacher_test_result_summary import TeacherTestResultSummary
 from app.models.education.teacher_test_student_result import TeacherTestStudentResult
+from app.models.education.teacher_daily_leaning_log import TeacherDailyLeaningLog
 from typing import List
 from datetime import datetime
 from pydantic import BaseModel
@@ -179,3 +180,68 @@ def delete_teacher_test_student_result(item_id: int, db: Session = Depends(get_d
     db.delete(db_item)
     db.commit()
     return {"ok": True, "deleted_id": item_id}
+
+class TeacherDailyLeaningLogBase(BaseModel):
+    name: str
+    status: str
+    period_from: datetime = None
+    period_to: datetime = None
+    subject: str = None
+    subject_id: int = None
+    school_year: int = None
+    grade: int = None
+    group: str = None
+    template: str = None
+    creator: str = None
+    answer_request: str = None
+    answer_content: str = None
+
+class TeacherDailyLeaningLogCreate(TeacherDailyLeaningLogBase):
+    pass
+
+class TeacherDailyLeaningLogUpdate(TeacherDailyLeaningLogBase):
+    pass
+
+class TeacherDailyLeaningLogOut(TeacherDailyLeaningLogBase):
+    id: int
+    class Config:
+        orm_mode = True
+
+@router.get("/daily-leaning-log/", response_model=List[TeacherDailyLeaningLogOut])
+def list_teacher_daily_leaning_logs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return db.query(TeacherDailyLeaningLog).offset(skip).limit(limit).all()
+
+@router.get("/daily-leaning-log/{log_id}", response_model=TeacherDailyLeaningLogOut)
+def get_teacher_daily_leaning_log(log_id: int, db: Session = Depends(get_db)):
+    log = db.query(TeacherDailyLeaningLog).filter(TeacherDailyLeaningLog.id == log_id).first()
+    if not log:
+        raise HTTPException(status_code=404, detail="Log not found")
+    return log
+
+@router.post("/daily-leaning-log/", response_model=TeacherDailyLeaningLogOut)
+def create_teacher_daily_leaning_log(log: TeacherDailyLeaningLogCreate, db: Session = Depends(get_db)):
+    db_log = TeacherDailyLeaningLog(**log.dict())
+    db.add(db_log)
+    db.commit()
+    db.refresh(db_log)
+    return db_log
+
+@router.put("/daily-leaning-log/{log_id}", response_model=TeacherDailyLeaningLogOut)
+def update_teacher_daily_leaning_log(log_id: int, log: TeacherDailyLeaningLogUpdate, db: Session = Depends(get_db)):
+    db_log = db.query(TeacherDailyLeaningLog).filter(TeacherDailyLeaningLog.id == log_id).first()
+    if not db_log:
+        raise HTTPException(status_code=404, detail="Log not found")
+    for key, value in log.dict(exclude_unset=True).items():
+        setattr(db_log, key, value)
+    db.commit()
+    db.refresh(db_log)
+    return db_log
+
+@router.delete("/daily-leaning-log/{log_id}")
+def delete_teacher_daily_leaning_log(log_id: int, db: Session = Depends(get_db)):
+    db_log = db.query(TeacherDailyLeaningLog).filter(TeacherDailyLeaningLog.id == log_id).first()
+    if not db_log:
+        raise HTTPException(status_code=404, detail="Log not found")
+    db.delete(db_log)
+    db.commit()
+    return {"ok": True, "deleted_id": log_id}
