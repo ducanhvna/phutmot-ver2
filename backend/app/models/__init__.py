@@ -4,3 +4,4 @@
 from .hrms.summary_report_monthly import SummaryReportMonthlyReport
 from .hrms.employee import Employee, EmployeeLogin, EmployeeContract, EmployeeAttendance, EmployeeShift, EmployeeProject
 from .file_metadata import FileMetadata
+from .education.teacher_test_result_summary import TeacherTestResultSummary
