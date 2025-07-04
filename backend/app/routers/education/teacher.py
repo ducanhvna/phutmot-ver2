@@ -30,6 +30,17 @@ class TeacherTestResultSummaryBase(BaseModel):
     lrt_status: bool = None
     realtendant_tool: str = None
     realtendant_tool_status: bool = None
+    # Bổ sung các trường còn thiếu
+    school_year: int = None  # 学年 (Năm)
+    school_name: str = None  # Tên trường học
+    school_id: int = None    # ID trường học
+    average_score: int = None  # 得点 (Điểm trung bình)
+    correct_answer_rate_total: str = None  # 正答率（％）- 全体
+    correct_answer_rate_knowledge: str = None  # 正答率（％）- 知識・技能
+    correct_answer_rate_thinking: str = None  # 正答率（％）- 思考・判断・表現
+    careless_mistake_count: int = None  # ケアレスミスかも (Số câu có thể là lỗi bất cẩn)
+    deviation_value: str = None  # 偏差値
+    understanding_rank: str = None  # 理解度ランク
 
 class TeacherTestResultSummaryCreate(TeacherTestResultSummaryBase):
     pass
@@ -67,6 +78,7 @@ class TeacherTestResultSummaryListOut(BaseModel):
     school_year: int = None
     school_name: str = None
     school_id: int = None
+    average_score: int = None
     class Config:
         orm_mode = True
 
