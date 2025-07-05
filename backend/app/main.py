@@ -21,7 +21,9 @@ origins = [
     "https://web.hinosoft.com",
     "http://web.hinosoft.com",
     "http://localhost:3009",
-    "https://localhost:3009"
+    "https://localhost:3009",
+    "http://localhost:3000",
+    "https://localhost:3000"
 ]
 app.add_middleware(
     CORSMiddleware,
