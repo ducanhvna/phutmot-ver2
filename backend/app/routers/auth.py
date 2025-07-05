@@ -7,6 +7,8 @@ from app.utils.auth import get_password_hash, verify_password, create_access_tok
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import List
 from datetime import datetime, timedelta
+from pydantic import BaseModel
+from app.utils.education.realtendant import odoo_login
 
 router = APIRouter()
 
@@ -47,5 +49,36 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         "access_token": access_token,
         "token_type": "bearer",
         "expires_at": expires_at,
+        "user": user_info,
+    }
+
+class TokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int
+    user: dict
+
+@router.post("/token", response_model=TokenResponse)
+def auth_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    try:
+        uid, _, _ = odoo_login(username=form_data.username, password=form_data.password)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    expires_delta = timedelta(days=30)
+    expires_in = int(expires_delta.total_seconds())
+    access_token = create_access_token({"sub": form_data.username}, expires_delta=expires_delta)
+    refresh_token = create_access_token({"sub": form_data.username, "type": "refresh"}, expires_delta=expires_delta)
+    user_info = {
+        "name": form_data.username,
+        "email": form_data.username,
+        "roles": ["teacher"],
+        "uid": uid,
+    }
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "expires_in": expires_in,
         "user": user_info,
     }
