@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models.education.teacher_test_result_summary import TeacherTestResultSummary
@@ -7,8 +8,11 @@ from app.models.education.teacher_daily_leaning_log import TeacherDailyLeaningLo
 from typing import List
 from datetime import datetime
 from pydantic import BaseModel
+from app.utils.jwt_helper import get_current_user
 
 router = APIRouter(prefix="/api/education/teacher", tags=["education_teacher"])
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 class TeacherTestResultSummaryBase(BaseModel):
     teacher_id: int
@@ -84,18 +88,18 @@ class TeacherTestResultSummaryListOut(BaseModel):
         orm_mode = True
 
 @router.get("/test/", response_model=List[TeacherTestResultSummaryListOut])
-def list_teacher_test_result_summaries(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def list_teacher_test_result_summaries(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), user=Depends(get_current_user)):
     return db.query(TeacherTestResultSummary).offset(skip).limit(limit).all()
 
 @router.get("/test/{summary_id}", response_model=TeacherTestResultSummaryOut)
-def get_teacher_test_result_summary(summary_id: int, db: Session = Depends(get_db)):
+def get_teacher_test_result_summary(summary_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
     summary = db.query(TeacherTestResultSummary).filter(TeacherTestResultSummary.id == summary_id).first()
     if not summary:
         raise HTTPException(status_code=404, detail="Summary not found")
     return summary
 
 @router.post("/test/", response_model=TeacherTestResultSummaryOut)
-def create_teacher_test_result_summary(summary: TeacherTestResultSummaryCreate, db: Session = Depends(get_db)):
+def create_teacher_test_result_summary(summary: TeacherTestResultSummaryCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     db_summary = TeacherTestResultSummary(**summary.dict())
     db.add(db_summary)
     db.commit()
@@ -103,7 +107,7 @@ def create_teacher_test_result_summary(summary: TeacherTestResultSummaryCreate, 
     return db_summary
 
 @router.put("/test/{summary_id}", response_model=TeacherTestResultSummaryOut)
-def update_teacher_test_result_summary(summary_id: int, summary: TeacherTestResultSummaryUpdate, db: Session = Depends(get_db)):
+def update_teacher_test_result_summary(summary_id: int, summary: TeacherTestResultSummaryUpdate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     db_summary = db.query(TeacherTestResultSummary).filter(TeacherTestResultSummary.id == summary_id).first()
     if not db_summary:
         raise HTTPException(status_code=404, detail="Summary not found")
@@ -114,7 +118,7 @@ def update_teacher_test_result_summary(summary_id: int, summary: TeacherTestResu
     return db_summary
 
 @router.delete("/test/{summary_id}")
-def delete_teacher_test_result_summary(summary_id: int, db: Session = Depends(get_db)):
+def delete_teacher_test_result_summary(summary_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
     db_summary = db.query(TeacherTestResultSummary).filter(TeacherTestResultSummary.id == summary_id).first()
     if not db_summary:
         raise HTTPException(status_code=404, detail="Summary not found")
@@ -143,18 +147,18 @@ class TeacherTestStudentResultOut(TeacherTestStudentResultBase):
         orm_mode = True
 
 @router.get("/test-student/", response_model=List[TeacherTestStudentResultOut])
-def list_teacher_test_student_results(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def list_teacher_test_student_results(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), user=Depends(get_current_user)):
     return db.query(TeacherTestStudentResult).offset(skip).limit(limit).all()
 
 @router.get("/test-student/{item_id}", response_model=TeacherTestStudentResultOut)
-def get_teacher_test_student_result(item_id: int, db: Session = Depends(get_db)):
+def get_teacher_test_student_result(item_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
     item = db.query(TeacherTestStudentResult).filter(TeacherTestStudentResult.id == item_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     return item
 
 @router.post("/test-student/", response_model=TeacherTestStudentResultOut)
-def create_teacher_test_student_result(item: TeacherTestStudentResultCreate, db: Session = Depends(get_db)):
+def create_teacher_test_student_result(item: TeacherTestStudentResultCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     db_item = TeacherTestStudentResult(**item.dict())
     db.add(db_item)
     db.commit()
@@ -162,7 +166,7 @@ def create_teacher_test_student_result(item: TeacherTestStudentResultCreate, db:
     return db_item
 
 @router.put("/test-student/{item_id}", response_model=TeacherTestStudentResultOut)
-def update_teacher_test_student_result(item_id: int, item: TeacherTestStudentResultUpdate, db: Session = Depends(get_db)):
+def update_teacher_test_student_result(item_id: int, item: TeacherTestStudentResultUpdate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     db_item = db.query(TeacherTestStudentResult).filter(TeacherTestStudentResult.id == item_id).first()
     if not db_item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -173,7 +177,7 @@ def update_teacher_test_student_result(item_id: int, item: TeacherTestStudentRes
     return db_item
 
 @router.delete("/test-student/{item_id}")
-def delete_teacher_test_student_result(item_id: int, db: Session = Depends(get_db)):
+def delete_teacher_test_student_result(item_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
     db_item = db.query(TeacherTestStudentResult).filter(TeacherTestStudentResult.id == item_id).first()
     if not db_item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -196,8 +200,20 @@ class TeacherDailyLeaningLogBase(BaseModel):
     answer_request: str = None
     answer_content: str = None
 
-class TeacherDailyLeaningLogCreate(TeacherDailyLeaningLogBase):
-    pass
+class TeacherDailyLeaningLogCreate(BaseModel):
+    name: str
+    status: str
+    period_from: datetime = None
+    period_to: datetime = None
+    subject: str = None
+    subject_id: int = None
+    school_year: int = None
+    grade: int = None
+    group: str = None
+    template: str = None
+    creator: str = None
+    answer_request: str = None
+    answer_content: str = None
 
 class TeacherDailyLeaningLogUpdate(TeacherDailyLeaningLogBase):
     pass
@@ -208,18 +224,18 @@ class TeacherDailyLeaningLogOut(TeacherDailyLeaningLogBase):
         orm_mode = True
 
 @router.get("/daily-leaning-log/", response_model=List[TeacherDailyLeaningLogOut])
-def list_teacher_daily_leaning_logs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def list_teacher_daily_leaning_logs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), user=Depends(get_current_user)):
     return db.query(TeacherDailyLeaningLog).offset(skip).limit(limit).all()
 
 @router.get("/daily-leaning-log/{log_id}", response_model=TeacherDailyLeaningLogOut)
-def get_teacher_daily_leaning_log(log_id: int, db: Session = Depends(get_db)):
+def get_teacher_daily_leaning_log(log_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
     log = db.query(TeacherDailyLeaningLog).filter(TeacherDailyLeaningLog.id == log_id).first()
     if not log:
         raise HTTPException(status_code=404, detail="Log not found")
     return log
 
 @router.post("/daily-leaning-log/", response_model=TeacherDailyLeaningLogOut)
-def create_teacher_daily_leaning_log(log: TeacherDailyLeaningLogCreate, db: Session = Depends(get_db)):
+def create_teacher_daily_leaning_log(log: TeacherDailyLeaningLogCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     db_log = TeacherDailyLeaningLog(**log.dict())
     db.add(db_log)
     db.commit()
@@ -227,7 +243,7 @@ def create_teacher_daily_leaning_log(log: TeacherDailyLeaningLogCreate, db: Sess
     return db_log
 
 @router.put("/daily-leaning-log/{log_id}", response_model=TeacherDailyLeaningLogOut)
-def update_teacher_daily_leaning_log(log_id: int, log: TeacherDailyLeaningLogUpdate, db: Session = Depends(get_db)):
+def update_teacher_daily_leaning_log(log_id: int, log: TeacherDailyLeaningLogUpdate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     db_log = db.query(TeacherDailyLeaningLog).filter(TeacherDailyLeaningLog.id == log_id).first()
     if not db_log:
         raise HTTPException(status_code=404, detail="Log not found")
@@ -238,7 +254,7 @@ def update_teacher_daily_leaning_log(log_id: int, log: TeacherDailyLeaningLogUpd
     return db_log
 
 @router.delete("/daily-leaning-log/{log_id}")
-def delete_teacher_daily_leaning_log(log_id: int, db: Session = Depends(get_db)):
+def delete_teacher_daily_leaning_log(log_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
     db_log = db.query(TeacherDailyLeaningLog).filter(TeacherDailyLeaningLog.id == log_id).first()
     if not db_log:
         raise HTTPException(status_code=404, detail="Log not found")
