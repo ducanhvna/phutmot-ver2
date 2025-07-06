@@ -6,8 +6,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { RefineThemes } from "@refinedev/antd";
-import { ConfigProvider, App as AntdApp, theme } from "antd";
+import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import Cookies from "js-cookie";
 
 type ColorModeContextType = {
@@ -50,7 +49,42 @@ export const ColorModeContextProvider: React.FC<
     }
   };
 
-  const { darkAlgorithm, defaultAlgorithm } = theme;
+  // Create MUI theme based on mode
+  const theme = createTheme({
+    palette: {
+      text: {
+        primary: "#2C3C43",
+        secondary: "#FFF8F0",
+      },
+      mode: mode as "light" | "dark",
+      primary: {
+        main: "#17a098",
+      },
+      secondary: {
+        main: "#f7f7f7",
+      },
+      error: {
+        main: "#d9534b",
+      },
+      action: {},
+      background: {
+        default: mode === "light" ? "#ffffff" : "#121212",
+        paper: mode === "light" ? "#ffffff" : "#1e1e1e",
+      },
+    },
+    typography: {
+      fontFamily: '"Noto Sans JP", sans-serif',
+    },
+    components: {
+      MuiAppBar: {
+        styleOverrides: {
+          root: {
+            backgroundColor: mode === "light" ? "#17A098" : "#1e1e1e",
+          },
+        },
+      },
+    },
+  });
 
   return (
     <ColorModeContext.Provider
@@ -59,15 +93,10 @@ export const ColorModeContextProvider: React.FC<
         mode,
       }}
     >
-      <ConfigProvider
-        // you can change the theme colors here. example: ...RefineThemes.Magenta,
-        theme={{
-          ...RefineThemes.Blue,
-          algorithm: mode === "light" ? defaultAlgorithm : darkAlgorithm,
-        }}
-      >
-        <AntdApp>{children}</AntdApp>
-      </ConfigProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        {children}
+      </ThemeProvider>
     </ColorModeContext.Provider>
   );
 };

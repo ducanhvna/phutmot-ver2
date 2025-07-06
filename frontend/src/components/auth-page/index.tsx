@@ -1,193 +1,139 @@
 "use client";
-import React, { useState } from "react";
-import { useLogin, useRegister } from "@refinedev/core";
+
+import { useLogin } from "@refinedev/core";
+import { useState } from "react";
 import {
-  Row,
-  Col,
-  Layout as AntdLayout,
   Card,
-  Typography,
-  Form,
-  Input,
+  CardContent,
+  TextField,
   Button,
-  Checkbox,
-} from "antd";
+  Typography,
+  Alert,
+  Box,
+  InputAdornment,
+} from "@mui/material";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import type { AuthPageProps } from "@refinedev/core";
 import Image from "next/image";
-import "./styles.css";
 
-const { Text, Title } = Typography;
+export const AuthPage = (props: AuthPageProps) => {
+  const { mutate: login, isLoading } = useLogin();
+  const [error, setError] = useState<string | null>(null);
+  const [formValues, setFormValues] = useState({
+    email: "teacher02",
+    password: "pass456",
+  });
 
-export interface AuthPageProps {
-  type?: "login" | "forgotPassword" | "register";
-}
-
-export const AuthPage: React.FC<AuthPageProps> = ({ type = "login" }) => {
-  const [form] = Form.useForm();
-  const { mutate: login } = useLogin();
-  const { mutate: register } = useRegister();
-  const [apiError, setApiError] = useState<string | null>(null);
-
-  const handleLogin = async (values: any) => {
-    setApiError(null);
-    try {
-      await login(values, {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    login(
+      { email: formValues.email, password: formValues.password },
+      {
         onError: (error: any) => {
-          // Xử lý lỗi trả về từ backend
-          if (error?.response?.data?.detail && Array.isArray(error.response.data.detail)) {
-            // FastAPI validation error dạng list
-            setApiError(
-              error.response.data.detail.map((d: any) => d.msg).join("; ")
-            );
-          } else if (error?.response?.data?.detail) {
-            setApiError(error.response.data.detail);
-          } else {
-            setApiError("Đăng nhập thất bại. Vui lòng thử lại.");
-          }
+          setError(error?.message || "Login failed");
         },
-      });
-    } catch (e) {
-      setApiError("Đăng nhập thất bại. Vui lòng thử lại.");
-    }
+      }
+    );
   };
 
-  const CardTitle = (
-    <Title level={3} className="title">
-      {type === "forgotPassword"
-        ? "Reset Your Password"
-        : type === "register"
-        ? "Create a New Account"
-        : "Sign in to Your Account"}
-    </Title>
-  );
-
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormValues((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
   return (
-    <AntdLayout className="layout">
-      <Row justify="center" align="middle" style={{ height: "100vh" }}>
-        <Col xs={22}>
-          <div className="container">
-            <div className="imageContainer">
-              <Image src="/refine.svg" alt="Refine Logo" width={150} height={50} />
-            </div>
-            <Card title={CardTitle} headStyle={{ borderBottom: 0 }}>
-              <Form
-                layout="vertical"
-                form={form}
-                onFinish={(values) => {
-                  if (type === "register") {
-                    register(values);
-                  } else if (type === "forgotPassword") {
-                    console.log("Forgot password request:", values);
-                  } else {
-                    handleLogin(values);
-                  }
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+      }}
+    >
+      <Card
+        sx={{
+          width: 400,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
+          borderRadius: 2,
+          overflow: "hidden",
+          padding: 2,
+        }}
+      >
+        <CardContent>
+          <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+            <Image width={225} height={90} src="/images/logo.png" alt="Logo" />
+          </Box>
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
+
+          <Box component="form" onSubmit={handleSubmit}>
+            <TextField
+              name="email"
+              value={formValues.email}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              label="Email"
+              variant="outlined"
+              required
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PersonOutlineIcon sx={{ color: "rgba(0,0,0,.25)" }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            <TextField
+              name="password"
+              value={formValues.password}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              label="Password"
+              type="password"
+              variant="outlined"
+              required
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockOutlinedIcon sx={{ color: "rgba(0,0,0,.25)" }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            <Box sx={{ mt: 3 }}>
+              <Button
+                variant="contained"
+                fullWidth
+                size="large"
+                type="submit"
+                disabled={isLoading}
+                sx={{
+                  borderRadius: 1,
+                  backgroundColor: "#17a098",
+                  "&:hover": {
+                    backgroundColor: "#128d85",
+                  },
                 }}
-                requiredMark={false}
               >
-                {type === "forgotPassword" && (
-                  <Form.Item
-                    name="email"
-                    label="Email"
-                    rules={[{ required: true, message: "Vui lòng nhập email!" }]}
-                  >
-                    <Input size="large" placeholder="Enter your email" />
-                  </Form.Item>
-                )}
-
-                {type === "register" && (
-                  <>
-                    <Form.Item
-                      name="username"
-                      label="Username"
-                      rules={[{ required: true, message: "Vui lòng nhập username!" }]}
-                    >
-                      <Input size="large" placeholder="Username" />
-                    </Form.Item>
-                    <Form.Item
-                      name="email"
-                      label="Email"
-                      rules={[{ required: true, message: "Vui lòng nhập email!" }, { type: "email", message: "Email không hợp lệ!" }]}
-                    >
-                      <Input size="large" placeholder="Enter your email" />
-                    </Form.Item>
-                    <Form.Item
-                      name="password"
-                      label="Password"
-                      rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
-                    >
-                      <Input type="password" placeholder="●●●●●●●●" size="large" />
-                    </Form.Item>
-                    <Form.Item
-                      name="confirmPassword"
-                      label="Confirm Password"
-                      dependencies={["password"]}
-                      rules={[
-                        { required: true, message: "Vui lòng nhập lại mật khẩu!" },
-                        ({ getFieldValue }) => ({
-                          validator(_, value) {
-                            if (!value || getFieldValue("password") === value) {
-                              return Promise.resolve();
-                            }
-                            return Promise.reject(new Error("Mật khẩu không khớp!"));
-                          },
-                        }),
-                      ]}
-                    >
-                      <Input type="password" placeholder="●●●●●●●●" size="large" />
-                    </Form.Item>
-                  </>
-                )}
-
-                {type === "login" && (
-                  <>
-                    <Form.Item
-                      name="username"
-                      label="Username"
-                      rules={[{ required: true, message: "Vui lòng nhập username!" }]}
-                    >
-                      <Input size="large" placeholder="Username" />
-                    </Form.Item>
-                    <Form.Item
-                      name="password"
-                      label="Password"
-                      rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
-                      style={{ marginBottom: "12px" }}
-                    >
-                      <Input type="password" placeholder="●●●●●●●●" size="large" />
-                    </Form.Item>
-                    <div style={{ marginBottom: "12px" }}>
-                      <Form.Item name="remember" valuePropName="checked" noStyle>
-                        <Checkbox style={{ fontSize: "12px" }}>Remember me</Checkbox>
-                      </Form.Item>
-                      <a style={{ float: "right", fontSize: "12px" }} href="/forgot-password">
-                        Forgot password?
-                      </a>
-                    </div>
-                  </>
-                )}
-
-                {apiError && (
-                  <div style={{ color: "red", marginTop: 8, marginBottom: 8 }}>{apiError}</div>
-                )}
-
-                <Button type="primary" size="large" htmlType="submit" block>
-                  {type === "forgotPassword" ? "Reset Password" : type === "register" ? "Create Account" : "Sign in"}
-                </Button>
-              </Form>
-
-              {type === "login" && (
-                <div style={{ marginTop: 8 }}>
-                  <Text style={{ fontSize: 12 }}>
-                    Don’t have an account?{" "}
-                    <a href="/register" style={{ fontWeight: "bold" }}>
-                      Sign up
-                    </a>
-                  </Text>
-                </div>
-              )}
-            </Card>
-          </div>
-        </Col>
-      </Row>
-    </AntdLayout>
+                {isLoading ? "Logging in..." : "Login"}
+              </Button>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };

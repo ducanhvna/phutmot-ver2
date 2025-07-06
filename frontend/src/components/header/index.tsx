@@ -1,65 +1,78 @@
-"use client";
-
 import { ColorModeContext } from "@contexts/color-mode";
-import type { RefineThemedLayoutV2HeaderProps } from "@refinedev/antd";
 import { useGetIdentity } from "@refinedev/core";
-import {
-  Avatar,
-  Layout as AntdLayout,
-  Space,
-  Switch,
-  theme,
-  Typography,
-} from "antd";
-import React, { useContext } from "react";
+import { useContext } from "react";
+import { HamburgerMenu } from "@refinedev/mui";
 
-const { Text } = Typography;
-const { useToken } = theme;
+import * as React from "react";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import Avatar from "@mui/material/Avatar";
+import { AppIcon } from "@components/app-icon";
+import { User } from "@api/authApi";
 
-type IUser = {
-  id: number;
-  name: string;
-  avatar: string;
+type PropsHeader = {
+  showSider?: boolean;
 };
 
-export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
-  sticky = true,
-}) => {
-  const { token } = useToken();
-  const { data: user } = useGetIdentity<IUser>();
+function Header({ showSider = false }: PropsHeader) {
+  const { data: user } = useGetIdentity<User>();
   const { mode, setMode } = useContext(ColorModeContext);
-
-  const headerStyles: React.CSSProperties = {
-    backgroundColor: token.colorBgElevated,
-    display: "flex",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    padding: "0px 24px",
-    height: "64px",
-  };
-
-  if (sticky) {
-    headerStyles.position = "sticky";
-    headerStyles.top = 0;
-    headerStyles.zIndex = 1;
-  }
-
   return (
-    <AntdLayout.Header style={headerStyles}>
-      <Space>
-        <Switch
-          checkedChildren="🌛"
-          unCheckedChildren="🔆"
-          onChange={() => setMode(mode === "light" ? "dark" : "light")}
-          defaultChecked={mode === "dark"}
-        />
-        {(user?.name || user?.avatar) && (
-          <Space style={{ marginLeft: "8px" }} size="middle">
-            {user?.name && <Text strong>{user.name}</Text>}
-            {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}
-          </Space>
+    <AppBar
+      style={{
+        backgroundColor: "var(--color-white)",
+      }}
+      position="sticky"
+    >
+      <Toolbar>
+        {showSider && (
+          <Box style={{ color: "var(--color-green)" }}>
+            <HamburgerMenu />
+          </Box>
         )}
-      </Space>
-    </AntdLayout.Header>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "baseline",
+            justifyContent: "center",
+            gap: 1,
+          }}
+        >
+          {!showSider && <AppIcon />}
+          <Typography fontSize={27} fontWeight="400" color="textPrimary">
+            まなびサポート
+          </Typography>
+        </Box>
+        <Box sx={{ flexGrow: 1, display: { xs: "flex" } }} />
+        <Box>
+          {/* <IconButton
+            onClick={() => setMode(mode === "light" ? "dark" : "light")}
+          >
+            {mode === "dark" ? (
+              <LightModeOutlined style={{ color: "var(--color-yellow)" }} />
+            ) : (
+              <DarkModeOutlined style={{ color: "#fff" }} />
+            )}
+          </IconButton> */}
+          <Box sx={{ display: "inline-block", ml: 2, mr: 2 }}>
+            <Typography color="textPrimary">{user?.username}</Typography>
+          </Box>
+          <IconButton>
+            <Avatar
+              src={user?.avatar}
+              alt={user?.name}
+              sx={{
+                width: 44,
+                height: 44,
+              }}
+            />
+          </IconButton>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
-};
+}
+export default Header;
