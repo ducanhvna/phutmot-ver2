@@ -8,7 +8,8 @@ COPY package.json ./
 # COPY package-lock.json ./
 
 # Cài dependencies bằng npm ci (nhanh và chuẩn cho production)
-RUN npm ci --legacy-peer-deps
+# RUN npm ci --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
 # Sao chép toàn bộ mã nguồn vào container
 COPY . .
