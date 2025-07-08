@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Sao chép package.json và package-lock.json trước để cache layer cài đặt dependencies
 COPY package.json ./
-COPY package-lock.json ./
+# COPY package-lock.json ./
 
 # Cài dependencies bằng npm ci (nhanh và chuẩn cho production)
 RUN npm ci --legacy-peer-deps
