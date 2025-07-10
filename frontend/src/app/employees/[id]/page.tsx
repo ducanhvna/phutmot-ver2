@@ -22,7 +22,7 @@ import {
   getEmployeeById,
   Employee,
 } from "@/providers/employee-provider/employee-provider";
-import QRCode from "qrcode.react";
+import QRCode from "react-qr-code";
 
 const EmployeeDetailPage: React.FC = () => {
   const router = useRouter();
@@ -105,19 +105,22 @@ const EmployeeDetailPage: React.FC = () => {
             <Divider sx={{ mb: 2 }} />
             <Stack spacing={2}>
               <Typography>
-                <b>ID:</b> {employee.id}
+                <span style={{ fontWeight: "bold" }}>ID:</span> {employee.id}
               </Typography>
               <Typography>
-                <b>Email:</b> {employee.work_email || "-"}
+                <span style={{ fontWeight: "bold" }}>Email:</span>{" "}
+                {employee.work_email || "-"}
               </Typography>
               <Typography>
-                <b>Điện thoại:</b> {employee.work_phone || "-"}
+                <span style={{ fontWeight: "bold" }}>Điện thoại:</span>{" "}
+                {employee.work_phone || "-"}
               </Typography>
               <Typography>
-                <b>Chức vụ:</b> {employee.job_title || "-"}
+                <span style={{ fontWeight: "bold" }}>Chức vụ:</span>{" "}
+                {employee.job_title || "-"}
               </Typography>
               <Typography>
-                <b>Phòng ban:</b>{" "}
+                <span style={{ fontWeight: "bold" }}>Phòng ban:</span>{" "}
                 {employee.department_id
                   ? Array.isArray(employee.department_id)
                     ? employee.department_id[1]
@@ -125,7 +128,7 @@ const EmployeeDetailPage: React.FC = () => {
                   : "-"}
               </Typography>
               <Typography>
-                <b>User ID:</b>{" "}
+                <span style={{ fontWeight: "bold" }}>User ID:</span>{" "}
                 {employee.user_id
                   ? Array.isArray(employee.user_id)
                     ? employee.user_id[0]

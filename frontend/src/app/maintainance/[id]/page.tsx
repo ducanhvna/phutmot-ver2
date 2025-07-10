@@ -21,6 +21,7 @@ import {
   getAllEquipments,
   Equipment,
 } from "@/providers/maintainance-provider/maintainance-provider";
+import QRCode from "react-qr-code";
 
 const EquipmentDetailPage: React.FC = () => {
   const router = useRouter();
@@ -134,8 +135,19 @@ const EquipmentDetailPage: React.FC = () => {
               <Typography>
                 <strong>Ghi chú:</strong> {equipment.note || "-"}
               </Typography>
-              {/* Thêm các trường khác nếu cần */}
             </Stack>
+            <Divider sx={{ my: 3 }} />
+            <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              gap={2}
+            >
+              <Typography variant="subtitle1" fontWeight="bold">
+                Mã QR thông tin thiết bị
+              </Typography>
+              <QRCode value={JSON.stringify(equipment, null, 2)} size={200} />
+            </Box>
           </Box>
         )}
       </Paper>
