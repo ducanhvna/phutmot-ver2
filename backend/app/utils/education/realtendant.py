@@ -101,3 +101,17 @@ def get_account_info(user_id, company_id=2):
         'faculty': faculty,
         'student': student
     }
+
+def get_all_employees(fields=None):
+    """
+    Lấy danh sách tất cả nhân viên (employee) trong hệ thống.
+    Trả về list các employee, [] nếu không có.
+    """
+    if fields is None:
+        fields = ['id', 'name', 'work_email', 'work_phone', 'job_title', 'department_id', 'user_id']
+    uid, _, models = odoo_login()
+    emp_ids = models.execute_kw(DB_NAME, uid, PASSWORD, 'hr.employee', 'search', [[]])
+    if not emp_ids:
+        return []
+    employees = models.execute_kw(DB_NAME, uid, PASSWORD, 'hr.employee', 'read', [emp_ids, fields])
+    return employees
