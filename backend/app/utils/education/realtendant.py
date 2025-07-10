@@ -33,6 +33,34 @@ def get_employee_by_id(emp_id, fields=None):
     employees = models.execute_kw(DB_NAME, uid, PASSWORD, 'hr.employee', 'read', [[emp_id], fields])
     return employees[0] if employees else None
 
+def get_employee_by_user_id(user_id, fields=None):
+    """
+    Lấy thông tin nhân viên (employee) theo user_id (uid).
+    Trả về phần tử đầu tiên nếu có nhiều kết quả, None nếu không có.
+    """
+    if fields is None:
+        fields = ['id', 'name', 'work_email', 'work_phone', 'job_title', 'department_id', 'user_id']
+    uid, _, models = odoo_login()
+    emp_ids = models.execute_kw(DB_NAME, uid, PASSWORD, 'hr.employee', 'search', [[['user_id', '=', user_id]]])
+    if not emp_ids:
+        return None
+    employees = models.execute_kw(DB_NAME, uid, PASSWORD, 'hr.employee', 'read', [emp_ids, fields])
+    return employees[0] if employees else None
+
+def get_employees_by_user_id(user_id, fields=None):
+    """
+    Lấy danh sách nhân viên (employee) theo user_id (uid).
+    Trả về list các employee, [] nếu không có.
+    """
+    if fields is None:
+        fields = ['id', 'name', 'work_email', 'work_phone', 'job_title', 'department_id', 'user_id']
+    uid, _, models = odoo_login()
+    emp_ids = models.execute_kw(DB_NAME, uid, PASSWORD, 'hr.employee', 'search', [[['user_id', '=', user_id]]])
+    if not emp_ids:
+        return []
+    employees = models.execute_kw(DB_NAME, uid, PASSWORD, 'hr.employee', 'read', [emp_ids, fields])
+    return employees
+
 # Lấy danh sách các lớp (op.session) mà giáo viên dạy theo faculty_id (giáo viên), có thể lọc theo active, thời gian, ...
 def get_sessions_by_faculty(faculty_id, fields=None, active=True, start_date=None, end_date=None):
     if fields is None:
