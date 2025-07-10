@@ -115,3 +115,28 @@ def get_all_employees(fields=None):
         return []
     employees = models.execute_kw(DB_NAME, uid, PASSWORD, 'hr.employee', 'read', [emp_ids, fields])
     return employees
+
+def get_all_equipments(fields=None):
+    """
+    Lấy danh sách tất cả thiết bị (maintenance.equipment) trong hệ thống.
+    Trả về list các thiết bị, [] nếu không có.
+    """
+    if fields is None:
+        fields = [
+            'id', 'name', 'active', 'serial_no', 'category_id', 'company_id', 'department_id', 'employee_id',
+            'owner_user_id', 'partner_id', 'partner_ref', 'technician_user_id', 'warranty_date', 'scrap_date',
+            'note', 'cost', 'assign_date', 'effective_date', 'expected_mtbf', 'mtbf', 'mttr',
+            'estimated_next_failure', 'color', 'display_name', 'equipment_assign_to', 'equipment_properties',
+            'activity_state', 'activity_type_id', 'activity_user_id', 'activity_date_deadline',
+            'activity_summary', 'activity_type_icon', 'activity_exception_icon', 'activity_exception_decoration',
+            'activity_ids', 'activity_calendar_event_id', 'create_date', 'create_uid', 'write_date',
+            'message_ids', 'message_is_follower', 'message_needaction', 'message_needaction_counter',
+            'message_partner_ids', 'model', 'my_activity_date_deadline', 'rating_ids', 'website_message_ids',
+            'has_message'
+        ]
+    uid, _, models = odoo_login()
+    equipment_ids = models.execute_kw(DB_NAME, uid, PASSWORD, 'maintenance.equipment', 'search', [[]])
+    if not equipment_ids:
+        return []
+    equipments = models.execute_kw(DB_NAME, uid, PASSWORD, 'maintenance.equipment', 'read', [equipment_ids, fields])
+    return equipments
