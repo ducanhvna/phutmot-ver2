@@ -13,7 +13,7 @@ export interface Employee {
 
 export async function getAllEmployees(token?: string): Promise<Employee[]> {
   const res = await axios.get<Employee[]>(
-    '/api/education/employees',
+    '/api/hrms/employees',
     token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
   );
   return res.data;
