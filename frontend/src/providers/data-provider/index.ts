@@ -5,7 +5,7 @@ import dataProviderSimpleRest from "@refinedev/simple-rest";
 
 // Create the default REST data provider for your backend API
 const defaultDataProvider = dataProviderSimpleRest(
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/"
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8979/"
 );
 
 // Create a specific data provider for the JSONPlaceholder API

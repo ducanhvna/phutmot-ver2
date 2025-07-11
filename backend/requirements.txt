@@ -20,3 +20,4 @@ celery
 redis
 minio
 pyodbc
+pandas

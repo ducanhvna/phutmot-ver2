@@ -12,32 +12,32 @@ import {
 import { Show } from "@refinedev/mui";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import DateRangeIcon from "@mui/icons-material/DateRange";
 import SharedTable from "@components/shared-table";
 import {
-  getAllEmployees,
-  Employee,
-} from "@/providers/employee-provider/employee-provider";
+  getAllMrpProductions,
+  MrpProduction,
+} from "@/providers/mrp-provider/mrp-production-provider";
 
-export default function Employees() {
-  const [employees, setEmployees] = useState<Employee[]>([]);
+export default function MrpProductions() {
+  const [productions, setProductions] = useState<MrpProduction[]>([]);
   const router = useRouter();
 
   useEffect(() => {
-    async function fetchEmployees() {
-      const data = await getAllEmployees();
-      setEmployees(data);
+    async function fetchProductions() {
+      const data = await getAllMrpProductions();
+      setProductions(data);
     }
-    fetchEmployees();
+    fetchProductions();
   }, []);
 
   const handleDelete = (id: number) => {
-    console.log(`Delete employee with ID: ${id}`);
+    console.log(`Delete production with ID: ${id}`);
     // Implement delete functionality
   };
 
   const handleNewRegistration = () => {
-    router.push("/learning-data-entry/create");
+    // Điều hướng đến trang tạo mới lệnh sản xuất nếu có
+    // router.push("/mrp-productions/create");
   };
 
   return (
@@ -45,7 +45,7 @@ export default function Employees() {
       goBack={false}
       title={
         <Typography variant="h5" fontWeight="700">
-          従業員一覧
+          Danh sách lệnh sản xuất
         </Typography>
       }
       wrapperProps={{
@@ -76,7 +76,7 @@ export default function Employees() {
                 },
               }}
             >
-              新規従業員登録
+              Tạo lệnh sản xuất mới
             </Button>
           </Box>
 
@@ -85,7 +85,7 @@ export default function Employees() {
             sx={{ borderRadius: "10px", overflow: "hidden", mb: 3 }}
           >
             <SharedTable
-              dataSource={employees}
+              dataSource={productions}
               themeColor="var(--color-green)"
               columns={[
                 {
@@ -94,40 +94,65 @@ export default function Employees() {
                   key: "id",
                 },
                 {
-                  title: "氏名",
+                  title: "Tên lệnh sản xuất",
                   dataIndex: "name",
                   key: "name",
+                  render: (value: any, record: MrpProduction) => (
+                    <a
+                      href={`/mrp-productions/${record.id}`}
+                      style={{
+                        color: "#1976d2",
+                        textDecoration: "underline",
+                        cursor: "pointer",
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        router.push(`/mrp-productions/${record.id}`);
+                      }}
+                    >
+                      {value}
+                    </a>
+                  ),
                 },
                 {
-                  title: "メール",
-                  dataIndex: "work_email",
-                  key: "work_email",
+                  title: "Trạng thái",
+                  dataIndex: "state",
+                  key: "state",
                 },
                 {
-                  title: "電話番号",
-                  dataIndex: "work_phone",
-                  key: "work_phone",
+                  title: "Sản phẩm",
+                  dataIndex: "product_id",
+                  key: "product_id",
+                  render: (value: any) =>
+                    value && Array.isArray(value) ? value[1] : value || "-",
                 },
                 {
-                  title: "職位",
-                  dataIndex: "job_title",
-                  key: "job_title",
+                  title: "Số lượng",
+                  dataIndex: "product_qty",
+                  key: "product_qty",
                 },
                 {
-                  title: "部署ID",
-                  dataIndex: "department_id",
-                  key: "department_id",
+                  title: "Ngày bắt đầu",
+                  dataIndex: "date_start",
+                  key: "date_start",
                 },
                 {
-                  title: "ユーザーID",
+                  title: "Ngày kết thúc",
+                  dataIndex: "date_finished",
+                  key: "date_finished",
+                },
+                {
+                  title: "Người phụ trách",
                   dataIndex: "user_id",
                   key: "user_id",
+                  render: (value: any) =>
+                    value && Array.isArray(value) ? value[1] : value || "-",
                 },
                 {
-                  title: "操作",
+                  title: "Thao tác",
                   key: "action",
-                  render: (_: any, record: Employee) => (
-                    <Tooltip title="削除">
+                  render: (_: any, record: MrpProduction) => (
+                    <Tooltip title="Xóa">
                       <IconButton
                         onClick={() => handleDelete(record.id)}
                         sx={{ color: "var(--color-red)" }}

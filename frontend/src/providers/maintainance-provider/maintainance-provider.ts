@@ -53,8 +53,18 @@ export interface Equipment {
 }
 
 export async function getAllEquipments(token?: string): Promise<Equipment[]> {
+  const baseUrl = 'http://localhost:8979';
   const res = await axios.get<Equipment[]>(
-    '/api/education/equipments',
+    `${baseUrl}/api/odoo/equipments`,
+    token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+  );
+  return res.data;
+}
+
+export async function getEquipmentById(equipmentId: number, token?: string): Promise<Equipment | null> {
+  const baseUrl = 'http://localhost:8979';
+  const res = await axios.get<Equipment | null>(
+    `${baseUrl}/api/odoo/equipments/${equipmentId}`,
     token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
   );
   return res.data;

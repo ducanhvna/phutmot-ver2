@@ -135,6 +135,41 @@ const EmployeeDetailPage: React.FC = () => {
                     : employee.user_id
                   : "-"}
               </Typography>
+              {employee.user_detail && (
+                <Box sx={{ pl: 2, borderLeft: "3px solid #1976d2", mt: 1 }}>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    color="primary"
+                  >
+                    Thông tin User
+                  </Typography>
+                  <Typography>
+                    <span style={{ fontWeight: "bold" }}>Tên user:</span>{" "}
+                    {employee.user_detail.name}
+                  </Typography>
+                  <Typography>
+                    <span style={{ fontWeight: "bold" }}>Email:</span>{" "}
+                    {employee.user_detail.email || "-"}
+                  </Typography>
+                  <Typography>
+                    <span style={{ fontWeight: "bold" }}>Login:</span>{" "}
+                    {employee.user_detail.login || "-"}
+                  </Typography>
+                  <Typography>
+                    <span style={{ fontWeight: "bold" }}>Công ty:</span>{" "}
+                    {employee.user_detail.company_id
+                      ? Array.isArray(employee.user_detail.company_id)
+                        ? employee.user_detail.company_id[1]
+                        : employee.user_detail.company_id
+                      : "-"}
+                  </Typography>
+                  <Typography>
+                    <span style={{ fontWeight: "bold" }}>Kích hoạt:</span>{" "}
+                    {employee.user_detail.active ? "Có" : "Không"}
+                  </Typography>
+                </Box>
+              )}
             </Stack>
             <Divider sx={{ my: 3 }} />
             <Box
@@ -146,7 +181,14 @@ const EmployeeDetailPage: React.FC = () => {
               <Typography variant="subtitle1" fontWeight="bold">
                 Mã QR thông tin nhân viên
               </Typography>
-              <QRCode value={JSON.stringify(employee, null, 2)} size={200} />
+              <QRCode
+                value={JSON.stringify(
+                  { ...employee, user_detail: employee.user_detail },
+                  null,
+                  2
+                )}
+                size={200}
+              />
             </Box>
           </Box>
         )}

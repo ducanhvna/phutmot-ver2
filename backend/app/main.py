@@ -10,7 +10,7 @@ from app.routers.companies import router as companies_router
 from app.routers.hrms import summary_report_monthly_router
 from app.routers.file_metadata import router as file_metadata_router
 from app.routers.education import teacher
-from app.routers.odoo import employee_odoo
+from app.routers.odoo import employee_odoo, equipment_odoo, mrp_production
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -46,6 +46,8 @@ app.include_router(summary_report_monthly_router)
 app.include_router(file_metadata_router)
 app.include_router(teacher.router)
 app.include_router(employee_odoo.router)
+app.include_router(equipment_odoo.router)
+app.include_router(mrp_production.router)
 
 @app.get("/healthcheck", response_model=HealthcheckResponse)
 def healthcheck():

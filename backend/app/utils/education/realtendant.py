@@ -26,12 +26,28 @@ def get_faculty_list(fields=None):
     return faculties
 
 # Lấy thông tin nhân viên từ emp_id (nếu cần)
-def get_employee_by_id(emp_id, fields=None):
+def get_employee_by_id(emp_id, fields=None, user_fields=None):
     if fields is None:
-        fields = ['id', 'name', 'work_email', 'work_phone', 'job_title', 'department_id']
+        fields = ['id', 'name', 'work_email', 'work_phone', 'job_title', 'department_id', 'user_id']
+    if user_fields is None:
+        user_fields = ['id', 'name', 'login', 'email', 'company_id', 'active']
     uid, _, models = odoo_login()
     employees = models.execute_kw(DB_NAME, uid, PASSWORD, 'hr.employee', 'read', [[emp_id], fields])
-    return employees[0] if employees else None
+    if not employees:
+        return None
+    employee = employees[0]
+    user_id = employee.get('user_id')
+    if user_id:
+        # user_id có thể là [id, name] hoặc id, nên lấy id
+        if isinstance(user_id, list):
+            user_id_val = user_id[0]
+        else:
+            user_id_val = user_id
+        users = models.execute_kw(DB_NAME, uid, PASSWORD, 'res.users', 'read', [[user_id_val], user_fields])
+        employee['user_detail'] = users[0] if users else None
+    else:
+        employee['user_detail'] = None
+    return employee
 
 def get_employee_by_user_id(user_id, fields=None):
     """
@@ -140,3 +156,114 @@ def get_all_equipments(fields=None):
         return []
     equipments = models.execute_kw(DB_NAME, uid, PASSWORD, 'maintenance.equipment', 'read', [equipment_ids, fields])
     return equipments
+
+def get_all_mrp_productions(fields=None):
+    """
+    Lấy danh sách tất cả lệnh sản xuất (mrp.production) trong hệ thống.
+    Trả về list các production, [] nếu không có.
+    """
+    if fields is None:
+        fields = [
+            'id', 'name', 'state', 'product_id', 'product_qty', 'product_uom_id', 'date_start', 'date_finished',
+            'company_id', 'user_id', 'origin', 'bom_id', 'qty_produced', 'qty_producing', 'date_deadline',
+            'create_date', 'write_date', 'create_uid', 'write_uid', 'warehouse_id', 'workcenter_id',
+            'production_location_id', 'location_src_id', 'location_dest_id', 'priority', 'sale_line_id',
+            'picking_type_id', 'picking_ids', 'move_raw_ids', 'move_finished_ids', 'move_byproduct_ids',
+            'components_availability', 'components_availability_state', 'consumption', 'is_locked', 'is_delayed',
+            'is_outdated_bom', 'is_planned', 'production_capacity', 'duration', 'duration_expected', 'extra_cost',
+            'delay_alert_date', 'delivery_count', 'display_name', 'forecasted_issue', 'has_analytic_account',
+            'has_message', 'json_popover', 'location_final_id', 'lot_producing_id', 'message_attachment_count',
+            'message_follower_ids', 'message_has_error', 'message_has_error_counter', 'message_has_sms_error',
+            'message_ids', 'message_is_follower', 'message_needaction', 'message_needaction_counter',
+            'message_partner_ids', 'mrp_production_backorder_count', 'mrp_production_child_count',
+            'mrp_production_source_count', 'my_activity_date_deadline', 'never_product_template_attribute_value_ids',
+            'orderpoint_id', 'priority', 'procurement_group_id', 'product_description_variants', 'product_tmpl_id',
+            'product_tracking', 'product_uom_category_id', 'product_uom_qty', 'product_variant_attributes',
+            'propagate_cancel', 'purchase_order_count', 'rating_ids', 'reservation_state', 'reserve_visible',
+            'sale_order_count', 'scrap_count', 'scrap_ids', 'search_date_category', 'show_allocation',
+            'show_final_lots', 'show_lock', 'show_lot_ids', 'show_produce', 'show_produce_all', 'show_valuation',
+            'unbuild_count', 'unbuild_ids', 'unreserve_visible', 'use_create_components_lots', 'valid_product_template_attribute_line_ids',
+            'website_message_ids', 'activity_ids', 'activity_state', 'activity_type_id', 'activity_user_id',
+            'activity_date_deadline', 'activity_summary', 'activity_type_icon', 'activity_exception_icon',
+            'activity_exception_decoration', 'activity_calendar_event_id', 'all_move_ids', 'all_move_raw_ids',
+            'allow_workorder_dependencies', 'backorder_sequence', 'components_availability', 'consumption',
+            'finished_move_line_ids', 'move_dest_ids', 'move_raw_ids', 'move_finished_ids', 'move_byproduct_ids',
+            'origin', 'priority', 'product_id', 'product_qty', 'product_uom_id', 'qty_produced', 'qty_producing',
+            'state', 'user_id', 'warehouse_id', 'workorder_ids'
+        ]
+    uid, _, models = odoo_login()
+    production_ids = models.execute_kw(DB_NAME, uid, PASSWORD, 'mrp.production', 'search', [[]])
+    if not production_ids:
+        return []
+    productions = models.execute_kw(DB_NAME, uid, PASSWORD, 'mrp.production', 'read', [production_ids, fields])
+    return productions
+
+def get_mrp_production_detail(production_id, fields=None, workorder_fields=None, user_fields=None):
+    """
+    Lấy chi tiết lệnh sản xuất (mrp.production) theo id, kèm danh sách công đoạn (mrp.workorder) và chi tiết user đang tham gia công đoạn.
+    """
+    if fields is None:
+        fields = [
+            'id', 'name', 'state', 'product_id', 'product_qty', 'product_uom_id', 'date_start', 'date_finished',
+            'company_id', 'user_id', 'origin', 'bom_id', 'qty_produced', 'qty_producing', 'date_deadline',
+            'create_date', 'write_date', 'create_uid', 'write_uid', 'warehouse_id', 'workcenter_id',
+            'production_location_id', 'location_src_id', 'location_dest_id', 'priority', 'sale_line_id',
+            'picking_type_id', 'picking_ids', 'move_raw_ids', 'move_finished_ids', 'move_byproduct_ids',
+            'components_availability', 'components_availability_state', 'consumption', 'is_locked', 'is_delayed',
+            'is_outdated_bom', 'is_planned', 'production_capacity', 'duration', 'duration_expected', 'extra_cost',
+            'delay_alert_date', 'delivery_count', 'display_name', 'forecasted_issue', 'has_analytic_account',
+            'has_message', 'json_popover', 'location_final_id', 'lot_producing_id', 'message_attachment_count',
+            'message_follower_ids', 'message_has_error', 'message_has_error_counter', 'message_has_sms_error',
+            'message_ids', 'message_is_follower', 'message_needaction', 'message_needaction_counter',
+            'message_partner_ids', 'mrp_production_backorder_count', 'mrp_production_child_count',
+            'mrp_production_source_count', 'my_activity_date_deadline', 'never_product_template_attribute_value_ids',
+            'orderpoint_id', 'priority', 'procurement_group_id', 'product_description_variants', 'product_tmpl_id',
+            'product_tracking', 'product_uom_category_id', 'product_uom_qty', 'product_variant_attributes',
+            'propagate_cancel', 'purchase_order_count', 'rating_ids', 'reservation_state', 'reserve_visible',
+            'sale_order_count', 'scrap_count', 'scrap_ids', 'search_date_category', 'show_allocation',
+            'show_final_lots', 'show_lock', 'show_lot_ids', 'show_produce', 'show_produce_all', 'show_valuation',
+            'unbuild_count', 'unbuild_ids', 'unreserve_visible', 'use_create_components_lots', 'valid_product_template_attribute_line_ids',
+            'website_message_ids', 'activity_ids', 'activity_state', 'activity_type_id', 'activity_user_id',
+            'activity_date_deadline', 'activity_summary', 'activity_type_icon', 'activity_exception_icon',
+            'activity_exception_decoration', 'activity_calendar_event_id', 'all_move_ids', 'all_move_raw_ids',
+            'allow_workorder_dependencies', 'backorder_sequence', 'components_availability', 'consumption',
+            'finished_move_line_ids', 'move_dest_ids', 'move_raw_ids', 'move_finished_ids', 'move_byproduct_ids',
+            'origin', 'priority', 'product_id', 'product_qty', 'product_uom_id', 'qty_produced', 'qty_producing',
+            'state', 'user_id', 'warehouse_id', 'workorder_ids'
+        ]
+    if workorder_fields is None:
+        workorder_fields = [
+            'id', 'name', 'state', 'production_id', 'workcenter_id', 'operation_id', 'date_start', 'date_finished',
+            'duration', 'duration_expected', 'duration_percent', 'duration_unit', 'progress', 'qty_produced',
+            'qty_producing', 'qty_production', 'qty_remaining', 'qty_reported_from_previous_wo', 'sequence',
+            'is_planned', 'is_produced', 'is_user_working', 'working_user_ids', 'last_working_user_id',
+            'allow_workorder_dependencies', 'barcode', 'blocked_by_workorder_ids', 'company_id', 'consumption',
+            'costs_hour', 'create_date', 'create_uid', 'display_name', 'finished_lot_id', 'has_worksheet',
+            'json_popover', 'leave_id', 'mo_analytic_account_line_ids', 'move_finished_ids', 'move_line_ids',
+            'move_raw_ids', 'needed_by_workorder_ids', 'operation_note', 'product_id', 'product_tracking',
+            'product_uom_id', 'production_availability', 'production_bom_id', 'production_date', 'production_state',
+            'scrap_count', 'scrap_ids', 'show_json_popover', 'time_ids', 'wc_analytic_account_line_ids',
+            'workcenter_id', 'working_state', 'worksheet', 'worksheet_google_slide', 'worksheet_type', 'write_date', 'write_uid'
+        ]
+    if user_fields is None:
+        user_fields = ['id', 'name', 'login', 'email', 'company_id', 'active']
+    uid, _, models = odoo_login()
+    productions = models.execute_kw(DB_NAME, uid, PASSWORD, 'mrp.production', 'read', [[production_id], fields])
+    if not productions:
+        return None
+    production = productions[0]
+    # Lấy danh sách công đoạn (workorder)
+    workorder_ids = production.get('workorder_ids', [])
+    workorders = []
+    if workorder_ids:
+        workorders = models.execute_kw(DB_NAME, uid, PASSWORD, 'mrp.workorder', 'read', [workorder_ids, workorder_fields])
+        # Lấy chi tiết user đang tham gia công đoạn
+        for wo in workorders:
+            user_ids = wo.get('working_user_ids', [])
+            if user_ids:
+                users = models.execute_kw(DB_NAME, uid, PASSWORD, 'res.users', 'read', [user_ids, user_fields])
+                wo['working_user_details'] = users
+            else:
+                wo['working_user_details'] = []
+    production['workorders'] = workorders
+    return production
