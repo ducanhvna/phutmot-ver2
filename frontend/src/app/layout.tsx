@@ -20,14 +20,6 @@ import { AppIcon } from "@components/app-icon";
 import { ColorModeContextProvider } from "@contexts/color-mode";
 import { authProviderClient } from "@providers/auth-provider/auth-provider.client";
 import { getAccessibleResources } from "@utils/server/get-accessible-resources";
-import { Noto_Sans_JP } from "next/font/google";
-
-const notoSansJP = Noto_Sans_JP({
-  weight: ["100", "200", "300", "400", "500", "600", "700"],
-  subsets: ["latin"],
-  variable: "--font-noto-sans-jp",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "DNP Project",
@@ -59,7 +51,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="jp" className={notoSansJP.className}>
+    <html lang="jp">
       <body>
         <Suspense>
           {/* <GitHubBanner /> */}
