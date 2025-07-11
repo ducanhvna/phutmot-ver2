@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api/education'; // Điều chỉnh endpoint nếu backend khác
-
 export interface Employee {
   id: number;
   name: string;
@@ -13,17 +11,26 @@ export interface Employee {
   // Bổ sung các trường khác nếu cần
 }
 
-export async function getAllEmployees(): Promise<Employee[]> {
-  const res = await axios.get<Employee[]>(`${API_BASE_URL}/employees`);
+export async function getAllEmployees(token?: string): Promise<Employee[]> {
+  const res = await axios.get<Employee[]>(
+    '/api/education/employees',
+    token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+  );
   return res.data;
 }
 
-export async function getEmployeeById(empId: number): Promise<Employee | null> {
-  const res = await axios.get<Employee | null>(`${API_BASE_URL}/employees/${empId}`);
+export async function getEmployeeById(empId: number, token?: string): Promise<Employee | null> {
+  const res = await axios.get<Employee | null>(
+    `/api/education/employees/${empId}`,
+    token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+  );
   return res.data;
 }
 
-export async function getEmployeeByUserId(userId: number): Promise<Employee | null> {
-  const res = await axios.get<Employee | null>(`${API_BASE_URL}/employees/by-user/${userId}`);
+export async function getEmployeeByUserId(userId: number, token?: string): Promise<Employee | null> {
+  const res = await axios.get<Employee | null>(
+    `/api/education/employees/by-user/${userId}`,
+    token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+  );
   return res.data;
 }

@@ -9,7 +9,13 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     getAllEmployees()
-      .then(data => setEmployees(data))
+      .then(data => {
+        // Lọc bỏ các phần tử không phải object hoặc có function (phòng lỗi serialize)
+        const filtered = Array.isArray(data)
+          ? data.filter(emp => emp && typeof emp === 'object' && !Object.values(emp).some(v => typeof v === 'function'))
+          : [];
+        setEmployees(filtered);
+      })
       .catch(err => setError('Lỗi tải danh sách nhân viên'))
       .finally(() => setLoading(false));
   }, []);

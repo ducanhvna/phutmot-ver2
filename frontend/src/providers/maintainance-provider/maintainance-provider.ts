@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api/education'; // Điều chỉnh endpoint nếu backend khác
-
 export interface Equipment {
   id: number;
   name: string;
@@ -54,7 +52,10 @@ export interface Equipment {
   has_message?: boolean;
 }
 
-export async function getAllEquipments(): Promise<Equipment[]> {
-  const res = await axios.get<Equipment[]>(`${API_BASE_URL}/equipments`);
+export async function getAllEquipments(token?: string): Promise<Equipment[]> {
+  const res = await axios.get<Equipment[]>(
+    '/api/education/equipments',
+    token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+  );
   return res.data;
 }
