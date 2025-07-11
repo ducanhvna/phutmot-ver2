@@ -87,7 +87,7 @@ const allResources: ResourceProps[] = [
     meta: {
       canDelete: true,
       label: "Top Teacher",
-      icon: <HomeOutlined sx={{ fontSize: "28px" }} />,
+      icon: "HomeOutlined",
     },
   },
   {
@@ -96,7 +96,7 @@ const allResources: ResourceProps[] = [
     meta: {
       canDelete: true,
       label: "Top Student",
-      icon: <HomeOutlined sx={{ fontSize: "26px" }} />,
+      icon: "HomeOutlined",
     },
   },
   {
@@ -105,7 +105,7 @@ const allResources: ResourceProps[] = [
     meta: {
       canDelete: true,
       label: "目標設定",
-      icon: <TrackChangesOutlined sx={{ fontSize: "26px" }} />,
+      icon: "TrackChangesOutlined",
     },
   },
   {
@@ -115,7 +115,7 @@ const allResources: ResourceProps[] = [
       create: "/daily-progress-teacher/create",
       canDelete: true,
       label: "日々の学習記録",
-      icon: <DriveFileRenameOutlineOutlined sx={{ fontSize: "26px" }} />,
+      icon: "DriveFileRenameOutlineOutlined",
     },
   },
   {
@@ -124,7 +124,7 @@ const allResources: ResourceProps[] = [
     meta: {
       canDelete: true,
       label: "日々の学習記録",
-      icon: <DriveFileRenameOutlineOutlined sx={{ fontSize: "24px" }} />,
+      icon: "DriveFileRenameOutlineOutlined",
     },
   },
   {
@@ -134,7 +134,7 @@ const allResources: ResourceProps[] = [
     meta: {
       canDelete: true,
       label: "テスト振り返り",
-      icon: <GradingOutlined sx={{ fontSize: "24px" }} />,
+      icon: "GradingOutlined",
     },
   },
   {
@@ -143,7 +143,7 @@ const allResources: ResourceProps[] = [
     meta: {
       canDelete: true,
       label: "学習全体の振り返り",
-      icon: <AssessmentOutlined sx={{ fontSize: "24px" }} />,
+      icon: "AssessmentOutlined",
     },
   },
   {
@@ -153,7 +153,7 @@ const allResources: ResourceProps[] = [
       create: "/learning-data-entry/create",
       canDelete: true,
       label: "学習データ登録",
-      icon: <CloudUpload sx={{ color: "var(--color-yellow)" }} />,
+      icon: "CloudUpload",
     },
   },
   // Will continue at new version
