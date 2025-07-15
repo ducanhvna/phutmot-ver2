@@ -1,0 +1,12 @@
+ID: 48
+Tên: Siddharth
+Email: siddharth@demo.com
+Điện thoại: +1 555-555-5556
+Chức vụ: False
+Phòng ban: False
+--- User Detail ---
+User ID: 34
+User Name: Siddharth
+Login: backoffice@openeducat.com
+Email: siddharth@demo.com
+Company: [1, 'My Company (San Francisco)']

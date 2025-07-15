@@ -1,0 +1,6 @@
+ID: 10
+Tên: Keith Byrd
+Email: keith.byrd52@example.com
+Điện thoại: (555)-505-5146
+Chức vụ: Experienced Developer
+Phòng ban: [4, 'Management / Research & Development']

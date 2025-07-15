@@ -1,0 +1,6 @@
+ID: 16
+Tên: Randall Lewis
+Email: randall.lewis74@example.com
+Điện thoại: (555)-775-6660
+Chức vụ: Experienced Developer
+Phòng ban: [4, 'Management / Research & Development']

@@ -1,0 +1,12 @@
+ID: 35
+Tên: Daniel
+Email: danielking@example.com
+Điện thoại: +1 555-555-5556
+Chức vụ: False
+Phòng ban: False
+--- User Detail ---
+User ID: 21
+User Name: Daniel V King
+Login: Daniel@openeducat.com
+Email: danielking@example.com
+Company: [1, 'My Company (San Francisco)']

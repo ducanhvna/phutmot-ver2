@@ -1,0 +1,6 @@
+ID: 19
+Tên: Walter Horton
+Email: walter.horton80@example.com
+Điện thoại: (555)-912-1201
+Chức vụ: Experienced Developer
+Phòng ban: [4, 'Management / Research & Development']

@@ -1,0 +1,6 @@
+ID: 15
+Tên: Sharlene Rhodes
+Email: sharlene.rhodes49@example.com
+Điện thoại: (555)-719-4182
+Chức vụ: Experienced Developer
+Phòng ban: [2, 'Management']

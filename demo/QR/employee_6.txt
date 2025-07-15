@@ -1,0 +1,6 @@
+ID: 6
+Tên: Abigail Peterson
+Email: abigail.peterson39@example.com
+Điện thoại: (555)-233-3393
+Chức vụ: Consultant
+Phòng ban: [7, 'Management / Professional Services']

@@ -1,0 +1,6 @@
+ID: 8
+Tên: Eli Lambert
+Email: eli.lambert22@example.com
+Điện thoại: (555)-169-1352
+Chức vụ: Marketing and Community Manager
+Phòng ban: [3, 'Management / Sales']

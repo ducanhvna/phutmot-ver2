@@ -1,0 +1,6 @@
+ID: 17
+Tên: Jennie Fletcher
+Email: jennie.fletcher76@example.com
+Điện thoại: (555)-363-8229
+Chức vụ: Experienced Developer
+Phòng ban: [4, 'Management / Research & Development']

@@ -1,0 +1,6 @@
+ID: 9
+Tên: Rachel Perry
+Email: jod@odoo.com
+Điện thoại: (555)-267-3735
+Chức vụ: Marketing and Community Manager
+Phòng ban: [3, 'Management / Sales']

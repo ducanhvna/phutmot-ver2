@@ -1,0 +1,6 @@
+ID: 12
+Tên: Ernest Reed
+Email: ernest.reed47@example.com
+Điện thoại: (555)-518-8232
+Chức vụ: Consultant
+Phòng ban: [7, 'Management / Professional Services']

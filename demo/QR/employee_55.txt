@@ -1,0 +1,6 @@
+ID: 55
+Tên: Amy Watson
+Email: amy.watson21@example.com
+Điện thoại: (535)-495-4222
+Chức vụ: Interior Designer
+Phòng ban: False
