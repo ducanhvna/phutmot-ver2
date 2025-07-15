@@ -1,6 +1,7 @@
 import xmlrpc.client
 import qrcode
 import os
+from datetime import datetime
 
 REALATTENDANT_HOST = "https://admin.hinosoft.com"
 DB_NAME = "odoo"
@@ -363,3 +364,54 @@ def export_all_employees_with_qr(output_dir="employee_qr_export"):
         # Lưu QR code
         qr_path = os.path.join(output_dir, f"employee_{emp_detail['id']}_qr.png")
         qr.save(qr_path)
+
+def add_users_to_workorder(workorder, user_ids):
+    """
+    Tạo mới record productivity cho từng user trên công đoạn (workorder).
+    Truyền đủ các trường production_id, workcenter_id, user_id, loss_type.
+    Trả về danh sách ID record đã tạo.
+    """
+    if not workorder or not user_ids:
+        print("❌ Thiếu workorder object hoặc danh sách user_ids!")
+        return []
+
+    def extract_id(val):
+        return val[0] if isinstance(val, list) else val
+
+    production_id = extract_id(workorder.get('production_id'))
+    workcenter_id = extract_id(workorder.get('workcenter_id'))
+    company_id    = extract_id(workorder.get('company_id'))
+    workorder_id  = workorder.get('id')
+
+    if not all([production_id, workcenter_id, workorder_id]):
+        print("❌ Workorder thiếu thông tin bắt buộc (production_id/workcenter_id/workorder_id)")
+        return []
+
+    uid, _, models = odoo_login()
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    created_ids = []
+
+    for user_id in user_ids:
+        vals = {
+            'production_id': production_id,
+            'workcenter_id': workcenter_id,
+            'company_id': company_id,
+            'workorder_id': workorder_id,
+            'user_id': user_id,
+            'date_start': now,
+            'loss_id': 7,
+            'description': f"Tự động gán công nhân {user_id}"
+        }
+        try:
+            record_id = models.execute_kw(
+                DB_NAME, uid, PASSWORD,
+                'mrp.workcenter.productivity', 'create',
+                [vals]
+            )
+            created_ids.append(record_id)
+            print(f"✅ Đã tạo productivity cho user {user_id} trên workorder {workorder_id}, id={record_id}")
+        except Exception as e:
+            print(f"❌ Lỗi khi tạo productivity cho user {user_id}: {e}")
+
+    print(f"🔄 Tổng cộng đã tạo {len(created_ids)} record productivity cho workorder {workorder_id}")
+    return created_ids

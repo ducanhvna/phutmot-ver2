@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- List View -->
+  <record id="estate_property_view_list" model="ir.ui.view">
+    <field name="name">estate.property.view.list</field>
+    <field name="model">estate.property</field>
+    <field name="arch" type="xml">
+      <tree string="Properties">
+        <field name="name"/>
+        <field name="state"/>
+        <field name="postcode"/>
+        <field name="expected_price"/>
+      </tree>
+    </field>
+  </record>
+
+  <!-- Form View -->
+  <record id="estate_property_view_form" model="ir.ui.view">
+    <field name="name">estate.property.view.form</field>
+    <field name="model">estate.property</field>
+    <field name="arch" type="xml">
+      <form string="Property">
+        <sheet>
+          <group>
+            <group>
+              <field name="name"/>
+              <field name="state" widget="statusbar"/>
+            </group>
+            <group>
+              <field name="postcode"/>
+              <field name="expected_price"/>
+            </group>
+          </group>
+          <notebook>
+            <page string="Description">
+              <field name="description"/>
+            </page>
+          </notebook>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- Search View -->
+  <record id="estate_property_view_search" model="ir.ui.view">
+    <field name="name">estate.property.view.search</field>
+    <field name="model">estate.property</field>
+    <field name="arch" type="xml">
+      <search string="Properties">
+        <field name="name"/>
+        <field name="state"/>
+        <field name="postcode"/>
+        <filter name="available" string="Available"
+                domain="[('state','in',['new','offer_received'])]"/>
+        <group expand="0" string="Group By">
+          <filter string="Postcode" context="{'group_by':'postcode'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+
+  <!-- Action -->
+  <record id="action_estate_property" model="ir.actions.act_window">
+    <field name="name">Properties</field>
+    <field name="res_model">estate.property</field>
+    <field name="view_mode">tree,form</field>
+    <field name="search_view_id" ref="estate_property_view_search"/>
+    <!-- --> 
+  </record>
+
+  <!-- Menu Item -->
+  <menuitem id="menu_estate_root" name="Estate"/>
+  <menuitem id="menu_estate_property" name="Properties"
+            parent="menu_estate_root"
+            action="action_estate_property"/>
+</odoo>
