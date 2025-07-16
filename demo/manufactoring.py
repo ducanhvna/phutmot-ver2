@@ -21,24 +21,63 @@ def scan_qr():
         messagebox.showerror("Lỗi", f"Không thể đọc ảnh: {file_path}")
         return
     decoded_objs = pyzbar.decode(image)
-    qr_text_box.delete(1.0, tk.END)
+    # Remove old table if exists
+    global qr_table_frame
+    if 'qr_table_frame' in globals() and qr_table_frame:
+        qr_table_frame.destroy()
+        qr_table_frame = None
+    # Create new table frame
+    qr_table_frame = tk.Frame(qr_text_box.master)
+    qr_table_frame.pack(padx=10, pady=10)
+    # Move detail label and box below QR table
+    label_detail.pack_forget()
+    detail_text_box.pack_forget()
+    label_detail.pack(pady=(10, 0))
+    detail_text_box.pack(padx=10, pady=5)
+    # Không tạo header cho bảng QR info
     if not decoded_objs:
-        qr_text_box.insert(tk.END, "Không tìm thấy mã QR trong ảnh!")
+        lbl_info = tk.Label(qr_table_frame, text="Kết quả", font=("Arial", 12), borderwidth=1, relief="solid", width=20)
+        lbl_info.grid(row=1, column=0, sticky="nsew")
+        lbl_val = tk.Label(qr_table_frame, text="Không tìm thấy mã QR trong ảnh!", font=("Arial", 12), borderwidth=1, relief="solid", width=20)
+        lbl_val.grid(row=1, column=1, sticky="nsew")
         return
     for obj in decoded_objs:
         qr_data = obj.data.decode("utf-8")
-        qr_text_box.insert(tk.END, qr_data + "\n")
         try:
             data = json.loads(qr_data)
-            print(data)
-            if isinstance(data, dict) and 'user_id' in data:
-                user_id_val = data['user_id']
-                if isinstance(user_id_val, list):
-                    user_id_val = user_id_val[0]
-                if user_id_val:
-                    add_employee_from_qr(data)
+            if isinstance(data, dict):
+                department = data.get('department_id', '')
+                if isinstance(department, list):
+                    department = department[-1]
+                info_fields = [
+                    ("Tên", data.get('name', '')),
+                    ("Email", data.get('work_email', '')),
+                    ("SĐT", data.get('work_phone', '')),
+                    ("Chức vụ", data.get('job_title', '')),
+                    ("Phòng ban", department)
+                ]
+                for i, (label, value) in enumerate(info_fields, start=1):
+                    lbl_info = tk.Label(qr_table_frame, text=label, font=("Arial", 12), borderwidth=1, relief="solid", width=18, anchor="center")
+                    lbl_info.grid(row=i, column=0, sticky="nsew")
+                    lbl_val = tk.Label(qr_table_frame, text=value, font=("Arial", 12), borderwidth=1, relief="solid", width=32, anchor="w")
+                    lbl_val.grid(row=i, column=1, sticky="nsew")
+                print(data)
+                if 'user_id' in data:
+                    user_id_val = data['user_id']
+                    if isinstance(user_id_val, list):
+                        user_id_val = user_id_val[0]
+                    if user_id_val:
+                        add_employee_from_qr(data)
+            else:
+                lbl_info = tk.Label(qr_table_frame, text="QR Data", font=("Arial", 12), borderwidth=1, relief="solid", width=20)
+                lbl_info.grid(row=1, column=0, sticky="nsew")
+                lbl_val = tk.Label(qr_table_frame, text=qr_data, font=("Arial", 12), borderwidth=1, relief="solid", width=20)
+                lbl_val.grid(row=1, column=1, sticky="nsew")
         except Exception:
-            pass
+            lbl_info = tk.Label(qr_table_frame, text="QR Data", font=("Arial", 12), borderwidth=1, relief="solid", width=20)
+            lbl_info.grid(row=1, column=0, sticky="nsew")
+            lbl_val = tk.Label(qr_table_frame, text=qr_data, font=("Arial", 12), borderwidth=1, relief="solid", width=20)
+            lbl_val.grid(row=1, column=1, sticky="nsew")
 
 def start_scan():
     threading.Thread(target=scan_qr, daemon=True).start()
@@ -249,6 +288,11 @@ def clear_scanned_employees():
             messagebox.showerror("Lỗi", "Thêm user vào công đoạn thất bại!")
     except Exception as e:
         messagebox.showerror("Lỗi", f"Thêm user vào công đoạn thất bại: {e}")
+    # Xóa bảng thông tin QR khi điểm danh
+    global qr_table_frame
+    if 'qr_table_frame' in globals() and qr_table_frame:
+        qr_table_frame.destroy()
+        qr_table_frame = None
     # Update 'Hoạt động & User' box with the list of employees just checked in
     
 
@@ -278,27 +322,50 @@ def show_countdown_timer_expected():
             countdown_text_box.config(state=tk.DISABLED)
     update_timer(expected_duration_seconds if expected_duration_seconds > 0 else 5)
 
-    # Add entry for 'Số lượng thực tế' and button 'Kết thúc công đoạn' if not exists
-    if 'actual_qty_entry' not in globals() or actual_qty_entry is None:
-        actual_qty_label = tk.Label(detail_text_box.master, text="Số lượng thực tế:", font=("Arial", 12))
-        actual_qty_label.pack(padx=10, pady=(5, 0))
-        actual_qty_entry = tk.Entry(detail_text_box.master, font=("Arial", 12), width=20)
-        actual_qty_entry.pack(padx=10, pady=(0, 5))
-    if 'byproduct_qty_entry' not in globals() or byproduct_qty_entry is None:
-        byproduct_qty_label = tk.Label(detail_text_box.master, text="Phụ phẩm thực tế:", font=("Arial", 12))
-        byproduct_qty_label.pack(padx=10, pady=(0, 0))
-        byproduct_qty_entry = tk.Entry(detail_text_box.master, font=("Arial", 12), width=20)
-        byproduct_qty_entry.pack(padx=10, pady=(0, 5))
+    # Add table for product quantities and button 'Kết thúc công đoạn' if not exists
+    global qty_table_frame, actual_qty_entry
+    if 'qty_table_frame' not in globals() or qty_table_frame is None:
+        qty_table_frame = tk.Frame(detail_text_box.master)
+        qty_table_frame.pack(padx=10, pady=(5, 5))
+        # Table header
+        headers = ["Sản phẩm", "Dự kiến", "Thực tế", "Phế phẩm"]
+        for col, text in enumerate(headers):
+            lbl = tk.Label(qty_table_frame, text=text, font=("Arial", 12, "bold"), borderwidth=1, relief="solid", width=15)
+            lbl.grid(row=0, column=col, sticky="nsew")
+        # Table row (single product)
+        # Get product name and estimated qty from selected_workorder
+        product_name = ""
+        estimated_qty = 0
+        if 'selected_workorder' in globals() and selected_workorder:
+            product = selected_workorder.get('product_id', ['',''])
+            product_name = product[-1] if isinstance(product, list) else str(product)
+            try:
+                estimated_qty = float(selected_workorder.get('qty_produced', 0))
+            except Exception:
+                estimated_qty = 0
+        lbl_name = tk.Label(qty_table_frame, text=product_name, font=("Arial", 12), borderwidth=1, relief="solid", width=15)
+        lbl_name.grid(row=1, column=0, sticky="nsew")
+        lbl_est = tk.Label(qty_table_frame, text=str(estimated_qty), font=("Arial", 12), borderwidth=1, relief="solid", width=15)
+        lbl_est.grid(row=1, column=1, sticky="nsew")
+        actual_qty_entry = tk.Entry(qty_table_frame, font=("Arial", 12), width=15, borderwidth=1, relief="solid")
+        actual_qty_entry.grid(row=1, column=2, sticky="nsew")
+        lbl_waste = tk.Label(qty_table_frame, text="", font=("Arial", 12), borderwidth=1, relief="solid", width=15)
+        lbl_waste.grid(row=1, column=3, sticky="nsew")
+        qty_table_frame.lbl_waste = lbl_waste
     if 'finish_step_btn' not in globals() or finish_step_btn is None:
         finish_step_btn = tk.Button(detail_text_box.master, text="Kết thúc công đoạn", font=("Arial", 12, "bold"), bg="#27ae60", fg="white", command=on_finish_step)
         finish_step_btn.pack(padx=10, pady=(0, 10))
 
 def on_finish_step():
+    global selected_workorder, expected_duration_seconds, scanned_employees, qty_table_frame, actual_qty_entry, finish_step_btn, countdown_text_box
+    # Get values
     actual_qty = actual_qty_entry.get() if 'actual_qty_entry' in globals() else None
-    byproduct_qty = byproduct_qty_entry.get() if 'byproduct_qty_entry' in globals() else None
-    # Calculate waste quantity
-    estimated_qty = None
+    # Get product name and estimated qty from selected_workorder
+    product_name = ""
+    estimated_qty = 0
     if 'selected_workorder' in globals() and selected_workorder:
+        product = selected_workorder.get('product_id', ['',''])
+        product_name = product[-1] if isinstance(product, list) else str(product)
         try:
             estimated_qty = float(selected_workorder.get('qty_produced', 0))
         except Exception:
@@ -307,28 +374,47 @@ def on_finish_step():
         actual_qty_val = float(actual_qty) if actual_qty else 0
     except Exception:
         actual_qty_val = 0
-    try:
-        byproduct_qty_val = float(byproduct_qty) if byproduct_qty else 0
-    except Exception:
-        byproduct_qty_val = 0
-    waste_qty = estimated_qty - actual_qty_val - byproduct_qty_val if estimated_qty is not None else None
-    message = f"Số lượng thực tế: {actual_qty}\nPhụ phẩm thực tế: {byproduct_qty}"
-    if waste_qty is not None:
-        message += f"\nSố lượng phế phẩm: {waste_qty}"
+    waste_qty = estimated_qty - actual_qty_val
+    # Update waste column in table
+    if 'qty_table_frame' in globals() and qty_table_frame and hasattr(qty_table_frame, 'lbl_waste'):
+        qty_table_frame.lbl_waste.config(text=str(waste_qty))
+    # Show info
+    message = f"Sản phẩm: {product_name}\nDự kiến: {estimated_qty}\nThực tế: {actual_qty}\nPhế phẩm: {waste_qty}"
     messagebox.showinfo("Kết thúc công đoạn", message)
-    # TODO: Add logic to update workorder with actual_qty, byproduct_qty, waste_qty if needed
-# def show_countdown_timer(seconds):
-#     # Create or update a label for countdown timer
-#     if not hasattr(root, 'countdown_label'):
-#         root.countdown_label = tk.Label(root, text="", font=("Arial", 16, "bold"), fg="red")
-#         root.countdown_label.pack(pady=(5, 0))
-#     def update_timer(sec):
-#         if sec > 0:
-#             root.countdown_label.config(text=f"Đếm ngược: {sec} giây")
-#             root.after(1000, update_timer, sec-1)
-#         else:
-#             root.countdown_label.config(text="")
-#     update_timer(seconds)
+    # Reset all UI and state to initial
+    # Clear entry
+    if 'actual_qty_entry' in globals() and actual_qty_entry:
+        actual_qty_entry.delete(0, tk.END)
+        actual_qty_entry.grid_remove()
+        actual_qty_entry = None
+    # Remove table
+    if 'qty_table_frame' in globals() and qty_table_frame:
+        qty_table_frame.destroy()
+        qty_table_frame = None
+    if 'finish_step_btn' in globals() and finish_step_btn:
+        finish_step_btn.pack_forget()
+        finish_step_btn = None
+    # Clear countdown
+    if 'countdown_text_box' in globals() and countdown_text_box:
+        countdown_text_box.config(state=tk.NORMAL)
+        countdown_text_box.delete(1.0, tk.END)
+        countdown_text_box.pack_forget()
+        countdown_text_box = None
+    # Clear detail box
+    detail_text_box.config(state=tk.NORMAL)
+    detail_text_box.delete(1.0, tk.END)
+    detail_text_box.config(state=tk.DISABLED)
+    # Clear workorder box
+    workorder_text_box.config(state=tk.NORMAL)
+    workorder_text_box.delete(1.0, tk.END)
+    workorder_text_box.config(state=tk.DISABLED)
+    # Clear employee list
+    employee_listbox.delete(0, tk.END)
+    # Reset variables
+    selected_workorder = None
+    expected_duration_seconds = 0
+    scanned_employees.clear()
+    selected_workorder_var.set("")
 
 def on_export_employees_qr():
     from tkinter import messagebox
@@ -362,9 +448,9 @@ lower_left.pack(fill=tk.BOTH, expand=True)
 
 btn = tk.Button(upper_left, text="Quet QR", command=start_scan)
 btn.pack(pady=10)
-
-qr_text_box = scrolledtext.ScrolledText(upper_left, width=40, height=5)
-qr_text_box.pack(padx=10, pady=10)
+# Placeholder for QR table frame
+qr_table_frame = None
+qr_text_box = tk.Text(upper_left, width=1, height=1)  # dummy, not shown
 
 # Thông tin chi tiết lệnh sản xuất
 label_detail = tk.Label(upper_left, text="Chi tiết lệnh sản xuất:", font=("Arial", 12, "bold"))
@@ -444,7 +530,7 @@ load_wc_btn.pack(pady=(0, 10))
 wc_detail_box = scrolledtext.ScrolledText(center_panel, width=40, height=8, state=tk.DISABLED)
 wc_detail_box.pack(padx=10, pady=5)
 
-wc_workorder_label = tk.Label(center_panel, text="Công đoạn tại vị trí này:", font=("Arial", 11, "bold"))
+wc_workorder_label = tk.Label(center_panel, text="Lệnh sản xuất tại máy:", font=("Arial", 11, "bold"))
 wc_workorder_label.pack(pady=(0, 0))
 
 wc_workorder_listbox = tk.Listbox(center_panel, width=40, height=8)
