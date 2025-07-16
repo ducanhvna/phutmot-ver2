@@ -451,7 +451,7 @@ class ManufacturingApp(QMainWindow):
             wo = self.workorders[idx]
             self.selected_workorder = wo
             
-            detail = f"Công đoạn đã chọn: {wo.get('id')}: {wo.get('name')} (Trạng thái: {wo.get('state')})"
+            detail = f"Lệnh sản xuất đã chọn: {wo.get('id')}: {wo.get('name')} (Trạng thái: {wo.get('state')})"
             self.selected_workorder_label.setText(detail)
             
             try:
