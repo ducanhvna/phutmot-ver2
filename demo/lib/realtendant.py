@@ -1,3 +1,4 @@
+
 import xmlrpc.client
 import qrcode
 import os
@@ -8,6 +9,7 @@ DB_NAME = "odoo"
 USERNAME = "admin"
 PASSWORD = "admin"
 
+
 # Đăng nhập Odoo, trả về uid và common/proxy object
 def odoo_login(username=USERNAME, password=PASSWORD):
     common = xmlrpc.client.ServerProxy(f"{REALATTENDANT_HOST}/xmlrpc/2/common")
@@ -16,6 +18,18 @@ def odoo_login(username=USERNAME, password=PASSWORD):
         raise Exception("Đăng nhập Odoo thất bại!")
     models = xmlrpc.client.ServerProxy(f"{REALATTENDANT_HOST}/xmlrpc/2/object")
     return uid, common, models
+
+# Lấy chi tiết công đoạn từ bảng mrp.workorder
+def get_workorder_detail(workorder_id, fields=None):
+    if fields is None:
+        fields = [
+            'id', 'name', 'workcenter_id', 'product_id', 'qty_produced', 'duration_expected', 'state'
+        ]
+    uid, _, models = odoo_login()
+    workorders = models.execute_kw(DB_NAME, uid, PASSWORD, 'mrp.workorder', 'read', [[workorder_id], fields])
+    if not workorders:
+        return None
+    return workorders[0]
 
 # Lấy danh sách giáo viên từ op.faculty (liên kết emp_id sang hr.employee)
 def get_faculty_list(fields=None):
@@ -296,6 +310,8 @@ def get_all_workcenters(fields=None):
         return []
     workcenters = models.execute_kw(DB_NAME, uid, PASSWORD, 'mrp.workcenter', 'read', [workcenter_ids, fields])
     return workcenters
+# Biến global lưu cache danh sách công đoạn theo workcenter_id
+WORKCENTER_WORKORDERS_CACHE = {}
 
 def get_workorders_by_workcenter(workcenter_id, fields=None):
     """
@@ -319,8 +335,6 @@ def get_workorders_by_workcenter(workcenter_id, fields=None):
     uid, _, models = odoo_login()
     domain = [['workcenter_id', '=', workcenter_id]]
     workorder_ids = models.execute_kw(DB_NAME, uid, PASSWORD, 'mrp.workorder', 'search', [domain])
-    if not workorder_ids:
-        return []
     workorders = models.execute_kw(DB_NAME, uid, PASSWORD, 'mrp.workorder', 'read', [workorder_ids, fields])
     return workorders
 

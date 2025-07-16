@@ -16,6 +16,7 @@ def odoo_login(username=USERNAME, password=PASSWORD):
 
 # Lấy danh sách fields và type của model mrp.workcenter.productivity
 def get_model_fields(model_name="mrp.workcenter.productivity"):
+    
     uid, models = odoo_login()
     fields = models.execute_kw(DB_NAME, uid, PASSWORD, model_name, 'fields_get', [], {'attributes': ['string', 'type', 'required', 'readonly']})
     print(f"\n--- Danh sách trường của model {model_name} ---")
