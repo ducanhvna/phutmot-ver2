@@ -14,7 +14,21 @@ services:
       - "5435:5432"
     networks:
       - backend
-
+  goldsun-app:
+    container_name: goldsun_app
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    depends_on:
+      - odoo18
+      - db
+      - minio
+    networks:
+      - backend
+      # - web_network
+    ports:
+      - "5005:5005"
   odoo18:
     image: odoo:18
     user: root
@@ -38,24 +52,24 @@ services:
     networks:
       - backend
 
-  fastapi:
-    build: .
-    ports:
-      - "8979:8000"
-    restart: always
-    depends_on:
-      - odoo18
-      - db
-      - minio
-    entrypoint: ["/bin/sh", "/app/entrypoint.web.sh"]
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
-    networks:
-      - backend
-    env_file:
-      - .env
-    volumes:
-      - ./alembic/versions:/app/alembic/versions
-      - ./entrypoint.web.sh:/app/entrypoint.web.sh
+  # fastapi:
+  #   build: .
+  #   ports:
+  #     - "8979:8000"
+  #   restart: always
+  #   depends_on:
+  #     - odoo18
+  #     - db
+  #     - minio
+  #   entrypoint: ["/bin/sh", "/app/entrypoint.web.sh"]
+  #   command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+  #   networks:
+  #     - backend
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - ./alembic/versions:/app/alembic/versions
+  #     - ./entrypoint.web.sh:/app/entrypoint.web.sh
 
   minio:
     image: minio/minio:latest
@@ -73,35 +87,35 @@ services:
     networks:
       - backend
 
-  celeryworker:
-    build: .
-    entrypoint: ["/bin/sh", "/app/entrypoint.web.sh"]
-    command: ["celery", "-A", "app.utils.etl_scheduler", "worker", "--loglevel=info"]
-    depends_on:
-      - db
-      - fastapi
-      - redis
-    env_file:
-      - .env
-    networks:
-      - backend
-    volumes:
-      - ./entrypoint.web.sh:/app/entrypoint.web.sh
+  # celeryworker:
+  #   build: .
+  #   entrypoint: ["/bin/sh", "/app/entrypoint.web.sh"]
+  #   command: ["celery", "-A", "app.utils.etl_scheduler", "worker", "--loglevel=info"]
+  #   depends_on:
+  #     - db
+  #     - fastapi
+  #     - redis
+  #   env_file:
+  #     - .env
+  #   networks:
+  #     - backend
+  #   volumes:
+  #     - ./entrypoint.web.sh:/app/entrypoint.web.sh
 
-  celerybeat:
-    build: .
-    entrypoint: ["/bin/sh", "/app/entrypoint.web.sh"]
-    command: ["celery", "-A", "app.utils.etl_scheduler", "beat", "--loglevel=info"]
-    depends_on:
-      - db
-      - fastapi
-      - redis
-    env_file:
-      - .env
-    networks:
-      - backend
-    volumes:
-      - ./entrypoint.web.sh:/app/entrypoint.web.sh
+  # celerybeat:
+  #   build: .
+  #   entrypoint: ["/bin/sh", "/app/entrypoint.web.sh"]
+  #   command: ["celery", "-A", "app.utils.etl_scheduler", "beat", "--loglevel=info"]
+  #   depends_on:
+  #     - db
+  #     - fastapi
+  #     - redis
+  #   env_file:
+  #     - .env
+  #   networks:
+  #     - backend
+  #   volumes:
+  #     - ./entrypoint.web.sh:/app/entrypoint.web.sh
 
   redis:
     image: redis:7

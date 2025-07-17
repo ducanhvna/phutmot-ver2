@@ -1,0 +1,12 @@
+minio_data/
+postgres_data/
+staticfiles/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.git
+.gitignore
+alembic/
+postgresql/
