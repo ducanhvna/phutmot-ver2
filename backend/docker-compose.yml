@@ -41,8 +41,8 @@ services:
       - db
     # Expose for native nginx (localhost only - production security)
     ports:
-      - "127.0.0.1:8069:8069"
-      - "127.0.0.1:8072:8072"
+      - "127.0.0.1:8070:8070"
+      - "127.0.0.1:8074:8074"
     tty: true
     command: --
     environment:
