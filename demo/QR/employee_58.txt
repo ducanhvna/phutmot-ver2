@@ -1,0 +1,12 @@
+ID: 58
+Tên: Abigail Peterson
+Email: hello2@gmail.com
+Điện thoại: +1 555-555-5556
+Chức vụ: Sửa chữa
+Phòng ban: [4, 'Management / Research & Development']
+--- User Detail ---
+User ID: 44
+User Name: Abigail Peterson
+Login: hello2@gmail.com
+Email: hello2@gmail.com
+Company: [1, 'My Company (San Francisco)']

@@ -1,0 +1,12 @@
+ID: 1
+Tên: Mitchell Admin
+Email: admin@yourcompany.example.com
+Điện thoại: (555)-125-2389
+Chức vụ: Chief Executive Officer
+Phòng ban: [2, 'Management']
+--- User Detail ---
+User ID: 2
+User Name: Mitchell Admin
+Login: admin
+Email: admin@yourcompany.example.com
+Company: [1, 'My Company (San Francisco)']

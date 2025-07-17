@@ -1,8 +1,8 @@
-
+import json
 import xmlrpc.client
 import qrcode
 import os
-from datetime import datetime
+from datetime import datetime, timedelta, timedelta
 
 REALATTENDANT_HOST = "https://admin.hinosoft.com"
 DB_NAME = "odoo"
@@ -348,11 +348,6 @@ def export_all_employees_with_qr(output_dir="employee_qr_export"):
     employees = get_all_employees()
     for emp in employees:
         emp_detail = get_employee_by_id(emp['id'])
-        # Tạo QR code chứa id nhân viên (hoặc thông tin khác nếu muốn)
-        # QR code chứa thông tin JSON cơ bản của nhân viên
-        import json
-        qr_data = json.dumps(emp_detail, ensure_ascii=False)
-        qr = qrcode.make(qr_data)
         # Tạo file thông tin nhân viên
         info_lines = [
             f"ID: {emp_detail.get('id')}",
@@ -370,14 +365,20 @@ def export_all_employees_with_qr(output_dir="employee_qr_export"):
             info_lines.append(f"Login: {user_detail.get('login')}")
             info_lines.append(f"Email: {user_detail.get('email')}")
             info_lines.append(f"Company: {user_detail.get('company_id')}")
-        info_text = "\n".join(info_lines)
-        # Lưu file text
-        info_path = os.path.join(output_dir, f"employee_{emp_detail['id']}.txt")
-        with open(info_path, "w", encoding="utf-8") as f:
-            f.write(info_text)
-        # Lưu QR code
-        qr_path = os.path.join(output_dir, f"employee_{emp_detail['id']}_qr.png")
-        qr.save(qr_path)
+            
+            # Chỉ tạo QR code khi có user_detail
+            qr_data = json.dumps(emp_detail, ensure_ascii=False)
+            qr = qrcode.make(qr_data)
+            # Lưu QR code
+            qr_path = os.path.join(output_dir, f"employee_{emp_detail['id']}_qr.png")
+            qr.save(qr_path)
+            info_text = "\n".join(info_lines)
+            # Lưu file text
+            info_path = os.path.join(output_dir, f"employee_{emp_detail['id']}.txt")
+            with open(info_path, "w", encoding="utf-8") as f:
+                f.write(info_text)
+        
+    
 
 def add_users_to_workorder(workorder, user_ids):
     """

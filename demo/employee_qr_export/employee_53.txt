@@ -1,0 +1,12 @@
+ID: 53
+Tên: Lucas D Lewis
+Email: lucaslewis@example.com
+Điện thoại: +1 555-555-5556
+Chức vụ: False
+Phòng ban: False
+--- User Detail ---
+User ID: 39
+User Name: Lucas D Lewis
+Login: lucaslewis@example.com
+Email: lucaslewis@example.com
+Company: [1, 'My Company (San Francisco)']

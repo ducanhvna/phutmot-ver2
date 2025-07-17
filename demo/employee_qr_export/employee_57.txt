@@ -1,0 +1,12 @@
+ID: 57
+Tên: Dương Công Thái
+Email: hello@gmail.com
+Điện thoại: +1 555-555-5556
+Chức vụ: Giám đốc Điều hành
+Phòng ban: [3, 'Management / Sales']
+--- User Detail ---
+User ID: 40
+User Name: Dương Công Thái
+Login: hello@gmail.com
+Email: hello@gmail.com
+Company: [1, 'My Company (San Francisco)']

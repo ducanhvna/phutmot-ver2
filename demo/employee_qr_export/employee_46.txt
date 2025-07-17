@@ -1,0 +1,12 @@
+ID: 46
+Tên: Samira
+Email: thomaslturner@example.com
+Điện thoại: +1 555-555-5556
+Chức vụ: False
+Phòng ban: False
+--- User Detail ---
+User ID: 32
+User Name: Thomas L Turner
+Login: Samira@openeducat.com
+Email: thomaslturner@example.com
+Company: [1, 'My Company (San Francisco)']

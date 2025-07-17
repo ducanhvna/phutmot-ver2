@@ -1,0 +1,12 @@
+ID: 51
+Tên: Jacob Parker
+Email: jacob@demo.com
+Điện thoại: +1 555-555-5556
+Chức vụ: False
+Phòng ban: False
+--- User Detail ---
+User ID: 37
+User Name: Jacob Parker
+Login: parent@openeducat.com
+Email: jacob@demo.com
+Company: [1, 'My Company (San Francisco)']

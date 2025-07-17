@@ -199,6 +199,10 @@ class ManufacturingApp(QMainWindow):
         right_layout.addWidget(employee_group)
         
         # Control buttons
+        self.report_app_btn = QPushButton("Mở ứng dụng báo cáo")
+        self.report_app_btn.clicked.connect(self.open_report_app)
+        right_layout.addWidget(self.report_app_btn)
+        
         self.export_qr_btn = QPushButton("Xuất QR & Thông tin nhân viên")
         self.export_qr_btn.clicked.connect(self.export_employees_qr)
         right_layout.addWidget(self.export_qr_btn)
@@ -421,10 +425,10 @@ class ManufacturingApp(QMainWindow):
             wc = self.workcenters[self.current_machine_index]
             
             detail_text = f"""ID: {wc.get('id')}
-                            Tên: {wc.get('name')}
-                            Mã: {wc.get('code')}
-                            Công ty: {wc.get('company_id')}
-                            Hoạt động: {'Có' if wc.get('active') else 'Không'}"""
+Tên: {wc.get('name')}
+Mã: {wc.get('code')}
+Công ty: {wc.get('company_id')}
+Hoạt động: {'Có' if wc.get('active') else 'Không'}"""
             
             self.machine_detail_text.setText(detail_text)
             
@@ -613,6 +617,21 @@ Phế phẩm: {waste_qty}"""
             QMessageBox.information(self, "Xuất QR", "Đã xuất QR và thông tin nhân viên vào thư mục QR/")
         except Exception as e:
             QMessageBox.critical(self, "Lỗi", f"Xuất QR thất bại: {e}")
+
+    def open_report_app(self):
+        """Open the production report application"""
+        try:
+            import subprocess
+            import sys
+            
+            # Run the report app as a separate process
+            subprocess.Popen([sys.executable, "ProductionReportApp.py"], 
+                           cwd=".", creationflags=subprocess.CREATE_NEW_CONSOLE if sys.platform == "win32" else 0)
+            
+            QMessageBox.information(self, "Ứng dụng báo cáo", "Đã mở ứng dụng báo cáo sản xuất!")
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Lỗi", f"Không thể mở ứng dụng báo cáo: {str(e)}")
 
 def main():
     app = QApplication(sys.argv)

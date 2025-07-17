@@ -1,0 +1,12 @@
+ID: 42
+Tên: Ben
+Email: williammitchell@example.com
+Điện thoại: +1 555-555-5556
+Chức vụ: False
+Phòng ban: False
+--- User Detail ---
+User ID: 28
+User Name: William D Mitchell
+Login: Ben@openeducat.com
+Email: williammitchell@example.com
+Company: [1, 'My Company (San Francisco)']
