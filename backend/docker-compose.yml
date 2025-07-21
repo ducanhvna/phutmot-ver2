@@ -55,6 +55,7 @@ services:
       - ./addons:/mnt/extra-addons
       - ./etc/odoo.conf:/etc/odoo/odoo.conf
       - ./etc/requirements.txt:/etc/odoo/requirements.txt
+      - ./etc/logrotate:/etc/odoo/logrotate
     restart: always
     networks:
       - backend
