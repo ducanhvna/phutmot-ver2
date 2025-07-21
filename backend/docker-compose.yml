@@ -53,7 +53,8 @@ services:
     volumes:
       - ./entrypoint.sh:/entrypoint.sh
       - ./addons:/mnt/extra-addons
-      # - ./etc:/etc/odoo
+      - ./etc/odoo.conf:/etc/odoo/odoo.conf
+      - ./etc/requirements.txt:/etc/odoo/requirements.txt
     restart: always
     networks:
       - backend
