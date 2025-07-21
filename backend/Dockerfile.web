@@ -14,9 +14,7 @@ COPY cli ./cli
 COPY config ./config
 COPY nginx ./nginx
 COPY static ./static
-COPY staticfiles ./staticfiles
 COPY templates ./templates
-COPY test ./test
 COPY *.py ./
 COPY *.sh ./
 COPY *.md ./
