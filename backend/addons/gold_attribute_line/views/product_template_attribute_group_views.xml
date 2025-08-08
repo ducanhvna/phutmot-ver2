@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<!-- <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <!-- Form View -->
     <record id="view_attribute_group_form" model="ir.ui.view">
@@ -53,4 +53,4 @@
           parent="menu_gold_attribute_root"
           action="action_attribute_group"/> -->
 
-</odoo>
+</odoo> -->

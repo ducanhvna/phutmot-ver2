@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<!-- <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <record id="view_gold_attribute_line_form" model="ir.ui.view">
         <field name="name">gold.attribute.line.form</field>
@@ -52,4 +52,4 @@
 
     <!-- <menuitem id="menu_gold_attribute_line" name="Thuộc tính vàng"
               parent="menu_gold_attribute_root" action="action_gold_attribute_line"/> -->
-</odoo>
+</odoo> -->
