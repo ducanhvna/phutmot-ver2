@@ -27,15 +27,17 @@
     </record>
 
     <!-- Tree View -->
-    <record id="view_attribute_group_tree" model="ir.ui.view">
+    <!-- <record id="view_attribute_group_tree" model="ir.ui.view">
         <field name="name">product.template.attribute.group.tree</field>
         <field name="model">product.template.attribute.group</field>
         <field name="arch" type="xml">
-            <tree>
+            <tree string="Danh sách nhóm thuộc tính">
                 <field name="name"/>
+                <field name="code"/>
+                <field name="sequence"/>
             </tree>
         </field>
-    </record>
+    </record> -->
 
     <!-- Action -->
     <record id="action_attribute_group" model="ir.actions.act_window">
