@@ -1,2 +1,2 @@
-from . import product_template_attribute_group
-from . import gold_attribute_line
+from .models import product_template_attribute_group
+from .models import gold_attribute_line
