@@ -31,10 +31,8 @@
         <field name="name">product.template.attribute.group.tree</field>
         <field name="model">product.template.attribute.group</field>
         <field name="arch" type="xml">
-            <tree string="Danh sách nhóm thuộc tính">
+            <tree>
                 <field name="name"/>
-                <field name="code"/>
-                <field name="sequence"/>
             </tree>
         </field>
     </record>
