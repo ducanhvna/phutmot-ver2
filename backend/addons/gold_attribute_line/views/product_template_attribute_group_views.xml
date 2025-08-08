@@ -16,7 +16,6 @@
                                 <tree editable="bottom">
                                     <field name="name"/>
                                     <field name="display_name"/>
-                                    <field name="field_type"/>
                                     <field name="unit"/>
                                 </tree>
                             </field>
