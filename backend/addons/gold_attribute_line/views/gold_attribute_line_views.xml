@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <record id="view_gold_attribute_line_form" model="ir.ui.view">
         <field name="name">gold.attribute.line.form</field>
