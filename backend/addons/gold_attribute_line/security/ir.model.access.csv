@@ -1,2 +1,2 @@
-access_gold_attribute_line_user,access.gold.attribute.line.user,model_gold_attribute_line,base.group_user,1,1,1,1
-access_attribute_group_user,access.attribute.group.user,model_product_template_attribute_group,base.group_user,1,1,1,1
+access_gold_attribute_line_user,access.gold.attribute.line.user,gold.attribute.line,base.group_user,1,1,1,1
+access_attribute_group_user,access.attribute.group.user,product.template.attribute.group,base.group_user,1,1,1,1
