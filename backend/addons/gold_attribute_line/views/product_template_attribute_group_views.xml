@@ -48,8 +48,9 @@
     </record>
 
     <!-- Menu -->
-    <menuitem id="menu_attribute_group"
-              name="Nhóm thuộc tính mã mẫu"
-              parent="menu_gold_attribute_root"
-              action="action_attribute_group"/>
+    <!-- <menuitem id="menu_attribute_group"
+          name="Nhóm thuộc tính mã mẫu"
+          parent="menu_gold_attribute_root"
+          action="action_attribute_group"/> -->
+
 </odoo>

@@ -50,6 +50,6 @@
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="menu_gold_attribute_line" name="Thuộc tính vàng"
-              parent="menu_gold_attribute_root" action="action_gold_attribute_line"/>
+    <!-- <menuitem id="menu_gold_attribute_line" name="Thuộc tính vàng"
+              parent="menu_gold_attribute_root" action="action_gold_attribute_line"/> -->
 </odoo>
