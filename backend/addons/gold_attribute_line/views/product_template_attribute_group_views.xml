@@ -1,4 +1,5 @@
 <odoo>
+    <!-- Form View -->
     <record id="view_attribute_group_form" model="ir.ui.view">
         <field name="name">product.template.attribute.group.form</field>
         <field name="model">product.template.attribute.group</field>
@@ -16,8 +17,8 @@
                                 <tree editable="bottom">
                                     <field name="name"/>
                                     <field name="display_name"/>
-                                    <!-- <field name="field_type"/>
-                                    <field name="required"/> -->
+                                    <field name="field_type"/>
+                                    <field name="required"/>
                                 </tree>
                             </field>
                         </page>
@@ -27,10 +28,10 @@
         </field>
     </record>
 
+    <!-- Tree View -->
     <record id="view_attribute_group_tree" model="ir.ui.view">
         <field name="name">product.template.attribute.group.tree</field>
         <field name="model">product.template.attribute.group</field>
-        <field name="type">tree</field>
         <field name="arch" type="xml">
             <tree string="Danh sách nhóm thuộc tính">
                 <field name="name"/>
@@ -40,12 +41,16 @@
         </field>
     </record>
 
+    <!-- Action -->
     <record id="action_attribute_group" model="ir.actions.act_window">
         <field name="name">Nhóm thuộc tính mã mẫu</field>
         <field name="res_model">product.template.attribute.group</field>
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="menu_attribute_group" name="Nhóm thuộc tính mã mẫu"
-              parent="menu_gold_attribute_root" action="action_attribute_group"/>
+    <!-- Menu -->
+    <menuitem id="menu_attribute_group"
+              name="Nhóm thuộc tính mã mẫu"
+              parent="menu_gold_attribute_root"
+              action="action_attribute_group"/>
 </odoo>
