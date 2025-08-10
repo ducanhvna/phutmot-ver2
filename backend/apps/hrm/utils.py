@@ -16,8 +16,8 @@ class OdooHRMService:
         self.models = xmlrpc.client.ServerProxy(f"{self.url}/xmlrpc/2/object")
 
 
-    def login(self):
-        uid = self.common.authenticate(self.db, self.username, self.password, {})
+    def login(self, username, password):
+        uid = self.common.authenticate(self.db, username, password, {})
         return uid
 
     def search_employees(self, domain=None, fields=None, batch_size=100):
