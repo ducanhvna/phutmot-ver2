@@ -18,3 +18,9 @@ def pos_list_product(request):
 
     # Page from the theme 
     return render(request, 'backend/pos-list-product.html', {'segment': 'pos_list_product'})
+
+def pos_add_product(request):
+    print("Request received at pos_add_product view")  # Debugging line
+
+    # Page from the theme 
+    return render(request, 'backend/pos-add-product.html', {'segment': 'pos_add_product'})
