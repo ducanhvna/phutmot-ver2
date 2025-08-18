@@ -6,48 +6,184 @@ import logging
 _logger = logging.getLogger(__name__)
 
 class BTMHChungTuThanhToan(models.Model):
-    """Model chứa dữ liệu chứng từ thanh toán từ BTMH POS"""
+    """Model chứa dữ liệu chứng từ thanh toán từ BTMH POS - Dong tien POS"""
     _name = 'btmh.chung_tu.thanh_toan'
-    _description = 'BTMH - Chung Tu Thanh Toan'
-    _order = 'ngay_chung_tu desc, so_phieu'
+    _description = 'BTMH - Chung Tu Thanh Toan (Dong Tien POS)'
+    _order = 'sngay desc, ma_ct, sp'
     _rec_name = 'display_name'
     
-    # Thông tin chứng từ
-    id_chung_tu = fields.Char('ID Chứng Từ', required=True, index=True)
-    so_phieu = fields.Char('Số Phiếu', required=True)
-    ngay_chung_tu = fields.Date('Ngày Chứng Từ', required=True, index=True)
-    stt = fields.Integer('STT Dòng')
+    # Thông tin chứng từ chính - từ SlTcD
+    id_chung_tu = fields.Char('ID Chứng Từ BTMH', required=True, index=True, help="SlTcD.ID")
     
-    # Mã loại chứng từ
-    ma_dt_no = fields.Char('Mã ĐT Nợ')
-    ma_dt_co = fields.Char('Mã ĐT Có')
+    # Mã địa điểm theo tài khoản
+    ma_dt_no = fields.Selection([
+        ('TMDT', 'TMDT'),
+        ('VPT', 'VPT'),
+        ('CH1', 'CH1'), ('CH2', 'CH2'), ('CH3', 'CH3'), ('CH4', 'CH4'), 
+        ('CH5', 'CH5'), ('CH6', 'CH6'), ('CH7', 'CH7'), ('CH8', 'CH8'), ('CH9', 'CH9'),
+    ], string='Mã ĐT Nợ', help="Địa điểm từ No_Tk")
     
+    ma_dt_co = fields.Selection([
+        ('TMDT', 'TMDT'),
+        ('VPT', 'VPT'), 
+        ('CH1', 'CH1'), ('CH2', 'CH2'), ('CH3', 'CH3'), ('CH4', 'CH4'),
+        ('CH5', 'CH5'), ('CH6', 'CH6'), ('CH7', 'CH7'), ('CH8', 'CH8'), ('CH9', 'CH9'),
+    ], string='Mã ĐT Có', help="Địa điểm từ Co_Tk")
+    
+    # Thông tin ngày
+    sngay = fields.Integer('Số Ngày BTMH', required=True, index=True, help="Format: YYMMDD")
+    ngay_chung_tu = fields.Date('Ngày Chứng Từ', compute='_compute_ngay_chung_tu', store=True)
+    
+    # Mã chứng từ theo logic BTMH
     ma_ct = fields.Selection([
-        ('BC', 'Bán Chuyển khoản'),
-        ('BN', 'Bán Ngoại tệ'),
-        ('PT', 'Phiếu Thu'),
-        ('PC', 'Phiếu Chi'),
-        ('PTCK', 'PT Chuyển khoản'),
-        ('PTTM', 'PT Tiền mặt'),
-        ('PCCK', 'PC Chuyển khoản'),
-        ('PCTM', 'PC Tiền mặt'),
-        ('BCCK', 'BC Chuyển khoản'),
-        ('BCTM', 'BC Tiền mặt'),
-        ('BNCK', 'BN Chuyển khoản'),
-        ('BNTM', 'BN Tiền mặt')
+        ('BC', 'Bán Chuyển khoản'),  # 1121->xxx
+        ('BN', 'Bán Ngoại tệ'),     # 1121<-xxx  
+        ('PT', 'Phiếu Thu'),        # 1111->xxx
+        ('PC', 'Phiếu Chi'),        # 1111<-xxx
+        ('PTCK', 'PT Chuyển khoản'), # 1111->1121
+        ('PTTM', 'PT Tiền mặt'),    # 1111->1111
+        ('PCCK', 'PC Chuyển khoản'), # 1121->1111  
+        ('PCTM', 'PC Tiền mặt'),    # 1111->1111
+        ('BCCK', 'BC Chuyển khoản'), # 1121->1121
+        ('BCTM', 'BC Tiền mặt'),    # 1121->1111
+        ('BNCK', 'BN Chuyển khoản'), # 1121<-1121
+        ('BNTM', 'BN Tiền mặt')     # 1111<-1121
     ], string='Mã Chứng Từ', index=True)
     
+    # Thông tin phiếu
+    sp = fields.Char('Số Phiếu', help="SlTcM.Sp")
+    h_toan = fields.Char('Hạch Toán', help="DmNx.Ma_Nx")
+    stt = fields.Integer('STT Dòng', help="SlTcD.Stt")
+    
+    # Loại chứng từ
     loai_ct = fields.Selection([
-        ('ban_le', 'Bán lẻ'),
-        ('mua_lai', 'Mua lại'),
-        ('dat_coc', 'Đặt cọc'),
-        ('tc_cho_phep', 'TC Cho phép')
+        ('ban_le', 'Bán lẻ'),       # SlTcM.LoaiCt='F'
+        ('mua_lai', 'Mua lại'),     # SlTcM.LoaiCt='G'  
+        ('dat_coc', 'Đặt cọc'),     # SlTcM.LoaiCt='H'
+        ('tc_cho_phep', 'TC Cho phép') # Ma_Nx in ('TTH','TCK','CTM','CKMH')
     ], string='Loại Chứng Từ')
     
-    # Thông tin tài khoản
-    tk_no = fields.Char('TK Nợ', required=True)
-    tk_co = fields.Char('TK Có', required=True) 
-    dien_giai = fields.Text('Diễn Giải')
+    # Thông tin tài khoản - với dấu *
+    no_tk = fields.Char('TK Nợ', required=True, help="Với dấu * đầu")
+    co_tk = fields.Char('TK Có', required=True, help="Với dấu * đầu")
+    
+    # Diễn giải và số tiền
+    dien_giai = fields.Text('Diễn Giải', help="fTCVNToUnicode(SlTcD.Dien_Giai)")
+    so_tien = fields.Monetary('Số Tiền', currency_field='currency_id', help="FORMAT(SlTcD.T_Tien,'0')")
+    
+    # Thông tin ngân hàng
+    ma_ngan_hang = fields.Char('Mã Ngân Hàng', help="DmNHang.Ma_Nh")
+    ten_ngan_hang = fields.Char('Tên Ngân Hàng', help="fTCVNToUnicode(DmNHang.Ten_Nh)")
+    so_tk_ngan_hang = fields.Char('Số TK Ngân Hàng', help="DmNHang.So_Tk")
+    
+    # Thông tin đối tượng (khách hàng)
+    ma_doi_tuong = fields.Char('Mã Đối Tượng', help="Với dấu * đầu - DmDt.Ma_Dt")
+    ten_khach_hang = fields.Char('Tên Khách Hàng', help="fTCVNToUnicode(Ten_Dt)")
+    
+    # Trạng thái sync
+    trang_thai_sync = fields.Selection([
+        ('chua_sync', 'Chưa Sync'),
+        ('dang_sync', 'Đang Sync'), 
+        ('da_sync', 'Đã Sync'),
+        ('loi', 'Lỗi')
+    ], string='Trạng Thái Sync', default='chua_sync', index=True)
+    
+    ngay_sync = fields.Datetime('Ngày Sync')
+    loi_sync = fields.Text('Lỗi Sync')
+    
+    # Liên kết Odoo
+    journal_entry_id = fields.Many2one('account.move', 'Bút Toán Odoo', ondelete='set null')
+    partner_id = fields.Many2one('res.partner', 'Đối Tác Odoo', ondelete='set null')
+    
+    # System fields
+    currency_id = fields.Many2one('res.currency', 'Tiền Tệ', 
+                                  default=lambda self: self.env.company.currency_id)
+    company_id = fields.Many2one('res.company', 'Công Ty',
+                                 default=lambda self: self.env.company)
+    active = fields.Boolean('Hoạt Động', default=True)
+    
+    display_name = fields.Char('Tên Hiển Thị', compute='_compute_display_name', store=True)
+    
+    @api.depends('sngay', 'ma_ct', 'sp', 'so_tien')
+    def _compute_display_name(self):
+        for record in self:
+            ngay_str = str(record.sngay) if record.sngay else ''
+            record.display_name = f"{record.ma_ct} - {record.sp} - {ngay_str} - {record.so_tien:,.0f}"
+    
+    @api.depends('sngay')
+    def _compute_ngay_chung_tu(self):
+        """Chuyển đổi Sngay (YYMMDD) sang Date"""
+        for record in self:
+            if record.sngay:
+                try:
+                    sngay_str = str(record.sngay).zfill(6)  # Đảm bảo 6 ký tự
+                    year = int(sngay_str[:2]) + 2000
+                    month = int(sngay_str[2:4])
+                    day = int(sngay_str[4:6])
+                    record.ngay_chung_tu = fields.Date(year, month, day)
+                except:
+                    record.ngay_chung_tu = False
+            else:
+                record.ngay_chung_tu = False
+    
+    @api.model
+    def create_from_btmh_data(self, btmh_data):
+        """Tạo record từ dữ liệu BTMH SQL"""
+        try:
+            vals = {
+                'id_chung_tu': btmh_data.get('ID'),
+                'ma_dt_no': btmh_data.get('MaDT_No'),
+                'ma_dt_co': btmh_data.get('MaDT_Co'), 
+                'sngay': btmh_data.get('Sngay'),
+                'ma_ct': btmh_data.get('Ma_Ct'),
+                'sp': btmh_data.get('Sp'),
+                'h_toan': btmh_data.get('H.Toan'),
+                'stt': btmh_data.get('Stt'),
+                'loai_ct': self._map_loai_ct(btmh_data.get('Loai_CT')),
+                'no_tk': btmh_data.get('No_Tk'),  # Đã có dấu *
+                'co_tk': btmh_data.get('Co_Tk'),  # Đã có dấu *
+                'dien_giai': btmh_data.get('Dien_giai'),
+                'so_tien': self._parse_currency(btmh_data.get('So_tien')),
+                'ma_ngan_hang': btmh_data.get('Ma_NganHang'),
+                'ten_ngan_hang': btmh_data.get('Ten_NH'),
+                'so_tk_ngan_hang': btmh_data.get('So_TK'),
+                'ma_doi_tuong': btmh_data.get('Ma_DoiTuong'),  # Đã có dấu *
+                'ten_khach_hang': btmh_data.get('Ten_KhachHang'),
+                'trang_thai_sync': 'chua_sync'
+            }
+            
+            return self.create(vals)
+            
+        except Exception as e:
+            _logger.error(f"Lỗi tạo chứng từ thanh toán từ BTMH data: {str(e)}")
+            raise UserError(f"Không thể tạo chứng từ: {str(e)}")
+    
+    def _map_loai_ct(self, loai_ct_str):
+        """Map loại chứng từ từ BTMH sang Odoo"""
+        mapping = {
+            'Ban le': 'ban_le',
+            'Mua lai': 'mua_lai', 
+            'Dat coc': 'dat_coc',
+            'TC_ChoPhep': 'tc_cho_phep'
+        }
+        return mapping.get(loai_ct_str, False)
+    
+    def _parse_currency(self, currency_str):
+        """Parse currency string sang float"""
+        if not currency_str:
+            return 0.0
+        try:
+            # Loại bỏ dấu phẩy và parse
+            return float(str(currency_str).replace(',', ''))
+        except:
+            return 0.0
+    
+    @api.model
+    def sync_from_btmh_database(self, ngay_hom_nay=None):
+        """Sync dữ liệu từ BTMH database"""
+        # Implementation để connect và pull data từ SQL Server
+        # Sẽ implement sau khi có connection string
+        pass
     so_tien = fields.Monetary('Số Tiền', currency_field='currency_id', required=True)
     
     # Thông tin ngân hàng
@@ -88,10 +224,10 @@ class BTMHChungTuThanhToan(models.Model):
     
     display_name = fields.Char('Tên Hiển Thị', compute='_compute_display_name', store=True)
     
-    @api.depends('so_phieu', 'ma_ct', 'so_tien')
+    @api.depends('sp', 'ma_ct', 'so_tien')
     def _compute_display_name(self):
         for record in self:
-            record.display_name = f"{record.so_phieu} - {record.ma_ct} - {record.so_tien:,.0f}"
+            record.display_name = f"{record.sp} - {record.ma_ct} - {record.so_tien:,.0f}"
     
     @api.model
     def create_from_btmh_data(self, btmh_data):
