@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View for Du Dau Ngay -->
+    <record id="view_btmh_du_dau_ngay_tree" model="ir.ui.view">
+        <field name="name">btmh.du_dau_ngay.tree</field>
+        <field name="model">btmh.du_dau_ngay</field>
+        <field name="arch" type="xml">
+            <tree string="Dư Đầu Ngày BTMH" decoration-success="trang_thai_sync=='da_sync'" 
+                  decoration-warning="trang_thai_sync=='cho_sync'" decoration-danger="trang_thai_sync=='loi'">
+                <field name="ngay_bao_cao"/>
+                <field name="ma_tai_khoan"/>
+                <field name="ten_tai_khoan"/>
+                <field name="so_du_dau_ky" sum="Total"/>
+                <field name="so_phat_sinh_no" sum="Total"/>
+                <field name="so_phat_sinh_co" sum="Total"/>
+                <field name="so_du_cuoi_ky" sum="Total"/>
+                <field name="trang_thai_sync"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View for Du Dau Ngay -->
+    <record id="view_btmh_du_dau_ngay_form" model="ir.ui.view">
+        <field name="name">btmh.du_dau_ngay.form</field>
+        <field name="model">btmh.du_dau_ngay</field>
+        <field name="arch" type="xml">
+            <form string="Dư Đầu Ngày BTMH">
+                <header>
+                    <button name="action_sync_to_odoo" string="Đồng Bộ Lên Odoo" type="object" 
+                            class="oe_highlight" attrs="{'invisible': [('trang_thai_sync', '=', 'da_sync')]}"/>
+                    <field name="trang_thai_sync" widget="statusbar" statusbar_visible="nhap,cho_sync,da_sync"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" name="action_view_odoo_account" class="oe_stat_button" icon="fa-list-alt"
+                                attrs="{'invisible': [('tai_khoan_odoo_id', '=', False)]}">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Tài Khoản</span>
+                                <span class="o_stat_text">Odoo</span>
+                            </div>
+                        </button>
+                        <button type="object" name="action_view_odoo_balance_entry" class="oe_stat_button" icon="fa-balance-scale"
+                                attrs="{'invisible': [('but_toan_du_dau_odoo_id', '=', False)]}">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Bút Toán</span>
+                                <span class="o_stat_text">Số Dư</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <group>
+                        <group name="report_info" string="Thông Tin Báo Cáo">
+                            <field name="id_bao_cao" readonly="1"/>
+                            <field name="ngay_bao_cao"/>
+                            <field name="loai_bao_cao"/>
+                        </group>
+                        <group name="sync_info" string="Trạng Thái Đồng Bộ">
+                            <field name="trang_thai_sync" readonly="1"/>
+                            <field name="ngay_sync" readonly="1" attrs="{'invisible': [('ngay_sync', '=', False)]}"/>
+                            <field name="loi_sync" readonly="1" attrs="{'invisible': [('loi_sync', '=', False)]}"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Tài Khoản" name="account_info">
+                            <group>
+                                <group name="account_basic">
+                                    <field name="ma_tai_khoan"/>
+                                    <field name="ten_tai_khoan"/>
+                                    <field name="loai_tai_khoan"/>
+                                </group>
+                                <group name="account_details">
+                                    <field name="cap_tai_khoan"/>
+                                    <field name="tai_khoan_cha"/>
+                                    <field name="tai_khoan_odoo_id" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Số Dư" name="balance_info">
+                            <group>
+                                <group name="balance_opening">
+                                    <field name="so_du_dau_ky"/>
+                                    <field name="so_du_dau_ky_nt"/>
+                                </group>
+                                <group name="balance_movement">
+                                    <field name="so_phat_sinh_no"/>
+                                    <field name="so_phat_sinh_no_nt"/>
+                                    <field name="so_phat_sinh_co"/>
+                                    <field name="so_phat_sinh_co_nt"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group name="balance_closing">
+                                    <field name="so_du_cuoi_ky"/>
+                                    <field name="so_du_cuoi_ky_nt"/>
+                                </group>
+                                <group name="exchange_rate">
+                                    <field name="ty_gia"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Chi Tiết" name="details">
+                            <group>
+                                <field name="mo_ta"/>
+                                <field name="ghi_chu"/>
+                            </group>
+                        </page>
+                        
+                        <page string="Liên Kết Odoo" name="odoo_links">
+                            <group>
+                                <field name="tai_khoan_odoo_id" readonly="1"/>
+                                <field name="but_toan_du_dau_odoo_id" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_btmh_du_dau_ngay_search" model="ir.ui.view">
+        <field name="name">btmh.du_dau_ngay.search</field>
+        <field name="model">btmh.du_dau_ngay</field>
+        <field name="arch" type="xml">
+            <search string="Tìm Kiếm Dư Đầu Ngày">
+                <field name="ma_tai_khoan"/>
+                <field name="ten_tai_khoan"/>
+                <field name="loai_tai_khoan"/>
+                <separator/>
+                <filter name="co_du_dau" string="Có Dư Đầu" domain="[('so_du_dau_ky', '!=', 0)]"/>
+                <filter name="co_phat_sinh" string="Có Phát Sinh" domain="['|', ('so_phat_sinh_no', '!=', 0), ('so_phat_sinh_co', '!=', 0)]"/>
+                <filter name="co_du_cuoi" string="Có Dư Cuối" domain="[('so_du_cuoi_ky', '!=', 0)]"/>
+                <separator/>
+                <filter name="tk_tai_san" string="TK Tài Sản" domain="[('loai_tai_khoan', '=', 'tai_san')]"/>
+                <filter name="tk_no_phai_tra" string="TK Nợ Phải Trả" domain="[('loai_tai_khoan', '=', 'no_phai_tra')]"/>
+                <filter name="tk_von_chu_so_huu" string="TK Vốn CSH" domain="[('loai_tai_khoan', '=', 'von_chu_so_huu')]"/>
+                <filter name="tk_doanh_thu" string="TK Doanh Thu" domain="[('loai_tai_khoan', '=', 'doanh_thu')]"/>
+                <filter name="tk_chi_phi" string="TK Chi Phí" domain="[('loai_tai_khoan', '=', 'chi_phi')]"/>
+                <separator/>
+                <filter name="chua_sync" string="Chưa Đồng Bộ" domain="[('trang_thai_sync', '!=', 'da_sync')]"/>
+                <filter name="da_sync" string="Đã Đồng Bộ" domain="[('trang_thai_sync', '=', 'da_sync')]"/>
+                <filter name="co_loi" string="Có Lỗi" domain="[('trang_thai_sync', '=', 'loi')]"/>
+                <separator/>
+                <filter name="today" string="Hôm Nay" domain="[('ngay_bao_cao', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="this_week" string="Tuần Này" domain="[('ngay_bao_cao', '>=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter name="this_month" string="Tháng Này" domain="[('ngay_bao_cao', '>=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_date" string="Ngày" context="{'group_by': 'ngay_bao_cao'}"/>
+                    <filter name="group_by_account_type" string="Loại TK" context="{'group_by': 'loai_tai_khoan'}"/>
+                    <filter name="group_by_account_level" string="Cấp TK" context="{'group_by': 'cap_tai_khoan'}"/>
+                    <filter name="group_by_status" string="Trạng Thái" context="{'group_by': 'trang_thai_sync'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_btmh_du_dau_ngay" model="ir.actions.act_window">
+        <field name="name">Dư Đầu Ngày BTMH</field>
+        <field name="res_model">btmh.du_dau_ngay</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_btmh_du_dau_ngay_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Tạo báo cáo dư đầu ngày từ BTMH
+            </p>
+            <p>
+                Dữ liệu dư đầu ngày từ hệ thống BTMH POS sẽ được đồng bộ vào đây.
+            </p>
+        </field>
+    </record>
+</odoo>

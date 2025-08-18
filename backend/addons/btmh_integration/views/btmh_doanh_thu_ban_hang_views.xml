@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View for Doanh Thu Ban Hang -->
+    <record id="view_btmh_doanh_thu_ban_hang_tree" model="ir.ui.view">
+        <field name="name">btmh.doanh_thu.ban_hang.tree</field>
+        <field name="model">btmh.doanh_thu.ban_hang</field>
+        <field name="arch" type="xml">
+            <tree string="Doanh Thu Bán Hàng BTMH" decoration-success="trang_thai_sync=='da_sync'" 
+                  decoration-warning="trang_thai_sync=='cho_sync'" decoration-danger="trang_thai_sync=='loi'">
+                <field name="ngay_phieu"/>
+                <field name="id_phieu"/>
+                <field name="ma_hang"/>
+                <field name="ten_hang"/>
+                <field name="so_luong"/>
+                <field name="tong_trong_luong"/>
+                <field name="tong_tien_ban" sum="Total"/>
+                <field name="trang_thai_sync"/>
+                <field name="ngay_sync"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View for Doanh Thu Ban Hang -->
+    <record id="view_btmh_doanh_thu_ban_hang_form" model="ir.ui.view">
+        <field name="name">btmh.doanh_thu.ban_hang.form</field>
+        <field name="model">btmh.doanh_thu.ban_hang</field>
+        <field name="arch" type="xml">
+            <form string="Doanh Thu Bán Hàng BTMH">
+                <header>
+                    <button name="action_sync_to_odoo" string="Đồng Bộ Lên Odoo" type="object" 
+                            class="oe_highlight" attrs="{'invisible': [('trang_thai_sync', '=', 'da_sync')]}"/>
+                    <field name="trang_thai_sync" widget="statusbar" statusbar_visible="nhap,cho_sync,da_sync"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" name="action_view_odoo_invoice" class="oe_stat_button" icon="fa-file-text-o"
+                                attrs="{'invisible': [('hoa_don_odoo_id', '=', False)]}">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Hóa Đơn</span>
+                                <span class="o_stat_text">Odoo</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <group>
+                        <group name="phieu_info" string="Thông Tin Phiếu">
+                            <field name="id_phieu" readonly="1"/>
+                            <field name="ngay_phieu"/>
+                            <field name="stt"/>
+                            <field name="ngay_sync" readonly="1" attrs="{'invisible': [('ngay_sync', '=', False)]}"/>
+                        </group>
+                        <group name="sync_info" string="Trạng Thái Đồng Bộ">
+                            <field name="trang_thai_sync" readonly="1"/>
+                            <field name="loi_sync" readonly="1" attrs="{'invisible': [('loi_sync', '=', False)]}"/>
+                            <field name="hoa_don_odoo_id" readonly="1" attrs="{'invisible': [('hoa_don_odoo_id', '=', False)]}"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Thông Tin Sản Phẩm" name="product_info">
+                            <group>
+                                <group name="product_basic">
+                                    <field name="ten_nhom_san_pham"/>
+                                    <field name="ten_dong_sp"/>
+                                    <field name="nhom_hang"/>
+                                    <field name="ma_hang"/>
+                                    <field name="ten_hang"/>
+                                </group>
+                                <group name="product_details">
+                                    <field name="ham_luong_vang"/>
+                                    <field name="don_vi_tinh"/>
+                                    <field name="so_luong"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Trọng Lượng" name="weight_info">
+                            <group>
+                                <group name="weight_basic">
+                                    <field name="tong_trong_luong"/>
+                                    <field name="trong_luong_vang_bac"/>
+                                    <field name="trong_luong_da"/>
+                                </group>
+                                <group name="weight_details">
+                                    <field name="ty_gia_vang"/>
+                                    <field name="ty_gia_ngoai_te"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Giá Cả" name="price_info">
+                            <group>
+                                <group name="price_cong">
+                                    <field name="tien_cong_ban"/>
+                                    <field name="tien_cong_ban_nt"/>
+                                    <field name="tien_cong_mua"/>
+                                    <field name="tien_cong_mua_nt"/>
+                                </group>
+                                <group name="price_da">
+                                    <field name="tien_da_ban"/>
+                                    <field name="tien_da_ban_nt"/>
+                                    <field name="tien_da_mua"/>
+                                    <field name="tien_da_mua_nt"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group name="total_price">
+                                    <field name="tong_tien_ban"/>
+                                    <field name="tong_tien_ban_nt"/>
+                                    <field name="tong_tien_mua"/>
+                                    <field name="tong_tien_mua_nt"/>
+                                </group>
+                                <group name="final_price">
+                                    <field name="thanh_tien"/>
+                                    <field name="thanh_tien_nt"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Khách Hàng" name="customer_info">
+                            <group>
+                                <field name="ma_khach"/>
+                                <field name="ten_khach"/>
+                                <field name="khach_hang_odoo_id" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_btmh_doanh_thu_ban_hang_search" model="ir.ui.view">
+        <field name="name">btmh.doanh_thu.ban_hang.search</field>
+        <field name="model">btmh.doanh_thu.ban_hang</field>
+        <field name="arch" type="xml">
+            <search string="Tìm Kiếm Doanh Thu Bán Hàng">
+                <field name="id_phieu"/>
+                <field name="ma_hang"/>
+                <field name="ten_hang"/>
+                <field name="ma_khach"/>
+                <field name="ten_khach"/>
+                <separator/>
+                <filter name="chua_sync" string="Chưa Đồng Bộ" domain="[('trang_thai_sync', '!=', 'da_sync')]"/>
+                <filter name="da_sync" string="Đã Đồng Bộ" domain="[('trang_thai_sync', '=', 'da_sync')]"/>
+                <filter name="co_loi" string="Có Lỗi" domain="[('trang_thai_sync', '=', 'loi')]"/>
+                <separator/>
+                <filter name="today" string="Hôm Nay" domain="[('ngay_phieu', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="this_week" string="Tuần Này" domain="[('ngay_phieu', '>=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter name="this_month" string="Tháng Này" domain="[('ngay_phieu', '>=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_date" string="Ngày" context="{'group_by': 'ngay_phieu'}"/>
+                    <filter name="group_by_product_group" string="Nhóm SP" context="{'group_by': 'ten_nhom_san_pham'}"/>
+                    <filter name="group_by_status" string="Trạng Thái" context="{'group_by': 'trang_thai_sync'}"/>
+                    <filter name="group_by_customer" string="Khách Hàng" context="{'group_by': 'ma_khach'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_btmh_doanh_thu_ban_hang" model="ir.actions.act_window">
+        <field name="name">Doanh Thu Bán Hàng BTMH</field>
+        <field name="res_model">btmh.doanh_thu.ban_hang</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_btmh_doanh_thu_ban_hang_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Tạo dữ liệu doanh thu bán hàng từ BTMH
+            </p>
+            <p>
+                Dữ liệu doanh thu bán hàng từ hệ thống BTMH POS sẽ được đồng bộ vào đây.
+            </p>
+        </field>
+    </record>
+</odoo>

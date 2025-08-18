@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Main Menu -->
+        <menuitem id="menu_btmh_integration_root" 
+                  name="BTMH Integration" 
+                  sequence="90" 
+                  web_icon="btmh_integration,static/description/icon.png"/>
+        
+        <!-- Fabric Sub Menu -->
+        <menuitem id="menu_btmh_fabric" 
+                  name="Microsoft Fabric" 
+                  parent="menu_btmh_integration_root" 
+                  sequence="10"/>
+        
+        <!-- Pipeline Management -->
+        <menuitem id="menu_btmh_fabric_pipelines" 
+                  name="Fabric Pipelines" 
+                  parent="menu_btmh_fabric" 
+                  action="action_btmh_fabric_pipeline" 
+                  sequence="10"/>
+        
+        <!-- Data Management Sub Menu -->
+        <menuitem id="menu_btmh_data" 
+                  name="BTMH Data" 
+                  parent="menu_btmh_integration_root" 
+                  sequence="20"/>
+        
+        <!-- Sales Data -->
+        <menuitem id="menu_btmh_sales_data" 
+                  name="Sales Data" 
+                  parent="menu_btmh_data" 
+                  action="action_btmh_sales_data" 
+                  sequence="10"/>
+        
+        <!-- Payment Data -->
+        <menuitem id="menu_btmh_payment_data" 
+                  name="Payment Data" 
+                  parent="menu_btmh_data" 
+                  action="action_btmh_payment_data" 
+                  sequence="20"/>
+        
+        <!-- Deposit Data -->
+        <menuitem id="menu_btmh_deposit_data" 
+                  name="Deposit Data" 
+                  parent="menu_btmh_data" 
+                  action="action_btmh_deposit_data" 
+                  sequence="30"/>
+        
+        <!-- Sync Logs -->
+        <menuitem id="menu_btmh_sync_logs" 
+                  name="Sync Logs" 
+                  parent="menu_btmh_integration_root" 
+                  action="action_btmh_sync_log" 
+                  sequence="99"/>
+    </data>
+</odoo>
