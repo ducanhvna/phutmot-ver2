@@ -11,7 +11,7 @@ services:
       - POSTGRES_DB=postgres
     restart: always
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     # Remove port exposure for security
     expose:
       - "5432"
