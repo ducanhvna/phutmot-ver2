@@ -1,0 +1,14 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+# New Vietnamese Models
+access_btmh_doanh_thu_ban_hang_user,btmh.doanh_thu.ban_hang.user,model_btmh_doanh_thu_ban_hang,base.group_user,1,1,1,0
+access_btmh_doanh_thu_ban_hang_manager,btmh.doanh_thu.ban_hang.manager,model_btmh_doanh_thu_ban_hang,base.group_system,1,1,1,1
+
+access_btmh_chung_tu_thanh_toan_user,btmh.chung_tu.thanh_toan.user,model_btmh_chung_tu_thanh_toan,base.group_user,1,1,1,0
+access_btmh_chung_tu_thanh_toan_manager,btmh.chung_tu.thanh_toan.manager,model_btmh_chung_tu_thanh_toan,base.group_system,1,1,1,1
+
+access_btmh_dat_coc_user,btmh.dat_coc.user,model_btmh_dat_coc,base.group_user,1,1,1,0
+access_btmh_dat_coc_manager,btmh.dat_coc.manager,model_btmh_dat_coc,base.group_system,1,1,1,1
+
+access_btmh_du_dau_ngay_user,btmh.du_dau_ngay.user,model_btmh_du_dau_ngay,base.group_user,1,1,1,0
+access_btmh_du_dau_ngay_manager,btmh.du_dau_ngay.manager,model_btmh_du_dau_ngay,base.group_system,1,1,1,1
