@@ -1,21 +1,23 @@
-FROM python:3.11-slim-bullseye
+FROM python:3.11-slim
 
 WORKDIR /app
-
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Cài các thư viện hệ thống cần thiết cho pyodbc + SQL Server
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends netcat-openbsd curl gnupg2 unixodbc-dev gcc g++
-#     curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
-#     curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
-#     apt-get update && \
-#     (dpkg --print-architecture | grep -q amd64 && ACCEPT_EULA=Y apt-get install -y msodbcsql17 || echo "Skipping msodbcsql17 install: not amd64 architecture; ODBC Driver 17 for SQL Server will not be available.")
-
 COPY . .
 
-COPY entrypoint.sh .
-RUN chmod +x ./entrypoint.sh
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-ENTRYPOINT ["./entrypoint.sh"]
+
+# install system dependencies
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y libzbar0
+
+# install python dependencies
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
+RUN python manage.py makemigrations
+RUN python manage.py makemigrations users customers
+RUN python manage.py collectstatic --noinput
+# Entrypoint sẽ được cấu hình trong docker-compose để chờ Postgres và migrate
+# CMD sẽ được override bởi docker-compose
+

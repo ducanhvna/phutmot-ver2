@@ -1,6 +1,0 @@
-ID: 11
-Tên: Doris Cole
-Email: doris.cole31@example.com
-Điện thoại: (555)-331-5378
-Chức vụ: Consultant
-Phòng ban: [7, 'Management / Professional Services']

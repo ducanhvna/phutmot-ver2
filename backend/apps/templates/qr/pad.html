@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Pad</title></head>
+<body>
+  <h3>Pad</h3>
+  <label>Pad ID: <input id="padId" value="pad-1" /></label>
+  <button id="joinBtn">Join</button>
+  <button id="leaveBtn">Leave</button>
+  <div id="log"></div>
+
+  <script>
+    const padIdInput = document.getElementById('padId');
+    const joinBtn = document.getElementById('joinBtn');
+    const leaveBtn = document.getElementById('leaveBtn');
+    const log = document.getElementById('log');
+
+    const proto = (location.protocol === 'https:') ? 'wss:' : 'ws:';
+    const wsUrl = proto + '//' + location.host + '/ws/pad/';
+    const socket = new WebSocket(wsUrl);
+
+    function append(msg) {
+      const d = document.createElement('div');
+      d.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+      log.prepend(d);
+    }
+
+    socket.addEventListener('open', () => append('socket open'));
+    socket.addEventListener('message', ev => {
+      try {
+        const data = JSON.parse(ev.data);
+        if (data.type === 'qr.received') {
+          append('QR received: ' + data.qr);
+          // Optionally fetch details: fetch('/api/qr-info/?q=' + encodeURIComponent(data.qr)) ...
+        } else append(JSON.stringify(data));
+      } catch (e) { console.error(e); }
+    });
+
+    joinBtn.addEventListener('click', () => {
+      const pid = padIdInput.value.trim();
+      if (!pid) return alert('Type pad id');
+      socket.send(JSON.stringify({ type: 'join', pad_id: pid }));
+    });
+    leaveBtn.addEventListener('click', () => {
+      const pid = padIdInput.value.trim();
+      socket.send(JSON.stringify({ type: 'leave', pad_id: pid }));
+    });
+  </script>
+</body>
+</html>

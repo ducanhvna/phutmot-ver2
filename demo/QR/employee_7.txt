@@ -1,6 +1,0 @@
-ID: 7
-Tên: Audrey Peterson
-Email: audrey.peterson25@example.com
-Điện thoại: (555)-276-7903
-Chức vụ: Consultant
-Phòng ban: [7, 'Management / Professional Services']

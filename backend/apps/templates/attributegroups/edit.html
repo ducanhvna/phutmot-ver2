@@ -1,0 +1,43 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h2 class="h4 mb-0">{{ page_title }}</h2>
+    <a href="{% url 'product:attributegroups_index' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-list me-2"></i> Quay lại danh sách
+    </a>
+</div>
+
+{% if messages %}
+    <div class="mt-3">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="card mt-3">
+    <div class="card-body">
+        <form method="post" action="">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="id_name" class="form-label">Tên (Code)</label>
+                <input type="text" class="form-control" id="id_name" name="name" value="{{ attributegroup.name|default:"" }}" required>
+                <div class="form-text">Tên duy nhất, không có dấu, không khoảng trắng (ví dụ: `metal_type`).</div>
+            </div>
+            <div class="mb-3">
+                <label for="id_display_name" class="form-label">Tên Hiển thị</label>
+                <input type="text" class="form-control" id="id_display_name" name="display_name" value="{{ attributegroup.display_name|default:"" }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="id_description" class="form-label">Mô tả</label>
+                <textarea class="form-control" id="id_description" name="description" rows="3">{{ attributegroup.description|default:"" }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Lưu</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

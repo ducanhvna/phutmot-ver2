@@ -1,6 +1,0 @@
-ID: 21
-Tên: Roger Scott
-Email: Roger123@example.com
-Điện thoại: +3282823500
-Chức vụ: Manager
-Phòng ban: False

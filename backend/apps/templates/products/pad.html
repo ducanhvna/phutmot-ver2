@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>QR Pad Display</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 12px; }
+      #status { margin-bottom: 8px; color: #555; }
+      #display { font-size: 1.2rem; padding: 8px; border: 1px solid #ddd; background:#fafafa; }
+      .meta { font-size: 0.85rem; color:#777; margin-top:8px; }
+    </style>
+</head>
+<body>
+    <h2>QR Data:</h2>
+    <div id="status">Connecting...</div>
+    <div id="display">Đang chờ...</div>
+    <div class="meta" id="meta"></div>
+
+    <script>
+      (function(){
+        // Optional override: define FORCE_WS_PORT above this script in the template to force a port.
+        const forcePort = (typeof FORCE_WS_PORT !== 'undefined') ? FORCE_WS_PORT : null;
+
+        // choose ws or wss depending on page protocol
+        const proto = (location.protocol === 'https:') ? 'wss:' : 'ws:';
+        // use forced port if provided; otherwise use location.host (hostname:port)
+        const hostPart = forcePort ? (location.hostname + ':' + forcePort) : location.host;
+        const wsUrl = `${proto}//${hostPart}/ws/qr/`; // ensure path matches your ASGI routing
+
+        const statusEl = document.getElementById('status');
+        const displayEl = document.getElementById('display');
+        const metaEl = document.getElementById('meta');
+
+        metaEl.textContent = `Attempting WebSocket → ${wsUrl}`;
+
+        let socket;
+        let reconnectInterval = 2000; // ms
+        let reconnectTimer = null;
+        let manualClose = false;
+
+        function connect() {
+          console.log('[ws] connecting to', wsUrl);
+          statusEl.textContent = 'Connecting to ' + wsUrl;
+          socket = new WebSocket(wsUrl);
+          window.qrPadSocket = socket; // expose for debug
+
+          socket.addEventListener('open', () => {
+            console.log('[ws] open');
+            statusEl.textContent = 'Connected';
+            reconnectInterval = 2000; // reset backoff
+            if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+          });
+
+          socket.addEventListener('message', (e) => {
+            try {
+              const data = JSON.parse(e.data);
+              // show useful fields if present; fallback show raw
+              const msg = data.message ?? data.qr ?? JSON.stringify(data);
+              displayEl.innerText = msg;
+              console.log('[ws] message', data);
+            } catch (err) {
+              console.warn('[ws] invalid json', e.data);
+              displayEl.innerText = e.data;
+            }
+          });
+
+          socket.addEventListener('close', (ev) => {
+            console.warn('[ws] closed', ev);
+            statusEl.textContent = 'Disconnected';
+            if (!manualClose) scheduleReconnect();
+          });
+
+          socket.addEventListener('error', (err) => {
+            console.error('[ws] error', err);
+            statusEl.textContent = 'WebSocket error';
+            socket.close();
+          });
+        }
+
+        function scheduleReconnect() {
+          if (reconnectTimer) return;
+          reconnectInterval = Math.min(reconnectInterval * 1.5, 30000); // exponential backoff cap
+          metaEl.textContent = `Reconnecting in ${Math.round(reconnectInterval/1000)}s... (target: ${wsUrl})`;
+          reconnectTimer = setTimeout(() => {
+            reconnectTimer = null;
+            metaEl.textContent = `Attempting reconnect to ${wsUrl}...`;
+            connect();
+          }, reconnectInterval);
+        }
+
+        // Start initial connect
+        connect();
+
+        // Optional: allow manual disconnect/connect from console
+        window.qrPadReconnect = function() {
+          manualClose = false;
+          if (socket && socket.readyState === WebSocket.OPEN) socket.close();
+          else connect();
+        };
+        window.qrPadClose = function() {
+          manualClose = true;
+          if (socket) socket.close();
+        };
+
+        // Debug info
+        console.log('[ws] wsUrl', wsUrl, 'forcePort', forcePort);
+      })();
+    </script>
+</body>
+</html>

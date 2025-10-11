@@ -1,6 +1,0 @@
-ID: 54
-Tên: Jessica Johnson
-Email: jessica.johnson45@example.com
-Điện thoại: (535)-495-4164
-Chức vụ: Site Manager
-Phòng ban: False

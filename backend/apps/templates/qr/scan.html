@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>Scanner (fix camera start)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;padding:12px;max-width:900px;margin:auto}
+    .wrap{position:relative;display:inline-block}
+    video{width:100%;max-width:720px;background:#000;display:block}
+    canvas#overlay{position:absolute;left:0;top:0;pointer-events:none}
+    #controls{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    button{padding:8px 12px;cursor:pointer}
+    #log{margin-top:12px;padding:10px;border:1px solid #ddd;background:#fafafa;min-height:72px;white-space:pre-wrap}
+    #meta{color:#666;margin-bottom:6px}
+    #result{font-weight:700;margin-top:8px;color:#0a7}
+  </style>
+
+  <!-- ZXing UMD bundle -->
+  <script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
+</head>
+<body>
+  <h1>Scanner</h1>
+  <div id="meta">Sẵn sàng — nhấn Bắt đầu để mở camera.</div>
+
+  <div class="wrap">
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="overlay"></canvas>
+  </div>
+
+  <div id="controls">
+    <label>Pad ID:
+      <input id="padId" placeholder="pad-1" style="padding:6px" />
+    </label>
+
+    <button id="startBtn">Bắt đầu</button>
+    <button id="stopBtn" disabled>Dừng</button>
+    <button id="pauseBtn" disabled>Tạm dừng</button>
+    <button id="resumeBtn" disabled>Tiếp tục</button>
+  </div>
+
+  <div id="result">Kết quả: <span id="resultValue">—</span></div>
+  <div id="log">Log: chờ thao tác</div>
+
+<script>
+/* SETTINGS */
+const WEBSOCKET_URL_FROM_CONTEXT = "{{ websocket_url|default:'' }}";
+const FORCE_WS_PORT = undefined;
+const AUTO_STOP_AFTER_SCAN = false;
+const DEBOUNCE_MS = 1200;
+
+/* DOM */
+const video = document.getElementById('video');
+const overlay = document.getElementById('overlay');
+const octx = overlay.getContext('2d');
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+const resumeBtn = document.getElementById('resumeBtn');
+const logEl = document.getElementById('log');
+const metaEl = document.getElementById('meta');
+const resultValueEl = document.getElementById('resultValue');
+const padInput = document.getElementById('padId');
+
+let codeReader = null;
+let selectedDeviceId = null;
+let localStream = null;
+let scanning = false;
+let paused = false;
+let ws = null;
+let reconnectTimer = null;
+let reconnectDelay = 1000;
+let lastValue = null;
+let lastAt = 0;
+
+/* helpers */
+function log(...args){ console.log(...args); const t = new Date().toLocaleTimeString(); logEl.textContent = `[${t}] ` + args.map(a => (typeof a==='object'?JSON.stringify(a):a)).join(' '); }
+function info(msg){ metaEl.textContent = msg; }
+function setResult(v){ resultValueEl.textContent = v; }
+
+function buildWsUrl(){
+  if (WEBSOCKET_URL_FROM_CONTEXT && WEBSOCKET_URL_FROM_CONTEXT.trim()) return WEBSOCKET_URL_FROM_CONTEXT;
+  const proto = (location.protocol === 'https:') ? 'wss:' : 'ws:';
+  const host = (typeof FORCE_WS_PORT !== 'undefined' && FORCE_WS_PORT) ? (location.hostname + ':' + FORCE_WS_PORT) : location.host;
+  return `${proto}//${host}/ws/qr/`;
+}
+
+/* WebSocket (unchanged) */
+function connectWs(){
+  const url = buildWsUrl();
+  info('Kết nối WS → ' + url);
+  try {
+    ws = new WebSocket(url);
+  } catch (e) {
+    log('WS create error', e);
+    scheduleReconnect();
+    return;
+  }
+  ws.onopen = () => { log('[ws] open'); info('WebSocket đã kết nối'); reconnectDelay = 1000; };
+  ws.onmessage = (ev) => { log('[ws] msg', ev.data); };
+  ws.onclose = (ev) => { log('[ws] closed', ev); info('WS đóng — sẽ thử lại'); scheduleReconnect(); };
+  ws.onerror = (e) => { log('[ws] error', e); try{ws.close()}catch{} };
+}
+function scheduleReconnect(){
+  if (reconnectTimer) return;
+  reconnectTimer = setTimeout(()=>{ reconnectTimer = null; reconnectDelay = Math.min(reconnectDelay*1.5,30000); connectWs(); }, reconnectDelay);
+}
+function sendPayload(value){
+  const pad = padInput.value.trim();
+  const payload = { message: value };
+  if (pad) payload.pad_id = pad;
+  if (ws && ws.readyState === WebSocket.OPEN){
+    ws.send(JSON.stringify(payload));
+    log('Đã gửi qua WS:', payload);
+  } else {
+    log('WS không sẵn sàng — dùng HTTP fallback');
+    const url = '/scan/?data=' + encodeURIComponent(value) + (pad ? '&pad_id=' + encodeURIComponent(pad) : '');
+    fetch(url, { method:'GET', credentials:'same-origin' })
+      .then(r=>r.json().catch(()=>{})).then(j=>log('HTTP fallback resp', j)).catch(e=>log('HTTP fallback err', e));
+  }
+}
+
+/* beep & overlay helpers */
+function beep(){ try{ const ac = new (window.AudioContext||window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(); o.type='sine'; o.frequency.value=1000; o.connect(g); g.connect(ac.destination); g.gain.value=0.0001; o.start(); g.gain.exponentialRampToValueAtTime(0.12, ac.currentTime+0.01); g.gain.exponentialRampToValueAtTime(0.00001, ac.currentTime+0.2); setTimeout(()=>{ o.stop(); try{ac.close()}catch{} }, 250);}catch(e){console.warn('beep err', e);} }
+function clearOverlay(){ octx.clearRect(0,0,overlay.width,overlay.height); }
+function drawPolygon(points,color='#00FF00',width=4){ if(!points||!points.length)return; octx.strokeStyle=color; octx.lineWidth=width; octx.beginPath(); octx.moveTo(points[0].x,points[0].y); for(let i=1;i<points.length;i++) octx.lineTo(points[i].x,points[i].y); octx.closePath(); octx.stroke(); }
+function syncOverlaySize(){ const rect = video.getBoundingClientRect(); overlay.style.width = rect.width + 'px'; overlay.style.height = rect.height + 'px'; overlay.width = rect.width; overlay.height = rect.height; }
+
+async function ensurePermissionThenStart(){
+  // Try to get permission first — with reasonable constraints
+  try {
+    info('Yêu cầu quyền camera (prompt nếu cần)...');
+    const preStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    log('getUserMedia: OK (permission granted)');
+    // show preview briefly (optional) — attach to video so user sees camera opened
+    video.srcObject = preStream;
+    await video.play().catch(()=>{});
+    // keep for 300ms then stop tracks to free device for ZXing
+    setTimeout(() => {
+      try {
+        preStream.getTracks().forEach(t => t.stop());
+        video.srcObject = null;
+        log('Pre-permission stream stopped to handover to ZXing.');
+      } catch(e) { log('Error stopping preStream', e); }
+      // Now call startScanner which will call decodeFromVideoDevice (ZXing)
+      startScannerContinue();
+    }, 300);
+  } catch (err) {
+    console.error('getUserMedia failed', err);
+    if (err.name === 'NotAllowedError' || err.name === 'SecurityError') {
+      info('Quyền truy cập camera bị từ chối. Vui lòng cho phép camera cho trang này (site settings).');
+      log('ERROR: NotAllowedError - user denied camera access.');
+    } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+      info('Không tìm thấy camera trên thiết bị này.');
+      log('ERROR: NotFoundError - no camera found.');
+    } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+      info('Camera có vẻ đang bị chiếm (bởi ứng dụng khác). Hãy đóng ứng dụng khác (Zoom/Teams) và thử lại.');
+      log('ERROR: NotReadableError - camera busy.');
+    } else if (err.name === 'OverconstrainedError') {
+      info('Không thể khớp yêu cầu camera (constraints). Thử giảm yêu cầu độ phân giải.');
+      log('ERROR: OverconstrainedError', err);
+    } else {
+      info('Lỗi khi mở camera: ' + (err.message || err.name));
+      log('getUserMedia unknown error', err);
+    }
+    startBtn.disabled = false;
+  }
+}
+
+/* startScannerContinue: called after permission flow */
+async function startScannerContinue(){
+  if (scanning) return;
+  try {
+    info('Khởi động ZXing (sẽ tự mở camera) ...');
+    codeReader = codeReader || new ZXing.BrowserMultiFormatReader();
+
+    // enumerate devices to choose preferred if available (optional)
+    let devices = [];
+    try {
+      const all = await navigator.mediaDevices.enumerateDevices();
+      devices = all.filter(d => d.kind === 'videoinput');
+      log('enumerateDevices -> video inputs:', devices);
+    } catch (e) {
+      log('enumerateDevices error:', e);
+    }
+
+    if (devices && devices.length > 0) {
+      let preferred = devices.find(d => /back|rear|environment/i.test(d.label));
+      if (!preferred) preferred = devices[0];
+      selectedDeviceId = preferred.deviceId;
+      log('Using deviceId:', selectedDeviceId, 'label:', preferred.label);
+    } else {
+      selectedDeviceId = undefined;
+      log('No video input devices enumerated; letting browser choose default.');
+    }
+
+    // start decodeFromVideoDevice: ZXing will open camera itself
+    codeReader.decodeFromVideoDevice(selectedDeviceId, video, (result, err) => {
+      clearOverlay();
+      if (result) {
+        let text = null;
+        try { text = result.getText ? result.getText() : (result.text || null); } catch(e){ text = result.text || null; }
+        // draw result points
+        try {
+          const pts = result.getResultPoints ? result.getResultPoints() : (result.resultPoints || null);
+          if (pts && pts.length) {
+            syncOverlaySize();
+            const scaleX = overlay.width / video.videoWidth;
+            const scaleY = overlay.height / video.videoHeight;
+            const poly = pts.map(p => {
+              const x = (p.getX ? p.getX() : (p.x !== undefined ? p.x : 0)) * scaleX;
+              const y = (p.getY ? p.getY() : (p.y !== undefined ? p.y : 0)) * scaleY;
+              return { x, y };
+            });
+            drawPolygon(poly);
+          }
+        } catch(e){ console.warn('Overlay draw error', e); }
+        if (text) {
+          const now = Date.now();
+          if (text !== lastValue || (now - lastAt) > DEBOUNCE_MS) {
+            lastValue = text; lastAt = now;
+            setResult(text);
+            log('Decoded:', text);
+            beep();
+            sendPayload(text);
+            if (AUTO_STOP_AFTER_SCAN) setTimeout(()=>{ stopScanner(); }, 200);
+          } else {
+            log('Duplicate ignored');
+          }
+        }
+      } else if (err) {
+        // ZXing reports many non-fatal errors; don't spam logs
+        // console.debug('ZXing err', err);
+      }
+    });
+
+    // give ZXing time to set up stream
+    setTimeout(()=>{ try{ localStream = video.srcObject; }catch(e){} }, 300);
+
+    scanning = true;
+    paused = false;
+    startBtn.disabled = true; stopBtn.disabled = false; pauseBtn.disabled = false; resumeBtn.disabled = true;
+    connectWs();
+    info('Đang quét — ZXing active');
+    syncOverlaySize();
+  } catch (e) {
+    log('Start scanner error:', e);
+    info('Lỗi khi mở camera/scan: ' + (e && e.message ? e.message : e));
+    startBtn.disabled = false;
+  }
+}
+
+/* stop/pause/resume */
+async function stopScanner(){
+  if (!codeReader) return;
+  try { await codeReader.reset(); } catch(e){ console.warn('codeReader.reset err', e); }
+  try {
+    if (localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream = null; }
+    else if (video && video.srcObject){ try{ video.srcObject.getTracks().forEach(t=>t.stop()); }catch(e){}; video.srcObject = null; }
+  }catch(e){}
+  scanning = false; paused = false;
+  startBtn.disabled = false; stopBtn.disabled = true; pauseBtn.disabled = true; resumeBtn.disabled = true;
+  info('Đã dừng camera & scanner'); clearOverlay();
+}
+
+async function pauseScanner(){
+  if (!codeReader) return;
+  try {
+    if (codeReader.stopContinuousDecode) await codeReader.stopContinuousDecode();
+    else if (video.srcObject) video.srcObject.getTracks().forEach(t=>t.enabled=false);
+  } catch(e){ console.warn('pause err', e); }
+  paused = true; pauseBtn.disabled = true; resumeBtn.disabled = false; info('Tạm dừng quét');
+}
+
+async function resumeScanner(){
+  if (!codeReader) return;
+  try { if (video.srcObject) video.srcObject.getTracks().forEach(t=>t.enabled=true); if (!scanning) await ensurePermissionThenStart(); } catch(e){ console.warn('resume err', e); }
+  paused = false; pauseBtn.disabled = false; resumeBtn.disabled = true; info('Tiếp tục quét');
+}
+
+/* UI wiring */
+startBtn.addEventListener('click', async () => {
+  startBtn.disabled = true;
+  await ensurePermissionThenStart();
+});
+stopBtn.addEventListener('click', stopScanner);
+pauseBtn.addEventListener('click', pauseScanner);
+resumeBtn.addEventListener('click', resumeScanner);
+
+window.addEventListener('resize', syncOverlaySize);
+window.addEventListener('load', ()=>{ info('Sẵn sàng. Nhấn Bắt đầu để quét.'); });
+window.addEventListener('beforeunload', async ()=>{ try{ await stopScanner(); }catch{}; try{ if (ws) ws.close(); }catch{}; });
+
+video.addEventListener('loadedmetadata', syncOverlaySize);
+</script>
+</body>
+</html>

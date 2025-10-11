@@ -1,6 +1,0 @@
-ID: 13
-Tên: Toni Jimenez
-Email: toni.jimenez23@example.com
-Điện thoại: (555)-707-8451
-Chức vụ: Consultant
-Phòng ban: [7, 'Management / Professional Services']

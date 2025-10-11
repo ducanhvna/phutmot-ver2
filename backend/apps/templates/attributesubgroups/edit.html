@@ -1,0 +1,61 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+  <div class="page-header d-flex justify-content-between align-items-center">
+    <h2 class="h4 mb-0">{{ page_title }}</h2>
+    <a href="{% url 'product:attributesubgroups_index' group.id %}" class="btn btn-sm btn-outline-secondary">
+      <i class="fas fa-list me-2"></i> Quay lại danh sách
+    </a>
+  </div>
+
+  {% if messages %}
+    <div class="mt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="card mt-3">
+    <div class="card-body">
+      <form method="post" action="">
+        {% csrf_token %}
+        {# luôn có group_id vì luồng của bạn đi từ group -> subgroup #}
+        <input type="hidden" name="group_id" value="{{ group_id }}" />
+        <div class="mb-3">
+          <label class="form-label">Nhóm cha</label>
+          <div class="form-control-plaintext">
+            {{ group.display_name|default:group.name }}
+            {% comment %} <small class="text-muted"> (ID: {{ group.id }})</small> {% endcomment %}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="id_name" class="form-label">Tên (Code)</label>
+          <input type="text" class="form-control" id="id_name" name="name"
+                 value="{{ attributesubgroup.name|default:'' }}" required />
+          <div class="form-text">Tên duy nhất, không có dấu, không khoảng trắng (ví dụ: <code>material_info</code>).</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="id_display_name" class="form-label">Tên Hiển thị</label>
+          <input type="text" class="form-control" id="id_display_name" name="display_name"
+                 value="{{ attributesubgroup.display_name|default:'' }}" required />
+        </div>
+
+        <div class="mb-3">
+          <label for="id_description" class="form-label">Mô tả</label>
+          <textarea class="form-control" id="id_description" name="description" rows="3">{{ attributesubgroup.description|default:'' }}</textarea>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Lưu</button>
+          <a href="{% url 'product:attributesubgroups_index' group.id %}" class="btn btn-outline-secondary">Hủy</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

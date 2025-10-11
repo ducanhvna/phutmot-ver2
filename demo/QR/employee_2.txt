@@ -1,6 +1,0 @@
-ID: 2
-Tên: Jeffrey Kelly
-Email: jeffrey.kelly72@example.com
-Điện thoại: (555)-264-7362
-Chức vụ: Marketing and Community Manager
-Phòng ban: [3, 'Management / Sales']

@@ -1,6 +1,0 @@
-ID: 4
-Tên: Ronnie Hart
-Email: ronnie.hart87@example.com
-Điện thoại: (555)-310-7863
-Chức vụ: Team Leader
-Phòng ban: [4, 'Management / Research & Development']

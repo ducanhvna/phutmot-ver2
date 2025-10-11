@@ -1,6 +1,0 @@
-ID: 18
-Tên: Paul Williams
-Email: paul.williams59@example.com
-Điện thoại: (555)-262-1607
-Chức vụ: Experienced Developer
-Phòng ban: [6, 'Management / Research & Development / R&D USA / Long Term Projects']

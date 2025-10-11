@@ -1,0 +1,100 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+  <div class="page-header d-flex justify-content-between align-items-center">
+    <h2 class="h4 mb-0">Product</h2>
+    <a href="{% url 'product:products_edit' %}" class="btn btn-primary">Thêm sản phẩm</a>
+  </div>
+
+  <div class="card mt-3">
+    <div class="card-body p-2">
+      <div class="table-responsive" style="overflow:auto;">
+        <table class="table table-bordered table-hover" style="table-layout: auto; width: max-content; white-space: normal;">
+          <thead class="table-light">
+            <tr>
+              {# Cột Hành động (vẫn rowspan 3 cho header) #}
+              <th rowspan="3" style="vertical-align: middle; background:#f8f9fa; text-align:center;">Hành động</th>
+
+              {# Header: groups (mỗi group colspan = total attributes) #}
+              {% for g in groups_data %}
+                <th style="vertical-align: middle; background:#f8f9fa; text-align:center;" colspan="{{ g.total_cols }}">
+                  {{ g.obj.display_name|default:g.obj.name }}
+                </th>
+              {% endfor %}
+            </tr>
+
+            <tr>
+              {# Subgroups #}
+              {% for g in groups_data %}
+                {% for s in g.subgroups %}
+                  <th style="vertical-align: middle; background:#f1f3f5; text-align:center;" colspan="{{ s.attributes|length }}">
+                    {% if s.obj %}
+                      {{ s.obj.display_name|default:s.obj.name }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  </th>
+                {% endfor %}
+              {% endfor %}
+            </tr>
+
+            <tr>
+              {# Attributes header #}
+              {% for attr in flat_attributes %}
+                <th style="vertical-align: middle; text-align:left; min-width:220px; padding:12px;">
+                  {{ attr.name }}
+                </th>
+              {% endfor %}
+            </tr>
+          </thead>
+
+          <tbody>
+            {# For each product, render rowspan block of rows #}
+            {% for p in products_data %}
+              {% for row_index in p.rows|length|make_list %}
+                {% comment %}
+                  We cannot iterate numeric range directly easily; instead iterate over rows list.
+                {% endcomment %}
+              {% endfor %}
+
+              {% for row in p.rows %}
+                <tr>
+                  {% if forloop.first %}
+                    <td rowspan="{{ p.rowspan }}" style="vertical-align: top; min-width:220px; padding:12px;">
+                      <div class="d-flex flex-column">
+                        <div class="mb-2">
+                          <a href="{% url 'product:products_edit' p.product.id %}" class="btn btn-sm btn-outline-warning">Edit</a>
+                          <a href="{% url 'product:products_delete' p.product.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                        </div>
+                      </div>
+                    </td>
+                  {% endif %}
+
+                  {# Cells for attributes (row is list aligned with flat_attributes) #}
+                  {% for cell in row %}
+                    <td style="vertical-align: top; min-width:220px; padding:12px; word-break: break-word; white-space: normal;">
+                      {% if cell %}
+                        <div style="white-space: pre-wrap;">{{ cell }}</div>
+                      {% else %}
+                        {# leave blank when empty as requested #}
+                      {% endif %}
+                    </td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    table.table thead th, table.table tbody td {
+      vertical-align: top;
+      white-space: normal;
+      word-break: break-word;
+    }
+    table.table th, table.table td { padding: 12px; }
+  </style>
+{% endblock %}

@@ -1,6 +1,0 @@
-ID: 20
-Tên: Beth Evans
-Email: beth.evans77@example.com
-Điện thoại: (555)-532-3841
-Chức vụ: Experienced Developer
-Phòng ban: [4, 'Management / Research & Development']

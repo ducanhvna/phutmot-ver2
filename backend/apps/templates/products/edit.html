@@ -1,0 +1,64 @@
+{% extends 'layouts/base.html' %}
+{% load my_filters %}
+
+{% block content %}
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h2 class="h4 mb-0">{% if product %}Chỉnh sửa Sản phẩm{% else %}Thêm mới Sản phẩm{% endif %}</h2>
+</div>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="name" class="form-label">Tên sản phẩm</label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ product.name|default:'' }}" required>
+                </div>
+            </div>
+
+            <hr class="my-4">
+            <h4>Thông tin Chi tiết (Attributes)</h4>
+            
+            <div id="attributes-container" class="row">
+                {% for attribute in all_attributes %}
+                <div class="col-md-6 mb-3">
+                    <label for="attr_{{ attribute.name }}" class="form-label">{{ attribute.display_name|default:attribute.name }}</label>
+
+                    {# Lấy an toàn options từ attribute.info['value'] nếu có (sử dụng filter my_filters.get_item) #}
+                    {% with options=attribute.info|get_item:'value' %}
+                        <select class="form-select" id="attr_{{ attribute.name }}" name="attr_{{ attribute.name }}">
+                            {# placeholder: selected nếu product chưa có giá trị cho attribute #}
+                            {% if product and product.info and product.info|get_item:attribute.name %}
+                                <option value="">-- Chọn {{ attribute.name|lower }} --</option>
+                            {% else %}
+                                <option value="" selected>-- Chọn {{ attribute.name|lower }} --</option>
+                            {% endif %}
+
+                            {% if options %}
+                                {% for option in options %}
+                                    <option value="{{ option }}"
+                                        {% if product and product.info and product.info|get_item:attribute.name == option %}
+                                            selected
+                                        {% endif %}>
+                                        {{ option }}
+                                    </option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    {% endwith %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="d-flex justify-content-end mt-4">
+                <a href="{% url 'product:products_index' %}" class="btn btn-secondary me-2">Hủy</a>
+                <button type="submit" class="btn btn-primary">Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

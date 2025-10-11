@@ -1,6 +1,0 @@
-ID: 14
-Tên: Anita Oliver
-Email: anita.oliver32@example.com
-Điện thoại: (555)-497-4804
-Chức vụ: Experienced Developer
-Phòng ban: [5, 'Management / Research & Development / R&D USA']
