@@ -3,6 +3,9 @@ FROM python:3.11-slim
 WORKDIR /app
 COPY . .
 
+# Cấp quyền thực thi cho entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
