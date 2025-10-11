@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  appseed-app:
+  btmh-app:
     container_name: appseed_app
     restart: always
     env_file: .env
@@ -23,7 +23,7 @@ services:
     command: celery -A core worker --loglevel=info
     depends_on:
       - redis
-      - appseed-app
+      - btmh-app
     networks:
       - db_network
       - redis_network
@@ -35,7 +35,7 @@ services:
     command: celery -A core beat --loglevel=info
     depends_on:
       - redis
-      - appseed-app
+      - btmh-app
     networks:
       - db_network
       - redis_network
@@ -73,7 +73,7 @@ services:
     networks:
       - web_network
     depends_on: 
-      - appseed-app
+      - btmh-app
 
   odoo-db:
     image: postgres:17
