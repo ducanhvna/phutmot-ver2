@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_form_view_inherit" model="ir.ui.view">
+        <field name="name">res.config.settings.form.view.inherit</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='languages_setting_container']" position="before">
+                <block title="Currency Rate API Key" name="access_token_for_currency_rate_api">
+                    <setting id="access_token_setting">
+                        <div style="width:100%;">
+                            <label for="access_token"/> <br/>
+                            <field name="access_token" string="API Key"
+                                   password="True" style="width:100%;"/>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>
