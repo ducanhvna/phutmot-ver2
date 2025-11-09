@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'apps.users',  # Enable the inner users (authentication)
     'apps.customers',  # Enable the inner customers (customers)
     'apps.producttemplates',  # Enable the inner producttemplates (producttemplates)
+    'apps.store',  # Enable the inner store (store)
 ]
 
 

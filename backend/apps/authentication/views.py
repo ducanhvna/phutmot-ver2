@@ -28,7 +28,7 @@ def login_view(request):
     if user:
         payload = {
             "sub": username,
-            "exp": datetime.utcnow() + timedelta(hours=1),
+            "exp": datetime.utcnow() + timedelta(hours=12),
             "iat": datetime.utcnow(),
         }
         token = jwt.encode(payload, PRIVATE_KEY, algorithm="RS256")

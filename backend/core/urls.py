@@ -14,6 +14,5 @@ urlpatterns = [
     path("", include("apps.authentication.urls")), # Auth routes - login / register
     path("", include(("apps.producttemplates.urls", "product"), namespace="product")),
     path("", include("apps.home.urls")),             # UI Kits Html files
-    
-
+    path("", include("apps.store.urls")),             # Store routes
 ]
