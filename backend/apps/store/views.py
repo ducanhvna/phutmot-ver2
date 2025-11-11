@@ -188,21 +188,40 @@ class AllRateView(APIView):
 
 
 import pandas as pd
-
 from .data_loader import df_dmH, df_dmQTTG, df_dmVBTG
+import math
+import numpy as np
 
+# Hàm xử lý giá trị float an toàn cho JSON
+def sanitize_json_floats(data):
+    if isinstance(data, dict):
+        return {k: sanitize_json_floats(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [sanitize_json_floats(v) for v in data]
+    elif isinstance(data, float):
+        if math.isnan(data) or math.isinf(data):
+            return None
+        return data
+    elif isinstance(data, np.floating):
+        if np.isnan(data) or np.isinf(data):
+            return None
+        return float(data)
+    else:
+        return data
 
 class PriceCalcView(APIView):
     def get(self, request):
         sku = request.query_params.get("sku")
         if not sku:
-            return Response({"error": "Thiếu mã SKU"}, status=400)
+            return Response({"status": 400, "msg": "Thiếu mã sản phẩm"}, status=400)
 
         try:
-            row = df_dmH[df_dmH['Ma_Hang'] == sku].iloc[0]
-            id_qttg = row['ID_QTTG']
-            qttg = df_dmQTTG[df_dmQTTG['ID'] == id_qttg].iloc[0]
-            ma_qttg = qttg['Ma_QTTG']
+            # Tìm sản phẩm theo SKU
+            row = df_dmH[df_dmH["Ma_Hang"] == sku]
+            if row.empty:
+                return Response({"status": 404, "msg": "Không tìm thấy sản phẩm"}, status=404)
+
+            row = row.iloc[0]
 
             # Gọi API tỷ giá
             url = f"{BASE_URL}/getTyGia"
@@ -213,7 +232,7 @@ class PriceCalcView(APIView):
             res = requests.get(url, headers=headers)
             data = res.json()
 
-            # Lấy tỷ giá bán từ mục "Nhẫn ép vỉ Kim Gia Bảo"
+            # Lấy tỷ giá bán từ "Nhẫn ép vỉ Kim Gia Bảo"
             ty_gia_ban = None
             for item in data.get("data", []):
                 if "Nhẫn ép vỉ Kim Gia Bảo" in item.get("loaiVang", ""):
@@ -221,24 +240,63 @@ class PriceCalcView(APIView):
                     break
 
             if not ty_gia_ban:
-                return Response({"error": "Không tìm thấy tỷ giá Kim Gia Bảo"}, status=500)
+                return Response({"status": 500, "msg": "Không tìm thấy tỷ giá Kim Gia Bảo"}, status=500)
 
-            # Tính giá cho các loại sản phẩm đơn giản
-            TL_KLoai = row['T_Luong']
-            Tien_C_B = row['Gia_Ban5']
-            Tien_Da_B = row['Gia_Ban1']
+            # Tính giá bán = trọng lượng × tỷ giá
+            trong_luong = row.get("T_Luong", 0.0)
+            if pd.isna(trong_luong):
+                trong_luong = 0.0
 
-            if ma_qttg in ['GB-24VD', 'GB-BAC', 'GB-KGB', 'GB-SJC', 'GB-VRTL', 'TTXVV24K-GIABAN']:
-                gia_ban = TL_KLoai * ty_gia_ban + Tien_C_B + Tien_Da_B
-            else:
-                gia_ban = None
+            gia_ban = round(trong_luong * ty_gia_ban, -3)
+            gia_mua = round(trong_luong * ty_gia_ban * 0.98, -3)
+
+            # Trả về dữ liệu theo cấu trúc yêu cầu
+            response_data = {
+                "id": int(row["ID"]),
+                "maSanPham": row["Ma_Hang"],
+                "tenSanPham": row["Ten_Hang"],
+                "maVach": int(row["Ma_Vach"]),
+                "donViTinh": "Chiếc",
+                "tenHang": row.get("Ten_Hang1", "") or "",
+                "maNhom": row.get("Ma_Tong", "") or "",
+                "nguonNhap": "Phòng Cung ứng",
+                "ngayNhap": str(row["Ngay_Nhap"]) if not pd.isna(row["Ngay_Nhap"]) else None,
+                "quyCach": row.get("Qui_Cach", "") or "",
+                "inTrenHoaDon": row["Ten_Hang"],
+                "trongLuongKimLoai": trong_luong,
+                "trongLuongDaChinh": 0.0,
+                "trongLuongDaPhu": 0.0,
+                "trongLuongTem": 0.0,
+                "tienDaBan": 0.0,
+                "tienDaBanUsd": 0.0,
+                "tienCongBan": 0.0,
+                "tienCongBanUsd": 0.0,
+                "giaBan": gia_ban,
+                "nhaCungCap": "CTY",
+                "soLo": "",
+                "baoHanhHanSuDung": None,
+                "tieuChuan": "",
+                "xuatXu": "",
+                "soSeri": "",
+                "kich_co": "",
+                "ma_tong": row.get("Ma_Tong", "") or "",
+                "encodedString": None,
+                "giamua": gia_mua,
+                "ton_kho": 0,
+                "hamLuongKL": "24K",
+                "t_Luong": trong_luong,
+                "mo_Ta1": row.get("Mo_Ta", "") or "",
+                "trongluong": trong_luong
+            }
+
+            # Làm sạch dữ liệu trước khi trả về
+            cleaned_data = sanitize_json_floats(response_data)
 
             return Response({
-                "sku": sku,
-                "Ma_QTTG": ma_qttg,
-                "TyGia_Ban": ty_gia_ban,
-                "Gia_Ban": round(gia_ban, -3) if gia_ban else None
+                "status": 200,
+                "msg": "Successfully",
+                "data": cleaned_data
             })
 
         except Exception as e:
-            return Response({"error": str(e)}, status=500)
+            return Response({"status": 500, "msg": str(e)}, status=500)
