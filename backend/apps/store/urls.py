@@ -3,7 +3,10 @@ from .views import (
     OrderView,
     InventoryCheckView,
     PrintInvoiceView,
-    AttendanceView
+    AttendanceView,
+    RateView,
+    AllRateView,
+    PriceCalcView
 )
 
 urlpatterns = [
@@ -18,4 +21,13 @@ urlpatterns = [
 
     # Ghi nhận điểm danh
     path("api/attendance/", AttendanceView.as_view(), name="attendance"),
+
+    # Lấy tỷ giá sản phẩm
+    path("api/rate/", RateView.as_view(), name="get_rate"),
+
+    # Lấy tất cả tỷ giá
+    path("api/rates/", AllRateView.as_view(), name="get_all_rates"),
+
+    # Tính giá sản phẩm
+    path("api/price-calc/", PriceCalcView.as_view(), name="price_calc"),
 ]
