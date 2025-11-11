@@ -6,6 +6,9 @@ Copyright (c) 2019 - present AppSeed.us
 # Create your views here.
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
+import jwt
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from .forms import LoginForm, SignUpForm
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -67,10 +70,13 @@ class LoginView(APIView):
         user = authenticate(username=username, password=password)
         if user:
             refresh = RefreshToken.for_user(user)
-            payload = {
-            "sub": username,
-            "exp": datetime.utcnow() + timedelta(hours=1),
-            "iat": datetime.utcnow(),
+            payload = payload = {
+                "sub": user.username,
+                "username": user.username,
+                "role": "sales",
+                "exp": datetime.utcnow() + timedelta(days=1),  # 1 day expiration
+                "iat": datetime.utcnow(),
+                "iss": "sales-app",
             }
             token = jwt.encode(payload, PRIVATE_KEY, algorithm="RS256")
             return Response({
@@ -79,3 +85,33 @@ class LoginView(APIView):
                 'refresh': str(refresh),
             })
         return Response({"error": "Invalid credentials"}, status=401)
+
+
+class StoreRefreshTokenView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        brand = request.data.get("brand")
+        if not brand:
+            return Response({"error": "Missing 'brand' in request body."}, status=400)
+
+        if not user.is_superuser:
+            return Response({"error": "Permission denied. Superuser required."}, status=403)
+        
+        refresh = RefreshToken.for_user(user)
+        payload = {
+            "sub": brand,
+            "username": user.username,
+            "role": "store-admin",
+            "exp": datetime.utcnow() + timedelta(days=9999),  # Long expiration
+            "iat": datetime.utcnow(),
+            "iss": "store-app",
+        }
+        store_token = jwt.encode(payload, PRIVATE_KEY, algorithm="RS256")
+
+        return Response({
+            "store_token": store_token,
+            "refresh": str(refresh),
+        })

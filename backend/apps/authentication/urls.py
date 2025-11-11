@@ -4,12 +4,13 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 from django.urls import path
-from .views import login_view, register_user, LoginView
+from .views import login_view, register_user, LoginView, StoreRefreshTokenView
 from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
     path('login/', login_view, name="login"),
     path('api/login/', LoginView.as_view(), name="api_login"),
+    path('api/storeadmin', StoreRefreshTokenView.as_view(), name="store_refresh_token"),
     path('register/', register_user, name="register"),
     path("logout/", LogoutView.as_view(), name="logout")
 ]
