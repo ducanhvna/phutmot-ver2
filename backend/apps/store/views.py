@@ -212,6 +212,8 @@ def sanitize_json_floats(data):
 class PriceCalcView(APIView):
     def get(self, request):
         sku = request.query_params.get("sku")
+        code = request.query_params.get("code")
+
         if not sku:
             return Response({"status": 400, "msg": "Thiếu mã sản phẩm"}, status=400)
 
@@ -234,7 +236,8 @@ class PriceCalcView(APIView):
 
             # Lấy tỷ giá bán từ "Nhẫn ép vỉ Kim Gia Bảo"
             ty_gia_ban = None
-            for item in data.get("data", []):
+            rate_data = data.get("data", [])
+            for item in rate_data:
                 if "Nhẫn ép vỉ Kim Gia Bảo" in item.get("loaiVang", ""):
                     ty_gia_ban = item.get("giaBanNiemYet")
                     break
@@ -286,7 +289,8 @@ class PriceCalcView(APIView):
                 "hamLuongKL": "24K",
                 "t_Luong": trong_luong,
                 "mo_Ta1": row.get("Mo_Ta", "") or "",
-                "trongluong": trong_luong
+                "trongluong": trong_luong,
+                "code": code if code else "dummy_code"
             }
 
             # Làm sạch dữ liệu trước khi trả về
@@ -295,7 +299,8 @@ class PriceCalcView(APIView):
             return Response({
                 "status": 200,
                 "msg": "Successfully",
-                "data": cleaned_data
+                "data": cleaned_data,
+                "rate": rate_data
             })
 
         except Exception as e:
