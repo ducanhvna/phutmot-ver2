@@ -222,10 +222,18 @@ url = "https://14.224.192.52:9999/api/v1/calculate-price"
 #     verify= CA_CERT_PATH # hoặc verify=False nếu chỉ test
 # )
 
-def tinh_gia_ban(row, tygia):
+def tinh_gia_ban(row):
+    sku = f"{row['Ma_Hang']}"
+    response = requests.post(
+        url,
+        json={"ma_hang": sku},
+        cert=cert,
+        verify= CA_CERT_PATH # hoặc verify=False nếu chỉ test
+    )
+    tygia = response.json()
     # Lấy dữ liệu liên quan từ các bảng
-    qttg_row = df_dmQTTG[df_dmQTTG['ID'] == row['ID_QTTG']].squeeze()
-    vbtg_row = df_dmVBTG[df_dmVBTG['ID'] == row['ID_VBTG']].squeeze()
+    # qttg_row = df_dmQTTG[df_dmQTTG['ID'] == row['ID_QTTG']].squeeze()
+    # vbtg_row = df_dmVBTG[df_dmVBTG['ID'] == row['ID_VBTG']].squeeze()
 
     # Các biến cần thiết
     TL_KLoai = row['T_Luong']
@@ -250,13 +258,20 @@ def tinh_gia_ban(row, tygia):
     TyGiaV_TG = row['Sl_Min']
     TyGia_MuaN = row['Luu_Kho']
     Hao_G_Cong = row['Tyle_GBL']
-    Ma_QTTG = qttg_row['Ma_QTTG']
-    He_So1 = qttg_row['He_So1']
-    He_So2 = qttg_row['He_So2']
-    He_So3 = qttg_row['He_So3']
-    He_So4 = qttg_row['He_So4']
-    He_So5 = qttg_row['He_So5']
-    He_So6 = qttg_row['He_So6']
+    # Ma_QTTG = qttg_row['Ma_QTTG']
+    Ma_QTTG = tygia['ma_quy_tac_tinh_gia']
+    # He_So1 = qttg_row['He_So1']
+    He_So1 = tygia['he_so_1']
+    # He_So2 = qttg_row['He_So2']
+    He_So2 = tygia['he_so_2']
+    # He_So3 = qttg_row['He_So3']
+    He_So3 = tygia['he_so_3']
+    # He_So4 = qttg_row['He_So4']
+    He_So4 = tygia['he_so_4']
+    # He_So5 = qttg_row['He_So5']
+    He_So5 = tygia['he_so_5']
+    # He_So6 = qttg_row['He_So6']
+    He_So6 = tygia['he_so_6']
 
     Tong_TL = TL_KLoai + TL_Da_C + T_LuongTT
 
@@ -310,7 +325,7 @@ def tinh_gia_ban(row, tygia):
     else:
         result = 0
 
-    return round(result, -3)
+    return round(result, -3), tygia
 
 class PriceCalcView(APIView):
     def get(self, request):
@@ -320,25 +335,25 @@ class PriceCalcView(APIView):
 
         if not sku:
             return Response({"status": 400, "msg": "Thiếu mã sản phẩm"}, status=400)
-        url = "https://14.224.192.52:9999/api/v1/calculate-price"
-        realtime_price = requests.post(
-            url,
-            json={"ma_hang": sku},
-            cert=cert,
-            verify= CA_CERT_PATH # hoặc verify=False nếu chỉ test
-        )
+        
 
         try:
             # Tìm sản phẩm theo SKU
             row = df_dmH[df_dmH["Ma_Hang"] == sku]
             if row.empty:
                 # Tìm kiếm những row có Ma_Hang bắt đầu băng sku
-                row = df_dmH[df_dmH["Ma_Hang"].str.startswith(sku)]
+                row = df_dmH[df_dmH["Ma_Hang"].notna() & df_dmH["Ma_Hang"].astype(str).str.startswith(sku)]
+
                 if row.empty:
                     return Response({"status": 404, "msg": "Không tìm thấy sản phẩm"}, status=404)
-
-            row = row.iloc[0]
-            gia_ban_v2 = tinh_gia_ban(row, realtime_price.json())
+            for _index, r in row.iterrows():
+                try:
+                
+                    gia_ban_v2, realtime_price = tinh_gia_ban(r)
+                    row = r
+                    break
+                except Exception as e:
+                    continue
             # Gọi API tỷ giá
             url = f"{BASE_URL}/getTyGia"
             headers = {
@@ -415,7 +430,7 @@ class PriceCalcView(APIView):
                 "msg": "Successfully",
                 "data": cleaned_data,
                 "rate": rate_data,
-                "realtime_price": realtime_price.json(),
+                "realtime_price": realtime_price,
                 "gia_ban_v2": gia_ban_v2
             })
 
