@@ -421,17 +421,18 @@ class PriceCalcView(APIView):
                 "trongluong": trong_luong,
                 "code": code if code else "dummy_code"
             }
-
+            realtime_price['code'] = code if code else "dummy_code"
             # Làm sạch dữ liệu trước khi trả về
-            cleaned_data = sanitize_json_floats(response_data)
+            # cleaned_data = sanitize_json_floats(response_data)
 
             return Response({
                 "status": 200,
                 "msg": "Successfully",
-                "data": cleaned_data,
+                "data": realtime_price,
+                # "data": cleaned_data,
                 "rate": rate_data,
-                "realtime_price": realtime_price,
-                "gia_ban_v2": gia_ban_v2
+                # "realtime_price": realtime_price,
+                "gia_ban_thamchieu": gia_ban_v2
             })
 
         except Exception as e:
