@@ -445,7 +445,7 @@ class GenQRView(APIView):
         # account_no = request.data.get("account_no")
         amount = request.data.get("amount")
         add_info = request.data.get("add_info")
-
+        transfer_tracking_id = request.data.get("transfer_tracking_id", None)
         
         response = requests.post(
             "https://14.224.192.52:9999/api/v1/generate-qr",
@@ -453,7 +453,8 @@ class GenQRView(APIView):
                 "account_type": "1",
                 "account_no": "00045627001",
                 "amount": amount,
-                "add_info": add_info
+                "add_info": add_info,
+                "transfer_tracking_id": transfer_tracking_id if transfer_tracking_id else "NEWTRACKID001"
             },
             cert=cert,
             verify= CA_CERT_PATH # hoặc verify=False nếu chỉ test
@@ -463,4 +464,88 @@ class GenQRView(APIView):
             "status": 200,
             "msg": "Successfully",
             "data": qr['qr_data']
+        })
+    
+class PaymentView(APIView):
+    """
+    xử lý thanh toán đơn hàng cho khách và trả lại tracking code
+    transfer_tracking_id được tạo bởi service nếu client không gửi lên 
+    (trong trường hợp client muốn tự tra cứu tracking_id thì gửi lên transfer_tracking_id)
+    Response mẫu:
+
+    {
+        status_code: ""..."",  
+        error_code:""..."",
+        error_message: ""..."",
+        transaction_id: ""BTMHVPBYYYYMMDDxxxxx....""
+        transfer_data: {
+            source_account: ""..."",
+            amount: ""...."",
+            destination_citad_code: ""..."",
+            destination_napas_code: ""..."",
+            destination_account: ""..."",
+            destination_name: ""..."",
+            model: ""...."",  
+            record_id: ""..."",
+            add_info: ""..."",
+            status_transfer: ""SUCCESS"",
+            transfer_tracking_id: ""BTMHABCD...""
+            response_datetime: format DD/MM/YYYY HH24:MI:SS, ví dụ 28/08/2024 10:44:00 timezone ở việt nam
+            signature: <Odoo + transaction_id + source_account + amount + destination_citad_code + destination_napas_code + destination_account + destination_name + model + record_id + status_transfer + response_time> (RSAwithSHA256)
+            }
+        }
+    
+    """
+    def post(self, request):
+        transaction_id = request.data.get("transaction_id")
+        source_account = request.data.get("source_account")
+        amount = request.data.get("amount")
+        destination_citad_code = request.data.get("destination_citad_code")
+        destination_napas_code = request.data.get("destination_napas_code")
+        destination_account = request.data.get("destination_account")
+        destination_name = request.data.get("destination_name")
+        model = request.data.get("model")
+        record_id = request.data.get("record_id")
+        add_info = request.data.get("add_info")
+        transfer_tracking_id = request.data.get("transfer_tracking_id", "")
+
+        payload = {
+            "transaction_id": transaction_id,
+            "source_account": source_account,
+            "amount": amount,
+            "destination_citad_code": destination_citad_code,
+            "destination_napas_code": destination_napas_code,
+            "destination_account": destination_account,
+            "destination_name": destination_name,
+            "model": model,
+            "record_id": record_id,
+            "add_info": add_info
+        }
+
+        if transfer_tracking_id:
+            payload["transfer_tracking_id"] = transfer_tracking_id
+
+        # Kiểm tra trường hợp tạo mới hay tra cứu để trả về response tương ứng
+        # dumy các thông tin ngoài transfer_tracking_id
+
+        return Response({
+            "status_code": "200",   
+            "error_code": "",
+            "error_message": "",    
+            "transaction_id": transaction_id,
+            "transfer_data": {
+                "source_account": source_account,
+                "amount": amount,
+                "destination_citad_code": destination_citad_code,
+                "destination_napas_code": destination_napas_code,
+                "destination_account": destination_account,
+                "destination_name": destination_name,
+                "model": model,
+                "record_id": record_id,
+                "add_info": add_info,
+                "status_transfer": "SUCCESS",
+                "transfer_tracking_id": transfer_tracking_id if transfer_tracking_id else "BTMHVPB202406270001",
+                "response_datetime": datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                "signature": "DUMMY_SIGNATURE"
+            }
         })

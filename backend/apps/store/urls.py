@@ -7,7 +7,8 @@ from .views import (
     RateView,
     AllRateView,
     PriceCalcView,
-    GenQRView
+    GenQRView,
+    PaymentView
 )
 
 urlpatterns = [
@@ -34,4 +35,7 @@ urlpatterns = [
 
     # Tạo mã QR
     path("api/generate-qr/", GenQRView.as_view(), name="generate_qr"),
+
+    # Xử lý thanh toán
+    path("api/payment/", PaymentView.as_view(), name="process_payment"),
 ]
