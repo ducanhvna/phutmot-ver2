@@ -6,7 +6,8 @@ from .views import (
     AttendanceView,
     RateView,
     AllRateView,
-    PriceCalcView
+    PriceCalcView,
+    GenQRView
 )
 
 urlpatterns = [
@@ -30,4 +31,7 @@ urlpatterns = [
 
     # Tính giá sản phẩm
     path("api/price-calc/", PriceCalcView.as_view(), name="price_calc"),
+
+    # Tạo mã QR
+    path("api/generate-qr/", GenQRView.as_view(), name="generate_qr"),
 ]

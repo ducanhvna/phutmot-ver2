@@ -421,7 +421,7 @@ class PriceCalcView(APIView):
                 "trongluong": trong_luong,
                 "code": code if code else "dummy_code"
             }
-            realtime_price['code'] = code if code else "dummy_code"
+            # realtime_price['code'] = code if code else "dummy_code"
             # Làm sạch dữ liệu trước khi trả về
             # cleaned_data = sanitize_json_floats(response_data)
 
@@ -437,3 +437,30 @@ class PriceCalcView(APIView):
 
         except Exception as e:
             return Response({"status": 500, "msg": str(e)}, status=500)
+
+
+class GenQRView(APIView):
+    def post(self, request):
+        # account_type = request.data.get("account_type")
+        # account_no = request.data.get("account_no")
+        amount = request.data.get("amount")
+        add_info = request.data.get("add_info")
+
+        
+        response = requests.post(
+            "https://14.224.192.52:9999/api/v1/generate-qr",
+            json={
+                "account_type": "1",
+                "account_no": "00045627001",
+                "amount": amount,
+                "add_info": add_info
+            },
+            cert=cert,
+            verify= CA_CERT_PATH # hoặc verify=False nếu chỉ test
+        )
+        qr = response.json()
+        return Response({
+            "status": 200,
+            "msg": "Successfully",
+            "data": qr['qr_data']
+        })
