@@ -21,6 +21,9 @@ response = requests.get(
 tygia_k_data = response.json().get('items', [])
 print("Tỷ giá K:", tygia_k_data)
 print("Tỷ giá K:", tygia_k_data)
+rate_9999 = next((item for item in tygia_k_data if 'Vàng nữ trang 999.9' == item['Ten_VBTG']), None)
+rate_999 = next((item for item in tygia_k_data if 'Vàng nữ trang 99.9' == item['Ten_VBTG']), None) 
+print("Rate 9999:", rate_9999)
 exit(1)
 order_add_url = "https://14.224.192.52:9999/api/v1/orders/add"
 

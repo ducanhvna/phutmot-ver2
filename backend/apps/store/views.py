@@ -166,9 +166,9 @@ class RateView(APIView):
                             break
                     item["maLoaivang"] = mapped_code or "UNKNOWN"
                     if mapped_code == "9999":
-                        item['ty_gia_K'] = rate_9999
+                        item['ty_gia_K'] = rate_9999.get('TyGia_MuaK') if rate_9999 else None
                     elif mapped_code == "999":
-                        item['ty_gia_K'] = rate_999 
+                        item['ty_gia_K'] = rate_999.get('TyGia_MuaK') if rate_999 else None
                     else:
                         item['ty_gia_K'] = None
                 return Response(data)
@@ -218,9 +218,9 @@ class AllRateView(APIView):
                             break
                     item["maLoaivang"] = mapped_code or "UNKNOWN"
                     if mapped_code == "9999":
-                        item['ty_gia_K'] = rate_9999
+                        item['ty_gia_K'] = rate_9999.get('TyGia_MuaK') if rate_9999 else None
                     elif mapped_code == "999":
-                        item['ty_gia_K'] = rate_999 
+                        item['ty_gia_K'] = rate_999.get('TyGia_MuaK') if rate_999 else None
                     else:
                         item['ty_gia_K'] = None
                 return Response(data)
