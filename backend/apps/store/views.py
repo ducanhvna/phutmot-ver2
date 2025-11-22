@@ -2,6 +2,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .authentication import JWTAuthentication
+import pandas as pd
+from .data_loader import df_dmH, df_dmQTTG, df_dmVBTG, cert, CA_CERT_PATH
+import math
+import numpy as np
 import datetime
 
 # Giả lập dữ liệu tồn kho
@@ -102,16 +106,25 @@ BASE_URL = "https://tygia.baotinmanhhai.vn/api"
 reverse_map = {
     "SJC": ["SJC"],
     "VRTL": ["Rồng Thăng Long"],
-    "KGB": ["Kim Gia Bảo"],
+    "KGB": ["ép vỉ Kim Gia Bảo"],
     "9999": ["999.9", "9999"],
     "999": ["99.9"],
     "BT24K": ["BT 24K"],
-    "KHS": ["KHS"],
+    "KHS": ["Đồng vàng Kim Gia Bảo"],
     "BT-TKC": ["Tiểu Kim Cát", "Trang sức"]
 }
 
 class RateView(APIView):
     def get(self, request):
+        url_tygia_k = "https://14.224.192.52:9999/api/v1/tigia"
+        response = requests.get(
+            url_tygia_k, 
+            cert=cert,
+            verify= CA_CERT_PATH) # hoặc verify=False nếu chỉ test
+        tygia_k_data = response.json().get('items', [])
+        rate_9999 = next((item for item in tygia_k_data if 'Vàng nữ trang 999.9' == item['Ten_VBTG']), None)
+        rate_999 = next((item for item in tygia_k_data if 'Vàng nữ trang 99.9' == item['Ten_VBTG']), None) 
+
         ma_hang = request.query_params.get("ma_hang")
         if not ma_hang:
             return Response({"error": "Thiếu mã hàng"}, status=400)
@@ -152,6 +165,12 @@ class RateView(APIView):
                             mapped_code = ma
                             break
                     item["maLoaivang"] = mapped_code or "UNKNOWN"
+                    if mapped_code == "9999":
+                        item['ty_gia_K'] = rate_9999
+                    elif mapped_code == "999":
+                        item['ty_gia_K'] = rate_999 
+                    else:
+                        item['ty_gia_K'] = None
                 return Response(data)
             else:
                 return Response(data, status=400)
@@ -161,6 +180,24 @@ class RateView(APIView):
 
 class AllRateView(APIView):
     def get(self, request):
+        url_tygia_k = "https://14.224.192.52:9999/api/v1/tigia"
+        response = requests.get(
+            url_tygia_k, 
+            cert=cert,
+            verify= CA_CERT_PATH) # hoặc verify=False nếu chỉ test
+        tygia_k_data = response.json().get('items', [])
+        #  {'Ten_VBTG': 'Vàng nữ trang 999.9',
+        #     'TyGia_MuaK': 14000000.0,
+        #     'TyGia_Mua': 14610000.0,
+        #     'TyGia_Ban': 14940000.0},
+        #     {'Ten_VBTG': 'Vàng nữ trang 99.9',
+        #     'TyGia_MuaK': 13950000.0,
+        #     'TyGia_Mua': 14600000.0,
+        #     'TyGia_Ban': 14930000.0}],
+        # lấy tỷ giá từ mảng với 2 tỷ gia 999.9 và 99.9 như trên
+        rate_9999 = next((item for item in tygia_k_data if 'Vàng nữ trang 999.9' == item['Ten_VBTG']), None)
+        rate_999 = next((item for item in tygia_k_data if 'Vàng nữ trang 99.9' == item['Ten_VBTG']), None) 
+
         url = f"{BASE_URL}/getTyGia"
         headers = {
             "Authorization": f"Bearer {TOKEN}",
@@ -180,6 +217,12 @@ class AllRateView(APIView):
                             mapped_code = ma
                             break
                     item["maLoaivang"] = mapped_code or "UNKNOWN"
+                    if mapped_code == "9999":
+                        item['ty_gia_K'] = rate_9999
+                    elif mapped_code == "999":
+                        item['ty_gia_K'] = rate_999 
+                    else:
+                        item['ty_gia_K'] = None
                 return Response(data)
             else:
                 return Response(data, status=400)
@@ -187,10 +230,6 @@ class AllRateView(APIView):
             return Response({"error": str(e)}, status=500)
 
 
-import pandas as pd
-from .data_loader import df_dmH, df_dmQTTG, df_dmVBTG, cert, CA_CERT_PATH
-import math
-import numpy as np
 
 # Hàm xử lý giá trị float an toàn cho JSON
 def sanitize_json_floats(data):
