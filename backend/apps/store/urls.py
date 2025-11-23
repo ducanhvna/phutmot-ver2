@@ -8,7 +8,8 @@ from .views import (
     AllRateView,
     PriceCalcView,
     GenQRView,
-    PaymentView
+    PaymentView,
+    OrderSellView
 )
 
 urlpatterns = [
@@ -38,4 +39,7 @@ urlpatterns = [
 
     # Xử lý thanh toán
     path("api/payment/", PaymentView.as_view(), name="process_payment"),
+
+    # Tạo đơn bán hàng từ JSON
+    path("api/order-sell/", OrderSellView.as_view(), name="create_order_sell"),
 ]

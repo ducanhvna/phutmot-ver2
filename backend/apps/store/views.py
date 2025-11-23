@@ -7,6 +7,7 @@ from .data_loader import df_dmH, df_dmQTTG, df_dmVBTG, cert, CA_CERT_PATH
 import math
 import numpy as np
 import datetime
+from .ordersell import create_order_from_json
 
 # Giả lập dữ liệu tồn kho
 INVENTORY = {
@@ -588,3 +589,15 @@ class PaymentView(APIView):
                 "signature": "DUMMY_SIGNATURE"
             }
         })
+    
+class OrderSellView(APIView):
+    def post(self, request):
+        order_data = request.data
+        try:
+            create_order_from_json(order_data)
+            return Response({
+                "status": 200,
+                "msg": "Đơn hàng đã được tạo thành công!"
+            })
+        except Exception as e:
+            return Response({"status": 500, "msg": str(e)}, status=500)
