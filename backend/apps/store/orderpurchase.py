@@ -3,7 +3,7 @@ import requests
 
 
 # Config Odoo
-url = "http://host.docker.internal:10017/jsonrpc"
+url = "http://odoo18:8069/jsonrpc"
 db = "goldsun"                          # tên database
 username = "admin"                      # user đăng nhập
 password = "admin"                      # mật khẩu
