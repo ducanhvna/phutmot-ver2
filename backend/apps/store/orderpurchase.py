@@ -23,11 +23,12 @@ def odoo_authenticate():
     }
     response = requests.post(url, json=payload).json()
     return response.get("result")
+uid = 2
 try:
     uid = odoo_authenticate()
 except Exception as e:
     print("Lỗi khi xác thực với Odoo:", e)
-    uid = 0
+    uid = 2
 
 # 2. Hàm gọi Odoo RPC
 def odoo_execute(model, method, args, kwargs=None):
