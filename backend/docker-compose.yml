@@ -12,6 +12,7 @@ services:
           - btmh-app
       redis_network:
     depends_on:
+      - odoo18
       - db
       - redis
     ports:
