@@ -6,11 +6,11 @@ services:
     env_file: .env
     build: .
     networks:
-      - db_network
-      - web_network
-          aliases:
-            - btmh-app
-      - redis_network
+      db_network:
+      web_network:
+        aliases:
+          - btmh-app
+      redis_network:
     depends_on:
       - db
       - redis
@@ -112,10 +112,10 @@ services:
       - PASSWORD=odoo18@2024
       - PIP_BREAK_SYSTEM_PACKAGES=1
     networks:
-      - odoo_network
-      - web_network
-          aliases:
-            - odoo18
+      odoo_network:
+      web_network:
+        aliases:
+          - odoo18
     volumes:
       - ./entrypoint.sh:/entrypoint.sh
       - ./addons:/mnt/extra-addons
