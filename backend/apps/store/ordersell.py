@@ -2,7 +2,7 @@ import json
 import requests
 
 # Config Odoo
-url = "https://solienlacdientu.info/jsonrpc"
+url = "http://odoo18:8069/jsonrpc"
 db = "goldsun"                          # tên database
 username = "admin"                      # user đăng nhập
 password = "admin"                      # mật khẩu
@@ -22,8 +22,12 @@ def odoo_authenticate():
     }
     response = requests.post(url, json=payload).json()
     return response.get("result")
+try:
+    uid = odoo_authenticate()
+except Exception as e:
+    print("Lỗi khi xác thực với Odoo:", e)
+    uid = 0
 
-uid = odoo_authenticate()
 
 # 2. Hàm gọi Odoo RPC
 def odoo_execute(model, method, args, kwargs=None):
@@ -97,6 +101,8 @@ def create_order_from_json(data):
     # 3. Tạo hoặc lấy khách hàng
     # 4. Kiểm tra khách hàng theo phone
     phone_number = data.get("phone", "").replace("*", "")  # bỏ ký tự *
+    if uid == 0:
+        uid = odoo_authenticate()
     partners = odoo_execute(
         "res.partner", "search_read",
         [["|",["phone", "=", phone_number],["mobile", "=", phone_number]]],
