@@ -94,8 +94,6 @@ def get_or_create_product(product_name, price_unit, company_id):
 def create_purchase_order_from_json(data):
     # 3. Tạo hoặc lấy khách hàng
     # 4. Kiểm tra khách hàng theo phone
-    if uid == 0:
-        uid = odoo_authenticate()
     phone_number = data.get("phone", "").replace("*", "")  # bỏ ký tự *
     partners = odoo_execute(
         "res.partner", "search_read",

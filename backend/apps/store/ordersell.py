@@ -102,8 +102,6 @@ def create_order_from_json(data):
     # 3. Tạo hoặc lấy khách hàng
     # 4. Kiểm tra khách hàng theo phone
     phone_number = data.get("phone", "").replace("*", "")  # bỏ ký tự *
-    if uid == 0:
-        uid = odoo_authenticate()
     partners = odoo_execute(
         "res.partner", "search_read",
         [["|",["phone", "=", phone_number],["mobile", "=", phone_number]]],
