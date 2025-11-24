@@ -2,7 +2,7 @@ import json
 import requests
 
 # Config Odoo
-url = "http://solienlacdientu.info/jsonrpc"
+url = "https://solienlacdientu.info/jsonrpc"
 db = "goldsun"                          # tên database
 username = "admin"                      # user đăng nhập
 password = "admin"                      # mật khẩu
