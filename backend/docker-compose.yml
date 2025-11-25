@@ -6,20 +6,15 @@ services:
     env_file: .env
     build: .
     networks:
-      db_network:
-      web_network:
-        aliases:
-          - btmh-app
-      redis_network:
+      - db_network
+      - web_network
+      - redis_network
     depends_on:
-      - odoo18
       - db
       - redis
     ports:
       - "5005:5005"
     entrypoint: ["/bin/bash", "-c", "./wait-for-postgres.sh db python manage.py migrate && ./wait-for-postgres.sh db daphne -b 0.0.0.0 -p 5005 core.asgi:application"]
-    extra_hosts:                # nếu cần gọi Odoo từ worker
-      - "host.docker.internal:host-gateway"
 
   celery-worker:
     container_name: celery_worker
@@ -32,8 +27,6 @@ services:
     networks:
       - db_network
       - redis_network
-    extra_hosts:                # nếu cần gọi Odoo từ worker
-      - "host.docker.internal:host-gateway"
 
   celery-beat:
     container_name: celery_beat
@@ -46,8 +39,6 @@ services:
     networks:
       - db_network
       - redis_network
-    extra_hosts:                # nếu cần gọi Odoo từ worker
-      - "host.docker.internal:host-gateway"
 
   redis:
     container_name: redis
@@ -113,10 +104,8 @@ services:
       - PASSWORD=odoo18@2024
       - PIP_BREAK_SYSTEM_PACKAGES=1
     networks:
-      odoo_network:
-      web_network:
-        aliases:
-          - odoo18
+      - odoo_network
+      - web_network
     volumes:
       - ./entrypoint.sh:/entrypoint.sh
       - ./addons:/mnt/extra-addons
