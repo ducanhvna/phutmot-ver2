@@ -10,7 +10,8 @@ from .views import (
     GenQRView,
     PaymentView,
     OrderSellView,
-    OderPurchaseView
+    OderPurchaseView,
+    OderDepositView,
 )
 
 urlpatterns = [
@@ -46,4 +47,7 @@ urlpatterns = [
 
     # Tạo đơn mua hàng từ JSON
     path("api/order-purchase/", OderPurchaseView.as_view(), name="create_order_purchase"),
+
+    # Tạo đơn đặt cọc từ JSON
+    path("api/deposit-order/", OderDepositView.as_view(), name="create_deposit_order"),
 ]
