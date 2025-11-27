@@ -12,6 +12,7 @@ from .views import (
     OrderSellView,
     OderPurchaseView,
     OderDepositView,
+    ProductImageView,
 )
 
 urlpatterns = [

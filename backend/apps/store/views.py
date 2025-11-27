@@ -505,7 +505,12 @@ class GenQRView(APIView):
         return Response({
             "status": 200,
             "msg": "Successfully",
-            "data": qr['qr_data']
+            "data": qr['qr_data'],
+            "account_type": "1",
+            "account_no": "00045627001",
+            "amount": amount,
+            "add_info": add_info,
+            "transfer_tracking_id": transfer_tracking_id if transfer_tracking_id else "NEWTRACKID001"
         })
     
 class PaymentView(APIView):
@@ -628,3 +633,25 @@ class OderDepositView(APIView):
             })
         except Exception as e:
             return Response({"status": 500, "msg": str(e)}, status=500)
+ 
+
+class ProductImageView(APIView):
+    def post(self, request):
+        # account_type = request.data.get("account_type")
+        # account_no = request.data.get("account_no")
+        serial = request.data.get("serial")
+        
+        response = requests.post(
+            "https://14.224.192.52:9999/api/v1/product-images",
+            json={
+                "ma_hang": serial
+            },
+            cert=cert,
+            verify= CA_CERT_PATH # hoặc verify=False nếu chỉ test
+        )
+        detail = response.json()
+        return Response({
+            "status": 200,
+            "msg": "Successfully",
+            "data": detail
+        })
