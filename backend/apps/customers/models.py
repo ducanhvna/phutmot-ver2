@@ -1,5 +1,15 @@
 from django.db import models
+import unicodedata
 
+def strip_accents(text):
+    """
+    Loại bỏ dấu tiếng Việt và chuyển về lowercase
+    """
+    if not text:
+        return None
+    text = unicodedata.normalize('NFD', text)
+    text = ''.join([c for c in text if unicodedata.category(c) != 'Mn'])
+    return text.lower()
 # {
 #   "gender": "Female",
 #   "birth_date": "1995-10-06",
@@ -46,7 +56,7 @@ from django.db import models
 class Customer(models.Model):
     username = models.CharField(max_length=150, unique=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-    id_card_number = models.CharField(max_length=20, unique=True)
+    id_card_number = models.CharField(max_length=20, null=True)
     old_id_card_number = models.CharField(max_length=20, blank=True, null=True)
     other_id_card_number = models.TextField(blank=True, null=True)
     name = models.CharField(max_length=255)
@@ -62,6 +72,12 @@ class Customer(models.Model):
 
     # Trường info chứa thông tin về store profile
     info = models.JSONField(blank=True, null=True, help_text='Thông tin về store profile')
+
+    def save(self, *args, **kwargs):
+        # Tự động sinh english_name từ name
+        if self.name:
+            self.english_name = strip_accents(self.name)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.username
