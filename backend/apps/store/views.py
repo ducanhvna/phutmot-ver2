@@ -10,6 +10,8 @@ import datetime
 from .ordersell import create_order_from_json
 from .orderpurchase import create_purchase_order_from_json
 from .orderdeposit import create_deposit_order_from_json
+from .orderservice import create_service_order_from_json
+from .orderreplace import create_replace_order_from_json
 
 # Giả lập dữ liệu tồn kho
 INVENTORY = {
@@ -634,6 +636,32 @@ class OderDepositView(APIView):
         except Exception as e:
             return Response({"status": 500, "msg": str(e)}, status=500)
  
+
+class OderServiceView(APIView):
+    def post(self, request):
+        order_data = request.data
+        try:
+            create_service_order_from_json(order_data)
+            return Response({
+                "status": 200,
+                "msg": "Đơn dịch vụ đã được tạo thành công!"
+            })
+        except Exception as e:
+            return Response({"status": 500, "msg": str(e)}, status=500)
+
+
+class OrderReplaceView(APIView):
+    def post(self, request):
+        order_data = request.data
+        try:
+            create_replace_order_from_json(order_data)
+            return Response({
+                "status": 200,
+                "msg": "Đơn Đổi hàng đã được tạo thành công!"
+            })
+        except Exception as e:
+            return Response({"status": 500, "msg": str(e)}, status=500)
+
 
 class ProductImageView(APIView):
     def post(self, request):
