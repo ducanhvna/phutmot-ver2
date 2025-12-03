@@ -56,14 +56,15 @@ class CustomerViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = self.get_serializer(customer)
         phone_number = customer.phone_number
+        partners = []
         if phone_number:
             from .utils import search_partner_by_mobile
             partners = search_partner_by_mobile(phone_number)
             if len(partners) == 0:
                 from .utils import create_partner
-                partner_id = create_partner(customer.name, phone_number)
+                create_partner(customer.name, phone_number)
                 partners = search_partner_by_mobile(phone_number)
-        return Response({"data": serializer.data, "partners": partners[0] if len(partners) > 0 else None})
+        return Response({"data": serializer.data, "partners": partners})
 
     def update(self, request, pk=None):
         customer = self.get_object()
