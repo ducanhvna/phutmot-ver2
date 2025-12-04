@@ -608,12 +608,13 @@ class PaymentQRProxyView(APIView):
 
     def post(self, request):
         data = request.data
+        id_don = data.get("id_don")
         payload = {
             "taikhoanthuhuong": data.get("taikhoanthuhuong"),
-            "noichuyentien": data.get("noidungchuyentien"),
+            "noichuyentien": data.get("noidungchuyentien", f"Thanh toan don {id_don}"),
             "sotien": data.get("sotien")
         }
-
+        
         missing = [key for key, value in payload.items() if value in (None, "")]
         if missing:
             return Response({
