@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 
 # Data nhận được
 data = {
@@ -39,8 +40,10 @@ data = {
     ]
 }
 
+BASE_URL = os.environ.get("INTERNAL_API_BASE", "http://118.70.146.150:8869")
+
 # URL API
-url = "http://118.70.146.150:8869/api/public/updatedatehang"
+url = f"{BASE_URL}/api/public/updatedatehang"
 
 # Header
 headers = {

@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 
 # Data nhận được
 data = {
@@ -17,8 +18,10 @@ data = {
     "sellorderitems": []
 }
 
+BASE_URL = os.environ.get("INTERNAL_API_BASE", "http://118.70.146.150:8869")
+
 # URL API
-search_url = "http://118.70.146.150:8869/api/public/khach_hang/timkiem"
+search_url = f"{BASE_URL}/api/public/khach_hang/timkiem"
 # Header
 headers = {
     "Content-Type": "application/json; charset=utf-8"
