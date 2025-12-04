@@ -594,6 +594,49 @@ class PaymentView(APIView):
                 "signature": "DUMMY_SIGNATURE"
             }
         })
+
+
+class PaymentQRProxyView(APIView):
+    qr_url = "http://118.70.146.150:8869/api/public/QRcode"
+    headers = {
+        "Content-Type": "application/json; charset=utf-8"
+    }
+
+    def post(self, request):
+        data = request.data
+        payload = {
+            "taikhoanthuhuong": data.get("taikhoanthuhuong"),
+            "noichuyentien": data.get("noidungchuyentien"),
+            "sotien": data.get("sotien")
+        }
+
+        missing = [key for key, value in payload.items() if value in (None, "")]
+        if missing:
+            return Response({
+                "status": 400,
+                "msg": "Thiếu trường bắt buộc",
+                "fields": missing
+            }, status=400)
+
+        try:
+            response = requests.post(self.qr_url, headers=self.headers, json=payload, timeout=30)
+            try:
+                downstream = response.json()
+            except ValueError:
+                downstream = {"raw": response.text}
+
+            return Response({
+                "status": response.status_code,
+                "msg": "Thành công" if response.ok else "Thất bại",
+                "data": response.json()
+            }, status=response.status_code)
+        except requests.RequestException as exc:
+            return Response({
+                "status": 502,
+                "msg": "Không kết nối được dịch vụ QR",
+                "error": str(exc),
+                "payload": payload
+            }, status=502)
     
 class OrderSellView(APIView):
     def post(self, request):
@@ -607,9 +650,8 @@ class OrderSellView(APIView):
         except Exception as e:
             return Response({"status": 500, "msg": str(e)}, status=500)
 
-
 class OrderShellView(APIView):
-    order_url = "http://192.168.0.223:8869/api/public/updatedatehang"
+    order_url = "http://118.70.146.150:8869/api/public/updatedatehang"
     headers = {
         "Content-Type": "application/json; charset=utf-8"
     }
@@ -659,7 +701,7 @@ class OrderShellView(APIView):
 
         payload = {
             "ma_khachhang": ma_khachhang,
-            "manhanvien": data.get("manhanvien", ""),
+            "manhanvien": data.get("username_sale", ""),
             "dien_giai": data.get("dien_giai", ""),
             "danh_sach": danh_sach
         }
@@ -673,7 +715,7 @@ class OrderShellView(APIView):
 
             return Response({
                 "status": response.status_code,
-                "msg": f"Tạo đơn hàng {body.get('data')} thành công" if response.ok else "Tạo đơn hàng thất bại",
+                "msg": f"Tạo đơn hàng {response.json().get('data')} thành công" if response.ok else "Tạo đơn hàng thất bại",
             }, status=response.status_code)
         except requests.RequestException as exc:
             return Response({
@@ -694,8 +736,7 @@ class OderPurchaseView(APIView):
             })
         except Exception as e:
             return Response({"status": 500, "msg": str(e)}, status=500)
-        
-        
+                
 class OderDepositView(APIView):
     def post(self, request):
         order_data = request.data
@@ -733,7 +774,6 @@ class OrderReplaceView(APIView):
             })
         except Exception as e:
             return Response({"status": 500, "msg": str(e)}, status=500)
-
 
 class ProductImageView(APIView):
     def post(self, request):

@@ -9,6 +9,7 @@ from .views import (
     PriceCalcView,
     GenQRView,
     PaymentView,
+    PaymentQRProxyView,
     OrderSellView,
     OrderShellView,
     OderPurchaseView,
@@ -45,6 +46,9 @@ urlpatterns = [
 
     # Xử lý thanh toán
     path("api/payment/", PaymentView.as_view(), name="process_payment"),
+
+    # Proxy tạo QR từ hệ thống nội bộ
+    path("api/payment/qr-proxy/", PaymentQRProxyView.as_view(), name="payment_qr_proxy"),
 
     # Tạo đơn bán hàng từ JSON
     path("api/order-sell/", OrderSellView.as_view(), name="create_order_sell"),

@@ -40,7 +40,7 @@ data = {
 }
 
 # URL API
-url = "http://192.168.0.223:8869/api/public/updatedatehang"
+url = "http://118.70.146.150:8869/api/public/updatedatehang"
 
 # Header
 headers = {

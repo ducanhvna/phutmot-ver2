@@ -18,7 +18,7 @@ data = {
 }
 
 # URL API
-search_url = "http://192.168.0.223:8869/api/public/khach_hang/timkiem"
+search_url = "http://118.70.146.150:8869/api/public/khach_hang/timkiem"
 # Header
 headers = {
     "Content-Type": "application/json; charset=utf-8"
