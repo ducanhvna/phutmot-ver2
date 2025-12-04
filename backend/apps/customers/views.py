@@ -3,13 +3,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Customer
 from .serializers import CustomerSerializer
-
-
-
+import requests, json
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 
+# Header
+headers = {
+    "Content-Type": "application/json; charset=utf-8"
+}
 class CustomerPagination(PageNumberPagination):
     page_size = 5
     page_size_query_param = 'page_size'
@@ -26,16 +28,67 @@ class CustomerViewSet(viewsets.ModelViewSet):
         query = request.query_params.get('q', '').strip()
         if not query:
             return Response({'detail': 'Missing search query.'}, status=status.HTTP_400_BAD_REQUEST)
-        qs = Customer.objects.filter(
-            (
-                Q(username__icontains=query) |
-                Q(phone_number__icontains=query) |
-                Q(id_card_number__icontains=query) |
-                Q(old_id_card_number__icontains=query) |
-                Q(name__icontains=query) |
-                Q(english_name__icontains=query)
+        # Ghép payload
+        payload = {
+            "sdt": query # số điện thoại hoặc căn cước
+        }
+        search_url = "http://192.168.0.223:8869/api/public/khach_hang/timkiem"
+
+        print(payload)
+        # Gọi API POST
+        response = requests.post(search_url, headers=headers, data=json.dumps(payload))
+
+        # In kết quả
+        print("Status code:", response.status_code)
+        print("Response body:", response.text)
+
+        
+        try:
+            response = requests.post(search_url, headers=headers, data=json.dumps(payload))
+        except requests.RequestException as e:
+            return Response({'detail': f'Error connecting to service: {str(e)}'}, status=status.HTTP_502_BAD_GATEWAY)
+
+        if response.status_code != 200:
+            return Response({'detail': 'External service error', 'status_code': response.status_code}, status=status.HTTP_502_BAD_GATEWAY)
+
+        try:
+            data = response.json()
+        except ValueError:
+            return Response({'detail': 'Invalid JSON from external service'}, status=status.HTTP_502_BAD_GATEWAY)
+
+        results = data.get("data", [])
+        qs = []
+
+        for item in results:
+            # Map dữ liệu từ service sang Customer
+            username = item.get("ma_khach_hang") or item.get("dien_thoai")
+            customer, created = Customer.objects.update_or_create(
+                username=username,
+                defaults={
+                    "name": item.get("ho_ten_khach_hang"),
+                    "phone_number": item.get("dien_thoai"),
+                    "id_card_number": item.get("cccd_cmt"),
+                    "gender": "Male" if item.get("gioi_tinh") == "Nam" else "Female" if item.get("gioi_tinh") == "Nữ" else None,
+                    "birth_date": item.get("ngay_sinh").split(" ")[0] if item.get("ngay_sinh") else None,
+                    "email": item.get("email"),
+                    "address": {
+                        "dia_chi": item.get("dia_chi"),
+                        "tinh": item.get("tinh"),
+                        "quan": item.get("quan"),
+                        "phuong": item.get("phuong"),
+                    },
+                    "info": {
+                        "ghi_chu": item.get("ghi_chu"),
+                        "so_diem": item.get("so_diem"),
+                        "hang": item.get("hang"),
+                        "image_khach_hang": item.get("image_khach_hang"),
+                        "qr_code": item.get("qr_code"),
+                    },
+                    "verification_status": True,
+                    "is_active": True,
+                }
             )
-        )
+            qs.append(customer)
         page = self.paginate_queryset(qs)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
