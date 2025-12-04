@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.conf import settings
 from .authentication import JWTAuthentication
 import pandas as pd
 from .data_loader import df_dmH, df_dmQTTG, df_dmVBTG, cert, CA_CERT_PATH
@@ -13,6 +14,9 @@ from .orderdeposit import create_deposit_order_from_json
 from .orderservice import create_service_order_from_json
 from .orderreplace import create_replace_order_from_json
 import requests
+import json
+
+INTERNAL_API_BASE = getattr(settings, "INTERNAL_API_BASE", "http://118.70.146.150:8869")
 
 # Giả lập dữ liệu tồn kho
 INVENTORY = {
@@ -597,7 +601,7 @@ class PaymentView(APIView):
 
 
 class PaymentQRProxyView(APIView):
-    qr_url = "http://118.70.146.150:8869/api/public/QRcode"
+    qr_url = f"{INTERNAL_API_BASE}/api/public/QRcode"
     headers = {
         "Content-Type": "application/json; charset=utf-8"
     }
@@ -651,7 +655,7 @@ class OrderSellView(APIView):
             return Response({"status": 500, "msg": str(e)}, status=500)
 
 class OrderShellView(APIView):
-    order_url = "http://118.70.146.150:8869/api/public/updatedatehang"
+    order_url = f"{INTERNAL_API_BASE}/api/public/updatedatehang"
     headers = {
         "Content-Type": "application/json; charset=utf-8"
     }
@@ -707,7 +711,9 @@ class OrderShellView(APIView):
         }
 
         try:
+            # response = requests.post(self.order_url, headers=self.headers, data=json.dumps(payload))
             response = requests.post(self.order_url, headers=self.headers, json=payload, timeout=30)
+            print(response.text)
             try:
                 body = response.json()
             except ValueError:
@@ -715,7 +721,10 @@ class OrderShellView(APIView):
 
             return Response({
                 "status": response.status_code,
-                "msg": f"Tạo đơn hàng {response.json().get('data')} thành công" if response.ok else "Tạo đơn hàng thất bại",
+                "success": response.ok,
+                "msg": response.json().get('data') if response.ok else "Tạo đơn hàng thất bại",
+                "downstream": body,
+                "payload": payload
             }, status=response.status_code)
         except requests.RequestException as exc:
             return Response({

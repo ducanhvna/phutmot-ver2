@@ -60,6 +60,17 @@ payload = {
         "soluong":1
     }]
 }
+payload = {
+        "ma_khachhang": "0969682985",
+        "manhanvien": "0919933911",
+        "dien_giai": "",
+        "danh_sach": [
+            {
+                "mahang": "24BTV49KD0-307060-0002",
+                "soluong": 2
+            }
+        ]
+    }
 
 
 print(payload)

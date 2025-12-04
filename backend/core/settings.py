@@ -184,6 +184,8 @@ REST_FRAMEWORK = {
     ),
 }
 
+INTERNAL_API_BASE = os.environ.get('INTERNAL_API_BASE', 'http://118.70.146.150:8869')
+
 # Extra places for collectstatic to find static files.
 STATICFILES_DIRS = (
     os.path.join(CORE_DIR, 'apps/static'),
