@@ -103,8 +103,6 @@ class AttendanceView(APIView):
 
         return Response(attendance_info)
 
-import requests
-
 TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIs"
 BASE_URL = "https://tygia.baotinmanhhai.vn/api"
 
@@ -608,6 +606,82 @@ class OrderSellView(APIView):
             })
         except Exception as e:
             return Response({"status": 500, "msg": str(e)}, status=500)
+
+
+class OrderShellView(APIView):
+    order_url = "http://192.168.0.223:8869/api/public/updatedatehang"
+    headers = {
+        "Content-Type": "application/json; charset=utf-8"
+    }
+
+    def post(self, request):
+        payload_source = request.data
+        if isinstance(payload_source, dict) and isinstance(payload_source.get("data"), dict):
+            data = payload_source.get("data")
+        else:
+            data = payload_source
+
+        ma_khachhang = data.get("ma_khachhang")
+
+        if not ma_khachhang:
+            ma_khachhang = data.get("phone", "").replace("*", "")
+
+        if not ma_khachhang:
+            return Response({
+                "status": 400,
+                "msg": "Thiếu thông tin mã khách hàng",
+                "details": {
+                    "payload": data
+                }
+            }, status=400)
+
+        danh_sach = data.get("danh_sach") or []
+        if not danh_sach:
+            items = data.get("sellorderitems", [])
+            for item in items:
+                product_id = item.get("product_id")
+                if product_id is None:
+                    continue
+                danh_sach.append({
+                    "mahang": str(product_id),
+                    "soluong": item.get("quantity", 1)
+                })
+
+        if not danh_sach:
+            return Response({
+                "status": 400,
+                "msg": "Thiếu danh sách sản phẩm",
+                "details": {
+                    "payload": data,
+                    "sellorderitems": data.get("sellorderitems", [])
+                }
+            }, status=400)
+
+        payload = {
+            "ma_khachhang": ma_khachhang,
+            "manhanvien": data.get("manhanvien", ""),
+            "dien_giai": data.get("dien_giai", ""),
+            "danh_sach": danh_sach
+        }
+
+        try:
+            response = requests.post(self.order_url, headers=self.headers, json=payload, timeout=30)
+            try:
+                body = response.json()
+            except ValueError:
+                body = {"raw": response.text}
+
+            return Response({
+                "status": response.status_code,
+                "msg": f"Tạo đơn hàng {body.get('data')} thành công" if response.ok else "Tạo đơn hàng thất bại",
+            }, status=response.status_code)
+        except requests.RequestException as exc:
+            return Response({
+                "status": 502,
+                "msg": "Không gọi được dịch vụ đích",
+                "error": str(exc),
+                "payload": payload
+            }, status=502)
         
 class OderPurchaseView(APIView):
     def post(self, request):

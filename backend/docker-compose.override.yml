@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  btmh-app:
+    volumes:
+      - ./:/app
+
+  celery-worker:
+    volumes:
+      - ./:/app
+
+  celery-beat:
+    volumes:
+      - ./:/app

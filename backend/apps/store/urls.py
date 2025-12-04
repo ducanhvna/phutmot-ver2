@@ -10,6 +10,7 @@ from .views import (
     GenQRView,
     PaymentView,
     OrderSellView,
+    OrderShellView,
     OderPurchaseView,
     OderDepositView,
     ProductImageView,
@@ -47,6 +48,9 @@ urlpatterns = [
 
     # Tạo đơn bán hàng từ JSON
     path("api/order-sell/", OrderSellView.as_view(), name="create_order_sell"),
+
+    # Đẩy đơn sang hệ thống backend nội bộ
+    path("api/order-shell/", OrderShellView.as_view(), name="create_order_shell"),
 
     # Tạo đơn mua hàng từ JSON
     path("api/order-purchase/", OderPurchaseView.as_view(), name="create_order_purchase"),

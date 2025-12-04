@@ -57,7 +57,7 @@ payload = {
     "dien_giai":"",
     "danh_sach":[{
         "mahang":"24BTV49KD0-307060-0002",
-    "soluong":1
+        "soluong":1
     }]
 }
 
