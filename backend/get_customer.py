@@ -13,6 +13,86 @@ CLIENT_KEY_PATH = "data/Product/client_key.pem"
 CA_CERT_PATH = "data/Product/ca_cert.pem"
 cert = (CLIENT_CERT_PATH, CLIENT_KEY_PATH)
 
+
+### 1. GET /api/v1/customers/summary
+# Lấy thống kê tổng quan về khách hàng.
+
+# **Response:**
+# ```json
+# {
+#   "total_customers": 8523
+# }
+# ```
+sumary_customer_url = "https://14.224.192.52:9999/api/v1/customers/summary"
+response = requests.get(
+    sumary_customer_url,
+    cert=cert,
+    verify= CA_CERT_PATH # hoặc verify=False nếu chỉ test
+)
+
+url = "https://14.224.192.52:9999/api/v1/customers/list"
+
+total_customers = response.json()['total_customers']
+page_size = 500
+numberof_pages = (total_customers) // page_size + 1 # page_size  # Làm tròn lên
+
+# POST /api/v1/customers/list
+# Lấy danh sách khách hàng có phân trang và tìm kiếm.
+
+# **Request Body:**
+# ```json
+# {
+#   "page": 1,
+#   "page_size": 50,
+#   "search": "nguyen"  // Optional - tìm kiếm theo mã, tên, SĐT, CCCD
+# }
+# ```
+merge_df = pd.DataFrame()
+for page in range(1, numberof_pages + 1):
+    response = requests.post(
+        url,
+        json={
+                "page": page,
+                "page_size": page_size,
+                "search": ""  # Optional - tìm kiếm theo mã, tên, SĐT, CCCD
+            },
+        cert=cert,
+        verify= CA_CERT_PATH # hoặc verify=False nếu chỉ test
+    )
+    
+    print(response.status_code)
+    customers = response.json()
+    print(customers)
+    split_data = pd.DataFrame(customers['items'])
+    if page == 1:
+        merge_df = split_data
+    else:
+        merge_df = pd.concat([merge_df, split_data], ignore_index=True)
+        print(f"Đã lấy xong trang {page}/{numberof_pages}, độ dài merge_df: {len(merge_df)} bản ghi")
+    # if page >= 500:
+    #     break  # test 5 page trước
+    # ghi merge_df ra sqlite tạm thời
+    import sqlite3  
+conn = sqlite3.connect('data/customers_temp.sqlite')
+merge_df.to_sql('customers', conn, if_exists='replace', index=False)
+
+response = requests.post(
+    "https://14.224.192.52:9999/api/v1/generate-qr",
+    json={
+        "account_type": "1",
+        "account_no": "00045627001",
+        "amount": "10000",
+        "add_info": "Thanh toan hoa don"
+    },
+    cert=cert,
+    verify= CA_CERT_PATH # hoặc verify=False nếu chỉ test
+)
+print(response.status_code)
+qr = response.json()
+print(qr)
+
+
+
 url_tygia_k = "https://14.224.192.52:9999/api/v1/tigia"
 response = requests.get(
     url_tygia_k, 
@@ -24,7 +104,7 @@ print("Tỷ giá K:", tygia_k_data)
 rate_9999 = next((item for item in tygia_k_data if 'Vàng nữ trang 999.9' == item['Ten_VBTG']), None)
 rate_999 = next((item for item in tygia_k_data if 'Vàng nữ trang 99.9' == item['Ten_VBTG']), None) 
 print("Rate 9999:", rate_9999)
-exit(1)
+
 order_add_url = "https://14.224.192.52:9999/api/v1/orders/add"
 
 # POST
@@ -88,17 +168,17 @@ try:
 
 except Exception as e:
     print(f"❌ Lỗi khi gọi API tồn kho: {e}")
-    with sqlite3.connect('data/products_temp.sqlite') as conn:
-        inventory_merge_df = pd.read_sql("SELECT * FROM inventory", conn)
-    print(f"Tồn kho mã mẫu trong kho CH2 từ sqlite: {len(inventory_merge_df)} bản ghi")
+#     with sqlite3.connect('data/products_temp.sqlite') as conn:
+#         inventory_merge_df = pd.read_sql("SELECT * FROM inventory", conn)
+#     print(f"Tồn kho mã mẫu trong kho CH2 từ sqlite: {len(inventory_merge_df)} bản ghi")
 
-# --- Join with DmH ---
-final_df = pd.merge(df_dmH, inventory_merge_df, left_on='Ma_Tong', right_on='ma_mau', how='inner')
-print(f"Tồn kho mã mẫu trong kho CH2 sau khi join DmH: {len(final_df)} bản ghi")
+# # --- Join with DmH ---
+# final_df = pd.merge(df_dmH, inventory_merge_df, left_on='Ma_Tong', right_on='ma_mau', how='inner')
+# print(f"Tồn kho mã mẫu trong kho CH2 sau khi join DmH: {len(final_df)} bản ghi")
 
-# Save final result
-with sqlite3.connect('data/products_temp.sqlite', timeout=30) as conn:
-    final_df.to_sql('inventory_with_details', conn, if_exists='replace', index=False)
+# # Save final result
+# with sqlite3.connect('data/products_temp.sqlite', timeout=30) as conn:
+#     final_df.to_sql('inventory_with_details', conn, if_exists='replace', index=False)
 
 url = "https://14.224.192.52:9999/api/v1/products/summary"
 response = requests.get(
@@ -303,81 +383,3 @@ while not is_last_page:
     templates_df.to_sql('templates', conn, if_exists='replace', index=False) 
     current_page += 1
 
-
-
-### 1. GET /api/v1/customers/summary
-# Lấy thống kê tổng quan về khách hàng.
-
-# **Response:**
-# ```json
-# {
-#   "total_customers": 8523
-# }
-# ```
-sumary_customer_url = "https://14.224.192.52:9999/api/v1/customers/summary"
-response = requests.get(
-    sumary_customer_url,
-    cert=cert,
-    verify= CA_CERT_PATH # hoặc verify=False nếu chỉ test
-)
-
-url = "https://14.224.192.52:9999/api/v1/customers/list"
-
-total_customers = response.json()['total_customers']
-page_size = 500
-numberof_pages = (total_customers) // page_size + 1 # page_size  # Làm tròn lên
-
-# POST /api/v1/customers/list
-# Lấy danh sách khách hàng có phân trang và tìm kiếm.
-
-# **Request Body:**
-# ```json
-# {
-#   "page": 1,
-#   "page_size": 50,
-#   "search": "nguyen"  // Optional - tìm kiếm theo mã, tên, SĐT, CCCD
-# }
-# ```
-merge_df = pd.DataFrame()
-for page in range(1, numberof_pages + 1):
-    response = requests.post(
-        url,
-        json={
-                "page": page,
-                "page_size": page_size,
-                "search": ""  # Optional - tìm kiếm theo mã, tên, SĐT, CCCD
-            },
-        cert=cert,
-        verify= CA_CERT_PATH # hoặc verify=False nếu chỉ test
-    )
-    
-    print(response.status_code)
-    customers = response.json()
-    print(customers)
-    split_data = pd.DataFrame(customers['items'])
-    if page == 1:
-        merge_df = split_data
-    else:
-        merge_df = pd.concat([merge_df, split_data], ignore_index=True)
-        print(f"Đã lấy xong trang {page}/{numberof_pages}, độ dài merge_df: {len(merge_df)} bản ghi")
-    # if page >= 500:
-    #     break  # test 5 page trước
-    # ghi merge_df ra sqlite tạm thời
-    import sqlite3  
-    conn = sqlite3.connect('data/customers_temp.sqlite')
-    merge_df.to_sql('customers', conn, if_exists='replace', index=False)
-
-response = requests.post(
-    "https://14.224.192.52:9999/api/v1/generate-qr",
-    json={
-        "account_type": "1",
-        "account_no": "00045627001",
-        "amount": "10000",
-        "add_info": "Thanh toan hoa don"
-    },
-    cert=cert,
-    verify= CA_CERT_PATH # hoặc verify=False nếu chỉ test
-)
-print(response.status_code)
-qr = response.json()
-print(qr)
