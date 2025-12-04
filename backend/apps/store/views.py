@@ -12,6 +12,7 @@ from .orderpurchase import create_purchase_order_from_json
 from .orderdeposit import create_deposit_order_from_json
 from .orderservice import create_service_order_from_json
 from .orderreplace import create_replace_order_from_json
+import requests
 
 # Giả lập dữ liệu tồn kho
 INVENTORY = {
@@ -252,9 +253,6 @@ def sanitize_json_floats(data):
         return float(data)
     else:
         return data
-
-
-import requests
 
 url = "https://14.224.192.52:9999/api/v1/calculate-price"
 

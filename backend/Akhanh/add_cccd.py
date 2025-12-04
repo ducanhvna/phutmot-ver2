@@ -63,7 +63,7 @@ payload = {
 	"dien_thoai_4":"",
 }
 
-print(payload)
+# print(payload)
 # Gọi API POST
 response = requests.post(url, headers=headers, data=json.dumps(payload))
 

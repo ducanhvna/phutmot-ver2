@@ -134,15 +134,8 @@ CHANNEL_LAYERS = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        # 'NAME': 'SKU',
-        'NAME': 'appseed_db',
-        'USER': 'postgres',
-        # 'PASSWORD': '123456',
-        'PASSWORD': 'postgres',
-        'HOST': 'db',
-        # 'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(CORE_DIR, 'db.sqlite3'),
     }
 }
 
