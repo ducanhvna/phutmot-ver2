@@ -16,7 +16,8 @@ from .views import (
     OderDepositView,
     ProductImageView,
     OrderReplaceView,
-    OderServiceView
+    OderServiceView,
+    WarehouseExportView
 )
 
 urlpatterns = [
@@ -64,6 +65,9 @@ urlpatterns = [
 
     # Tạo đơn dịch vụ từ JSON
     path("api/service-order/", OderServiceView.as_view(), name="create_service_order"),
+
+    # Xuất kho sau khi thanh toán
+    path("api/warehouse-export/", WarehouseExportView.as_view(), name="warehouse_export"),
     
     # Tạo đơn đổi hàng JSON
     path("api/replace-order/", OrderReplaceView.as_view(), name="create_replace_order") 
