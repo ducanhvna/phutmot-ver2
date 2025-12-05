@@ -610,7 +610,7 @@ class PaymentQRProxyView(APIView):
         id_don = data.get("id_don")
         payload = {
             "taikhoanthuhuong": data.get("taikhoanthuhuong"),
-            "noichuyentien": data.get("noidungchuyentien", f"{id_don} - APPSALE"),
+            "noichuyentien": data.get("noidungchuyentien"),
             "sotien": data.get("sotien")
         }
         
@@ -633,7 +633,7 @@ class PaymentQRProxyView(APIView):
 
             # Nếu có đủ thông tin, bắt đầu poll thanh toán
             if id_don:
-                poll_payment_and_confirm.delay(id_don=id_don, so_tien = data.get("sotien"))
+                poll_payment_and_confirm.delay(id_don=id_don, so_tien = data.get("sotien"), trans_desc = data.get("noidungchuyentien"))
 
             return Response({
                 "status": response.status_code,
@@ -858,7 +858,7 @@ class OderDepositView(APIView):
                 "error": str(exc),
                 "payload": downstream_payload
             }, status=502)
- 
+
 class OderServiceView(APIView):
     def post(self, request):
         order_data = request.data
