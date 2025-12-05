@@ -482,7 +482,6 @@ class PriceCalcView(APIView):
         except Exception as e:
             return Response({"status": 500, "msg": str(e)}, status=500)
 
-
 class GenQRView(APIView):
     def post(self, request):
         # account_type = request.data.get("account_type")
@@ -599,7 +598,6 @@ class PaymentView(APIView):
             }
         })
 
-
 class PaymentQRProxyView(APIView):
     qr_url = f"{INTERNAL_API_BASE}/api/public/QRcode"
     headers = {
@@ -673,6 +671,8 @@ class OrderShellView(APIView):
         if not ma_khachhang:
             ma_khachhang = data.get("phone", "").replace("*", "")
 
+        discount_amount = data.get("discount_amount", 0)
+
         if not ma_khachhang:
             return Response({
                 "status": 400,
@@ -683,17 +683,22 @@ class OrderShellView(APIView):
             }, status=400)
 
         danh_sach = data.get("danh_sach") or []
-        if not danh_sach:
-            items = data.get("sellorderitems", [])
-            for item in items:
-                product_id = item.get("product_id")
-                if product_id is None:
-                    continue
+        items = data.get("sellorderitems", [])
+        for item in items:
+            product_id = item.get("product_id")
+            soluong = item.get("quantity")
+            if int(soluong) > 0:
                 danh_sach.append({
                     "mahang": str(product_id),
-                    "soluong": item.get("quantity", 1)
+                    "soluong": item.get("quantity"),
+                    "so_tien": 0
                 })
-
+        if discount_amount > 0:
+            danh_sach.append({
+                "mahang": "",
+                "soluong": 0,
+                "so_tien": discount_amount
+            })
         if not danh_sach:
             return Response({
                 "status": 400,
@@ -841,7 +846,6 @@ class OderDepositView(APIView):
                 "payload": downstream_payload
             }, status=502)
  
-
 class OderServiceView(APIView):
     def post(self, request):
         order_data = request.data
@@ -853,7 +857,6 @@ class OderServiceView(APIView):
             })
         except Exception as e:
             return Response({"status": 500, "msg": str(e)}, status=500)
-
 
 class WarehouseExportView(APIView):
     export_url = f"{INTERNAL_API_BASE}/api/public/Xuat_kho"
@@ -914,6 +917,69 @@ class WarehouseExportView(APIView):
                 "payload": payload
             }, status=502)
 
+class PaymentConfirmView(APIView):
+    payment_url = f"{INTERNAL_API_BASE}/api/public/Thanh_toan"
+    headers = {
+        "Content-Type": "application/json; charset=utf-8"
+    }
+
+    def post(self, request):
+        if not isinstance(request.data, dict):
+            return Response({
+                "status": 400,
+                "msg": "Payload phải là JSON object",
+                "payload": request.data
+            }, status=400)
+
+        data = request.data
+        ma_hoa_don = data.get("ma_hoa_don")
+        so_tien = data.get("so_tien")
+        loai = data.get("loai") # Loại 1 là bán hàng, loại 2 là đặt cọc.
+
+        missing = []
+        if not ma_hoa_don:
+            missing.append("ma_hoa_don")
+        if so_tien in (None, ""):
+            missing.append("so_tien")
+        if loai in (None, ""):
+            missing.append("loai")
+
+        if missing:
+            return Response({
+                "status": 400,
+                "msg": "Thiếu trường bắt buộc",
+                "fields": missing,
+                "payload": data
+            }, status=400)
+
+        payload = {**data, "ma_hoa_don": ma_hoa_don, "so_tien": so_tien, "loai": loai}
+
+        try:
+            response = requests.post(
+                self.payment_url,
+                headers=self.headers,
+                json=payload,
+                timeout=30
+            )
+            try:
+                downstream = response.json()
+            except ValueError:
+                downstream = {"raw": response.text}
+
+            return Response({
+                "status": response.status_code,
+                "success": response.ok,
+                "msg": f"Thanh toán thành công {so_tien} VND" if response.ok else "Thanh toán thất bại",
+                "payload": payload,
+                "downstream": downstream
+            }, status=response.status_code)
+        except requests.RequestException as exc:
+            return Response({
+                "status": 502,
+                "msg": "Không kết nối được dịch vụ thanh toán",
+                "error": str(exc),
+                "payload": payload
+            }, status=502)
 
 class OrderReplaceView(APIView):
     def post(self, request):

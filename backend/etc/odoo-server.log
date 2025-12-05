@@ -11593,3 +11593,10 @@ psycopg2.OperationalError: connection to server at "odoo-db" (172.19.0.2), port 
 2025-12-04 08:15:14,694 1 INFO ? odoo.service.server: Initiating shutdown 
 2025-12-04 08:15:14,697 1 INFO ? odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
 2025-12-04 08:15:14,891 1 INFO ? odoo.sql_db: ConnectionPool(read/write;used=0/count=0/max=64): Closed 2 connections  
+2025-12-05 01:43:22,701 1 INFO ? odoo: Odoo version 18.0-20250909 
+2025-12-05 01:43:22,703 1 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2025-12-05 01:43:22,704 1 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/etc/odoo/addons/18.0', '/mnt/extra-addons'] 
+2025-12-05 01:43:22,705 1 INFO ? odoo: database: odoo@odoo-db:5432 
+2025-12-05 01:43:23,003 1 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2025-12-05 01:43:23,040 1 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltoimage binary at /usr/local/bin/wkhtmltoimage 
+2025-12-05 01:43:23,364 1 INFO ? odoo.service.server: HTTP service (werkzeug) running on 71c801f0d3cd:8069 
