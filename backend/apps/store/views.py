@@ -16,6 +16,8 @@ from .orderreplace import create_replace_order_from_json
 from .tasks import poll_payment_and_confirm
 import requests
 import json
+from base64 import b64encode
+from urllib.parse import urlencode
 
 INTERNAL_API_BASE = getattr(settings, "INTERNAL_API_BASE", "http://118.70.146.150:8869")
 
@@ -600,23 +602,25 @@ class PaymentView(APIView):
         })
 
 class PaymentQRProxyView(APIView):
-    qr_url = f"{INTERNAL_API_BASE}/api/public/QRcode"
-    headers = {
-        "Content-Type": "application/json; charset=utf-8"
-    }
+    sepay_base = "https://qr.sepay.vn/img"
 
     def post(self, request):
         data = request.data
         id_don = data.get("id_don")
-        payload = {
-            "taikhoanthuhuong": data.get("taikhoanthuhuong"),
-            "noichuyentien": data.get("noidungchuyentien"),
-            "sotien": data.get("sotien")
-        }
-        
-        missing = [key for key, value in payload.items() if value in (None, "")]
+        taikhoan = data.get("taikhoanthuhuong")
+        noidung = data.get("noidungchuyentien")
+        sotien = data.get("sotien")
+        bank_code = "TPB"
+
+        missing = []
         if not id_don:
             missing.append("id_don")
+        if not taikhoan:
+            missing.append("taikhoanthuhuong")
+        if not noidung:
+            missing.append("noidungchuyentien")
+        if sotien in (None, ""):
+            missing.append("sotien")
         if missing:
             return Response({
                 "status": 400,
@@ -624,28 +628,40 @@ class PaymentQRProxyView(APIView):
                 "fields": missing
             }, status=400)
 
-        try:
-            response = requests.post(self.qr_url, headers=self.headers, json=payload, timeout=30)
-            try:
-                downstream = response.json()
-            except ValueError:
-                downstream = {"raw": response.text}
+        params = {
+            "acc": taikhoan,
+            "bank": bank_code,
+            "amount": sotien,
+            "des": noidung,
+            "download": 0,
+        }
 
-            # Nếu có đủ thông tin, bắt đầu poll thanh toán
-            if id_don:
-                poll_payment_and_confirm.delay(id_don=id_don, so_tien = data.get("sotien"), trans_desc = data.get("noidungchuyentien"))
+        query = urlencode(params, safe=":/")
+        qr_url = f"{self.sepay_base}?{query}"
+
+        try:
+            response = requests.get(qr_url, timeout=30)
+            response.raise_for_status()
+            img_b64 = b64encode(response.content).decode("ascii")
+
+            # Bắt đầu poll thanh toán (truyền trans_desc là nội dung chuyển tiền)
+            poll_payment_and_confirm.delay(id_don=id_don, so_tien=sotien, trans_desc=noidung)
 
             return Response({
-                "status": response.status_code,
-                "msg": "Thành công" if response.ok else "Thất bại",
-                "data": downstream
-            }, status=response.status_code)
+                "status": 200,
+                "msg": "Thành công",
+                "data": {
+                    "qr_url": qr_url,
+                    "qr_image_base64": img_b64,
+                    "sepay_params": params,
+                }
+            }, status=200)
         except requests.RequestException as exc:
             return Response({
                 "status": 502,
                 "msg": "Không kết nối được dịch vụ QR",
                 "error": str(exc),
-                "payload": payload
+                "params": params
             }, status=502)
     
 class OrderSellView(APIView):
@@ -740,7 +756,7 @@ class OrderShellView(APIView):
             return Response({
                 "status": response.status_code,
                 "success": response.ok,
-                "msg": response.json().get('data') if response.ok else "Tạo đơn hàng thất bại",
+                "msg": response.json().get('data') if response.ok else -1,
                 "so_tien": so_tien,
                 "downstream": body,
                 "payload": payload
