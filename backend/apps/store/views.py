@@ -13,6 +13,7 @@ from .orderpurchase import create_purchase_order_from_json
 from .orderdeposit import create_deposit_order_from_json
 from .orderservice import create_service_order_from_json
 from .orderreplace import create_replace_order_from_json
+from .tasks import poll_payment_and_confirm
 import requests
 import json
 
@@ -614,6 +615,8 @@ class PaymentQRProxyView(APIView):
         }
         
         missing = [key for key, value in payload.items() if value in (None, "")]
+        if not id_don:
+            missing.append("id_don")
         if missing:
             return Response({
                 "status": 400,
@@ -628,10 +631,14 @@ class PaymentQRProxyView(APIView):
             except ValueError:
                 downstream = {"raw": response.text}
 
+            # Nếu có đủ thông tin, bắt đầu poll thanh toán
+            if id_don:
+                poll_payment_and_confirm.delay(id_don=id_don)
+
             return Response({
                 "status": response.status_code,
                 "msg": "Thành công" if response.ok else "Thất bại",
-                "data": response.json()
+                "data": downstream
             }, status=response.status_code)
         except requests.RequestException as exc:
             return Response({
