@@ -25,12 +25,12 @@ TRANS_TYPE = "C"
 
 
 @shared_task(bind=True)
-def poll_payment_and_confirm(self, id_don: str, so_tien=None):
+def poll_payment_and_confirm(self, id_don: str, so_tien=None, trans_desc=None):
     sql = (
-        "SELECT amount FROM webhook_transactions "
-        "WHERE src_account_number = %s AND trans_type = %s AND trans_desc = %s LIMIT 1"
+        "SELECT SUM(amount) FROM webhook_transactions "
+        "WHERE src_account_number = %s AND trans_type = %s AND trans_desc = %s"
     )
-    params = (SRC_ACCOUNT_NUMBER, TRANS_TYPE, f"{id_don} - APPSALE")
+    params = (SRC_ACCOUNT_NUMBER, TRANS_TYPE, trans_desc)
 
     try:
         conn = psycopg2.connect(**PAYMENT_DB)
