@@ -633,7 +633,7 @@ class PaymentQRProxyView(APIView):
 
             # Nếu có đủ thông tin, bắt đầu poll thanh toán
             if id_don:
-                poll_payment_and_confirm.delay(id_don=id_don)
+                poll_payment_and_confirm.delay(id_don=id_don, so_tien = data.get("sotien"))
 
             return Response({
                 "status": response.status_code,
@@ -723,12 +723,17 @@ class OrderShellView(APIView):
             "danh_sach": danh_sach
         }
 
+        print(payload)
+
         try:
             # response = requests.post(self.order_url, headers=self.headers, data=json.dumps(payload))
             response = requests.post(self.order_url, headers=self.headers, json=payload, timeout=30)
-            print(response.text)
             try:
                 body = response.json()
+                id_don = body.get('data', {})
+                resp = requests.get(f"{INTERNAL_API_BASE}/api/public/chi_tiet_don_hang/{id_don}", timeout=30)
+                print(resp.json())
+                so_tien = resp.json()["data"]["tong_tien"] - resp.json()["data"].get("tien_ck", 0)
             except ValueError:
                 body = {"raw": response.text}
 
@@ -736,6 +741,7 @@ class OrderShellView(APIView):
                 "status": response.status_code,
                 "success": response.ok,
                 "msg": response.json().get('data') if response.ok else "Tạo đơn hàng thất bại",
+                "so_tien": so_tien,
                 "downstream": body,
                 "payload": payload
             }, status=response.status_code)
