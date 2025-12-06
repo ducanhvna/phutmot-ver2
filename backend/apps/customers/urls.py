@@ -1,7 +1,16 @@
-from rest_framework.routers import DefaultRouter
-from .views import CustomerViewSet
+from django.urls import path
+from .views import (
+	CustomerSearchView,
+	CustomerCreateView,
+	CustomerDetailView,
+	CustomerUpdateView,
+	CustomerDeleteView,
+)
 
-router = DefaultRouter()
-router.register(r'', CustomerViewSet, basename='customer')
-
-urlpatterns = router.urls
+urlpatterns = [
+	path("search/", CustomerSearchView.as_view(), name="customer_search"),
+	path("create/", CustomerCreateView.as_view(), name="customer_create"),
+	path("detail/", CustomerDetailView.as_view(), name="customer_detail"),
+	path("update/", CustomerUpdateView.as_view(), name="customer_update"),
+	path("delete/", CustomerDeleteView.as_view(), name="customer_delete"),
+]
