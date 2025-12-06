@@ -94,8 +94,12 @@ class CustomerSearchView(PostOnlyAPIView):
 
     def post(self, request):
         query = (request.data.get("q") or "").strip()
+
+        # Nếu không có query => trả toàn bộ khách hàng local
         if not query:
-            return Response({"detail": "Missing search query."}, status=status.HTTP_400_BAD_REQUEST)
+            qs = Customer.objects.all().order_by("-id")
+            serializer = CustomerSerializer(qs, many=True)
+            return Response(serializer.data)
 
         payload = {"sdt": query}
 
