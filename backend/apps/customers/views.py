@@ -199,6 +199,7 @@ class CustomerCreateView(PostOnlyAPIView):
                     else:
                         # Không có customer hiện hữu -> tạo mới
                         new_customer = Customer.objects.create(
+                            username=item.get("dien_thoai"),
                             name=item.get("ho_ten_khach_hang") or "",
                             phone_number=item.get("dien_thoai") or "",
                             id_card_number=item.get("cccd_cmt") or "",
