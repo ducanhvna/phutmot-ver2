@@ -124,7 +124,26 @@ class CustomerSearchView(PostOnlyAPIView):
 
 
 class CustomerCreateView(PostOnlyAPIView):
+    """
+    | Có Auggest? | Có nội bộ? | Loại dữ liệu (Phone/ID) | Hành động xử lý | Kết quả |
+    |-------------|------------|--------------------------|-----------------|---------|
+    | ❌ Không    | ❌ Không   | 📱 Số điện thoại         | Tạo mới khách hàng nội bộ, đồng bộ thêm sang Auggest | **Tạo mới khách trên cả DB cửa hàng và DB Auggest** |
+    | ❌ Không    | ❌ Không   | 🪪 Căn cước              | Tạo mới khách hàng nội bộ, không gửi sang Auggest | **Tạo mới khách chỉ trên DB cửa hàng** |
+    | ❌ Không    | ✅ Có      | 📱 Số điện thoại         | Cập nhật nội bộ nếu cần, đồng bộ thêm sang Auggest | **Giữ/cập nhật khách trên DB cửa hàng, tạo mới trên DB Auggest** |
+    | ❌ Không    | ✅ Có      | 🪪 Căn cước              | Cập nhật nội bộ, không gửi sang Auggest | **Giữ/cập nhật khách chỉ trên DB cửa hàng** |
+    | ✅ Có       | ❌ Không   | 📱 Số điện thoại         | Tạo mới khách hàng nội bộ từ dữ liệu Auggest | **Tạo mới khách chỉ trên DB cửa hàng (dữ liệu lấy từ Auggest)** |
+    | ✅ Có       | ❌ Không   | 🪪 Căn cước              | Tạo mới khách hàng nội bộ từ dữ liệu Auggest | **Tạo mới khách chỉ trên DB cửa hàng (dữ liệu lấy từ Auggest)** |
+    | ✅ Có       | ✅ Có      | 📱 Số điện thoại         | So khớp và cập nhật nội bộ theo dữ liệu Auggest | **Cập nhật khách trên DB cửa hàng, giữ nguyên trên DB Auggest** |
+    | ✅ Có       | ✅ Có      | 🪪 Căn cước              | So khớp và cập nhật nội bộ theo dữ liệu Auggest | **Cập nhật khách trên DB cửa hàng, giữ nguyên trên DB Auggest** |
 
+    ---
+
+    🔑 Tóm tắt
+    - **Số điện thoại (📱)**: luôn có khả năng đồng bộ sang Auggest.  
+    - **Căn cước (🪪)**: chỉ lưu/cập nhật nội bộ, không gửi sang Auggest.  
+    - **Không có Auggest**: tạo mới hoặc cập nhật nội bộ, nếu là số điện thoại thì thêm mới sang Auggest.  
+    - **Có Auggest**: luôn đồng bộ dữ liệu từ Auggest về nội bộ, không tạo mới trên Auggest.  
+    """
     def post(self, request):
         incoming_data = request.data
         query = incoming_data.get("q", '').strip()
@@ -137,7 +156,7 @@ class CustomerCreateView(PostOnlyAPIView):
 
                 if not results:
                     # Không tìm thấy -> tạo mới
-                    Customer.objects.create(
+                    new_customer = Customer.objects.create(
                         username= query,
                         name= incoming_data.get("name"),
                         phone_number= query if is_phone_number(query) else '',
@@ -151,7 +170,7 @@ class CustomerCreateView(PostOnlyAPIView):
                         if response.status_code != 200:
                             logger.warning("External customer add failed (%s): %s", response.status_code, response.text)
 
-                        serializer = CustomerSerializer(data=data)
+                        serializer = CustomerSerializer(new_customer)
                         return Response(serializer.data, status=status.HTTP_201_CREATED)
                 else:
                     customers = Customer.objects.filter(
