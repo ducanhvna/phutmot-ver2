@@ -795,6 +795,79 @@ class OrderDeTailView(APIView):
                 "data": ""
             }, status=502)
 
+
+class OrderPaymentStatusView(APIView):
+    def post(self, request):
+        if not isinstance(request.data, dict):
+            return Response({
+                "status": 400,
+                "msg": "Payload phải là JSON object",
+                "payload": request.data
+            }, status=400)
+
+        ma_don_hang = (
+            request.data.get("ma_don_hang")
+            or request.data.get("order_id")
+            or request.data.get("order_code")
+        )
+
+        if not ma_don_hang:
+            return Response({
+                "status": 400,
+                "msg": "Thiếu mã đơn hàng",
+                "payload": request.data
+            }, status=400)
+
+        api_url = f"{INTERNAL_API_BASE}/api/public/chi_tiet_don_hang/{ma_don_hang}"
+
+        def _to_number(value):
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return 0.0
+
+        try:
+            response = requests.get(api_url, timeout=30)
+            try:
+                downstream = response.json()
+            except ValueError:
+                downstream = {"raw": response.text}
+
+            if not response.ok:
+                return Response({
+                    "status": response.status_code,
+                    "success": False,
+                    "msg": "Không lấy được chi tiết đơn hàng",
+                    "payload": {"ma_don_hang": ma_don_hang},
+                    "downstream": downstream
+                }, status=response.status_code)
+
+            order_data = downstream.get("data") or {}
+            if not isinstance(order_data, dict):
+                order_data = {}
+            tong_tien = _to_number(order_data.get("tong_tien"))
+            tien_ck = _to_number(order_data.get("tien_ck"))
+            tong_tien_ck = _to_number(order_data.get("tong_tien_chuyen_khoan"))
+
+            remainder = tong_tien - tien_ck - tong_tien_ck
+            paid = remainder == 0
+
+            return Response({
+                "status": 200,
+                "success": True,
+                "paid": paid,
+                "remainder": remainder,
+                # "payload": {"ma_don_hang": ma_don_hang},
+                # "downstream": order_data
+            }, status=200)
+        except requests.RequestException as exc:
+            return Response({
+                "status": 502,
+                "msg": "Không gọi được dịch vụ chi tiết đơn hàng",
+                "error": str(exc),
+                "payload": {"ma_don_hang": ma_don_hang}
+            }, status=502)
+
 class OderPurchaseView(APIView):
     def post(self, request):
         order_data = request.data

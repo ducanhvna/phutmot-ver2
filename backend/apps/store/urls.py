@@ -19,7 +19,8 @@ from .views import (
     OderServiceView,
     WarehouseExportView,
     PaymentConfirmView,
-    OrderDeTailView
+    OrderDeTailView,
+    OrderPaymentStatusView
 )
 
 urlpatterns = [
@@ -78,5 +79,8 @@ urlpatterns = [
     path("api/replace-order/", OrderReplaceView.as_view(), name="create_replace_order"),
 
     #Chi tiết đơn hàng
-    path("api/order-detail/", OrderDeTailView.as_view(), name="order_detail")
+    path("api/order-detail/", OrderDeTailView.as_view(), name="order_detail"),
+
+    # Kiểm tra trạng thái thanh toán
+    path("api/order-payment-status/", OrderPaymentStatusView.as_view(), name="order_payment_status"),
 ]
