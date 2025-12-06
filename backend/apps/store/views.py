@@ -1186,7 +1186,8 @@ class ProductDiscountView(APIView):
             "msg": "Thành công",
             "ma_hang": ma_hang,
             "tong_tien_chua_ck": base_price,
-            "so_tien_ck": so_tien_ck
+            "so_tien_ck": so_tien_ck,
+            "CTKM": "Giảm giá theo danh mục CTKM Khai trương Ngô Quyền"
         }, status=200)
 
 class PaymentConfirmView(APIView):
