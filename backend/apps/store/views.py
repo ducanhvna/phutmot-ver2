@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.conf import settings
 from .authentication import JWTAuthentication
 import pandas as pd
 from .data_loader import df_dmH, df_dmQTTG, df_dmVBTG, cert, CA_CERT_PATH
@@ -12,6 +13,13 @@ from .orderpurchase import create_purchase_order_from_json
 from .orderdeposit import create_deposit_order_from_json
 from .orderservice import create_service_order_from_json
 from .orderreplace import create_replace_order_from_json
+from .tasks import poll_payment_and_confirm
+import requests
+import json
+from base64 import b64encode
+from urllib.parse import urlencode
+
+INTERNAL_API_BASE = getattr(settings, "INTERNAL_API_BASE", "http://118.70.146.150:8869")
 
 # Giả lập dữ liệu tồn kho
 INVENTORY = {
@@ -101,8 +109,6 @@ class AttendanceView(APIView):
         }
 
         return Response(attendance_info)
-
-import requests
 
 TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIs"
 BASE_URL = "https://tygia.baotinmanhhai.vn/api"
@@ -252,9 +258,6 @@ def sanitize_json_floats(data):
         return float(data)
     else:
         return data
-
-
-import requests
 
 url = "https://14.224.192.52:9999/api/v1/calculate-price"
 
@@ -482,7 +485,6 @@ class PriceCalcView(APIView):
         except Exception as e:
             return Response({"status": 500, "msg": str(e)}, status=500)
 
-
 class GenQRView(APIView):
     def post(self, request):
         # account_type = request.data.get("account_type")
@@ -598,6 +600,69 @@ class PaymentView(APIView):
                 "signature": "DUMMY_SIGNATURE"
             }
         })
+
+class PaymentQRProxyView(APIView):
+    sepay_base = "https://qr.sepay.vn/img"
+
+    def post(self, request):
+        data = request.data
+        id_don = data.get("id_don")
+        taikhoan = data.get("taikhoanthuhuong")
+        noidung = data.get("noidungchuyentien")
+        sotien = data.get("sotien")
+        bank_code = "TPB"
+
+        missing = []
+        if not id_don:
+            missing.append("id_don")
+        if not taikhoan:
+            missing.append("taikhoanthuhuong")
+        if not noidung:
+            missing.append("noidungchuyentien")
+        if sotien in (None, ""):
+            missing.append("sotien")
+        if missing:
+            return Response({
+                "status": 400,
+                "msg": "Thiếu trường bắt buộc",
+                "fields": missing
+            }, status=400)
+
+        params = {
+            "acc": taikhoan,
+            "bank": bank_code,
+            "amount": sotien,
+            "des": noidung,
+            "download": 0,
+        }
+
+        query = urlencode(params, safe=":/")
+        qr_url = f"{self.sepay_base}?{query}"
+
+        try:
+            response = requests.get(qr_url, timeout=30)
+            response.raise_for_status()
+            img_b64 = b64encode(response.content).decode("ascii")
+
+            # # Bắt đầu poll thanh toán (truyền trans_desc là nội dung chuyển tiền)
+            # poll_payment_and_confirm.delay(id_don=id_don, so_tien=sotien, trans_desc=noidung)
+
+            return Response({
+                "status": 200,
+                "msg": "Thành công",
+                "data": {
+                    "qr_url": qr_url,
+                    "qr_image_base64": img_b64,
+                    "params": params,
+                }
+            }, status=200)
+        except requests.RequestException as exc:
+            return Response({
+                "status": 502,
+                "msg": "Không kết nối được dịch vụ QR",
+                "error": str(exc),
+                "params": params
+            }, status=502)
     
 class OrderSellView(APIView):
     def post(self, request):
@@ -610,7 +675,199 @@ class OrderSellView(APIView):
             })
         except Exception as e:
             return Response({"status": 500, "msg": str(e)}, status=500)
+
+class OrderShellView(APIView):
+    order_url = f"{INTERNAL_API_BASE}/api/public/updatedatehang"
+    headers = {
+        "Content-Type": "application/json; charset=utf-8"
+    }
+
+    def post(self, request):
+        payload_source = request.data
+        if isinstance(payload_source, dict) and isinstance(payload_source.get("data"), dict):
+            data = payload_source.get("data")
+        else:
+            data = payload_source
+
+        ma_khachhang = data.get("ma_khachhang")
+
+        if not ma_khachhang:
+            ma_khachhang = data.get("phone", "").replace("*", "")
+
+        discount_amount = data.get("discount_amount", 0)
+
+        if not ma_khachhang:
+            return Response({
+                "status": 400,
+                "msg": "Thiếu thông tin mã khách hàng",
+                "details": {
+                    "payload": data
+                }
+            }, status=400)
+
+        danh_sach = data.get("danh_sach") or []
+        items = data.get("sellorderitems", [])
+        for item in items:
+            product_id = item.get("product_id")
+            soluong = item.get("quantity")
+            if int(soluong) > 0:
+                danh_sach.append({
+                    "mahang": str(product_id),
+                    "soluong": item.get("quantity"),
+                    "so_tien": 0
+                })
+        if discount_amount > 0:
+            danh_sach.append({
+                "mahang": "",
+                "soluong": 0,
+                "so_tien": discount_amount
+            })
+        if not danh_sach:
+            return Response({
+                "status": 400,
+                "msg": "Thiếu danh sách sản phẩm",
+                "details": {
+                    "payload": data,
+                    "sellorderitems": data.get("sellorderitems", [])
+                }
+            }, status=400)
+
+        payload = {
+            "ma_khachhang": ma_khachhang,
+            "manhanvien": data.get("username_sale", ""),
+            "dien_giai": data.get("dien_giai", ""),
+            "danh_sach": danh_sach
+        }
+
+        print(payload)
+
+        try:
+            # response = requests.post(self.order_url, headers=self.headers, data=json.dumps(payload))
+            response = requests.post(self.order_url, headers=self.headers, json=payload, timeout=30)
+            try:
+                body = response.json()
+                id_don = body.get('data', {})
+                resp = requests.get(f"{INTERNAL_API_BASE}/api/public/chi_tiet_don_hang/{id_don}", timeout=30)
+                print(resp.json())
+                so_tien = resp.json()["data"]["tong_tien"] - resp.json()["data"].get("tien_ck", 0)
+            except ValueError:
+                body = {"raw": response.text}
+
+            return Response({
+                "status": response.status_code,
+                "success": response.ok,
+                "msg": response.json().get('data') if response.ok else "-1",
+                "so_tien": so_tien,
+                "downstream": body,
+                "payload": payload
+            }, status=response.status_code)
+        except requests.RequestException as exc:
+            return Response({
+                "status": 502,
+                "msg": "Không gọi được dịch vụ đích",
+                "error": str(exc),
+                "payload": payload
+            }, status=502)
         
+class OrderDeTailView(APIView):
+
+    def post(self, request):
+        payload_source = request.data
+        if isinstance(payload_source, dict) and isinstance(payload_source.get("data"), dict):
+            data = payload_source.get("data")
+        else:
+            data = payload_source
+
+        ma_don_hang = data.get("ma_don_hang")
+        api_url = f"{INTERNAL_API_BASE}/api/public/chi_tiet_don_hang/{ma_don_hang}"
+        try:
+            response = requests.get(api_url, timeout=30)
+
+            return Response({
+                "status": response.status_code,
+                "success": response.ok,
+                "data": response.json(),
+            }, status=response.status_code)
+        except requests.RequestException as exc:
+            return Response({
+                "status": 502,
+                "success": False,
+                "data": ""
+            }, status=502)
+
+
+class OrderPaymentStatusView(APIView):
+    def post(self, request):
+        if not isinstance(request.data, dict):
+            return Response({
+                "status": 400,
+                "msg": "Payload phải là JSON object",
+                "payload": request.data
+            }, status=400)
+
+        ma_don_hang = (
+            request.data.get("ma_don_hang")
+            or request.data.get("order_id")
+            or request.data.get("order_code")
+        )
+
+        if not ma_don_hang:
+            return Response({
+                "status": 400,
+                "msg": "Thiếu mã đơn hàng",
+                "payload": request.data
+            }, status=400)
+
+        api_url = f"{INTERNAL_API_BASE}/api/public/chi_tiet_don_hang/{ma_don_hang}"
+
+        def _to_number(value):
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return 0.0
+
+        try:
+            response = requests.get(api_url, timeout=30)
+            try:
+                downstream = response.json()
+            except ValueError:
+                downstream = {"raw": response.text}
+
+            if not response.ok:
+                return Response({
+                    "status": response.status_code,
+                    "success": False,
+                    "msg": "Không lấy được chi tiết đơn hàng",
+                    "payload": {"ma_don_hang": ma_don_hang},
+                    "downstream": downstream
+                }, status=response.status_code)
+
+            order_data = downstream.get("data") or {}
+            if not isinstance(order_data, dict):
+                order_data = {}
+            tong_tien = _to_number(order_data.get("tong_tien"))
+            tien_ck = _to_number(order_data.get("tien_ck"))
+            tong_tien_ck = _to_number(order_data.get("tong_tien_chuyen_khoan"))
+
+            remainder = tong_tien - tien_ck - tong_tien_ck
+            paid = remainder == 0
+
+            return Response({
+                "status": 200,
+                "success": True,
+                "paid": paid,
+                "remainder": remainder,
+                # "payload": {"ma_don_hang": ma_don_hang},
+                # "downstream": order_data
+            }, status=200)
+        except requests.RequestException as exc:
+            return Response({
+                "status": 502,
+                "msg": "Không gọi được dịch vụ chi tiết đơn hàng",
+                "error": str(exc),
+                "payload": {"ma_don_hang": ma_don_hang}
+            }, status=502)
+
 class OderPurchaseView(APIView):
     def post(self, request):
         order_data = request.data
@@ -622,20 +879,100 @@ class OderPurchaseView(APIView):
             })
         except Exception as e:
             return Response({"status": 500, "msg": str(e)}, status=500)
-        
-        
+                
 class OderDepositView(APIView):
+    deposit_url = f"{INTERNAL_API_BASE}/api/public/khachang_dat_coc"
+    headers = {
+        "Content-Type": "application/json; charset=utf-8"
+    }
+
+    def _normalize_payload(self, payload_source):
+        if isinstance(payload_source, dict) and isinstance(payload_source.get("data"), dict):
+            data = payload_source["data"]
+        else:
+            data = payload_source
+
+        ma_khachhang = data.get("phone", "").replace("*", "")
+        if not ma_khachhang:
+            raise ValueError("Thiếu thông tin mã khách hàng")
+
+        manhanvien = data.get("username_sale")
+        danh_sach = data.get("danh_sach") or []
+        if not danh_sach:
+            source_items = data.get("orderitems") or data.get("sellorderitems") or []
+            for item in source_items:
+                mahang = item.get("product_id")
+                soluong = item.get("quantity")
+                if not mahang or soluong in (None, ""):
+                    continue
+                try:
+                    soluong_val = float(soluong)
+                except (TypeError, ValueError):
+                    continue
+                if soluong_val <= 0:
+                    continue
+                danh_sach.append({
+                    "mahang": str(mahang),
+                    "soluong": soluong_val
+                })
+
+        danh_sach = [entry for entry in danh_sach if entry.get("mahang") and entry.get("soluong")]
+        if not danh_sach:
+            raise ValueError("Thiếu danh sách sản phẩm")
+
+        ngay_giao = data.get('delivery_date', '')
+
+        payload = {
+            "ma_khachhang": ma_khachhang,
+            "manhanvien": manhanvien,
+            "dien_giai": data.get("dien_giai", ""),
+            "ngay_giao": ngay_giao,
+            "danh_sach": danh_sach
+        }
+
+        return data, payload
+
     def post(self, request):
-        order_data = request.data
         try:
-            create_deposit_order_from_json(order_data)
+            normalized_data, downstream_payload = self._normalize_payload(request.data)
+        except ValueError as exc:
             return Response({
-                "status": 200,
-                "msg": "Đơn đặt cọc đã được tạo thành công!"
-            })
+                "status": 400,
+                "msg": str(exc),
+                "payload": request.data
+            }, status=400)
+
+        try:
+            create_deposit_order_from_json(normalized_data)
         except Exception as e:
             return Response({"status": 500, "msg": str(e)}, status=500)
- 
+
+        try:
+            response = requests.post(
+                self.deposit_url,
+                headers=self.headers,
+                json=downstream_payload,
+                timeout=30
+            )
+            try:
+                downstream = response.json()
+            except ValueError:
+                downstream = {"raw": response.text}
+
+            return Response({
+                "status": response.status_code,
+                "success": response.ok,
+                "msg": "Lên đơn đặt cọc thành công" if response.ok else "Trả lỗi",
+                "payload": downstream_payload,
+                "downstream": downstream
+            }, status=response.status_code)
+        except requests.RequestException as exc:
+            return Response({
+                "status": 502,
+                "msg": "Không gọi được dịch vụ đặt cọc",
+                "error": str(exc),
+                "payload": downstream_payload
+            }, status=502)
 
 class OderServiceView(APIView):
     def post(self, request):
@@ -649,6 +986,128 @@ class OderServiceView(APIView):
         except Exception as e:
             return Response({"status": 500, "msg": str(e)}, status=500)
 
+class WarehouseExportView(APIView):
+    export_url = f"{INTERNAL_API_BASE}/api/public/Xuat_kho"
+    headers = {
+        "Content-Type": "application/json; charset=utf-8"
+    }
+
+    def post(self, request):
+        if isinstance(request.data, dict):
+            data = request.data
+        else:
+            return Response({
+                "status": 400,
+                "msg": "Payload phải là JSON object",
+                "payload": request.data
+            }, status=400)
+
+        ma_hoa_don = (
+            data.get("ma_hoa_don")
+            or data.get("mahoadon")
+            or data.get("order_code")
+            or data.get("order_id")
+        )
+
+        if not ma_hoa_don:
+            return Response({
+                "status": 400,
+                "msg": "Thiếu mã hóa đơn",
+                "payload": data
+            }, status=400)
+
+        payload = {**data, "ma_hoa_don": ma_hoa_don}
+
+        try:
+            response = requests.post(
+                self.export_url,
+                headers=self.headers,
+                json=payload,
+                timeout=30
+            )
+            try:
+                downstream = response.json()
+            except ValueError:
+                downstream = {"raw": response.text}
+
+            return Response({
+                "status": response.status_code,
+                "success": response.ok,
+                "msg": "Xuất kho thành công" if response.ok else "Xuất kho thất bại",
+                "payload": payload,
+                "downstream": downstream
+            }, status=response.status_code)
+        except requests.RequestException as exc:
+            return Response({
+                "status": 502,
+                "msg": "Không kết nối được dịch vụ xuất kho",
+                "error": str(exc),
+                "payload": payload
+            }, status=502)
+
+class PaymentConfirmView(APIView):
+    payment_url = f"{INTERNAL_API_BASE}/api/public/Thanh_toan"
+    headers = {
+        "Content-Type": "application/json; charset=utf-8"
+    }
+
+    def post(self, request):
+        if not isinstance(request.data, dict):
+            return Response({
+                "status": 400,
+                "msg": "Payload phải là JSON object",
+                "payload": request.data
+            }, status=400)
+
+        data = request.data
+        ma_hoa_don = data.get("ma_hoa_don")
+        so_tien = data.get("so_tien")
+        loai = data.get("loai") # Loại 1 là bán hàng, loại 2 là đặt cọc.
+
+        missing = []
+        if not ma_hoa_don:
+            missing.append("ma_hoa_don")
+        if so_tien in (None, ""):
+            missing.append("so_tien")
+        if loai in (None, ""):
+            missing.append("loai")
+
+        if missing:
+            return Response({
+                "status": 400,
+                "msg": "Thiếu trường bắt buộc",
+                "fields": missing,
+                "payload": data
+            }, status=400)
+
+        payload = {**data, "ma_hoa_don": ma_hoa_don, "so_tien": so_tien, "loai": loai}
+
+        try:
+            response = requests.post(
+                self.payment_url,
+                headers=self.headers,
+                json=payload,
+                timeout=30
+            )
+            try:
+                downstream = response.json()
+            except ValueError:
+                downstream = {"raw": response.text}
+
+            return Response({
+                "status": response.status_code,
+                "success": response.ok,
+                "msg": f"Thanh toán thành công {so_tien} VND" if response.ok else "Thanh toán thất bại",
+                "payload": payload,
+                "downstream": downstream
+            }, status=response.status_code)
+        except requests.RequestException as exc:
+            return Response({
+                "status": 502,
+                "msg": "Không kết nối được dịch vụ thanh toán",
+                "error": str(exc),
+                "payload": payload
+            }, status=502)
 
 class OrderReplaceView(APIView):
     def post(self, request):
@@ -661,7 +1120,6 @@ class OrderReplaceView(APIView):
             })
         except Exception as e:
             return Response({"status": 500, "msg": str(e)}, status=500)
-
 
 class ProductImageView(APIView):
     def post(self, request):
