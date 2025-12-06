@@ -87,7 +87,7 @@ def _map_local_fields(incoming_data):
     if not data.get("id_card_number") and data.get("cccd_cmt"):
         data["id_card_number"] = data.get("cccd_cmt")
     if data.get("id_card_number") is None:
-        data["id_card_number"] = ""
+        data["id_card_number"] = None
 
     return data
 
@@ -122,13 +122,13 @@ class CustomerSearchView(PostOnlyAPIView):
         qs = []
 
         for item in results:
-            username = item.get("ma_khach_hang") or item.get("dien_thoai") or ""
+            username = item.get("ma_khach_hang") or item.get("dien_thoai")
             customer, created = Customer.objects.update_or_create(
                 username=username,
                 defaults={
                     "name": item.get("ho_ten_khach_hang") or "",
                     "phone_number": item.get("dien_thoai") or "",
-                    "id_card_number": item.get("cccd_cmt") or "",
+                    "id_card_number": item.get("cccd_cmt") or None,
                     "gender": "Male" if item.get("gioi_tinh") == "Nam" else "Female" if item.get("gioi_tinh") == "Nữ" else None,
                     "birth_date": item.get("ngay_sinh").split(" ")[0] if item.get("ngay_sinh") else None,
                     "email": item.get("email") or "",
