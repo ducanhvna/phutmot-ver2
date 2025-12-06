@@ -138,17 +138,15 @@ class CustomerCreateView(PostOnlyAPIView):
                 if not results:
                     # Không tìm thấy -> tạo mới
                     Customer.objects.create(
-                        name= data.get("name"),
+                        username= query,
+                        name= incoming_data.get("name"),
                         phone_number= query if is_phone_number(query) else '',
                         id_card_number= query if is_id_card(query) else '',
                         verification_status=True,
                         is_active=True,
                     )
                     if is_phone_number(query):
-                        data["phone_number"] = query
-                        data["name"] = data.get("name")
-                        data["username"] = query
-                        data["id_card_number"] = None
+                        data = {"phone_number": query, "name": incoming_data.get("name"), "username": query, "id_card_number": None}
                         response = requests.post(EXTERNAL_CUSTOMER_ADD_URL, headers=headers, data=json.dumps(payload), timeout=15)
                         if response.status_code != 200:
                             logger.warning("External customer add failed (%s): %s", response.status_code, response.text)
