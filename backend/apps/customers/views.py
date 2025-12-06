@@ -159,9 +159,9 @@ class CustomerCreateView(PostOnlyAPIView):
                     customers = Customer.objects.filter(
                         Q(phone_number=query) | Q(id_card_number=query)
                     )
+                    item = results[0]
+                    birth_date = item.get("ngay_sinh")
                     for customer in customers:
-                        item = results[0]
-                        birth_date = item.get("ngay_sinh")
                         phone_match = item.get("dien_thoai") == customer.phone_number
                         id_match = item.get("cccd_cmt") == customer.id_card_number
 
@@ -196,7 +196,33 @@ class CustomerCreateView(PostOnlyAPIView):
                     if len(customers)>0:
                         serializer = CustomerSerializer(customer)
                         return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
+                    else:
+                        # Không có customer hiện hữu -> tạo mới
+                        new_customer = Customer.objects.create(
+                            name=item.get("ho_ten_khach_hang") or "",
+                            phone_number=item.get("dien_thoai") or "",
+                            id_card_number=item.get("cccd_cmt") or "",
+                            gender="Male" if item.get("gioi_tinh") == "Nam" else "Female" if item.get("gioi_tinh") == "Nữ" else "",
+                            birth_date=birth_date.split(" ")[0] if birth_date else None,
+                            email=item.get("email") or "",
+                            address={
+                                "dia_chi": item.get("dia_chi"),
+                                "tinh": item.get("tinh"),
+                                "quan": item.get("quan"),
+                                "phuong": item.get("phuong"),
+                            },
+                            info={
+                                "ghi_chu": item.get("ghi_chu"),
+                                "so_diem": item.get("so_diem"),
+                                "hang": item.get("hang"),
+                                "image_khach_hang": item.get("image_khach_hang"),
+                                "qr_code": item.get("qr_code"),
+                            },
+                            verification_status=True,
+                            is_active=True,
+                        )
+                        serializer = CustomerSerializer(new_customer)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
         data = _map_local_fields(incoming_data)
         address = _parse_address(incoming_data)
 
