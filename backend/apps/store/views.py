@@ -644,8 +644,8 @@ class PaymentQRProxyView(APIView):
             response.raise_for_status()
             img_b64 = b64encode(response.content).decode("ascii")
 
-            # Bắt đầu poll thanh toán (truyền trans_desc là nội dung chuyển tiền)
-            poll_payment_and_confirm.delay(id_don=id_don, so_tien=sotien, trans_desc=noidung)
+            # # Bắt đầu poll thanh toán (truyền trans_desc là nội dung chuyển tiền)
+            # poll_payment_and_confirm.delay(id_don=id_don, so_tien=sotien, trans_desc=noidung)
 
             return Response({
                 "status": 200,
@@ -653,7 +653,7 @@ class PaymentQRProxyView(APIView):
                 "data": {
                     "qr_url": qr_url,
                     "qr_image_base64": img_b64,
-                    "sepay_params": params,
+                    "params": params,
                 }
             }, status=200)
         except requests.RequestException as exc:
@@ -769,6 +769,32 @@ class OrderShellView(APIView):
                 "payload": payload
             }, status=502)
         
+class OrderDeTailView(APIView):
+
+    def post(self, request):
+        payload_source = request.data
+        if isinstance(payload_source, dict) and isinstance(payload_source.get("data"), dict):
+            data = payload_source.get("data")
+        else:
+            data = payload_source
+
+        ma_don_hang = data.get("ma_don_hang")
+        api_url = f"{INTERNAL_API_BASE}/api/public/chi_tiet_don_hang/{ma_don_hang}"
+        try:
+            response = requests.get(api_url, timeout=30)
+
+            return Response({
+                "status": response.status_code,
+                "success": response.ok,
+                "data": response.json(),
+            }, status=response.status_code)
+        except requests.RequestException as exc:
+            return Response({
+                "status": 502,
+                "success": False,
+                "data": ""
+            }, status=502)
+
 class OderPurchaseView(APIView):
     def post(self, request):
         order_data = request.data

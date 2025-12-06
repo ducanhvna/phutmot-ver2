@@ -18,7 +18,8 @@ from .views import (
     OrderReplaceView,
     OderServiceView,
     WarehouseExportView,
-    PaymentConfirmView
+    PaymentConfirmView,
+    OrderDeTailView
 )
 
 urlpatterns = [
@@ -74,5 +75,8 @@ urlpatterns = [
     path("api/payment/confirm/", PaymentConfirmView.as_view(), name="payment_confirm"),
     
     # Tạo đơn đổi hàng JSON
-    path("api/replace-order/", OrderReplaceView.as_view(), name="create_replace_order") 
+    path("api/replace-order/", OrderReplaceView.as_view(), name="create_replace_order"),
+
+    #Chi tiết đơn hàng
+    path("api/order-detail/", OrderDeTailView.as_view(), name="order_detail")
 ]
