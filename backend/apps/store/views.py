@@ -18,6 +18,12 @@ import requests
 import json
 from base64 import b64encode
 from urllib.parse import urlencode
+import psycopg2
+
+try:
+    import pyodbc
+except ImportError:  # pragma: no cover - optional dependency
+    pyodbc = None
 
 INTERNAL_API_BASE = getattr(settings, "INTERNAL_API_BASE", "http://118.70.146.150:8869")
 
@@ -1044,6 +1050,144 @@ class WarehouseExportView(APIView):
                 "error": str(exc),
                 "payload": payload
             }, status=502)
+
+
+class ProductDiscountView(APIView):
+    """
+    Trả về số tiền chiết khấu cho 1 sản phẩm.
+    - Bước 1: Lấy % giảm giá từ Postgres (EmailTCKT) bảng CTKM_NgoQuyen.
+    - Bước 2: Gọi hàm SQL Server dbo.TinhGiaBan(ma_hang) để lấy giá bán gốc.
+    - Trả về: {"tong_tien_chua_ck", "so_tien_ck", "ma_hang"}
+    """
+
+    pg_host = getattr(settings, "EMAILTCKT_PG_HOST", "192.168.0.221")
+    pg_port = int(getattr(settings, "EMAILTCKT_PG_PORT", 5432))
+    pg_db = getattr(settings, "EMAILTCKT_PG_DB", "EmailTCKT")
+    pg_user = getattr(settings, "EMAILTCKT_PG_USER", "postgres")
+    pg_password = getattr(settings, "EMAILTCKT_PG_PASSWORD", "admin")
+
+    # Downstream price API
+    price_api_base = getattr(settings, "PRICE_API_BASE", "http://192.168.0.223:8096")
+
+    def _parse_percent(self, raw_value):
+        if raw_value is None:
+            return 0.0
+        try:
+            text = str(raw_value).strip()
+            if text.endswith("%"):
+                text = text[:-1]
+            text = text.replace(" ", "").replace(",", ".")
+            val = float(text)
+            if val > 1:
+                val = val / 100.0
+            if val < 0:
+                val = 0.0
+            if val > 1:
+                val = 1.0
+            return val
+        except (ValueError, TypeError):
+            return 0.0
+
+    def _get_discount_rate(self, ma_hang):
+        conn = None
+        try:
+            conn = psycopg2.connect(
+                host=self.pg_host,
+                port=self.pg_port,
+                dbname=self.pg_db,
+                user=self.pg_user,
+                password=self.pg_password,
+                connect_timeout=5,
+            )
+            with conn, conn.cursor() as cur:
+                cur.execute(
+                    'SELECT "phan_tram_giam_gia" FROM "CTKM_NgoQuyen" WHERE "Ma_hang" = %s LIMIT 1',
+                    (ma_hang,)
+                )
+                row = cur.fetchone()
+                if not row:
+                    return 0.0
+                return self._parse_percent(row[0])
+        except Exception:
+            # Nếu lỗi kết nối/đọc, báo 502 phía trên
+            raise
+        finally:
+            if conn:
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+
+    def _get_base_price(self, ma_hang):
+        url = f"{self.price_api_base}/api/public/hang_ma_kho/{ma_hang}/GH1"
+        try:
+            resp = requests.get(url, timeout=10)
+            resp.raise_for_status()
+            data = resp.json().get("data") if resp.headers.get("Content-Type", "").startswith("application/json") else None
+            if not isinstance(data, dict):
+                return None
+            gia = data.get("giaBan")
+            if gia is None:
+                return None
+            try:
+                return float(gia)
+            except (TypeError, ValueError):
+                return None
+        except requests.RequestException:
+            raise
+
+    def post(self, request):
+        if not isinstance(request.data, dict):
+            return Response({
+                "status": 400,
+                "msg": "Payload phải là JSON object",
+                "payload": request.data
+            }, status=400)
+
+        ma_hang = request.data.get("ma_hang")
+        if not ma_hang:
+            return Response({
+                "status": 400,
+                "msg": "Thiếu mã hàng",
+                "payload": request.data
+            }, status=400)
+
+        try:
+            discount_rate = self._get_discount_rate(ma_hang)
+        except Exception as exc:
+            return Response({
+                "status": 502,
+                "msg": "Không đọc được chiết khấu từ Postgres",
+                "error": str(exc),
+                "ma_hang": ma_hang
+            }, status=502)
+
+        try:
+            base_price = self._get_base_price(ma_hang)
+        except Exception as exc:
+            return Response({
+                "status": 502,
+                "msg": "Không lấy được giá bán từ SQL Server",
+                "error": str(exc),
+                "ma_hang": ma_hang
+            }, status=502)
+
+        if base_price is None:
+            return Response({
+                "status": 404,
+                "msg": "Không tìm thấy giá bán cho mã hàng",
+                "ma_hang": ma_hang
+            }, status=404)
+
+        so_tien_ck = round(base_price * discount_rate, 0)
+
+        return Response({
+            "status": 200,
+            "msg": "Thành công",
+            "ma_hang": ma_hang,
+            "tong_tien_chua_ck": base_price,
+            "so_tien_ck": so_tien_ck
+        }, status=200)
 
 class PaymentConfirmView(APIView):
     payment_url = f"{INTERNAL_API_BASE}/api/public/Thanh_toan"
