@@ -756,7 +756,7 @@ class OrderShellView(APIView):
             return Response({
                 "status": response.status_code,
                 "success": response.ok,
-                "msg": response.json().get('data') if response.ok else -1,
+                "msg": response.json().get('data') if response.ok else "-1",
                 "so_tien": so_tien,
                 "downstream": body,
                 "payload": payload
