@@ -194,7 +194,6 @@ class RateView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
-
 class AllRateView(APIView):
     def get(self, request):
         url_tygia_k = "https://14.224.192.52:9999/api/v1/tigia"
@@ -753,6 +752,7 @@ class OrderShellView(APIView):
             try:
                 body = response.json()
                 id_don = body.get('data', {})
+                print("ID ĐƠN:", id_don)
                 resp = requests.get(f"{INTERNAL_API_BASE}/api/public/chi_tiet_don_hang/{id_don}", timeout=30)
                 print(resp.json())
                 so_tien = resp.json()["data"]["tong_tien"] - resp.json()["data"].get("tien_ck", 0)
@@ -1189,6 +1189,42 @@ class ProductDiscountView(APIView):
             "so_tien_ck": so_tien_ck,
             "CTKM": "Giảm giá theo danh mục CTKM Khai trương Ngô Quyền"
         }, status=200)
+
+
+class BasePriceRawView(APIView):
+    price_api_base = getattr(settings, "PRICE_API_BASE", "http://192.168.0.223:8096")
+
+    def get(self, request):
+        ma_hang = request.query_params.get("ma_hang")
+        if not ma_hang:
+            return Response({
+                "status": 400,
+                "msg": "Thiếu mã hàng",
+            }, status=400)
+
+        url = f"{self.price_api_base}/api/public/hang_ma_kho/{ma_hang}/FS01"
+
+        try:
+            resp = requests.get(url, timeout=10)
+        except requests.RequestException as exc:
+            return Response({
+                "status": 502,
+                "msg": "Không gọi được dịch vụ giá",
+                "error": str(exc),
+                "ma_hang": ma_hang,
+            }, status=502)
+
+        content_type = resp.headers.get("Content-Type", "")
+        if content_type.startswith("application/json"):
+            try:
+                payload = resp.json()
+            except ValueError:
+                payload = {"raw": resp.text}
+        else:
+            payload = {"raw": resp.text}
+        print(resp.json())
+
+        return Response(payload, status=resp.status_code)
 
 class PaymentConfirmView(APIView):
     payment_url = f"{INTERNAL_API_BASE}/api/public/Thanh_toan"

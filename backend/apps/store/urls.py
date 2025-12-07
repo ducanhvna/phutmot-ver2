@@ -21,7 +21,8 @@ from .views import (
     PaymentConfirmView,
     OrderDeTailView,
     OrderPaymentStatusView,
-    ProductDiscountView
+    ProductDiscountView,
+    BasePriceRawView
 )
 
 urlpatterns = [
@@ -87,4 +88,7 @@ urlpatterns = [
 
     # Lấy số tiền chiết khấu cho sản phẩm
     path("api/product-discount/", ProductDiscountView.as_view(), name="product_discount"),
+
+    # Proxy giá gốc (trả nguyên dữ liệu từ dịch vụ downstream)
+    path("api/base-price-raw/", BasePriceRawView.as_view(), name="base_price_raw"),
 ]
