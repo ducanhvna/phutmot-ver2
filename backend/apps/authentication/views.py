@@ -65,6 +65,62 @@ def register_user(request):
 from apps.home.utils import ApiResponse
 
 class LoginView(APIView):
+    """
+    API: Đăng nhập hệ thống
+
+    Endpoint:
+    POST /api/login/
+
+    Mô tả:
+    API dùng để xác thực người dùng bằng username và password. 
+    Nếu đăng nhập thành công, hệ thống trả về token JWT cùng thông tin liên quan.
+
+    Request:
+    - Method: POST
+    - Headers:
+    Content-Type: application/json
+    - Body:
+    {
+    "username": "admin",
+    "password": "your_password"
+    }
+
+    Response:
+
+    1. Thành công (HTTP 200):
+    {
+    "success": true,
+    "message": "Đăng nhập thành công",
+    "data": {
+        "store_token": "<JWT RS256 token>",
+        "access": "<JWT access token>",
+        "printers": [
+        "tichtru",
+        "tho",
+        "trangsuc"
+        ],
+        "store_url": "https://solienlacdientu.info",
+        "refresh": "<JWT refresh token>"
+    }
+    }
+
+    2. Thất bại (HTTP 401):
+    {
+    "success": false,
+    "message": "Sai tài khoản hoặc mật khẩu",
+    "data": []
+    }
+
+    Các trường dữ liệu trả về:
+    - success (boolean): Trạng thái thành công hay thất bại
+    - message (string): Thông điệp mô tả kết quả đăng nhập
+    - data (object): Dữ liệu trả về khi đăng nhập thành công
+    - store_token (string): JWT token riêng cho store (ký bằng RSA private key)
+    - access (string): Access token (JWT) dùng cho các API yêu cầu xác thực
+    - printers (array): Danh sách máy in được gán cho user/store
+    - store_url (string): URL cửa hàng
+    - refresh (string): Refresh token (JWT) để lấy access token mới khi hết hạn
+    """
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
@@ -95,6 +151,67 @@ class LoginView(APIView):
 
 
 class StoreRefreshTokenView(APIView):
+    """
+    API: Tạo Store Refresh Token
+
+    Endpoint:
+    POST /api/store/refresh-token/
+
+    Mô tả:
+    API này cho phép superuser tạo ra một store token và refresh token dành cho một brand cụ thể. 
+    Store token có thời hạn rất dài (9999 ngày), dùng để quản lý cửa hàng. Refresh token dùng để lấy access token mới.
+
+    Yêu cầu:
+    - Người gọi API phải đăng nhập và xác thực bằng JWT (access token).
+    - Người gọi API phải có quyền superuser.
+
+    Request:
+    - Method: POST
+    - Headers:
+    Authorization: Bearer <access_token>
+    Content-Type: application/json
+    - Body:
+    {
+    "brand": "tichtru"
+    }
+
+    Response:
+
+    1. Thành công (HTTP 200):
+    {
+    "success": true,
+    "message": "Tạo store token thành công",
+    "data": {
+        "store_token": "<JWT RS256 token>",
+        "refresh": "<JWT refresh token>"
+    }
+    }
+
+    2. Thiếu tham số brand (HTTP 400):
+    {
+    "success": false,
+    "message": "Thiếu tham số 'brand'",
+    "data": []
+    }
+
+    3. Không có quyền (HTTP 403):
+    {
+    "success": false,
+    "message": "Permission denied. Superuser required.",
+    "data": []
+    }
+
+    Các trường dữ liệu trả về:
+    - success (boolean): Trạng thái thành công hay thất bại
+    - message (string): Thông điệp mô tả kết quả
+    - data (object): Dữ liệu trả về khi thành công
+    - store_token (string): JWT token riêng cho store, ký bằng RSA private key, thời hạn dài
+    - refresh (string): Refresh token (JWT) để lấy access token mới
+
+    Ghi chú:
+    - Chỉ superuser mới có thể gọi API này.
+    - Store token được gắn với brand cụ thể, dùng cho việc quản lý cửa hàng.
+    """
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
