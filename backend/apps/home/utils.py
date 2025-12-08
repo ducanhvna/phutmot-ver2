@@ -13,12 +13,15 @@ class ApiResponse:
     """
 
     @staticmethod
-    def success(message="Thành công", data=None, status=200):
-        return Response({
+    def success(message="Thành công", data=None, status=200, pagination=None):
+        response = {
             "success": True,
             "message": message,
             "data": data if data is not None else []
-        }, status=status)
+        }
+        if pagination:
+            response["pagination"] = pagination
+        return Response(response, status=status)
 
     @staticmethod
     def error(message="Thất bại", data=None, status=400):

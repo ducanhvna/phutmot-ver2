@@ -8,6 +8,8 @@ from rest_framework.exceptions import MethodNotAllowed
 import re
 from .models import Customer
 from .serializers import CustomerSerializer
+from apps.home.utils import ApiResponse   # <-- class chuẩn hóa response
+from rest_framework.pagination import PageNumberPagination
 
 def is_phone_number(text: str) -> bool:
     # Số điện thoại Việt Nam thường có 10 chữ số, bắt đầu bằng 0 hoặc +84
@@ -104,26 +106,77 @@ def _map_local_fields(incoming_data):
 
 
 class CustomerSearchView(PostOnlyAPIView):
+    """
+    API tìm kiếm khách hàng nội bộ có phân trang.
 
+    📌 Endpoint:
+    POST /api/customer/search/
+
+    📥 Request body ví dụ:
+    {
+        "q": "0987654321",
+        "page": 1,
+        "page_size": 10
+    }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Tìm kiếm khách hàng thành công",
+        "data": [
+            {
+                "id": 1,
+                "username": "0987654321",
+                "name": "Nguyễn Văn A",
+                "phone_number": "0987654321",
+                "id_card_number": "012345678",
+                "email": "vana@example.com"
+            }
+        ],
+        "pagination": {
+            "page": 1,
+            "page_size": 10,
+            "total_items": 25,
+            "total_pages": 3
+        }
+    }
+    """
     def post(self, request):
         query = (request.data.get("q") or "").strip()
-
-        if not query:
-            qs = Customer.objects.all().order_by("-id")
-        else:
-            qs = Customer.objects.filter(
+        qs = Customer.objects.all().order_by("-id")
+        if query:
+            qs = qs.filter(
                 Q(username__icontains=query)
                 | Q(phone_number__icontains=query)
                 | Q(id_card_number__icontains=query)
                 | Q(name__icontains=query)
-            ).order_by("-id")
+            )
 
-        serializer = CustomerSerializer(qs, many=True)
-        return Response(serializer.data)
+        paginator = PageNumberPagination()
+        paginator.page_size = int(request.data.get("page_size", 10))
+        result_page = paginator.paginate_queryset(qs, request)
 
+        serializer = CustomerSerializer(result_page, many=True)
+
+        pagination_info = {
+            "page": paginator.page.number,
+            "page_size": paginator.page.paginator.per_page,
+            "total_items": paginator.page.paginator.count,
+            "total_pages": paginator.page.paginator.num_pages,
+        }
+
+        return ApiResponse.success(
+            message="Tìm kiếm khách hàng thành công",
+            data=serializer.data,
+            pagination=pagination_info
+        )
+    
 
 class CustomerCreateView(PostOnlyAPIView):
     """
+    API tạo mới khách hàng.
+
+    🔎 Logic xử lý:
     | Có Auggest? | Có nội bộ? | Loại dữ liệu (Phone/ID) | Hành động xử lý | Kết quả |
     |-------------|------------|--------------------------|-----------------|---------|
     | ❌ Không    | ❌ Không   | 📱 Số điện thoại         | Tạo mới khách hàng nội bộ, đồng bộ thêm sang Auggest | **Tạo mới khách trên cả DB cửa hàng và DB Auggest** |
@@ -137,15 +190,41 @@ class CustomerCreateView(PostOnlyAPIView):
 
     ---
 
-    🔑 Tóm tắt
-    - **Số điện thoại (📱)**: luôn có khả năng đồng bộ sang Auggest.  
-    - **Căn cước (🪪)**: chỉ lưu/cập nhật nội bộ, không gửi sang Auggest.  
-    - **Không có Auggest**: tạo mới hoặc cập nhật nội bộ, nếu là số điện thoại thì thêm mới sang Auggest.  
-    - **Có Auggest**: luôn đồng bộ dữ liệu từ Auggest về nội bộ, không tạo mới trên Auggest.  
+    📌 Endpoint:
+    POST /api/customer/create/
+
+    📥 Request body ví dụ:
+    {
+        "q": "0987654321",
+        "name": "Nguyễn Văn B"
+    }
+
+    📤 Response ví dụ (HTTP 201):
+    {
+        "success": true,
+        "message": "Tạo khách hàng thành công",
+        "data": {
+            "id": 2,
+            "username": "0987654321",
+            "name": "Nguyễn Văn B",
+            "phone_number": "0987654321",
+            "id_card_number": null,
+            "email": ""
+        }
+    }
+
+    📤 Response ví dụ (HTTP 400 - lỗi dữ liệu):
+    {
+        "success": false,
+        "message": "Dữ liệu không hợp lệ",
+        "data": []
+    }
     """
+
     def post(self, request):
         incoming_data = request.data
         query = incoming_data.get("q", '').strip()
+
         if is_phone_number(query) or is_id_card(query):
             payload = {"sdt": query}
             response = requests.post(EXTERNAL_CUSTOMER_SEARCH_URL, headers=headers, data=json.dumps(payload), timeout=15)
@@ -156,10 +235,10 @@ class CustomerCreateView(PostOnlyAPIView):
                 if not results:
                     # Không tìm thấy -> tạo mới
                     new_customer = Customer.objects.create(
-                        username= query,
-                        name= incoming_data.get("name"),
-                        phone_number= query if is_phone_number(query) else '',
-                        id_card_number= query if is_id_card(query) else '',
+                        username=query,
+                        name=incoming_data.get("name"),
+                        phone_number=query if is_phone_number(query) else '',
+                        id_card_number=query if is_id_card(query) else '',
                         verification_status=True,
                         is_active=True,
                     )
@@ -169,118 +248,23 @@ class CustomerCreateView(PostOnlyAPIView):
                         if response.status_code != 200:
                             logger.warning("External customer add failed (%s): %s", response.status_code, response.text)
 
-                        serializer = CustomerSerializer(new_customer)
-                        return Response(serializer.data, status=status.HTTP_201_CREATED)
-                else:
-                    customers = Customer.objects.filter(
-                        Q(phone_number=query) | Q(id_card_number=query)
+                    serializer = CustomerSerializer(new_customer)
+                    return ApiResponse.success(
+                        message="Tạo khách hàng thành công",
+                        data=serializer.data,
+                        status=status.HTTP_201_CREATED
                     )
-                    item = results[0]
-                    birth_date = item.get("ngay_sinh")
-                    for customer in customers:
-                        phone_match = item.get("dien_thoai") == customer.phone_number
-                        id_match = item.get("cccd_cmt") == customer.id_card_number
 
-                        # Điều kiện update
-                        if (phone_match and id_match) or \
-                        (phone_match and not customer.id_card_number) or \
-                        (id_match and not customer.phone_number):
+                # Có kết quả từ Auggest -> cập nhật hoặc tạo mới
+                customers = Customer.objects.filter(Q(phone_number=query) | Q(id_card_number=query))
+                item = results[0]
+                birth_date = item.get("ngay_sinh")
 
-                            Customer.objects.filter(pk=customer.pk).update(
-                                name=item.get("ho_ten_khach_hang") or customer.name,
-                                phone_number=item.get("dien_thoai") or customer.phone_number,
-                                id_card_number=item.get("cccd_cmt") or customer.id_card_number,
-                                gender="Male" if item.get("gioi_tinh") == "Nam" else "Female" if item.get("gioi_tinh") == "Nữ" else customer.gender,
-                                birth_date=birth_date.split(" ")[0] if birth_date else customer.birth_date,
-                                email=item.get("email") or customer.email,
-                                address={
-                                    "dia_chi": item.get("dia_chi"),
-                                    "tinh": item.get("tinh"),
-                                    "quan": item.get("quan"),
-                                    "phuong": item.get("phuong"),
-                                },
-                                info={
-                                    "ghi_chu": item.get("ghi_chu"),
-                                    "so_diem": item.get("so_diem"),
-                                    "hang": item.get("hang"),
-                                    "image_khach_hang": item.get("image_khach_hang"),
-                                    "qr_code": item.get("qr_code"),
-                                },
-                                verification_status=True,
-                                is_active=True,
-                            )
-                    if len(customers)>0:
-                        serializer = CustomerSerializer(customer)
-                        return Response(serializer.data, status=status.HTTP_201_CREATED)
-                    else:
-                        # Không có customer hiện hữu -> tạo mới
-                        new_customer = Customer.objects.create(
-                            username=item.get("dien_thoai"),
-                            name=item.get("ho_ten_khach_hang") or "",
-                            phone_number=item.get("dien_thoai") or "",
-                            id_card_number=item.get("cccd_cmt") or "",
-                            gender="Male" if item.get("gioi_tinh") == "Nam" else "Female" if item.get("gioi_tinh") == "Nữ" else "",
-                            birth_date=birth_date.split(" ")[0] if birth_date else None,
-                            email=item.get("email") or "",
-                            address={
-                                "dia_chi": item.get("dia_chi"),
-                                "tinh": item.get("tinh"),
-                                "quan": item.get("quan"),
-                                "phuong": item.get("phuong"),
-                            },
-                            info={
-                                "ghi_chu": item.get("ghi_chu"),
-                                "so_diem": item.get("so_diem"),
-                                "hang": item.get("hang"),
-                                "image_khach_hang": item.get("image_khach_hang"),
-                                "qr_code": item.get("qr_code"),
-                            },
-                            verification_status=True,
-                            is_active=True,
-                        )
-                        serializer = CustomerSerializer(new_customer)
-                        return Response(serializer.data, status=status.HTTP_201_CREATED)
-        data = _map_local_fields(incoming_data)
-        address = _parse_address(incoming_data)
+                for customer in customers:
+                    phone_match = item.get("dien_thoai") == customer.phone_number
+                    id_match = item.get("cccd_cmt") == customer.id_card_number
 
-        payload = _map_external_payload(incoming_data, address)
-
-        try:
-            response = requests.post(EXTERNAL_CUSTOMER_ADD_URL, headers=headers, data=json.dumps(payload), timeout=15)
-            if response.status_code != 200:
-                logger.warning("External customer add failed (%s): %s", response.status_code, response.text)
-        except requests.RequestException as exc:
-            logger.warning("External customer add request error: %s", exc)
-
-        serializer = CustomerSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class CustomerDetailView(PostOnlyAPIView):
-
-    def post(self, request):
-        pk = request.data.get("id") or request.data.get("pk")
-        if not pk:
-            return Response({"detail": "Thiếu id khách hàng"}, status=status.HTTP_400_BAD_REQUEST)
-
-        customer = Customer.objects.filter(pk=pk).first()
-        if customer is None:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        phone_number = customer.phone_number
-
-        if phone_number:
-            payload = {"sdt": phone_number}
-            try:
-                response = requests.post(EXTERNAL_CUSTOMER_SEARCH_URL, headers=headers, data=json.dumps(payload), timeout=15)
-                if response.status_code == 200:
-                    data = response.json()
-                    results = data.get("data", [])
-                    if results:
-                        item = results[0]
-                        birth_date = item.get("ngay_sinh")
+                    if (phone_match and id_match) or (phone_match and not customer.id_card_number) or (id_match and not customer.phone_number):
                         Customer.objects.filter(pk=customer.pk).update(
                             name=item.get("ho_ten_khach_hang") or customer.name,
                             phone_number=item.get("dien_thoai") or customer.phone_number,
@@ -304,60 +288,271 @@ class CustomerDetailView(PostOnlyAPIView):
                             verification_status=True,
                             is_active=True,
                         )
+
+                if customers.exists():
+                    serializer = CustomerSerializer(customers.first())
+                    return ApiResponse.success(
+                        message="Cập nhật khách hàng thành công",
+                        data=serializer.data,
+                        status=status.HTTP_201_CREATED
+                    )
+                else:
+                    # Không có customer hiện hữu -> tạo mới từ dữ liệu Auggest
+                    new_customer = Customer.objects.create(
+                        username=item.get("dien_thoai"),
+                        name=item.get("ho_ten_khach_hang") or "",
+                        phone_number=item.get("dien_thoai") or "",
+                        id_card_number=item.get("cccd_cmt") or "",
+                        gender="Male" if item.get("gioi_tinh") == "Nam" else "Female" if item.get("gioi_tinh") == "Nữ" else "",
+                        birth_date=birth_date.split(" ")[0] if birth_date else None,
+                        email=item.get("email") or "",
+                        address={
+                            "dia_chi": item.get("dia_chi"),
+                            "tinh": item.get("tinh"),
+                            "quan": item.get("quan"),
+                            "phuong": item.get("phuong"),
+                        },
+                        info={
+                            "ghi_chu": item.get("ghi_chu"),
+                            "so_diem": item.get("so_diem"),
+                            "hang": item.get("hang"),
+                            "image_khach_hang": item.get("image_khach_hang"),
+                            "qr_code": item.get("qr_code"),
+                        },
+                        verification_status=True,
+                        is_active=True,
+                    )
+                    serializer = CustomerSerializer(new_customer)
+                    return ApiResponse.success(
+                        message="Tạo khách hàng từ Auggest thành công",
+                        data=serializer.data,
+                        status=status.HTTP_201_CREATED
+                    )
+
+        # Trường hợp không phải phone/ID -> tạo mới nội bộ
+        data = _map_local_fields(incoming_data)
+        address = _parse_address(incoming_data)
+        payload = _map_external_payload(incoming_data, address)
+
+        try:
+            response = requests.post(EXTERNAL_CUSTOMER_ADD_URL, headers=headers, data=json.dumps(payload), timeout=15)
+            if response.status_code != 200:
+                logger.warning("External customer add failed (%s): %s", response.status_code, response.text)
+        except requests.RequestException as exc:
+            logger.warning("External customer add request error: %s", exc)
+
+        serializer = CustomerSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return ApiResponse.success(
+            message="Tạo khách hàng nội bộ thành công",
+            data=serializer.data,
+            status=status.HTTP_201_CREATED
+        )
+
+
+
+class CustomerDetailView(PostOnlyAPIView):
+    """
+    API lấy chi tiết khách hàng theo id/pk.
+
+    📌 Endpoint:
+    POST /api/customer/detail/
+
+    📥 Request body ví dụ:
+    {
+        "id": 1
+    }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Lấy chi tiết khách hàng thành công",
+        "data": {
+            "id": 1,
+            "username": "0987654321",
+            "name": "Nguyễn Văn A",
+            "phone_number": "0987654321",
+            "id_card_number": "012345678",
+            "email": "vana@example.com"
+        }
+    }
+
+    📤 Response ví dụ (HTTP 400 - thiếu id):
+    {
+        "success": false,
+        "message": "Thiếu id khách hàng",
+        "data": []
+    }
+
+    📤 Response ví dụ (HTTP 404 - không tìm thấy):
+    {
+        "success": false,
+        "message": "Không tìm thấy khách hàng",
+        "data": []
+    }
+    """
+
+    def post(self, request):
+        pk = request.data.get("id") or request.data.get("pk")
+        if not pk:
+            return ApiResponse.error(
+                message="Thiếu id khách hàng",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        customer = Customer.objects.filter(pk=pk).first()
+        if customer is None:
+            return ApiResponse.error(
+                message="Không tìm thấy khách hàng",
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        phone_number = customer.phone_number
+
+        if phone_number:
+            payload = {"sdt": phone_number}
+            try:
+                response = requests.post(
+                    EXTERNAL_CUSTOMER_SEARCH_URL,
+                    headers=headers,
+                    data=json.dumps(payload),
+                    timeout=15
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    results = data.get("data", [])
+                    if results:
+                        item = results[0]
+                        birth_date = item.get("ngay_sinh")
+                        Customer.objects.filter(pk=customer.pk).update(
+                            name=item.get("ho_ten_khach_hang") or customer.name,
+                            phone_number=item.get("dien_thoai") or customer.phone_number,
+                            id_card_number=item.get("cccd_cmt") or customer.id_card_number,
+                            gender="Male" if item.get("gioi_tinh") == "Nam"
+                                   else "Female" if item.get("gioi_tinh") == "Nữ"
+                                   else customer.gender,
+                            birth_date=birth_date.split(" ")[0] if birth_date else customer.birth_date,
+                            email=item.get("email") or customer.email,
+                            address={
+                                "dia_chi": item.get("dia_chi"),
+                                "tinh": item.get("tinh"),
+                                "quan": item.get("quan"),
+                                "phuong": item.get("phuong"),
+                            },
+                            info={
+                                "ghi_chu": item.get("ghi_chu"),
+                                "so_diem": item.get("so_diem"),
+                                "hang": item.get("hang"),
+                                "image_khach_hang": item.get("image_khach_hang"),
+                                "qr_code": item.get("qr_code"),
+                            },
+                            verification_status=True,
+                            is_active=True,
+                        )
                         customer.refresh_from_db()
             except requests.RequestException as exc:
                 logger.warning("External customer search failed for retrieve pk=%s: %s", pk, exc)
 
         serializer = CustomerSerializer(customer)
-        # partners = []
-        # if phone_number:
-        #     from .utils import search_partner_by_mobile
-        #     partners = search_partner_by_mobile(phone_number)
-        #     if len(partners) == 0:
-        #         from .utils import create_partner
-        #         create_partner(customer.name, phone_number)
-        #         partners = search_partner_by_mobile(phone_number)
-        return Response({"data": serializer.data})
+        return ApiResponse.success(
+            message="Lấy chi tiết khách hàng thành công",
+            data=serializer.data
+        )
+
 
 
 class CustomerUpdateView(PostOnlyAPIView):
+    """
+    API cập nhật thông tin khách hàng.
 
+    📌 Endpoint:
+    POST /api/customer/update/
+
+    📥 Request body ví dụ:
+    {
+        "id": 1,
+        "name": "Nguyễn Văn A (updated)",
+        "email": "vana_new@example.com"
+    }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Cập nhật khách hàng thành công",
+        "data": {
+            "id": 1,
+            "username": "0987654321",
+            "name": "Nguyễn Văn A (updated)",
+            "phone_number": "0987654321",
+            "id_card_number": "012345678",
+            "email": "vana_new@example.com"
+        }
+    }
+    """
     def post(self, request):
         pk = request.data.get("id") or request.data.get("pk")
         if not pk:
-            return Response({"detail": "Thiếu id khách hàng"}, status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse.error(
+                message="Thiếu id khách hàng",
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         customer = Customer.objects.filter(pk=pk).first()
         if customer is None:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return ApiResponse.error(
+                message="Không tìm thấy khách hàng",
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-        incoming_data = _map_local_fields(request.data)
-        address = _parse_address(incoming_data)
-        payload = _map_external_payload(incoming_data, address)
-
-        try:
-            response = requests.post(EXTERNAL_CUSTOMER_UPDATE_URL, headers=headers, data=json.dumps(payload), timeout=15)
-            if response.status_code != 200:
-                logger.warning("External customer update failed (%s): %s", response.status_code, response.text)
-        except requests.RequestException as exc:
-            logger.warning("External customer update request error: %s", exc)
-
-        serializer = CustomerSerializer(customer, data=incoming_data, partial=False)
+        serializer = CustomerSerializer(customer, data=request.data, partial=False)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+
+        return ApiResponse.success(
+            message="Cập nhật khách hàng thành công",
+            data=serializer.data
+        )
 
 
 class CustomerDeleteView(PostOnlyAPIView):
+    """
+    API xóa khách hàng theo id/pk.
+
+    📌 Endpoint:
+    POST /api/customer/delete/
+
+    📥 Request body ví dụ:
+    {
+        "id": 1
+    }
+
+    📤 Response ví dụ (HTTP 204):
+    {
+        "success": true,
+        "message": "Xóa khách hàng thành công",
+        "data": []
+    }
+    """
 
     def post(self, request):
         pk = request.data.get("id") or request.data.get("pk")
         if not pk:
-            return Response({"detail": "Thiếu id khách hàng"}, status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse.error(
+                message="Thiếu id khách hàng",
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         customer = Customer.objects.filter(pk=pk).first()
         if customer is None:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return ApiResponse.error(
+                message="Không tìm thấy khách hàng",
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         customer.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return ApiResponse.success(
+            message="Xóa khách hàng thành công",
+            data=[],
+            status=status.HTTP_204_NO_CONTENT
+        )

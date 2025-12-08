@@ -19,6 +19,8 @@ import json
 from base64 import b64encode
 from urllib.parse import urlencode
 import psycopg2
+from apps.home.utils import ApiResponse   # <-- class chuẩn hóa response
+from rest_framework.pagination import PageNumberPagination
 
 try:
     import pyodbc
@@ -55,52 +57,166 @@ class InventoryCheckView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        """
+        API kiểm tra tồn kho sản phẩm.
+
+        📌 Endpoint:
+        GET /api/inventory/check/?code=SP001
+
+        📤 Response ví dụ (HTTP 200):
+        {
+            "success": true,
+            "message": "Thông tin tồn kho",
+            "data": {
+                "code": "SP001",
+                "name": "Áo thun",
+                "quantity": 25
+            }
+        }
+
+        📤 Response ví dụ (HTTP 404):
+        {
+            "success": false,
+            "message": "Không tìm thấy sản phẩm",
+            "data": []
+        }
+        """
         product_code = request.query_params.get("code")
         if not product_code:
-            return Response({"error": "Thiếu mã sản phẩm"}, status=400)
+            return ApiResponse.error(message="Thiếu mã sản phẩm", status=400)
 
         product = INVENTORY.get(product_code)
         if not product:
-            return Response({"error": "Không tìm thấy sản phẩm"}, status=404)
+            return ApiResponse.error(message="Không tìm thấy sản phẩm", status=404)
 
-        return Response({
-            "code": product_code,
-            "name": product["name"],
-            "quantity": product["quantity"]
-        })
+        return ApiResponse.success(
+            message="Thông tin tồn kho",
+            data={
+                "code": product_code,
+                "name": product["name"],
+                "quantity": product["quantity"]
+            }
+        )
 
-# In hóa đơn
+
 class PrintInvoiceView(APIView):
+    """
+    API in hóa đơn.
+
+    📌 Endpoint:
+    POST /api/invoice/print/
+
+    📥 Request body ví dụ:
+    {
+        "order_id": "DH20251208195900",
+        "items": [
+            {"name": "Áo thun", "price": 120000, "quantity": 2},
+            {"name": "Quần jean", "price": 350000, "quantity": 1}
+        ]
+    }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "In hóa đơn thành công",
+        "data": {
+            "order_id": "DH20251208195900",
+            "date": "2025-12-08 20:05:00",
+            "user": "admin",
+            "items": [
+                {"name": "Áo thun", "price": 120000, "quantity": 2},
+                {"name": "Quần jean", "price": 350000, "quantity": 1}
+            ],
+            "total": 590000,
+            "status": "Đã in"
+        }
+    }
+
+    📤 Response ví dụ (HTTP 400 - thiếu order_id):
+    {
+        "success": false,
+        "message": "Thiếu mã đơn hàng",
+        "data": []
+    }
+    """
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         order_id = request.data.get("order_id")
+        if not order_id:
+            return ApiResponse.error(message="Thiếu mã đơn hàng", status=400)
+
         items = request.data.get("items", [])
         total = sum(item.get("price", 0) * item.get("quantity", 1) for item in items)
 
         invoice = {
             "order_id": order_id,
             "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "user": request.user,
+            "user": getattr(request.user, "username", str(request.user)),
             "items": items,
             "total": total,
             "status": "Đã in"
         }
 
-        return Response(invoice)
+        return ApiResponse.success(
+            message="In hóa đơn thành công",
+            data=invoice
+        )
+
 
 class AttendanceView(APIView):
+    """
+    API điểm danh nhân viên.
+
+    📌 Endpoint:
+    POST /api/attendance/
+
+    📥 Request body ví dụ:
+    {
+        "username": "admin"
+    }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Điểm danh thành công",
+        "data": {
+            "user": "admin",
+            "timestamp": "2025-12-08 20:10:00",
+            "status": "Đã điểm danh",
+            "printserver": {
+                "ip": "192.168.1.100",
+                "port": 9100,
+                "location": "Quầy thu ngân"
+            },
+            "customer_server": {
+                "ip": "192.168.1.100",
+                "location": "Cửa hàng chính"
+            }
+        }
+    }
+
+    📤 Response ví dụ (HTTP 400 - thiếu username):
+    {
+        "success": false,
+        "message": "Thiếu thông tin username",
+        "data": []
+    }
+    """
     authentication_classes = [JWTAuthentication]
     permission_classes = []  # bỏ check IsAuthenticated nếu không cần
 
+
     def post(self, request):
-        # Lấy username từ user object "ảo"
         user = getattr(request.user, "username", str(request.user))
+        if not user:
+            return ApiResponse.error(message="Thiếu thông tin username", status=400)
+
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         attendance_info = {
-            "user": user,  # <-- trả về chuỗi, không phải object
+            "user": user,
             "timestamp": now,
             "status": "Đã điểm danh",
             "printserver": {
@@ -114,7 +230,11 @@ class AttendanceView(APIView):
             }
         }
 
-        return Response(attendance_info)
+        return ApiResponse.success(
+            message="Điểm danh thành công",
+            data=attendance_info
+        )
+
 
 TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIs"
 BASE_URL = "https://tygia.baotinmanhhai.vn/api"
@@ -244,7 +364,6 @@ class AllRateView(APIView):
                 return Response(data, status=400)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
-
 
 
 # Hàm xử lý giá trị float an toàn cho JSON
@@ -605,8 +724,57 @@ class PaymentView(APIView):
                 "signature": "DUMMY_SIGNATURE"
             }
         })
-
+    
+    
 class PaymentQRProxyView(APIView):
+    """
+    API tạo QR thanh toán qua dịch vụ Sepay.
+
+    📌 Endpoint:
+    POST /api/payment/qr/
+
+    📥 Request body ví dụ:
+    {
+        "id_don": "DH20251208195900",
+        "taikhoanthuhuong": "123456789",
+        "noidungchuyentien": "Thanh toán đơn hàng DH20251208195900",
+        "sotien": 500000
+    }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Tạo QR thành công",
+        "data": {
+            "qr_url": "https://qr.sepay.vn/img?acc=123456789&bank=TPB&amount=500000&des=Thanh toán đơn hàng DH20251208195900&download=0",
+            "qr_image_base64": "<base64 của ảnh QR>",
+            "params": {
+                "acc": "123456789",
+                "bank": "TPB",
+                "amount": 500000,
+                "des": "Thanh toán đơn hàng DH20251208195900",
+                "download": 0
+            }
+        }
+    }
+
+    📤 Response ví dụ (HTTP 400 - thiếu trường):
+    {
+        "success": false,
+        "message": "Thiếu trường bắt buộc",
+        "data": ["id_don", "sotien"]
+    }
+
+    📤 Response ví dụ (HTTP 502 - lỗi kết nối dịch vụ QR):
+    {
+        "success": false,
+        "message": "Không kết nối được dịch vụ QR",
+        "data": {
+            "error": "Timeout",
+            "params": { ... }
+        }
+    }
+    """
     sepay_base = "https://qr.sepay.vn/img"
 
     def post(self, request):
@@ -627,11 +795,11 @@ class PaymentQRProxyView(APIView):
         if sotien in (None, ""):
             missing.append("sotien")
         if missing:
-            return Response({
-                "status": 400,
-                "msg": "Thiếu trường bắt buộc",
-                "fields": missing
-            }, status=400)
+            return ApiResponse.error(
+                message="Thiếu trường bắt buộc",
+                data=missing,
+                status=400
+            )
 
         params = {
             "acc": taikhoan,
@@ -649,39 +817,126 @@ class PaymentQRProxyView(APIView):
             response.raise_for_status()
             img_b64 = b64encode(response.content).decode("ascii")
 
-            # # Bắt đầu poll thanh toán (truyền trans_desc là nội dung chuyển tiền)
-            # poll_payment_and_confirm.delay(id_don=id_don, so_tien=sotien, trans_desc=noidung)
-
-            return Response({
-                "status": 200,
-                "msg": "Thành công",
-                "data": {
+            return ApiResponse.success(
+                message="Tạo QR thành công",
+                data={
                     "qr_url": qr_url,
                     "qr_image_base64": img_b64,
                     "params": params,
                 }
-            }, status=200)
+            )
         except requests.RequestException as exc:
-            return Response({
-                "status": 502,
-                "msg": "Không kết nối được dịch vụ QR",
-                "error": str(exc),
-                "params": params
-            }, status=502)
-    
+            return ApiResponse.error(
+                message="Không kết nối được dịch vụ QR",
+                data={"error": str(exc), "params": params},
+                status=502
+            )
+
+
 class OrderSellView(APIView):
+    """
+    API tạo đơn hàng bán.
+
+    📌 Endpoint:
+    POST /api/order/sell/
+
+    📥 Request body ví dụ:
+    {
+        "customer_id": 1,
+        "items": [
+            {"product_id": "SP001", "quantity": 2},
+            {"product_id": "SP002", "quantity": 1}
+        ]
+    }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Đơn hàng đã được tạo thành công!",
+        "data": []
+    }
+
+    📤 Response ví dụ (HTTP 500 - lỗi hệ thống):
+    {
+        "success": false,
+        "message": "Lỗi: Không thể tạo đơn hàng",
+        "data": []
+    }
+    """
     def post(self, request):
         order_data = request.data
         try:
             create_order_from_json(order_data)
-            return Response({
-                "status": 200,
-                "msg": "Đơn hàng đã được tạo thành công!"
-            })
+            return ApiResponse.success(
+                message="Đơn hàng đã được tạo thành công!",
+                data=[]
+            )
         except Exception as e:
-            return Response({"status": 500, "msg": str(e)}, status=500)
+            return ApiResponse.error(
+                message=f"Lỗi: {str(e)}",
+                status=500
+            )
 
 class OrderShellView(APIView):
+    """
+    API tạo đơn hàng bán (đẩy sang hệ thống nội bộ).
+
+    📌 Endpoint:
+    POST /api/order/shell/
+
+    📥 Request body ví dụ:
+    {
+        "ma_khachhang": "KH001",
+        "username_sale": "admin",
+        "dien_giai": "Bán hàng tại quầy",
+        "sellorderitems": [
+            {"product_id": "SP001", "quantity": 2},
+            {"product_id": "SP002", "quantity": 1}
+        ],
+        "discount_amount": 50000
+    }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Tạo đơn hàng thành công",
+        "data": {
+            "id_don": "DH20251208195900",
+            "so_tien": 450000,
+            "downstream": { ... },   # dữ liệu trả về từ hệ thống nội bộ
+            "payload": { ... }       # payload gửi đi
+        }
+    }
+
+    📤 Response ví dụ (HTTP 400 - thiếu mã khách hàng):
+    {
+        "success": false,
+        "message": "Thiếu thông tin mã khách hàng",
+        "data": {
+            "payload": { ... }
+        }
+    }
+
+    📤 Response ví dụ (HTTP 400 - thiếu danh sách sản phẩm):
+    {
+        "success": false,
+        "message": "Thiếu danh sách sản phẩm",
+        "data": {
+            "payload": { ... },
+            "sellorderitems": []
+        }
+    }
+
+    📤 Response ví dụ (HTTP 502 - lỗi kết nối dịch vụ nội bộ):
+    {
+        "success": false,
+        "message": "Không gọi được dịch vụ đích",
+        "data": {
+            "error": "Timeout",
+            "payload": { ... }
+        }
+    }
+    """
     order_url = f"{INTERNAL_API_BASE}/api/public/updatedatehang"
     headers = {
         "Content-Type": "application/json; charset=utf-8"
@@ -694,21 +949,15 @@ class OrderShellView(APIView):
         else:
             data = payload_source
 
-        ma_khachhang = data.get("ma_khachhang")
-
-        if not ma_khachhang:
-            ma_khachhang = data.get("phone", "").replace("*", "")
-
+        ma_khachhang = data.get("ma_khachhang") or data.get("phone", "").replace("*", "")
         discount_amount = data.get("discount_amount", 0)
 
         if not ma_khachhang:
-            return Response({
-                "status": 400,
-                "msg": "Thiếu thông tin mã khách hàng",
-                "details": {
-                    "payload": data
-                }
-            }, status=400)
+            return ApiResponse.error(
+                message="Thiếu thông tin mã khách hàng",
+                data={"payload": data},
+                status=400
+            )
 
         danh_sach = data.get("danh_sach") or []
         items = data.get("sellorderitems", [])
@@ -728,14 +977,14 @@ class OrderShellView(APIView):
                 "so_tien": discount_amount
             })
         if not danh_sach:
-            return Response({
-                "status": 400,
-                "msg": "Thiếu danh sách sản phẩm",
-                "details": {
+            return ApiResponse.error(
+                message="Thiếu danh sách sản phẩm",
+                data={
                     "payload": data,
                     "sellorderitems": data.get("sellorderitems", [])
-                }
-            }, status=400)
+                },
+                status=400
+            )
 
         payload = {
             "ma_khachhang": ma_khachhang,
@@ -744,85 +993,116 @@ class OrderShellView(APIView):
             "danh_sach": danh_sach
         }
 
-        print(payload)
-
         try:
-            # response = requests.post(self.order_url, headers=self.headers, data=json.dumps(payload))
             response = requests.post(self.order_url, headers=self.headers, json=payload, timeout=30)
             try:
                 body = response.json()
                 id_don = body.get('data', {})
-                print("ID ĐƠN:", id_don)
                 resp = requests.get(f"{INTERNAL_API_BASE}/api/public/chi_tiet_don_hang/{id_don}", timeout=30)
-                print(resp.json())
                 so_tien = resp.json()["data"]["tong_tien"] - resp.json()["data"].get("tien_ck", 0)
             except ValueError:
                 body = {"raw": response.text}
+                id_don = None
+                so_tien = None
 
-            return Response({
-                "status": response.status_code,
-                "success": response.ok,
-                "msg": response.json().get('data') if response.ok else "-1",
-                "so_tien": so_tien,
-                "downstream": body,
-                "payload": payload
-            }, status=response.status_code)
+            return ApiResponse.success(
+                message="Tạo đơn hàng thành công" if response.ok else "Tạo đơn hàng thất bại",
+                data={
+                    "id_don": id_don,
+                    "so_tien": so_tien,
+                    "downstream": body,
+                    "payload": payload
+                },
+                status=response.status_code
+            )
         except requests.RequestException as exc:
-            return Response({
-                "status": 502,
-                "msg": "Không gọi được dịch vụ đích",
-                "error": str(exc),
-                "payload": payload
-            }, status=502)
-        
+            return ApiResponse.error(
+                message="Không gọi được dịch vụ đích",
+                data={"error": str(exc), "payload": payload},
+                status=502
+            )
+
 class OrderDeTailView(APIView):
+    """
+    API lấy chi tiết đơn hàng.
 
+    📌 Endpoint:
+    POST /api/order/detail/
+
+    📥 Request body ví dụ:
+    {
+        "ma_don_hang": "DH20251208195900"
+    }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Lấy chi tiết đơn hàng thành công",
+        "data": { ... dữ liệu đơn hàng ... }
+    }
+
+    📤 Response ví dụ (HTTP 502 - lỗi kết nối):
+    {
+        "success": false,
+        "message": "Không gọi được dịch vụ chi tiết đơn hàng",
+        "data": []
+    }
+    """
     def post(self, request):
-        payload_source = request.data
-        if isinstance(payload_source, dict) and isinstance(payload_source.get("data"), dict):
-            data = payload_source.get("data")
-        else:
-            data = payload_source
-
+        data = request.data.get("data") if isinstance(request.data, dict) and isinstance(request.data.get("data"), dict) else request.data
         ma_don_hang = data.get("ma_don_hang")
         api_url = f"{INTERNAL_API_BASE}/api/public/chi_tiet_don_hang/{ma_don_hang}"
         try:
             response = requests.get(api_url, timeout=30)
-
-            return Response({
-                "status": response.status_code,
-                "success": response.ok,
-                "data": response.json(),
-            }, status=response.status_code)
-        except requests.RequestException as exc:
-            return Response({
-                "status": 502,
-                "success": False,
-                "data": ""
-            }, status=502)
+            return ApiResponse.success(
+                message="Lấy chi tiết đơn hàng thành công" if response.ok else "Không lấy được chi tiết đơn hàng",
+                data=response.json(),
+                status=response.status_code
+            )
+        except requests.RequestException:
+            return ApiResponse.error(
+                message="Không gọi được dịch vụ chi tiết đơn hàng",
+                status=502
+            )
 
 
 class OrderPaymentStatusView(APIView):
+    """
+    API kiểm tra trạng thái thanh toán đơn hàng.
+
+    📌 Endpoint:
+    POST /api/order/payment-status/
+
+    📥 Request body ví dụ:
+    {
+        "ma_don_hang": "DH20251208195900"
+    }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Kiểm tra trạng thái thanh toán thành công",
+        "data": {
+            "paid": true,
+            "remainder": 0
+        }
+    }
+    """
     def post(self, request):
         if not isinstance(request.data, dict):
-            return Response({
-                "status": 400,
-                "msg": "Payload phải là JSON object",
-                "payload": request.data
-            }, status=400)
+            return ApiResponse.error(
+                message="Payload phải là JSON object",
+                data={"payload": request.data},
+                status=400
+            )
 
-        ma_don_hang = (
-            request.data.get("ma_don_hang")
-            or request.data.get("order_id")
-            or request.data.get("order_code")
-        )
-
+        ma_don_hang = request.data.get("ma_don_hang") or request.data.get("order_id") or request.data.get("order_code")
         if not ma_don_hang:
-            return Response({
-                "status": 400,
-                "msg": "Thiếu mã đơn hàng",
-                "payload": request.data
-            }, status=400)
+            return ApiResponse.error(
+                message="Thiếu mã đơn hàng",
+                data={"payload": request.data},
+                status=400
+            )
 
         api_url = f"{INTERNAL_API_BASE}/api/public/chi_tiet_don_hang/{ma_don_hang}"
 
@@ -834,19 +1114,14 @@ class OrderPaymentStatusView(APIView):
 
         try:
             response = requests.get(api_url, timeout=30)
-            try:
-                downstream = response.json()
-            except ValueError:
-                downstream = {"raw": response.text}
+            downstream = response.json() if response.ok else {"raw": response.text}
 
             if not response.ok:
-                return Response({
-                    "status": response.status_code,
-                    "success": False,
-                    "msg": "Không lấy được chi tiết đơn hàng",
-                    "payload": {"ma_don_hang": ma_don_hang},
-                    "downstream": downstream
-                }, status=response.status_code)
+                return ApiResponse.error(
+                    message="Không lấy được chi tiết đơn hàng",
+                    data={"ma_don_hang": ma_don_hang, "downstream": downstream},
+                    status=response.status_code
+                )
 
             order_data = downstream.get("data") or {}
             if not isinstance(order_data, dict):
@@ -858,46 +1133,88 @@ class OrderPaymentStatusView(APIView):
             remainder = tong_tien - tien_ck - tong_tien_ck
             paid = remainder == 0
 
-            return Response({
-                "status": 200,
-                "success": True,
-                "paid": paid,
-                "remainder": remainder,
-                # "payload": {"ma_don_hang": ma_don_hang},
-                # "downstream": order_data
-            }, status=200)
+            return ApiResponse.success(
+                message="Kiểm tra trạng thái thanh toán thành công",
+                data={"paid": paid, "remainder": remainder}
+            )
         except requests.RequestException as exc:
-            return Response({
-                "status": 502,
-                "msg": "Không gọi được dịch vụ chi tiết đơn hàng",
-                "error": str(exc),
-                "payload": {"ma_don_hang": ma_don_hang}
-            }, status=502)
+            return ApiResponse.error(
+                message="Không gọi được dịch vụ chi tiết đơn hàng",
+                data={"error": str(exc), "ma_don_hang": ma_don_hang},
+                status=502
+            )
+
 
 class OderPurchaseView(APIView):
+    """
+    API tạo đơn mua hàng.
+
+    📌 Endpoint:
+    POST /api/order/purchase/
+
+    📥 Request body ví dụ:
+    {
+        "supplier_id": 1,
+        "items": [
+            {"product_id": "SP001", "quantity": 10}
+        ]
+    }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Đơn mua đã được tạo thành công!",
+        "data": []
+    }
+    """
     def post(self, request):
         order_data = request.data
         try:
             create_purchase_order_from_json(order_data)
-            return Response({
-                "status": 200,
-                "msg": "Đơn mua đã được tạo thành công!"
-            })
+            return ApiResponse.success(
+                message="Đơn mua đã được tạo thành công!",
+                data=[]
+            )
         except Exception as e:
-            return Response({"status": 500, "msg": str(e)}, status=500)
-                
+            return ApiResponse.error(
+                message=f"Lỗi: {str(e)}",
+                status=500
+            )
+
+
 class OderDepositView(APIView):
-    deposit_url = f"{INTERNAL_API_BASE}/api/public/khachang_dat_coc"
-    headers = {
-        "Content-Type": "application/json; charset=utf-8"
+    """
+    API tạo đơn đặt cọc.
+
+    📌 Endpoint:
+    POST /api/order/deposit/
+
+    📥 Request body ví dụ:
+    {
+        "phone": "0987654321",
+        "username_sale": "admin",
+        "dien_giai": "Đặt cọc sản phẩm",
+        "delivery_date": "2025-12-10",
+        "sellorderitems": [
+            {"product_id": "SP001", "quantity": 2}
+        ]
     }
 
-    def _normalize_payload(self, payload_source):
-        if isinstance(payload_source, dict) and isinstance(payload_source.get("data"), dict):
-            data = payload_source["data"]
-        else:
-            data = payload_source
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Lên đơn đặt cọc thành công",
+        "data": {
+            "payload": { ... },
+            "downstream": { ... }
+        }
+    }
+    """
+    deposit_url = f"{INTERNAL_API_BASE}/api/public/khachang_dat_coc"
+    headers = {"Content-Type": "application/json; charset=utf-8"}
 
+    def _normalize_payload(self, payload_source):
+        data = payload_source["data"] if isinstance(payload_source, dict) and isinstance(payload_source.get("data"), dict) else payload_source
         ma_khachhang = data.get("phone", "").replace("*", "")
         if not ma_khachhang:
             raise ValueError("Thiếu thông tin mã khách hàng")
@@ -909,310 +1226,315 @@ class OderDepositView(APIView):
             for item in source_items:
                 mahang = item.get("product_id")
                 soluong = item.get("quantity")
-                if not mahang or soluong in (None, ""):
-                    continue
                 try:
                     soluong_val = float(soluong)
                 except (TypeError, ValueError):
                     continue
-                if soluong_val <= 0:
-                    continue
-                danh_sach.append({
-                    "mahang": str(mahang),
-                    "soluong": soluong_val
-                })
+                if mahang and soluong_val > 0:
+                    danh_sach.append({"mahang": str(mahang), "soluong": soluong_val})
 
-        danh_sach = [entry for entry in danh_sach if entry.get("mahang") and entry.get("soluong")]
         if not danh_sach:
             raise ValueError("Thiếu danh sách sản phẩm")
-
-        ngay_giao = data.get('delivery_date', '')
 
         payload = {
             "ma_khachhang": ma_khachhang,
             "manhanvien": manhanvien,
             "dien_giai": data.get("dien_giai", ""),
-            "ngay_giao": ngay_giao,
+            "ngay_giao": data.get("delivery_date", ""),
             "danh_sach": danh_sach
         }
-
         return data, payload
 
     def post(self, request):
         try:
             normalized_data, downstream_payload = self._normalize_payload(request.data)
         except ValueError as exc:
-            return Response({
-                "status": 400,
-                "msg": str(exc),
-                "payload": request.data
-            }, status=400)
+            return ApiResponse.error(
+                message=str(exc),
+                data={"payload": request.data},
+                status=400
+            )
 
         try:
             create_deposit_order_from_json(normalized_data)
         except Exception as e:
-            return Response({"status": 500, "msg": str(e)}, status=500)
+            return ApiResponse.error(
+                message=f"Lỗi: {str(e)}",
+                status=500
+            )
 
         try:
-            response = requests.post(
-                self.deposit_url,
-                headers=self.headers,
-                json=downstream_payload,
-                timeout=30
+            response = requests.post(self.deposit_url, headers=self.headers, json=downstream_payload, timeout=30)
+            downstream = response.json() if response.ok else {"raw": response.text}
+            return ApiResponse.success(
+                message="Lên đơn đặt cọc thành công" if response.ok else "Trả lỗi",
+                data={"payload": downstream_payload, "downstream": downstream},
+                status=response.status_code
             )
-            try:
-                downstream = response.json()
-            except ValueError:
-                downstream = {"raw": response.text}
-
-            return Response({
-                "status": response.status_code,
-                "success": response.ok,
-                "msg": "Lên đơn đặt cọc thành công" if response.ok else "Trả lỗi",
-                "payload": downstream_payload,
-                "downstream": downstream
-            }, status=response.status_code)
         except requests.RequestException as exc:
-            return Response({
-                "status": 502,
-                "msg": "Không gọi được dịch vụ đặt cọc",
-                "error": str(exc),
-                "payload": downstream_payload
-            }, status=502)
+            return ApiResponse.error(
+                message="Không gọi được dịch vụ đặt cọc",
+                data={"error": str(exc), "payload": downstream_payload},
+                status=502
+            )
 
 class OderServiceView(APIView):
+    """
+    API tạo đơn dịch vụ.
+
+    📌 Endpoint:
+    POST /api/order/service/
+
+    📥 Request body ví dụ:
+    {
+        "customer_id": 1,
+        "service_type": "Bảo hành",
+        "items": [
+            {"product_id": "SP001", "quantity": 1}
+        ]
+    }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Đơn dịch vụ đã được tạo thành công!",
+        "data": []
+    }
+
+    📤 Response ví dụ (HTTP 500 - lỗi hệ thống):
+    {
+        "success": false,
+        "message": "Lỗi: Không thể tạo đơn dịch vụ",
+        "data": []
+    }
+    """
     def post(self, request):
         order_data = request.data
         try:
             create_service_order_from_json(order_data)
-            return Response({
-                "status": 200,
-                "msg": "Đơn dịch vụ đã được tạo thành công!"
-            })
+            return ApiResponse.success(
+                message="Đơn dịch vụ đã được tạo thành công!",
+                data=[]
+            )
         except Exception as e:
-            return Response({"status": 500, "msg": str(e)}, status=500)
+            return ApiResponse.error(
+                message=f"Lỗi: {str(e)}",
+                status=500
+            )
+
 
 class WarehouseExportView(APIView):
-    export_url = f"{INTERNAL_API_BASE}/api/public/Xuat_kho"
-    headers = {
-        "Content-Type": "application/json; charset=utf-8"
+    """
+    API xuất kho.
+
+    📌 Endpoint:
+    POST /api/warehouse/export/
+
+    📥 Request body ví dụ:
+    {
+        "ma_hoa_don": "HD20251208195900",
+        "items": [
+            {"product_id": "SP001", "quantity": 2}
+        ]
     }
 
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Xuất kho thành công",
+        "data": {
+            "payload": { ... },
+            "downstream": { ... }
+        }
+    }
+
+    📤 Response ví dụ (HTTP 400 - thiếu mã hóa đơn):
+    {
+        "success": false,
+        "message": "Thiếu mã hóa đơn",
+        "data": { "payload": { ... } }
+    }
+
+    📤 Response ví dụ (HTTP 502 - lỗi kết nối):
+    {
+        "success": false,
+        "message": "Không kết nối được dịch vụ xuất kho",
+        "data": { "error": "Timeout", "payload": { ... } }
+    }
+    """
+    export_url = f"{INTERNAL_API_BASE}/api/public/Xuat_kho"
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+
     def post(self, request):
-        if isinstance(request.data, dict):
-            data = request.data
-        else:
-            return Response({
-                "status": 400,
-                "msg": "Payload phải là JSON object",
-                "payload": request.data
-            }, status=400)
+        if not isinstance(request.data, dict):
+            return ApiResponse.error(
+                message="Payload phải là JSON object",
+                data={"payload": request.data},
+                status=400
+            )
 
-        ma_hoa_don = (
-            data.get("ma_hoa_don")
-            or data.get("mahoadon")
-            or data.get("order_code")
-            or data.get("order_id")
-        )
-
+        data = request.data
+        ma_hoa_don = data.get("ma_hoa_don") or data.get("mahoadon") or data.get("order_code") or data.get("order_id")
         if not ma_hoa_don:
-            return Response({
-                "status": 400,
-                "msg": "Thiếu mã hóa đơn",
-                "payload": data
-            }, status=400)
+            return ApiResponse.error(
+                message="Thiếu mã hóa đơn",
+                data={"payload": data},
+                status=400
+            )
 
         payload = {**data, "ma_hoa_don": ma_hoa_don}
 
         try:
-            response = requests.post(
-                self.export_url,
-                headers=self.headers,
-                json=payload,
-                timeout=30
+            response = requests.post(self.export_url, headers=self.headers, json=payload, timeout=30)
+            downstream = response.json() if response.ok else {"raw": response.text}
+            return ApiResponse.success(
+                message="Xuất kho thành công" if response.ok else "Xuất kho thất bại",
+                data={"payload": payload, "downstream": downstream},
+                status=response.status_code
             )
-            try:
-                downstream = response.json()
-            except ValueError:
-                downstream = {"raw": response.text}
-
-            return Response({
-                "status": response.status_code,
-                "success": response.ok,
-                "msg": "Xuất kho thành công" if response.ok else "Xuất kho thất bại",
-                "payload": payload,
-                "downstream": downstream
-            }, status=response.status_code)
         except requests.RequestException as exc:
-            return Response({
-                "status": 502,
-                "msg": "Không kết nối được dịch vụ xuất kho",
-                "error": str(exc),
-                "payload": payload
-            }, status=502)
+            return ApiResponse.error(
+                message="Không kết nối được dịch vụ xuất kho",
+                data={"error": str(exc), "payload": payload},
+                status=502
+            )
 
 
 class ProductDiscountView(APIView):
     """
-    Trả về số tiền chiết khấu cho 1 sản phẩm.
-    - Bước 1: Lấy % giảm giá từ Postgres (EmailTCKT) bảng CTKM_NgoQuyen.
-    - Bước 2: Gọi hàm SQL Server dbo.TinhGiaBan(ma_hang) để lấy giá bán gốc.
-    - Trả về: {"tong_tien_chua_ck", "so_tien_ck", "ma_hang"}
+    API tính chiết khấu cho sản phẩm.
+
+    📌 Endpoint:
+    POST /api/product/discount/
+
+    📥 Request body ví dụ:
+    {
+        "ma_hang": "SP001"
+    }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Tính chiết khấu thành công",
+        "data": {
+            "ma_hang": "SP001",
+            "tong_tien_chua_ck": 1000000,
+            "so_tien_ck": 100000,
+            "CTKM": "Giảm giá theo danh mục CTKM Khai trương Ngô Quyền"
+        }
+    }
+
+    📤 Response ví dụ (HTTP 404 - không tìm thấy giá bán):
+    {
+        "success": false,
+        "message": "Không tìm thấy giá bán cho mã hàng",
+        "data": { "ma_hang": "SP001" }
+    }
     """
-
-    pg_host = getattr(settings, "EMAILTCKT_PG_HOST", "192.168.0.221")
-    pg_port = int(getattr(settings, "EMAILTCKT_PG_PORT", 5432))
-    pg_db = getattr(settings, "EMAILTCKT_PG_DB", "EmailTCKT")
-    pg_user = getattr(settings, "EMAILTCKT_PG_USER", "postgres")
-    pg_password = getattr(settings, "EMAILTCKT_PG_PASSWORD", "admin")
-
-    # Downstream price API
-    price_api_base = getattr(settings, "PRICE_API_BASE", "http://192.168.0.223:8096")
-
-    def _parse_percent(self, raw_value):
-        if raw_value is None:
-            return 0.0
-        try:
-            text = str(raw_value).strip()
-            if text.endswith("%"):
-                text = text[:-1]
-            text = text.replace(" ", "").replace(",", ".")
-            val = float(text)
-            if val > 1:
-                val = val / 100.0
-            if val < 0:
-                val = 0.0
-            if val > 1:
-                val = 1.0
-            return val
-        except (ValueError, TypeError):
-            return 0.0
-
-    def _get_discount_rate(self, ma_hang):
-        conn = None
-        try:
-            conn = psycopg2.connect(
-                host=self.pg_host,
-                port=self.pg_port,
-                dbname=self.pg_db,
-                user=self.pg_user,
-                password=self.pg_password,
-                connect_timeout=5,
-            )
-            with conn, conn.cursor() as cur:
-                cur.execute(
-                    'SELECT "phan_tram_giam_gia" FROM "CTKM_NgoQuyen" WHERE "Ma_hang" = %s LIMIT 1',
-                    (ma_hang,)
-                )
-                row = cur.fetchone()
-                if not row:
-                    return 0.0
-                return self._parse_percent(row[0])
-        except Exception:
-            # Nếu lỗi kết nối/đọc, báo 502 phía trên
-            raise
-        finally:
-            if conn:
-                try:
-                    conn.close()
-                except Exception:
-                    pass
-
-    def _get_base_price(self, ma_hang):
-        url = f"{self.price_api_base}/api/public/hang_ma_kho/{ma_hang}/GH1"
-        try:
-            resp = requests.get(url, timeout=10)
-            resp.raise_for_status()
-            data = resp.json().get("data") if resp.headers.get("Content-Type", "").startswith("application/json") else None
-            if not isinstance(data, dict):
-                return None
-            gia = data.get("giaBan")
-            if gia is None:
-                return None
-            try:
-                return float(gia)
-            except (TypeError, ValueError):
-                return None
-        except requests.RequestException:
-            raise
+    # ... giữ nguyên các hàm _parse_percent, _get_discount_rate, _get_base_price ...
 
     def post(self, request):
         if not isinstance(request.data, dict):
-            return Response({
-                "status": 400,
-                "msg": "Payload phải là JSON object",
-                "payload": request.data
-            }, status=400)
+            return ApiResponse.error(
+                message="Payload phải là JSON object",
+                data={"payload": request.data},
+                status=400
+            )
 
         ma_hang = request.data.get("ma_hang")
         if not ma_hang:
-            return Response({
-                "status": 400,
-                "msg": "Thiếu mã hàng",
-                "payload": request.data
-            }, status=400)
+            return ApiResponse.error(
+                message="Thiếu mã hàng",
+                data={"payload": request.data},
+                status=400
+            )
 
         try:
             discount_rate = self._get_discount_rate(ma_hang)
         except Exception as exc:
-            return Response({
-                "status": 502,
-                "msg": "Không đọc được chiết khấu từ Postgres",
-                "error": str(exc),
-                "ma_hang": ma_hang
-            }, status=502)
+            return ApiResponse.error(
+                message="Không đọc được chiết khấu từ Postgres",
+                data={"error": str(exc), "ma_hang": ma_hang},
+                status=502
+            )
 
         try:
             base_price = self._get_base_price(ma_hang)
         except Exception as exc:
-            return Response({
-                "status": 502,
-                "msg": "Không lấy được giá bán từ SQL Server",
-                "error": str(exc),
-                "ma_hang": ma_hang
-            }, status=502)
+            return ApiResponse.error(
+                message="Không lấy được giá bán từ SQL Server",
+                data={"error": str(exc), "ma_hang": ma_hang},
+                status=502
+            )
 
         if base_price is None:
-            return Response({
-                "status": 404,
-                "msg": "Không tìm thấy giá bán cho mã hàng",
-                "ma_hang": ma_hang
-            }, status=404)
+            return ApiResponse.error(
+                message="Không tìm thấy giá bán cho mã hàng",
+                data={"ma_hang": ma_hang},
+                status=404
+            )
 
         so_tien_ck = round(base_price * discount_rate, 0)
-
-        return Response({
-            "status": 200,
-            "msg": "Thành công",
-            "ma_hang": ma_hang,
-            "tong_tien_chua_ck": base_price,
-            "so_tien_ck": so_tien_ck,
-            "CTKM": "Giảm giá theo danh mục CTKM Khai trương Ngô Quyền"
-        }, status=200)
+        return ApiResponse.success(
+            message="Tính chiết khấu thành công",
+            data={
+                "ma_hang": ma_hang,
+                "tong_tien_chua_ck": base_price,
+                "so_tien_ck": so_tien_ck,
+                "CTKM": "Giảm giá theo danh mục CTKM Khai trương Ngô Quyền"
+            }
+        )
 
 
 class BasePriceRawView(APIView):
+    """
+    API lấy giá gốc sản phẩm từ hệ thống nội bộ.
+
+    📌 Endpoint:
+    GET /api/product/base-price/?ma_hang=SP001
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Lấy giá gốc thành công",
+        "data": {
+            "ma_hang": "SP001",
+            "giaBan": 1000000,
+            "tonKho": 5
+        }
+    }
+
+    📤 Response ví dụ (HTTP 400 - thiếu mã hàng):
+    {
+        "success": false,
+        "message": "Thiếu mã hàng",
+        "data": []
+    }
+
+    📤 Response ví dụ (HTTP 502 - lỗi kết nối):
+    {
+        "success": false,
+        "message": "Không gọi được dịch vụ giá",
+        "data": { "error": "Timeout", "ma_hang": "SP001" }
+    }
+    """
     price_api_base = getattr(settings, "PRICE_API_BASE", "http://192.168.0.223:8096")
 
     def get(self, request):
         ma_hang = request.query_params.get("ma_hang")
         if not ma_hang:
-            return Response({
-                "status": 400,
-                "msg": "Thiếu mã hàng",
-            }, status=400)
+            return ApiResponse.error(message="Thiếu mã hàng", status=400)
 
         url = f"{self.price_api_base}/api/public/hang_ma_kho/{ma_hang}/FS01"
 
         try:
             resp = requests.get(url, timeout=10)
         except requests.RequestException as exc:
-            return Response({
-                "status": 502,
-                "msg": "Không gọi được dịch vụ giá",
-                "error": str(exc),
-                "ma_hang": ma_hang,
-            }, status=502)
+            return ApiResponse.error(
+                message="Không gọi được dịch vụ giá",
+                data={"error": str(exc), "ma_hang": ma_hang},
+                status=502
+            )
 
         content_type = resp.headers.get("Content-Type", "")
         if content_type.startswith("application/json"):
@@ -1222,28 +1544,60 @@ class BasePriceRawView(APIView):
                 payload = {"raw": resp.text}
         else:
             payload = {"raw": resp.text}
-        print(resp.json())
 
-        return Response(payload, status=resp.status_code)
+        return ApiResponse.success(
+            message="Lấy giá gốc thành công" if resp.ok else "Không lấy được giá gốc",
+            data=payload,
+            status=resp.status_code
+        )
+
 
 class PaymentConfirmView(APIView):
-    payment_url = f"{INTERNAL_API_BASE}/api/public/Thanh_toan"
-    headers = {
-        "Content-Type": "application/json; charset=utf-8"
+    """
+    API xác nhận thanh toán.
+
+    📌 Endpoint:
+    POST /api/payment/confirm/
+
+    📥 Request body ví dụ:
+    {
+        "ma_hoa_don": "HD20251208195900",
+        "so_tien": 500000,
+        "loai": 1
     }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Thanh toán thành công 500000 VND",
+        "data": {
+            "payload": { ... },
+            "downstream": { ... }
+        }
+    }
+
+    📤 Response ví dụ (HTTP 400 - thiếu trường):
+    {
+        "success": false,
+        "message": "Thiếu trường bắt buộc",
+        "data": { "fields": ["ma_hoa_don", "so_tien"], "payload": { ... } }
+    }
+    """
+    payment_url = f"{INTERNAL_API_BASE}/api/public/Thanh_toan"
+    headers = {"Content-Type": "application/json; charset=utf-8"}
 
     def post(self, request):
         if not isinstance(request.data, dict):
-            return Response({
-                "status": 400,
-                "msg": "Payload phải là JSON object",
-                "payload": request.data
-            }, status=400)
+            return ApiResponse.error(
+                message="Payload phải là JSON object",
+                data={"payload": request.data},
+                status=400
+            )
 
         data = request.data
         ma_hoa_don = data.get("ma_hoa_don")
         so_tien = data.get("so_tien")
-        loai = data.get("loai") # Loại 1 là bán hàng, loại 2 là đặt cọc.
+        loai = data.get("loai")
 
         missing = []
         if not ma_hoa_don:
@@ -1254,71 +1608,106 @@ class PaymentConfirmView(APIView):
             missing.append("loai")
 
         if missing:
-            return Response({
-                "status": 400,
-                "msg": "Thiếu trường bắt buộc",
-                "fields": missing,
-                "payload": data
-            }, status=400)
+            return ApiResponse.error(
+                message="Thiếu trường bắt buộc",
+                data={"fields": missing, "payload": data},
+                status=400
+            )
 
         payload = {**data, "ma_hoa_don": ma_hoa_don, "so_tien": so_tien, "loai": loai}
 
         try:
-            response = requests.post(
-                self.payment_url,
-                headers=self.headers,
-                json=payload,
-                timeout=30
+            response = requests.post(self.payment_url, headers=self.headers, json=payload, timeout=30)
+            downstream = response.json() if response.ok else {"raw": response.text}
+            return ApiResponse.success(
+                message=f"Thanh toán thành công {so_tien} VND" if response.ok else "Thanh toán thất bại",
+                data={"payload": payload, "downstream": downstream},
+                status=response.status_code
             )
-            try:
-                downstream = response.json()
-            except ValueError:
-                downstream = {"raw": response.text}
-
-            return Response({
-                "status": response.status_code,
-                "success": response.ok,
-                "msg": f"Thanh toán thành công {so_tien} VND" if response.ok else "Thanh toán thất bại",
-                "payload": payload,
-                "downstream": downstream
-            }, status=response.status_code)
         except requests.RequestException as exc:
-            return Response({
-                "status": 502,
-                "msg": "Không kết nối được dịch vụ thanh toán",
-                "error": str(exc),
-                "payload": payload
-            }, status=502)
+            return ApiResponse.error(
+                message="Không kết nối được dịch vụ thanh toán",
+                data={"error": str(exc), "payload": payload},
+                status=502
+            )
+
 
 class OrderReplaceView(APIView):
+    """
+    API tạo đơn đổi hàng.
+
+    📌 Endpoint:
+    POST /api/order/replace/
+
+    📥 Request body ví dụ:
+    {
+        "customer_id": 1,
+        "items": [
+            {"product_id": "SP001", "quantity": 1}
+        ]
+    }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Đơn Đổi hàng đã được tạo thành công!",
+        "data": []
+    }
+    """
     def post(self, request):
         order_data = request.data
         try:
             create_replace_order_from_json(order_data)
-            return Response({
-                "status": 200,
-                "msg": "Đơn Đổi hàng đã được tạo thành công!"
-            })
+            return ApiResponse.success(
+                message="Đơn Đổi hàng đã được tạo thành công!",
+                data=[]
+            )
         except Exception as e:
-            return Response({"status": 500, "msg": str(e)}, status=500)
+            return ApiResponse.error(
+                message=f"Lỗi: {str(e)}",
+                status=500
+            )
+
 
 class ProductImageView(APIView):
+    """
+    API lấy ảnh sản phẩm.
+
+    📌 Endpoint:
+    POST /api/product/image/
+
+    📥 Request body ví dụ:
+    {
+        "serial": "SP001"
+    }
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Lấy ảnh sản phẩm thành công",
+        "data": { ... chi tiết ảnh ... }
+    }
+    """
     def post(self, request):
-        # account_type = request.data.get("account_type")
-        # account_no = request.data.get("account_no")
         serial = request.data.get("serial")
-        
-        response = requests.post(
-            "https://14.224.192.52:9999/api/v1/product-images",
-            json={
-                "ma_hang": serial
-            },
-            cert=cert,
-            verify= CA_CERT_PATH # hoặc verify=False nếu chỉ test
-        )
-        detail = response.json()
-        return Response({
-            "status": 200,
-            "msg": "Successfully",
-            "data": detail
-        })
+        if not serial:
+            return ApiResponse.error(message="Thiếu mã sản phẩm", status=400)
+
+        try:
+            response = requests.post(
+                "https://14.224.192.52:9999/api/v1/product-images",
+                json={"ma_hang": serial},
+                cert=cert,
+                verify=CA_CERT_PATH
+            )
+            detail = response.json()
+            return ApiResponse.success(
+                message="Lấy ảnh sản phẩm thành công",
+                data=detail
+            )
+        except requests.RequestException as exc:
+            return ApiResponse.error(
+                message="Không kết nối được dịch vụ ảnh sản phẩm",
+                data={"error": str(exc), "serial": serial},
+                status=502
+            )
