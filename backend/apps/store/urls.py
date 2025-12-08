@@ -20,7 +20,9 @@ from .views import (
     WarehouseExportView,
     PaymentConfirmView,
     OrderDeTailView,
-    OrderPaymentStatusView
+    OrderPaymentStatusView,
+    ProductDiscountView,
+    BasePriceRawView
 )
 
 urlpatterns = [
@@ -83,4 +85,10 @@ urlpatterns = [
 
     # Kiểm tra trạng thái thanh toán
     path("api/order-payment-status/", OrderPaymentStatusView.as_view(), name="order_payment_status"),
+
+    # Lấy số tiền chiết khấu cho sản phẩm
+    path("api/product-discount/", ProductDiscountView.as_view(), name="product_discount"),
+
+    # Proxy giá gốc (trả nguyên dữ liệu từ dịch vụ downstream)
+    path("api/base-price-raw/", BasePriceRawView.as_view(), name="base_price_raw"),
 ]
