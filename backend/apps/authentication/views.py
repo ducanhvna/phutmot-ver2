@@ -62,6 +62,7 @@ def register_user(request):
 
     return render(request, "accounts/register.html", {"form": form, "msg": msg, "success": success})
 
+from apps.home.utils import ApiResponse
 
 class LoginView(APIView):
     def post(self, request):
@@ -70,21 +71,27 @@ class LoginView(APIView):
         user = authenticate(username=username, password=password)
         if user:
             refresh = RefreshToken.for_user(user)
-            payload = payload = {
+            payload = {
                 "sub": user.username,
                 "username": user.username,
                 "role": "sales",
-                "exp": datetime.utcnow() + timedelta(days=1),  # 1 day expiration
+                "exp": datetime.utcnow() + timedelta(days=10),
                 "iat": datetime.utcnow(),
                 "iss": "sales-app",
             }
             token = jwt.encode(payload, PRIVATE_KEY, algorithm="RS256")
-            return Response({
-                "store_token": token,
-                'access': str(refresh.access_token),
-                'refresh': str(refresh),
-            })
-        return Response({"error": "Invalid credentials"}, status=401)
+            return ApiResponse.success(
+                message="Đăng nhập thành công",
+                data= {
+                    "store_token": token,
+                    "access": str(refresh.access_token),
+                    "printers": ['tichtru', 'tho', 'trangsuc'],
+                    "store_url": 'https://solienlacdientu.info' if 'a' in user.username else 'http://192.168.10.26',
+                    "refresh": str(refresh),
+                }
+            )
+        return ApiResponse.error(message="Sai tài khoản hoặc mật khẩu", status=401)
+
 
 
 class StoreRefreshTokenView(APIView):
@@ -95,23 +102,26 @@ class StoreRefreshTokenView(APIView):
         user = request.user
         brand = request.data.get("brand")
         if not brand:
-            return Response({"error": "Missing 'brand' in request body."}, status=400)
+            return ApiResponse.error(message="Thiếu tham số 'brand'", status=400)
 
         if not user.is_superuser:
-            return Response({"error": "Permission denied. Superuser required."}, status=403)
-        
+            return ApiResponse.error(message="Không có quyền. Cần superuser.", status=403)
+
         refresh = RefreshToken.for_user(user)
         payload = {
             "sub": brand,
             "username": user.username,
             "role": "store-admin",
-            "exp": datetime.utcnow() + timedelta(days=9999),  # Long expiration
+            "exp": datetime.utcnow() + timedelta(days=9999),
             "iat": datetime.utcnow(),
             "iss": "store-app",
         }
         store_token = jwt.encode(payload, PRIVATE_KEY, algorithm="RS256")
 
-        return Response({
-            "store_token": store_token,
-            "refresh": str(refresh),
-        })
+        return ApiResponse.success(
+            message="Tạo store token thành công",
+            data={
+                "store_token": store_token,
+                "refresh": str(refresh),
+            }
+        )
