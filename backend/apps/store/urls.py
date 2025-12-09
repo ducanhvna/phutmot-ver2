@@ -22,6 +22,8 @@ from .views import (
     OrderDeTailView,
     OrderPaymentStatusView,
     ProductDiscountView,
+    ProductDiscountViewAugges,
+    ProductDiscountBestView,
     BasePriceRawView
 )
 
@@ -88,6 +90,12 @@ urlpatterns = [
 
     # Lấy số tiền chiết khấu cho sản phẩm
     path("api/product-discount/", ProductDiscountView.as_view(), name="product_discount"),
+
+    # Lấy chiết khấu từ Augges
+    path("api/product-discount-augges/", ProductDiscountViewAugges.as_view(), name="product_discount_augges"),
+
+    # Chọn chiết khấu tốt nhất (nội bộ vs Augges)
+    path("api/product-discount-best/", ProductDiscountBestView.as_view(), name="product_discount_best"),
 
     # Proxy giá gốc (trả nguyên dữ liệu từ dịch vụ downstream)
     path("api/base-price-raw/", BasePriceRawView.as_view(), name="base_price_raw"),
