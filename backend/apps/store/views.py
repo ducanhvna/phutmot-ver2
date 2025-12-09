@@ -27,7 +27,7 @@ try:
 except ImportError:  # pragma: no cover - optional dependency
     pyodbc = None
 
-INTERNAL_API_BASE = getattr(settings, "INTERNAL_API_BASE", "http://118.70.146.150:8869")
+INTERNAL_API_BASE = settings.INTERNAL_API_BASE
 
 # Giả lập dữ liệu tồn kho
 INVENTORY = {
@@ -236,8 +236,8 @@ class AttendanceView(APIView):
         )
 
 
-TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIs"
-BASE_URL = "https://tygia.baotinmanhhai.vn/api"
+TOKEN = settings.TYGIA_API_TOKEN
+BASE_URL = settings.TYGIA_API_BASE_URL
 
 # Bảng ánh xạ từ mô tả → mã loại vàng chuẩn
 reverse_map = {
@@ -1402,14 +1402,14 @@ class WarehouseExportView(APIView):
 
 class ProductDiscountView(APIView):
 
-    pg_host = getattr(settings, "EMAILTCKT_PG_HOST", "192.168.0.221")
-    pg_port = int(getattr(settings, "EMAILTCKT_PG_PORT", 5432))
-    pg_db = getattr(settings, "EMAILTCKT_PG_DB", "EmailTCKT")
-    pg_user = getattr(settings, "EMAILTCKT_PG_USER", "postgres")
-    pg_password = getattr(settings, "EMAILTCKT_PG_PASSWORD", "admin")
+    pg_host = settings.EMAILTCKT_PG_HOST
+    pg_port = settings.EMAILTCKT_PG_PORT
+    pg_db = settings.EMAILTCKT_PG_DB
+    pg_user = settings.EMAILTCKT_PG_USER
+    pg_password = settings.EMAILTCKT_PG_PASSWORD
 
     # Downstream price API
-    price_api_base = getattr(settings, "PRICE_API_BASE", "http://192.168.0.223:8096")
+    price_api_base = settings.PRICE_API_BASE
 
     def _parse_percent(self, raw_value):
         if raw_value is None:
@@ -1533,31 +1533,51 @@ class ProductDiscountView(APIView):
 
 
 class ProductDiscountViewAugges(APIView):
-    """
-    Lấy danh sách CTKM từ Augges rồi tính chiết khấu cho danh sách mã hàng đầu vào.
 
-    - Bước 1: GET http://192.168.0.223:8097/api/public/CTKM => lấy list id CTKM
-    - Bước 2: POST http://192.168.0.223:8869/api/public/all_ctmk với payload:
-        {
-            "ma_hang": <list từ body request hiện tại>,
-            "ma_ct": <list id bước 1>,
-            "ma_nhanvien": "",
-            "ma_khach_hang": ""
-        }
-    - Trả nguyên downstream response cho client.
-    """
-
-    promo_url = "http://192.168.0.223:8097/api/public/CTKM"
-    discount_url = "http://192.168.0.223:8869/api/public/all_ctmk"
+    promo_url = settings.PROMO_API_URL
+    discount_url = settings.DISCOUNT_API_URL
     headers = {"Content-Type": "application/json; charset=utf-8"}
 
     def _normalize_ma_hang(self, raw):
+        """Chuẩn hóa đầu vào ma_hang cho all_ctmk.
+
+        - Chấp nhận:
+          * string: "ABC" -> [{"ma_hang": "ABC", "soluong": 1}]
+          * list str: ["A", "B"] -> [{ma_hang:A, soluong:1}, ...]
+          * list dict: giữ nguyên, nhưng đảm bảo có key ma_hang và điền soluong mặc định 1.
+        """
         if raw is None:
             return []
+
+        def _ensure(item):
+            if isinstance(item, dict):
+                code = item.get("ma_hang") or item.get("mahang") or item.get("code")
+                if not code:
+                    return None
+                qty = item.get("soluong") or item.get("qty") or item.get("quantity") or 1
+                try:
+                    qty = int(qty)
+                except Exception:
+                    qty = 1
+                if qty <= 0:
+                    qty = 1
+                return {"ma_hang": str(code), "soluong": qty}
+            if isinstance(item, str):
+                return {"ma_hang": item, "soluong": 1}
+            return None
+
         if isinstance(raw, str):
-            return [raw]
+            norm = _ensure(raw)
+            return [norm] if norm else []
+
         if isinstance(raw, (list, tuple)):
-            return list(raw)
+            result = []
+            for it in raw:
+                norm = _ensure(it)
+                if norm:
+                    result.append(norm)
+            return result
+
         return []
 
     def post(self, request):
@@ -1576,6 +1596,7 @@ class ProductDiscountViewAugges(APIView):
                 status=400
             )
 
+        promo_resp = None
         try:
             promo_resp = requests.get(self.promo_url, timeout=10)
             promo_resp.raise_for_status()
@@ -1637,14 +1658,6 @@ class ProductDiscountViewAugges(APIView):
 
 
 class ProductDiscountBestView(APIView):
-    """
-    Kết hợp chiết khấu nội bộ (Postgres + giá kho) và chiết khấu Augges.
-    - Tính chiết khấu nội bộ giống ProductDiscountView.
-    - Gọi Augges giống ProductDiscountViewAugges.
-    - So sánh số tiền chiết khấu, trả về phương án có giá trị cao hơn.
-    - Chỉ trả lỗi khi cả hai nguồn đều lỗi.
-    """
-
     product_discount = ProductDiscountView()
     promo_url = ProductDiscountViewAugges.promo_url
     discount_url = ProductDiscountViewAugges.discount_url
@@ -1669,7 +1682,7 @@ class ProductDiscountBestView(APIView):
         except Exception as exc:  # pragma: no cover - defensive
             return {"ok": False, "amount": 0, "reason": str(exc)}
 
-    def _calc_augges(self, ma_hang_list, ma_nhanvien: str, ma_khach_hang: str):
+    def _calc_augges(self, ma_hang_list, ma_khach_hang: str):
         try:
             promo = requests.get(self.promo_url, timeout=10)
             promo.raise_for_status()
@@ -1684,7 +1697,6 @@ class ProductDiscountBestView(APIView):
         payload = {
             "ma_hang": ma_hang_list,
             "ma_ct": ma_ct,
-            "ma_nhanvien": ma_nhanvien,
             "ma_khach_hang": ma_khach_hang,
         }
 
@@ -1697,22 +1709,26 @@ class ProductDiscountBestView(APIView):
         except Exception as exc:  # pragma: no cover - defensive
             return {"ok": False, "amount": 0, "reason": f"discount_error: {exc}"}
 
-        amount = 0
+        discounts = []
         if isinstance(downstream, dict):
             data_items = downstream.get("data")
             if isinstance(data_items, list):
-                vals = []
                 for item in data_items:
                     if isinstance(item, dict):
                         try:
-                            vals.append(float(item.get("tienCk", 0) or 0))
+                            amount = float(item.get("tienCk", 0) or 0)
                         except (TypeError, ValueError):
-                            continue
-                if vals:
-                    amount = max(vals)
+                            amount = 0
+                        entry = {
+                            "mahang": item.get("mahang"),
+                            "tienCk": amount,
+                            "ten_ct": item.get("ten_ct"),
+                            "source": "ctkm"
+                        }
+                        discounts.append(entry)
 
-        ok = amount > 0 or resp.ok if 'resp' in locals() else False
-        return {"ok": ok, "amount": amount, "downstream": downstream}
+        ok = (bool(discounts) or resp.ok) if 'resp' in locals() else False
+        return {"ok": ok, "discounts": discounts, "downstream": downstream}
 
     def post(self, request):
         if not isinstance(request.data, dict):
@@ -1730,38 +1746,64 @@ class ProductDiscountBestView(APIView):
                 status=400
             )
 
-        internal = self._calc_internal(ma_hang_list[0])
+        first_item = ma_hang_list[0]
+        primary_code = None
+        if isinstance(first_item, dict):
+            primary_code = first_item.get("ma_hang")
+        elif first_item is not None:
+            primary_code = str(first_item)
+
+        if not primary_code:
+            return ApiResponse.error(
+                message="Thiếu mã hàng hợp lệ",
+                data=[{"payload": request.data}],
+                status=400
+            )
+
+        # Chiết khấu nội bộ (Postgres + giá base)
+        internal = self._calc_internal(str(primary_code))
+        # Chiết khấu từ hệ thống all_ctmk (augges)
         augges = self._calc_augges(
             ma_hang_list,
-            request.data.get("ma_nhanvien", ""),
             request.data.get("ma_khach_hang", ""),
         )
 
-        candidates = [("internal", internal), ("augges", augges)]
-        ok_candidates = [(src, data) for src, data in candidates if data.get("ok")]
+        # Gom list chiết khấu
+        discounts = []
+        if augges.get("discounts"):
+            discounts.extend(augges["discounts"])
 
-        if not ok_candidates:
+        if internal.get("ok") and internal.get("amount", 0) > 0:
+            discounts.append({
+                "mahang": primary_code,
+                "tienCk": internal.get("amount", 0),
+                "ten_ct": "Giảm giá theo danh mục CTKM Khai trương Ngô Quyền",
+                "source": "internal"
+            })
+
+        if not discounts:
             return ApiResponse.error(
-                message="Cả hai nguồn chiết khấu đều lỗi",
+                message="Không tính được chiết khấu",
                 data=[{"internal": internal, "augges": augges}],
                 status=502
             )
+        
 
-        best_source, best_data = max(ok_candidates, key=lambda item: item[1].get("amount", 0))
+        # Tính best cho tham khảo
+        best_entry = max(discounts, key=lambda d: d.get("tienCk", 0) or 0)
 
         return ApiResponse.success(
-            message="Success",
+            message="Thành công",
             data=[{
-                "best_source": best_source,
-                "best_amount": best_data.get("amount", 0),
-                "internal": internal,
-                "augges": augges
+                "ma_hang": primary_code,
+                "discounts": discounts,
+                "best_amount": best_entry,
             }]
         )
 
 
 class BasePriceRawView(APIView):
-    price_api_base = getattr(settings, "PRICE_API_BASE", "http://192.168.0.223:8096")
+    price_api_base = settings.PRICE_API_BASE
 
     def get(self, request):
         ma_hang = request.query_params.get("ma_hang")

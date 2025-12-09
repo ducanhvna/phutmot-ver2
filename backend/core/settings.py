@@ -210,3 +210,24 @@ ODDO_PASSWORD = os.environ.get('ODDO_PASSWORD', 'admin')
 CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+# =====================
+# External service configs
+# =====================
+INTERNAL_API_BASE = config('INTERNAL_API_BASE', default='http://118.70.146.150:8869')
+PRICE_API_BASE = config('PRICE_API_BASE', default='http://192.168.0.223:8096')
+
+# Postgres for CTKM (EmailTCKT)
+EMAILTCKT_PG_HOST = config('EMAILTCKT_PG_HOST', default='192.168.0.221')
+EMAILTCKT_PG_PORT = config('EMAILTCKT_PG_PORT', default=5432, cast=int)
+EMAILTCKT_PG_DB = config('EMAILTCKT_PG_DB', default='EmailTCKT')
+EMAILTCKT_PG_USER = config('EMAILTCKT_PG_USER', default='postgres')
+EMAILTCKT_PG_PASSWORD = config('EMAILTCKT_PG_PASSWORD', default='admin')
+
+# CTKM / chiết khấu
+PROMO_API_URL = config('PROMO_API_URL', default='http://192.168.0.223:8097/api/public/CTKM')
+DISCOUNT_API_URL = config('DISCOUNT_API_URL', default='http://192.168.0.223:8097/api/public/all_ctmk')
+
+# Tỷ giá vàng
+TYGIA_API_BASE_URL = config('TYGIA_API_BASE_URL', default='https://tygia.baotinmanhhai.vn/api')
+TYGIA_API_TOKEN = config('TYGIA_API_TOKEN', default='eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIs')
