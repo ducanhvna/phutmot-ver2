@@ -1401,43 +1401,88 @@ class WarehouseExportView(APIView):
 
 
 class ProductDiscountView(APIView):
-    """
-    API tính chiết khấu cho sản phẩm.
 
-    📌 Endpoint:
-    POST /api/product/discount/
+    pg_host = getattr(settings, "EMAILTCKT_PG_HOST", "192.168.0.221")
+    pg_port = int(getattr(settings, "EMAILTCKT_PG_PORT", 5432))
+    pg_db = getattr(settings, "EMAILTCKT_PG_DB", "EmailTCKT")
+    pg_user = getattr(settings, "EMAILTCKT_PG_USER", "postgres")
+    pg_password = getattr(settings, "EMAILTCKT_PG_PASSWORD", "admin")
 
-    📥 Request body ví dụ:
-    {
-        "ma_hang": "SP001"
-    }
+    # Downstream price API
+    price_api_base = getattr(settings, "PRICE_API_BASE", "http://192.168.0.223:8096")
 
-    📤 Response ví dụ (HTTP 200):
-    {
-        "success": true,
-        "message": "Tính chiết khấu thành công",
-        "data": {
-            "ma_hang": "SP001",
-            "tong_tien_chua_ck": 1000000,
-            "so_tien_ck": 100000,
-            "CTKM": "Giảm giá theo danh mục CTKM Khai trương Ngô Quyền"
-        }
-    }
+    def _parse_percent(self, raw_value):
+        if raw_value is None:
+            return 0.0
+        try:
+            text = str(raw_value).strip()
+            if text.endswith("%"):
+                text = text[:-1]
+            text = text.replace(" ", "").replace(",", ".")
+            val = float(text)
+            if val > 1:
+                val = val / 100.0
+            if val < 0:
+                val = 0.0
+            if val > 1:
+                val = 1.0
+            return val
+        except (ValueError, TypeError):
+            return 0.0
 
-    📤 Response ví dụ (HTTP 404 - không tìm thấy giá bán):
-    {
-        "success": false,
-        "message": "Không tìm thấy giá bán cho mã hàng",
-        "data": { "ma_hang": "SP001" }
-    }
-    """
-    # ... giữ nguyên các hàm _parse_percent, _get_discount_rate, _get_base_price ...
+    def _get_discount_rate(self, ma_hang):
+        conn = None
+        try:
+            conn = psycopg2.connect(
+                host=self.pg_host,
+                port=self.pg_port,
+                dbname=self.pg_db,
+                user=self.pg_user,
+                password=self.pg_password,
+                connect_timeout=5,
+            )
+            with conn, conn.cursor() as cur:
+                cur.execute(
+                    'SELECT "phan_tram_giam_gia" FROM "CTKM_NgoQuyen" WHERE "Ma_hang" = %s LIMIT 1',
+                    (ma_hang,)
+                )
+                row = cur.fetchone()
+                if not row:
+                    return 0.0
+                return self._parse_percent(row[0])
+        except Exception:
+            # Nếu lỗi kết nối/đọc, báo 502 phía trên
+            raise
+        finally:
+            if conn:
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+
+    def _get_base_price(self, ma_hang):
+        url = f"{self.price_api_base}/api/public/hang_ma_kho/{ma_hang}/GH1"
+        try:
+            resp = requests.get(url, timeout=10)
+            resp.raise_for_status()
+            data = resp.json().get("data") if resp.headers.get("Content-Type", "").startswith("application/json") else None
+            if not isinstance(data, dict):
+                return None
+            gia = data.get("giaBan")
+            if gia is None:
+                return None
+            try:
+                return float(gia)
+            except (TypeError, ValueError):
+                return None
+        except requests.RequestException:
+            raise
 
     def post(self, request):
         if not isinstance(request.data, dict):
             return ApiResponse.error(
                 message="Payload phải là JSON object",
-                data={"payload": request.data},
+                data=[{"payload": request.data}],
                 status=400
             )
 
@@ -1445,7 +1490,7 @@ class ProductDiscountView(APIView):
         if not ma_hang:
             return ApiResponse.error(
                 message="Thiếu mã hàng",
-                data={"payload": request.data},
+                data=[{"payload": request.data}],
                 status=400
             )
 
@@ -1454,7 +1499,7 @@ class ProductDiscountView(APIView):
         except Exception as exc:
             return ApiResponse.error(
                 message="Không đọc được chiết khấu từ Postgres",
-                data={"error": str(exc), "ma_hang": ma_hang},
+                data=[{"error": str(exc), "ma_hang": ma_hang}],
                 status=502
             )
 
@@ -1463,67 +1508,269 @@ class ProductDiscountView(APIView):
         except Exception as exc:
             return ApiResponse.error(
                 message="Không lấy được giá bán từ SQL Server",
-                data={"error": str(exc), "ma_hang": ma_hang},
+                data=[{"error": str(exc), "ma_hang": ma_hang}],
                 status=502
             )
 
         if base_price is None:
             return ApiResponse.error(
                 message="Không tìm thấy giá bán cho mã hàng",
-                data={"ma_hang": ma_hang},
+                data=[{"ma_hang": ma_hang}],
                 status=404
             )
 
         so_tien_ck = round(base_price * discount_rate, 0)
+
         return ApiResponse.success(
-            message="Tính chiết khấu thành công",
-            data={
+            message="Thành công",
+            data=[{
                 "ma_hang": ma_hang,
                 "tong_tien_chua_ck": base_price,
                 "so_tien_ck": so_tien_ck,
                 "CTKM": "Giảm giá theo danh mục CTKM Khai trương Ngô Quyền"
-            }
+            }]
+        )
+
+
+class ProductDiscountViewAugges(APIView):
+    """
+    Lấy danh sách CTKM từ Augges rồi tính chiết khấu cho danh sách mã hàng đầu vào.
+
+    - Bước 1: GET http://192.168.0.223:8097/api/public/CTKM => lấy list id CTKM
+    - Bước 2: POST http://192.168.0.223:8869/api/public/all_ctmk với payload:
+        {
+            "ma_hang": <list từ body request hiện tại>,
+            "ma_ct": <list id bước 1>,
+            "ma_nhanvien": "",
+            "ma_khach_hang": ""
+        }
+    - Trả nguyên downstream response cho client.
+    """
+
+    promo_url = "http://192.168.0.223:8097/api/public/CTKM"
+    discount_url = "http://192.168.0.223:8869/api/public/all_ctmk"
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+
+    def _normalize_ma_hang(self, raw):
+        if raw is None:
+            return []
+        if isinstance(raw, str):
+            return [raw]
+        if isinstance(raw, (list, tuple)):
+            return list(raw)
+        return []
+
+    def post(self, request):
+        if not isinstance(request.data, dict):
+            return ApiResponse.error(
+                message="Payload phải là JSON object",
+                data=[{"payload": request.data}],
+                status=400
+            )
+
+        ma_hang = self._normalize_ma_hang(request.data.get("ma_hang"))
+        if not ma_hang:
+            return ApiResponse.error(
+                message="Thiếu ma_hang (list)",
+                data=[{"payload": request.data}],
+                status=400
+            )
+
+        try:
+            promo_resp = requests.get(self.promo_url, timeout=10)
+            promo_resp.raise_for_status()
+            promo_json = promo_resp.json()
+        except requests.RequestException as exc:
+            return ApiResponse.error(
+                message="Không gọi được dịch vụ CTKM",
+                data=[{"error": str(exc)}],
+                status=502
+            )
+        except ValueError:
+            return ApiResponse.error(
+                message="CTKM trả về dữ liệu không phải JSON",
+                data=[{"raw": getattr(promo_resp, "text", None)}],
+                status=502
+            )
+
+        data_list = promo_json.get("data") if isinstance(promo_json, dict) else None
+        ma_ct = [item.get("id") for item in data_list or [] if isinstance(item, dict) and item.get("id") is not None]
+
+        if not ma_ct:
+            return ApiResponse.error(
+                message="Không tìm thấy chương trình khuyến mãi nào",
+                data=[{"downstream": promo_json}],
+                status=404
+            )
+
+        payload = {
+            "ma_hang": ma_hang,
+            "ma_ct": ma_ct,
+            "ma_nhanvien": request.data.get("ma_nhanvien", ""),
+            "ma_khach_hang": request.data.get("ma_khach_hang", ""),
+        }
+
+        try:
+            discount_resp = requests.post(
+                self.discount_url,
+                headers=self.headers,
+                json=payload,
+                timeout=15
+            )
+        except requests.RequestException as exc:
+            return ApiResponse.error(
+                message="Không gọi được dịch vụ tính chiết khấu",
+                data=[{"error": str(exc), "payload": payload}],
+                status=502
+            )
+
+        try:
+            downstream = discount_resp.json()
+        except ValueError:
+            downstream = {"raw": discount_resp.text}
+
+        return ApiResponse.success(
+            message="Thành công" if discount_resp.ok else "Không tính được chiết khấu",
+            data=[{"downstream": downstream, "payload": payload}],
+            status=discount_resp.status_code
+        )
+
+
+class ProductDiscountBestView(APIView):
+    """
+    Kết hợp chiết khấu nội bộ (Postgres + giá kho) và chiết khấu Augges.
+    - Tính chiết khấu nội bộ giống ProductDiscountView.
+    - Gọi Augges giống ProductDiscountViewAugges.
+    - So sánh số tiền chiết khấu, trả về phương án có giá trị cao hơn.
+    - Chỉ trả lỗi khi cả hai nguồn đều lỗi.
+    """
+
+    product_discount = ProductDiscountView()
+    promo_url = ProductDiscountViewAugges.promo_url
+    discount_url = ProductDiscountViewAugges.discount_url
+    headers = ProductDiscountViewAugges.headers
+
+    def _normalize_ma_hang(self, raw):
+        if raw is None:
+            return []
+        if isinstance(raw, str):
+            return [raw]
+        if isinstance(raw, (list, tuple)):
+            return list(raw)
+        return []
+
+    def _calc_internal(self, ma_hang: str):
+        try:
+            rate = self.product_discount._get_discount_rate(ma_hang)
+            base = self.product_discount._get_base_price(ma_hang)
+            if base is None:
+                return {"ok": False, "amount": 0, "reason": "no_base_price"}
+            return {"ok": True, "amount": round(base * rate, 0), "base_price": base, "rate": rate}
+        except Exception as exc:  # pragma: no cover - defensive
+            return {"ok": False, "amount": 0, "reason": str(exc)}
+
+    def _calc_augges(self, ma_hang_list, ma_nhanvien: str, ma_khach_hang: str):
+        try:
+            promo = requests.get(self.promo_url, timeout=10)
+            promo.raise_for_status()
+            promo_json = promo.json()
+            ma_ct = [it.get("id") for it in (promo_json.get("data") or []) if isinstance(it, dict) and it.get("id") is not None]
+        except Exception as exc:  # pragma: no cover - defensive
+            return {"ok": False, "amount": 0, "reason": f"ctkm_error: {exc}"}
+
+        if not ma_ct:
+            return {"ok": False, "amount": 0, "reason": "no_ctkm"}
+
+        payload = {
+            "ma_hang": ma_hang_list,
+            "ma_ct": ma_ct,
+            "ma_nhanvien": ma_nhanvien,
+            "ma_khach_hang": ma_khach_hang,
+        }
+
+        try:
+            resp = requests.post(self.discount_url, headers=self.headers, json=payload, timeout=15)
+            try:
+                downstream = resp.json()
+            except ValueError:
+                downstream = {"raw": resp.text}
+        except Exception as exc:  # pragma: no cover - defensive
+            return {"ok": False, "amount": 0, "reason": f"discount_error: {exc}"}
+
+        amount = 0
+        if isinstance(downstream, dict):
+            data_items = downstream.get("data")
+            if isinstance(data_items, list):
+                vals = []
+                for item in data_items:
+                    if isinstance(item, dict):
+                        try:
+                            vals.append(float(item.get("tienCk", 0) or 0))
+                        except (TypeError, ValueError):
+                            continue
+                if vals:
+                    amount = max(vals)
+
+        ok = amount > 0 or resp.ok if 'resp' in locals() else False
+        return {"ok": ok, "amount": amount, "downstream": downstream}
+
+    def post(self, request):
+        if not isinstance(request.data, dict):
+            return ApiResponse.error(
+                message="Payload phải là JSON object",
+                data=[{"payload": request.data}],
+                status=400
+            )
+
+        ma_hang_list = self._normalize_ma_hang(request.data.get("ma_hang"))
+        if not ma_hang_list:
+            return ApiResponse.error(
+                message="Thiếu ma_hang",
+                data=[{"payload": request.data}],
+                status=400
+            )
+
+        internal = self._calc_internal(ma_hang_list[0])
+        augges = self._calc_augges(
+            ma_hang_list,
+            request.data.get("ma_nhanvien", ""),
+            request.data.get("ma_khach_hang", ""),
+        )
+
+        candidates = [("internal", internal), ("augges", augges)]
+        ok_candidates = [(src, data) for src, data in candidates if data.get("ok")]
+
+        if not ok_candidates:
+            return ApiResponse.error(
+                message="Cả hai nguồn chiết khấu đều lỗi",
+                data=[{"internal": internal, "augges": augges}],
+                status=502
+            )
+
+        best_source, best_data = max(ok_candidates, key=lambda item: item[1].get("amount", 0))
+
+        return ApiResponse.success(
+            message="Success",
+            data=[{
+                "best_source": best_source,
+                "best_amount": best_data.get("amount", 0),
+                "internal": internal,
+                "augges": augges
+            }]
         )
 
 
 class BasePriceRawView(APIView):
-    """
-    API lấy giá gốc sản phẩm từ hệ thống nội bộ.
-
-    📌 Endpoint:
-    GET /api/product/base-price/?ma_hang=SP001
-
-    📤 Response ví dụ (HTTP 200):
-    {
-        "success": true,
-        "message": "Lấy giá gốc thành công",
-        "data": {
-            "ma_hang": "SP001",
-            "giaBan": 1000000,
-            "tonKho": 5
-        }
-    }
-
-    📤 Response ví dụ (HTTP 400 - thiếu mã hàng):
-    {
-        "success": false,
-        "message": "Thiếu mã hàng",
-        "data": []
-    }
-
-    📤 Response ví dụ (HTTP 502 - lỗi kết nối):
-    {
-        "success": false,
-        "message": "Không gọi được dịch vụ giá",
-        "data": { "error": "Timeout", "ma_hang": "SP001" }
-    }
-    """
     price_api_base = getattr(settings, "PRICE_API_BASE", "http://192.168.0.223:8096")
 
     def get(self, request):
         ma_hang = request.query_params.get("ma_hang")
         if not ma_hang:
-            return ApiResponse.error(message="Thiếu mã hàng", status=400)
+            return ApiResponse.error(
+                message="Thiếu mã hàng",
+                data=[],
+                status=400
+            )
 
         url = f"{self.price_api_base}/api/public/hang_ma_kho/{ma_hang}/FS01"
 
@@ -1532,7 +1779,7 @@ class BasePriceRawView(APIView):
         except requests.RequestException as exc:
             return ApiResponse.error(
                 message="Không gọi được dịch vụ giá",
-                data={"error": str(exc), "ma_hang": ma_hang},
+                data=[{"error": str(exc), "ma_hang": ma_hang}],
                 status=502
             )
 
@@ -1545,9 +1792,15 @@ class BasePriceRawView(APIView):
         else:
             payload = {"raw": resp.text}
 
-        return ApiResponse.success(
-            message="Lấy giá gốc thành công" if resp.ok else "Không lấy được giá gốc",
-            data=payload,
+        if resp.ok:
+            return ApiResponse.success(
+                message="Lấy giá gốc thành công",
+                data=[payload],
+                status=resp.status_code
+            )
+        return ApiResponse.error(
+            message="Không lấy được giá gốc",
+            data=[payload],
             status=resp.status_code
         )
 
