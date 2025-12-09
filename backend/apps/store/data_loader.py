@@ -8,6 +8,6 @@ df_dmVBTG = pd.read_parquet('data/Product/DmVbMM.parquet')
 # Nếu bạn cần gửi payload (JSON, form...), ví dụ:
 CLIENT_CERT_PATH = "data/Product/client_cert.pem"
 CLIENT_KEY_PATH = "data/Product/client_key.pem"
-CA_CERT_PATH = "data/Product/ca_cert.pem"  # Nếu cần xác thực server
+CA_CERT_PATH = False  # Nếu cần xác thực server
 # Đường dẫn tới file chứng chỉ và key
 cert = (CLIENT_CERT_PATH, CLIENT_KEY_PATH)
