@@ -142,7 +142,7 @@ class LoginView(APIView):
                     "store_token": token,
                     "access": str(refresh.access_token),
                     "printers": ['tichtru', 'tho', 'trangsuc'],
-                    "store_url": 'https://solienlacdientu.info' if 'a' in user.username else 'http://192.168.10.26',
+                    "store_url": 'https://demo.hinosoft.com' if ('a' in user.username) or (user.username == '0919933911') else 'http://192.168.10.26',
                     "refresh": str(refresh),
                 }
             )
