@@ -231,3 +231,6 @@ DISCOUNT_API_URL = config('DISCOUNT_API_URL', default='http://192.168.0.223:8097
 # Tỷ giá vàng
 TYGIA_API_BASE_URL = config('TYGIA_API_BASE_URL', default='https://tygia.baotinmanhhai.vn/api')
 TYGIA_API_TOKEN = config('TYGIA_API_TOKEN', default='eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIs')
+
+TIME_ZONE = "Asia/Ho_Chi_Minh"
+USE_TZ = True

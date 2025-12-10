@@ -11,6 +11,9 @@ from .serializers import CustomerSerializer
 from apps.home.utils import ApiResponse   # <-- class chuẩn hóa response
 from rest_framework.pagination import PageNumberPagination
 from django.conf import settings
+from django.utils import timezone
+
+INTERNAL_API_BASE = settings.INTERNAL_API_BASE
 
 def is_phone_number(text: str) -> bool:
     # Số điện thoại Việt Nam thường có 10 chữ số, bắt đầu bằng 0 hoặc +84
@@ -560,3 +563,63 @@ class CustomerDeleteView(PostOnlyAPIView):
             data=[],
             status=status.HTTP_204_NO_CONTENT
         )
+
+
+class OrderDepositTodayView(APIView):
+    """
+    API lấy danh sách đặt cọc của khách hàng trong ngày hôm nay (theo múi giờ Việt Nam).
+
+    📌 Endpoint:
+    GET /api/order/deposit/today/?phone=0979410826
+
+    📥 Request params:
+    - phone: số điện thoại khách hàng
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Lấy danh sách đặt cọc hôm nay thành công",
+        "data": {
+            "date": "2025-12-10",
+            "downstream": { ... }   # dữ liệu từ API nội bộ
+        }
+    }
+    """
+    base_url = f"{INTERNAL_API_BASE}/api/public/don_hang_dat_coc_ngay"
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+
+    def get(self, request):
+        phone = request.query_params.get("phone")
+        if not phone:
+            return ApiResponse.error(
+                message="Thiếu tham số phone",
+                status=400
+            )
+
+        # Lấy ngày hôm nay theo múi giờ Việt Nam (dựa vào TIME_ZONE trong settings.py)
+        vn_now = timezone.localtime(timezone.now())
+        today_str = vn_now.strftime("%Y-%m-%d")
+
+        url = f"{self.base_url}/{phone}/{today_str}"
+        try:
+            response = requests.get(url, headers=self.headers, timeout=30)
+            downstream = response.json() if response.ok else {"raw": response.text}
+
+            if response.ok:
+                return ApiResponse.success(
+                    message="Lấy danh sách đặt cọc hôm nay thành công",
+                    data={"date": today_str, "downstream": downstream},
+                    status=response.status_code
+                )
+            else:
+                return ApiResponse.error(
+                    message="Không lấy được danh sách đặt cọc hôm nay",
+                    data={"date": today_str, "downstream": downstream},
+                    status=response.status_code
+                )
+        except requests.RequestException as exc:
+            return ApiResponse.error(
+                message="Không gọi được dịch vụ danh sách đặt cọc",
+                data={"error": str(exc), "date": today_str},
+                status=502
+            )

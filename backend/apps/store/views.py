@@ -1233,7 +1233,11 @@ class OderDepositView(APIView):
             response = requests.post(self.deposit_url, headers=self.headers, json=downstream_payload, timeout=30)
             downstream = response.json() if response.ok else {"raw": response.text}
             return ApiResponse.success(
-                message="Lên đơn đặt cọc thành công" if response.ok else "Trả lỗi",
+                message="Lên đơn đặt cọc thành công",
+                data={"payload": downstream_payload, "downstream": downstream},
+                status=response.status_code
+            ) if response.ok else ApiResponse.error(
+                message="Lên đơn đặt cọc thành công",
                 data={"payload": downstream_payload, "downstream": downstream},
                 status=response.status_code
             )
