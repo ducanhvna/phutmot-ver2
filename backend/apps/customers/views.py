@@ -10,6 +10,7 @@ from .models import Customer
 from .serializers import CustomerSerializer
 from apps.home.utils import ApiResponse   # <-- class chuẩn hóa response
 from rest_framework.pagination import PageNumberPagination
+from django.conf import settings
 
 def is_phone_number(text: str) -> bool:
     # Số điện thoại Việt Nam thường có 10 chữ số, bắt đầu bằng 0 hoặc +84
@@ -29,9 +30,9 @@ headers = {
 
 logger = logging.getLogger(__name__)
 
-EXTERNAL_CUSTOMER_ADD_URL = "http://192.168.0.223:8869/api/public/khach_hang/add"
-EXTERNAL_CUSTOMER_UPDATE_URL = "http://192.168.0.223:8869/api/public/khach_hang/update"
-EXTERNAL_CUSTOMER_SEARCH_URL = "http://192.168.0.223:8869/api/public/khach_hang/timkiem"
+EXTERNAL_CUSTOMER_ADD_URL = f"{settings.INTERNAL_API_BASE}/api/public/khach_hang/add"
+EXTERNAL_CUSTOMER_UPDATE_URL = f"{settings.INTERNAL_API_BASE}/api/public/khach_hang/update"
+EXTERNAL_CUSTOMER_SEARCH_URL = f"{settings.INTERNAL_API_BASE}/api/public/khach_hang/timkiem"
 
 
 # ---------------------------------------------------------------
