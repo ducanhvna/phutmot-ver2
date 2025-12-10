@@ -963,7 +963,16 @@ class OrderShellView(APIView):
                 so_tien = None
 
             return ApiResponse.success(
-                message="Tạo đơn hàng thành công" if response.ok else "Tạo đơn hàng thất bại",
+                message="Tạo đơn hàng thành công",
+                data={
+                    "id_don": id_don,
+                    "so_tien": so_tien,
+                    "downstream": body,
+                    "payload": payload
+                },
+                status=response.status_code
+            ) if response.ok else ApiResponse.error(
+                message="Tạo đơn hàng thất bại",
                 data={
                     "id_don": id_don,
                     "so_tien": so_tien,
@@ -1345,10 +1354,14 @@ class WarehouseExportView(APIView):
             response = requests.post(self.export_url, headers=self.headers, json=payload, timeout=30)
             downstream = response.json() if response.ok else {"raw": response.text}
             return ApiResponse.success(
-                message="Xuất kho thành công" if response.ok else "Xuất kho thất bại",
+                message="Xuất kho thành công",
                 data={"payload": payload, "downstream": downstream},
                 status=response.status_code
-            )
+            ) if response.ok else ApiResponse.error(
+                message="Xuất kho thất bại",
+                data={"payload": payload, "downstream": downstream},
+                status=response.status_code
+            ) 
         except requests.RequestException as exc:
             return ApiResponse.error(
                 message="Không kết nối được dịch vụ xuất kho",
@@ -1872,7 +1885,11 @@ class PaymentConfirmView(APIView):
             response = requests.post(self.payment_url, headers=self.headers, json=payload, timeout=30)
             downstream = response.json() if response.ok else {"raw": response.text}
             return ApiResponse.success(
-                message=f"Thanh toán thành công {so_tien} VND" if response.ok else "Thanh toán thất bại",
+                message=f"Thanh toán thành công {so_tien} VND",
+                data={"payload": payload, "downstream": downstream},
+                status=response.status_code
+            ) if response.ok else ApiResponse.error(
+                message="Thanh toán thất bại",
                 data={"payload": payload, "downstream": downstream},
                 status=response.status_code
             )
