@@ -235,14 +235,17 @@ class CustomerCreateView(PostOnlyAPIView):
 
                 if not results:
                     # Không tìm thấy -> tạo mới
-                    new_customer = Customer.objects.create(
+                    new_customer, created = Customer.objects.update_or_create(
                         username=query,
-                        name=incoming_data.get("name"),
-                        phone_number=query if is_phone_number(query) else '',
-                        id_card_number=query if is_id_card(query) else '',
-                        verification_status=True,
-                        is_active=True,
+                        defaults={
+                            "name": incoming_data.get("name"),
+                            "phone_number": query if is_phone_number(query) else '',
+                            "id_card_number": query if is_id_card(query) else '',
+                            "verification_status": True,
+                            "is_active": True,
+                        }
                     )
+
                     if is_phone_number(query):
                         data = {"phone_number": query, "name": incoming_data.get("name"), "username": query, "id_card_number": None}
                         response = requests.post(EXTERNAL_CUSTOMER_ADD_URL, headers=headers, data=json.dumps(payload), timeout=15)
