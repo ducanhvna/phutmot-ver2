@@ -1984,3 +1984,114 @@ class ProductImageView(APIView):
                 data={"error": str(exc), "serial": serial},
                 status=502
             )
+
+
+class OrderDetailView(APIView):
+    """
+    API lấy chi tiết đơn hàng.
+
+    📌 Endpoint:
+    GET /api/order/detail/?order_code=366171
+
+    📥 Request params:
+    - order_code: mã hóa đơn (Ma_hoa_don)
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Lấy chi tiết đơn hàng thành công",
+        "data": {
+            "order_code": "BL186569",
+            "downstream": { ... }   # dữ liệu từ API nội bộ
+        }
+    }
+    """
+    base_url = f"{INTERNAL_API_BASE}/api/public/chi_tiet_don_hang"
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+
+    def get(self, request):
+        order_code = request.query_params.get("order_code")
+        if not order_code:
+            return ApiResponse.error(
+                message="Thiếu tham số order_code",
+                status=400
+            )
+
+        url = f"{self.base_url}/{order_code}"
+        try:
+            response = requests.get(url, headers=self.headers, timeout=30)
+            downstream = response.json() if response.ok else {"raw": response.text}
+
+            if response.ok:
+                return ApiResponse.success(
+                    message="Lấy chi tiết đơn hàng thành công",
+                    data={"order_code": order_code, "downstream": downstream},
+                    status=response.status_code
+                )
+            else:
+                return ApiResponse.error(
+                    message="Không lấy được chi tiết đơn hàng",
+                    data={"order_code": order_code, "downstream": downstream},
+                    status=response.status_code
+                )
+        except requests.RequestException as exc:
+            return ApiResponse.error(
+                message="Không gọi được dịch vụ chi tiết đơn hàng",
+                data={"error": str(exc), "order_code": order_code},
+                status=502
+            )
+
+class DepositDetailView(APIView):
+    """
+    API lấy chi tiết đơn đặt cọc.
+
+    📌 Endpoint:
+    GET /api/deposit/detail/?deposit_code=12345
+
+    📥 Request params:
+    - deposit_code: mã đặt cọc
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Lấy chi tiết đặt cọc thành công",
+        "data": {
+            "deposit_code": "12345",
+            "downstream": { ... }   # dữ liệu từ API nội bộ
+        }
+    }
+    """
+    base_url = f"{INTERNAL_API_BASE}/api/public/chi_tiet_don_hang_dat_coc"
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+
+    def get(self, request):
+        deposit_code = request.query_params.get("deposit_code")
+        if not deposit_code:
+            return ApiResponse.error(
+                message="Thiếu tham số deposit_code",
+                status=400
+            )
+
+        url = f"{self.base_url}/{deposit_code}"
+        try:
+            response = requests.get(url, headers=self.headers, timeout=30)
+            downstream = response.json() if response.ok else {"raw": response.text}
+
+            if response.ok:
+                return ApiResponse.success(
+                    message="Lấy chi tiết đặt cọc thành công",
+                    data={"deposit_code": deposit_code, "downstream": downstream},
+                    status=response.status_code
+                )
+            else:
+                return ApiResponse.error(
+                    message="Không lấy được chi tiết đặt cọc",
+                    data={"deposit_code": deposit_code, "downstream": downstream},
+                    status=response.status_code
+                )
+        except requests.RequestException as exc:
+            return ApiResponse.error(
+                message="Không gọi được dịch vụ chi tiết đặt cọc",
+                data={"error": str(exc), "deposit_code": deposit_code},
+                status=502
+            )
