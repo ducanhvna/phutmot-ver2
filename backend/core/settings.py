@@ -218,15 +218,15 @@ INTERNAL_API_BASE = config('INTERNAL_API_BASE', default='http://118.70.146.150:8
 PRICE_API_BASE = config('PRICE_API_BASE', default='http://118.70.146.150:8869')
 
 # Postgres for CTKM (EmailTCKT)
-EMAILTCKT_PG_HOST = config('EMAILTCKT_PG_HOST', default='192.168.0.221')
+EMAILTCKT_PG_HOST = config('EMAILTCKT_PG_HOST', default='118.70.146.150')
 EMAILTCKT_PG_PORT = config('EMAILTCKT_PG_PORT', default=5432, cast=int)
 EMAILTCKT_PG_DB = config('EMAILTCKT_PG_DB', default='EmailTCKT')
 EMAILTCKT_PG_USER = config('EMAILTCKT_PG_USER', default='postgres')
 EMAILTCKT_PG_PASSWORD = config('EMAILTCKT_PG_PASSWORD', default='admin')
 
 # CTKM / chiết khấu
-PROMO_API_URL = config('PROMO_API_URL', default='http://192.168.0.223:8097/api/public/CTKM')
-DISCOUNT_API_URL = config('DISCOUNT_API_URL', default='http://192.168.0.223:8097/api/public/all_ctmk')
+PROMO_API_URL = config('PROMO_API_URL', default='http://118.70.146.150:8869/api/public/CTKM')
+DISCOUNT_API_URL = config('DISCOUNT_API_URL', default='http://118.70.146.150:8869/api/public/all_ctmk')
 
 # Tỷ giá vàng
 TYGIA_API_BASE_URL = config('TYGIA_API_BASE_URL', default='https://tygia.baotinmanhhai.vn/api')

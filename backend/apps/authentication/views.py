@@ -142,10 +142,11 @@ class LoginView(APIView):
                     "store_token": token,
                     "access": str(refresh.access_token),
                     "printers": ['tichtru', 'tho', 'trangsuc'],
-                    "store_url": 'https://demo.hinosoft.com' if ('a' in user.username) or (user.username == '0919933911') else 'http://192.168.10.26',
+                    "store_url": 'https://demo.hinosoft.com' if ('a' in user.username) or (user.username == '0919933911') else 'http://192.168.10.26:5005',
                     "refresh": str(refresh),
                 }
             )
+     
         return ApiResponse.error(message="Sai tài khoản hoặc mật khẩu", status=401)
 
 
