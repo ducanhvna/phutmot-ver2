@@ -1811,12 +1811,12 @@ class BasePriceRawView(APIView):
         if resp.ok:
             return ApiResponse.success(
                 message="Lấy giá gốc thành công",
-                data=[payload],
+                data=payload['data'],
                 status=resp.status_code
             )
         return ApiResponse.error(
             message="Không lấy được giá gốc",
-            data=[payload],
+            data=payload,
             status=resp.status_code
         )
 
