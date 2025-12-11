@@ -1780,7 +1780,7 @@ class BasePriceRawView(APIView):
     price_api_base = settings.PRICE_API_BASE
 
     def get(self, request):
-        ma_hang = request.query_params.get("ma_hang")
+        ma_hang = request.query_params.get("sku")
         if not ma_hang:
             return ApiResponse.error(
                 message="Thiếu mã hàng",
@@ -1991,10 +1991,10 @@ class OrderDetailView(APIView):
     API lấy chi tiết đơn hàng.
 
     📌 Endpoint:
-    GET /api/order/detail/?order_code=366171
+    GET /api/order/detail/?code=366171
 
     📥 Request params:
-    - order_code: mã hóa đơn (Ma_hoa_don)
+    - code: mã hóa đơn (Ma_hoa_don)
 
     📤 Response ví dụ (HTTP 200):
     {
@@ -2010,7 +2010,7 @@ class OrderDetailView(APIView):
     headers = {"Content-Type": "application/json; charset=utf-8"}
 
     def get(self, request):
-        order_code = request.query_params.get("order_code")
+        order_code = request.query_params.get("code")
         if not order_code:
             return ApiResponse.error(
                 message="Thiếu tham số order_code",
@@ -2046,7 +2046,7 @@ class DepositDetailView(APIView):
     API lấy chi tiết đơn đặt cọc.
 
     📌 Endpoint:
-    GET /api/deposit/detail/?deposit_code=12345
+    GET /api/deposit/detail/?code=12345
 
     📥 Request params:
     - deposit_code: mã đặt cọc
@@ -2065,7 +2065,7 @@ class DepositDetailView(APIView):
     headers = {"Content-Type": "application/json; charset=utf-8"}
 
     def get(self, request):
-        deposit_code = request.query_params.get("deposit_code")
+        deposit_code = request.query_params.get("code")
         if not deposit_code:
             return ApiResponse.error(
                 message="Thiếu tham số deposit_code",
