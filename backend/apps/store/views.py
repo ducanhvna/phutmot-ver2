@@ -1460,7 +1460,7 @@ class ProductDiscountView(APIView):
                 status=400
             )
 
-        ma_hang = request.data.get("ma_hang")
+        ma_hang = request.data.get("sku")
         if not ma_hang:
             return ApiResponse.error(
                 message="Thiếu mã hàng",
