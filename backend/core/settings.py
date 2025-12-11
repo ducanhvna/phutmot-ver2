@@ -215,7 +215,7 @@ CELERY_TASK_SERIALIZER = 'json'
 # External service configs
 # =====================
 INTERNAL_API_BASE = config('INTERNAL_API_BASE', default='http://118.70.146.150:8869')
-PRICE_API_BASE = config('PRICE_API_BASE', default='http://192.168.0.223:8096')
+PRICE_API_BASE = config('PRICE_API_BASE', default='http://118.70.146.150:8869')
 
 # Postgres for CTKM (EmailTCKT)
 EMAILTCKT_PG_HOST = config('EMAILTCKT_PG_HOST', default='192.168.0.221')
