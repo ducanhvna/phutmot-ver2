@@ -1646,13 +1646,25 @@ class ProductDiscountBestView(APIView):
             return list(raw)
         return []
 
-    def _calc_internal(self, ma_hang: str):
+    def _calc_internal(self, ma_hang: str, soluong=1):
         try:
+            try:
+                qty = float(soluong)
+            except (TypeError, ValueError):
+                qty = 1
+
             rate = self.product_discount._get_discount_rate(ma_hang)
             base = self.product_discount._get_base_price(ma_hang)
+            print("Soluong là", qty)
             if base is None:
                 return {"ok": False, "amount": 0, "reason": "no_base_price"}
-            return {"ok": True, "amount": round(base * rate, 0), "base_price": base, "rate": rate}
+            return {
+                "ok": True,
+                "amount": round(base * rate * qty, 0),
+                "base_price": base,
+                "rate": rate,
+                "soluong": qty,
+            }
         except Exception as exc:  # pragma: no cover - defensive
             return {"ok": False, "amount": 0, "reason": str(exc)}
 
@@ -1735,7 +1747,14 @@ class ProductDiscountBestView(APIView):
             )
 
         # Chiết khấu nội bộ (Postgres + giá base)
-        internal = self._calc_internal(str(primary_code))
+        soluong = 1
+        if isinstance(first_item, dict):
+            try:
+                soluong = float(first_item.get("soluong", 1))
+            except (TypeError, ValueError):
+                soluong = 1
+
+        internal = self._calc_internal(str(primary_code), soluong=soluong)
         # Chiết khấu từ hệ thống all_ctmk (augges)
         augges = self._calc_augges(
             ma_hang_list,
