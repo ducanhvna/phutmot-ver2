@@ -1,5 +1,6 @@
 import logging
 import requests, json
+import datetime
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.response import Response
@@ -36,6 +37,42 @@ logger = logging.getLogger(__name__)
 EXTERNAL_CUSTOMER_ADD_URL = f"{settings.INTERNAL_API_BASE}/api/public/khach_hang/add"
 EXTERNAL_CUSTOMER_UPDATE_URL = f"{settings.INTERNAL_API_BASE}/api/public/khach_hang/update"
 EXTERNAL_CUSTOMER_SEARCH_URL = f"{settings.INTERNAL_API_BASE}/api/public/khach_hang/timkiem"
+
+
+def _normalize_gender_for_downstream(value: str) -> str:
+    if value is None:
+        return ""
+    v = str(value).strip()
+    if not v:
+        return ""
+    # Downstream docs show lowercase "nam"/"nữ" but other parts use "Nam"/"Nữ".
+    v_lower = v.lower()
+    if v_lower in {"nam", "nữ", "nu"}:
+        return "nữ" if v_lower in {"nữ", "nu"} else "nam"
+    return v
+
+
+def _normalize_date_for_downstream(value: str) -> str:
+    """Return YYYY-MM-DD or empty string."""
+    if value is None:
+        return ""
+    v = str(value).strip()
+    if not v:
+        return ""
+
+    # Already ISO?
+    try:
+        datetime.datetime.strptime(v, "%Y-%m-%d")
+        return v
+    except ValueError:
+        pass
+
+    # dd/mm/yyyy
+    try:
+        d = datetime.datetime.strptime(v, "%d/%m/%Y").date()
+        return d.isoformat()
+    except ValueError:
+        return v
 
 
 # ---------------------------------------------------------------
@@ -355,6 +392,226 @@ class CustomerCreateView(PostOnlyAPIView):
             message="Tạo khách hàng nội bộ thành công",
             data=serializer.data,
             status=status.HTTP_201_CREATED
+        )
+
+
+class CustomerEIDSyncView(PostOnlyAPIView):
+    """Đồng bộ/Update khách hàng bằng payload EID.
+
+    Luồng theo yêu cầu:
+    - Nhận payload EID (fullName..dsCert) + sdt/phone.
+    - Gọi downstream search (timkiem) theo sdt.
+    - Nếu downstream trả về CCCD và KHỚP => cho update.
+    - Nếu downstream trả về CCCD và KHÔNG KHỚP => fail.
+    - Nếu downstream không có CCCD => cho update.
+
+    Endpoint:
+    POST /api/customers/eid-sync/
+    """
+
+    def post(self, request):
+        incoming = request.data or {}
+
+        phone = (incoming.get("sdt") or incoming.get("phone") or incoming.get("dien_thoai") or "").strip()
+        if not phone:
+            return ApiResponse.error(message="Thiếu tham số sdt/phone", status=status.HTTP_400_BAD_REQUEST)
+
+        input_cccd = (incoming.get("cccd_cmt") or incoming.get("identityNumber") or incoming.get("id_card_number") or "").strip()
+        if not input_cccd:
+            return ApiResponse.error(message="Thiếu CCCD/identityNumber (cccd_cmt)", status=status.HTTP_400_BAD_REQUEST)
+
+        # --- 1) Search downstream by sdt ---
+        try:
+            search_resp = requests.post(
+                EXTERNAL_CUSTOMER_SEARCH_URL,
+                headers=headers,
+                data=json.dumps({"sdt": phone}),
+                timeout=15,
+            )
+        except requests.RequestException as exc:
+            return ApiResponse.error(
+                message="Không gọi được API tìm kiếm khách hàng (downstream)",
+                data={"error": str(exc)},
+                status=502,
+            )
+
+        if search_resp.status_code != 200:
+            return ApiResponse.error(
+                message="Downstream tìm kiếm khách hàng thất bại",
+                data={"status_code": search_resp.status_code, "body": search_resp.text},
+                status=502,
+            )
+
+        try:
+            search_json = search_resp.json()
+        except ValueError:
+            return ApiResponse.error(
+                message="Downstream tìm kiếm trả về dữ liệu không hợp lệ",
+                data={"body": search_resp.text},
+                status=502,
+            )
+
+        candidates = search_json.get("data") or []
+        if not candidates:
+            return ApiResponse.error(
+                message="Không tìm thấy khách hàng theo sdt trên downstream",
+                data={"sdt": phone},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Prefer exact phone match if list contains multiple
+        selected = None
+        for item in candidates:
+            if str(item.get("dien_thoai") or "").strip() == phone:
+                selected = item
+                break
+        if selected is None:
+            selected = candidates[0]
+
+        downstream_cccd = (selected.get("cccd_cmt") or "").strip()
+        if downstream_cccd and downstream_cccd != input_cccd:
+            return ApiResponse.error(
+                message="CCCD không khớp với khách hàng đã tồn tại trên downstream",
+                data={"sdt": phone, "downstream_cccd": downstream_cccd, "input_cccd": input_cccd},
+                status=409,
+            )
+
+        cccd_to_set = downstream_cccd or input_cccd
+
+        # --- 2) Build downstream update payload ---
+        full_name = (incoming.get("fullName") or incoming.get("ho_ten_khach_hang") or incoming.get("name") or selected.get("ho_ten_khach_hang") or "").strip()
+        gender = _normalize_gender_for_downstream(incoming.get("sex") or incoming.get("gioi_tinh") or selected.get("gioi_tinh"))
+        dob = _normalize_date_for_downstream(incoming.get("dateOfBirth") or incoming.get("ngay_sinh") or selected.get("ngay_sinh"))
+        email = (incoming.get("email") or selected.get("email") or "").strip()
+
+        # Prefer placeOfResidence from EID payload, fall back to dia_chi
+        dia_chi = (
+            incoming.get("placeOfResidence")
+            or incoming.get("dia_chi")
+            or selected.get("dia_chi")
+            or ""
+        )
+        dia_chi = str(dia_chi).strip()
+
+        update_payload = {
+            "cccd_cmt": cccd_to_set,
+            "ho_ten_khach_hang": full_name,
+            "gioi_tinh": gender,
+            "dia_chi": dia_chi,
+            "ngay_sinh": dob,
+            "email": email,
+            "tinh": (incoming.get("tinh") or selected.get("tinh") or ""),
+            "quan": (incoming.get("quan") or selected.get("quan") or ""),
+            "phuong": (incoming.get("phuong") or selected.get("phuong") or ""),
+            "nguoi_tao": (incoming.get("nguoi_tao") or ""),
+            "dien_thoai": phone,
+            # downstream search sometimes returns dien_thoai2/3/4, while update expects dien_thoai_2/3/4
+            "dien_thoai_2": (incoming.get("dien_thoai_2") or incoming.get("dien_thoai2") or selected.get("dien_thoai2") or selected.get("dien_thoai_2") or ""),
+            "dien_thoai_3": (incoming.get("dien_thoai_3") or incoming.get("dien_thoai3") or selected.get("dien_thoai3") or selected.get("dien_thoai_3") or ""),
+            "dien_thoai_4": (incoming.get("dien_thoai_4") or incoming.get("dien_thoai4") or selected.get("dien_thoai4") or selected.get("dien_thoai_4") or ""),
+            "qr_code": incoming.get("qr_code", selected.get("qr_code", 1)),
+            "loai_nhan_vien": incoming.get("loai_nhan_vien", 0),
+        }
+
+        # --- 3) Call downstream update ---
+        try:
+            update_resp = requests.post(
+                EXTERNAL_CUSTOMER_UPDATE_URL,
+                headers=headers,
+                data=json.dumps(update_payload),
+                timeout=15,
+            )
+        except requests.RequestException as exc:
+            return ApiResponse.error(
+                message="Không gọi được API update khách hàng (downstream)",
+                data={"error": str(exc)},
+                status=502,
+            )
+
+        downstream_update_payload = {"status_code": update_resp.status_code}
+        try:
+            downstream_update_payload["json"] = update_resp.json()
+        except ValueError:
+            downstream_update_payload["text"] = update_resp.text
+
+        if update_resp.status_code != 200:
+            return ApiResponse.error(
+                message="Downstream update khách hàng thất bại",
+                data=downstream_update_payload,
+                status=502,
+            )
+
+        # Some implementations return {status: 1, msg: Successfully}
+        downstream_status = None
+        if isinstance(downstream_update_payload.get("json"), dict):
+            downstream_status = downstream_update_payload["json"].get("status")
+        if downstream_status not in (None, 1, 200):
+            return ApiResponse.error(
+                message="Downstream update trả về trạng thái không thành công",
+                data=downstream_update_payload,
+                status=502,
+            )
+
+        # --- 4) Update local customer (store DB) + lưu EID raw payload ---
+        eid_raw = {
+            "fullName": incoming.get("fullName"),
+            "dateOfBirth": incoming.get("dateOfBirth"),
+            "sex": incoming.get("sex"),
+            "nationality": incoming.get("nationality"),
+            "placeOfOrigin": incoming.get("placeOfOrigin"),
+            "placeOfResidence": incoming.get("placeOfResidence"),
+            "personalIdentification": incoming.get("personalIdentification"),
+            "identityNumber": input_cccd,
+            "facePhoto": incoming.get("facePhoto"),
+            "com": incoming.get("com"),
+            "sod": incoming.get("sod"),
+            "dg1": incoming.get("dg1"),
+            "dg2": incoming.get("dg2"),
+            "dg13": incoming.get("dg13"),
+            "dg14": incoming.get("dg14"),
+            "dg15": incoming.get("dg15"),
+            "dsCert": incoming.get("dsCert"),
+        }
+        # drop None keys to avoid bloating
+        eid_raw = {k: v for k, v in eid_raw.items() if v is not None}
+
+        customer, _created = Customer.objects.update_or_create(
+            username=phone,
+            defaults={
+                "name": full_name or phone,
+                "phone_number": phone,
+                "id_card_number": cccd_to_set,
+                "verification_status": True,
+                "is_active": True,
+                "email": email or None,
+                "address": {
+                    "dia_chi": dia_chi,
+                    "tinh": update_payload.get("tinh") or "",
+                    "quan": update_payload.get("quan") or "",
+                    "phuong": update_payload.get("phuong") or "",
+                },
+            },
+        )
+
+        info = customer.info if isinstance(customer.info, dict) else {}
+        info["eid"] = {
+            "synced_at": timezone.now().isoformat(),
+            "payload": eid_raw,
+        }
+        customer.info = info
+        customer.touch_store_activity()
+
+        serializer = CustomerSerializer(customer)
+        return ApiResponse.success(
+            message="Đồng bộ EID và cập nhật khách hàng thành công",
+            data={
+                "customer": serializer.data,
+                "downstream": {
+                    "search": {"count": len(candidates), "selected": selected},
+                    "update": downstream_update_payload,
+                },
+            },
+            status=status.HTTP_200_OK,
         )
 
 

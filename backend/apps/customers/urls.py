@@ -5,6 +5,7 @@ from .views import (
 	CustomerDetailView,
 	CustomerUpdateView,
 	CustomerDeleteView,
+	CustomerEIDSyncView,
     OrderDepositTodayView,
     OrderSaleTodayView
 )
@@ -15,6 +16,7 @@ urlpatterns = [
 	path("detail/", CustomerDetailView.as_view(), name="customer_detail"),
 	path("update/", CustomerUpdateView.as_view(), name="customer_update"),
 	path("delete/", CustomerDeleteView.as_view(), name="customer_delete"),
+	path("eid-sync/", CustomerEIDSyncView.as_view(), name="customer_eid_sync"),
     path("today-deposits/", OrderDepositTodayView.as_view(), name="today_deposits"),
     path("today-sales/", OrderSaleTodayView.as_view(), name='today_sales')
 ]
