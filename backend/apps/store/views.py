@@ -21,6 +21,12 @@ from urllib.parse import urlencode
 import psycopg2
 from apps.home.utils import ApiResponse   # <-- class chuẩn hóa response
 from rest_framework.pagination import PageNumberPagination
+import os
+import uuid
+from django.utils import timezone
+
+# Lưu tạm trạng thái giao dịch chuyển khoản theo transfer_tracking_id
+TRANSFER_TX_STORE: dict[str, dict] = {}
 
 try:
     import pyodbc
@@ -319,8 +325,7 @@ class AllRateView(APIView):
         url_tygia_k = "https://14.224.192.52:9999/api/v1/tigia"
         response = requests.get(
             url_tygia_k, 
-            cert=cert,
-            verify= CA_CERT_PATH) # hoặc verify=False nếu chỉ test
+            verify=False) # hoặc verify=False nếu chỉ test
         tygia_k_data = response.json().get('items', [])
         #  {'Ten_VBTG': 'Vàng nữ trang 999.9',
         #     'TyGia_MuaK': 14000000.0,
@@ -597,6 +602,171 @@ class GenQRView(APIView):
             "add_info": add_info,
             "transfer_tracking_id": transfer_tracking_id if transfer_tracking_id else "NEWTRACKID001"
         })
+
+
+def _tpb_now_headers():
+    now = timezone.localtime(timezone.now())
+    # api_timestamp: docs say Datetime (header), use ISO8601 with timezone
+    api_timestamp = now.isoformat(timespec="seconds")
+    # RequestDateTime: DD/MM/YYYY HH24:MI:SS
+    request_date_time = now.strftime("%d/%m/%Y %H:%M:%S")
+    # TransmissionTime: yyyy-MM-dd'T'HH:mm:ss (+tz is usually accepted; sample has +07:00)
+    transmission_time = now.isoformat(timespec="seconds")
+    return api_timestamp, request_date_time, transmission_time
+
+
+def _tpb_build_signature_string(body: dict) -> str:
+    # Rule: <SourceAppId, FunctionCode, TraceNumber, TransmissionTime, UserId, TransactionId,
+    # RequestDateTime, AccountType, AccountNo> concatenated with empty defaults.
+    keys = [
+        "SourceAppId",
+        "FunctionCode",
+        "TraceNumber",
+        "TransmissionTime",
+        "UserId",
+        "TransactionId",
+        "RequestDateTime",
+        "AccountType",
+        "AccountNo",
+    ]
+    return "".join(str(body.get(k) or "") for k in keys)
+
+
+def _tpb_try_sign_rsa_sha256(message: str) -> str | None:
+    """Return base64(signature) if private key configured and crypto available, else None."""
+    key_pem = os.environ.get("TPB_RSA_PRIVATE_KEY_PEM")
+    key_path = os.environ.get("TPB_RSA_PRIVATE_KEY_PATH")
+    if not key_pem and key_path:
+        try:
+            key_pem = open(key_path, "rb").read().decode("utf-8")
+        except Exception:
+            key_pem = None
+
+    if not key_pem:
+        return None
+
+    try:
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import padding
+        from cryptography.hazmat.primitives.serialization import load_pem_private_key
+    except Exception:
+        return None
+
+    try:
+        private_key = load_pem_private_key(key_pem.encode("utf-8"), password=None)
+        sig = private_key.sign(
+            message.encode("utf-8"),
+            padding.PKCS1v15(),
+            hashes.SHA256(),
+        )
+        return b64encode(sig).decode("ascii")
+    except Exception:
+        return None
+
+
+class TPBGenQRView(APIView):
+    """Proxy GenQR (TPB B2B) - UAT.
+
+    POST /api/tpb/gen-qr/
+    - Nhận body theo spec (SourceAppId..Signature)
+    - Tự bổ sung một số trường nếu thiếu (FunctionCode/TransmissionTime/RequestDateTime/TraceNumber/TransactionId)
+    - Forward sang TPB sandbox endpoint và trả raw response.
+    """
+
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    TPB_URL = "https://sandboxapi.tpb.vn:9303/tpb/public/api/fund-transfer-b2b-service/v1/support/gen-qr-uat"
+
+    def post(self, request):
+        incoming = request.data or {}
+
+        api_timestamp, request_date_time_default, transmission_time_default = _tpb_now_headers()
+
+        body = {
+            "SourceAppId": "BTMH",
+            "FunctionCode": incoming.get("FunctionCode") or "FT_B2B_GEN_QR",
+            "TransmissionTime": incoming.get("TransmissionTime") or transmission_time_default,
+            "TraceNumber": incoming.get("TraceNumber"),
+            "UserId": incoming.get("UserId"),
+            "TransactionId": incoming.get("TransactionId"),
+            "RequestDateTime": incoming.get("RequestDateTime") or request_date_time_default,
+            "AccountType": "1",
+            "AccountNo": incoming.get("AccountNo"),
+        }
+
+        # Optional
+        if incoming.get("Amount") is not None:
+            body["Amount"] = str(incoming.get("Amount"))
+        if incoming.get("AddInfo") is not None:
+            body["AddInfo"] = str(incoming.get("AddInfo"))
+
+        # Generate TraceNumber/TransactionId if missing (<=26 chars)
+        def _gen_ref(prefix: str) -> str:
+            stamp = timezone.localtime(timezone.now()).strftime("%Y%m%d%H%M%S")
+            rand = uuid.uuid4().hex[:6].upper()
+            raw = f"{prefix}{stamp}{rand}"
+            return raw[:26]
+
+        if not body.get("TraceNumber"):
+            body["TraceNumber"] = _gen_ref(str(body.get("SourceAppId") or "APP"))
+        if not body.get("TransactionId"):
+            body["TransactionId"] = _gen_ref("TX")
+
+        missing = [k for k in ["SourceAppId", "FunctionCode", "TransmissionTime", "TraceNumber", "UserId", "TransactionId", "RequestDateTime", "AccountType", "AccountNo"] if not (body.get(k) or "").strip()]
+        if missing:
+            return ApiResponse.error(message="Thiếu field bắt buộc", data={"missing": missing}, status=400)
+
+        # Signature: accept from client; if missing, try to generate from configured RSA private key
+        signature = incoming.get("Signature")
+        if not signature:
+            sign_str = _tpb_build_signature_string(body)
+            signature = _tpb_try_sign_rsa_sha256(sign_str)
+            if not signature:
+                return ApiResponse.error(
+                    message="Thiếu Signature và server chưa cấu hình khóa ký (TPB_RSA_PRIVATE_KEY_PEM/TPB_RSA_PRIVATE_KEY_PATH hoặc thư viện cryptography)",
+                    status=400,
+                )
+        body["Signature"] = signature
+
+        # --- Build TPB headers ---
+        auth = request.headers.get("authorization") or request.headers.get("Authorization")
+        if not auth:
+            token = os.environ.get("TPB_OAUTH_ACCESS_TOKEN")
+            if token:
+                auth = token if token.lower().startswith("bearer ") else f"Bearer {token}"
+
+        if not auth:
+            return ApiResponse.error(message="Thiếu header Authorization (Bearer token)", status=401)
+
+        transaction_id = request.headers.get("transaction_id") or request.headers.get("Transaction-Id") or str(uuid.uuid4())
+        auth_data = request.headers.get("authorization_data") or request.headers.get("Authorization-Data")
+        api_ts = request.headers.get("api_timestamp") or request.headers.get("Api-Timestamp") or api_timestamp
+
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "authorization": auth,
+            "transaction_id": transaction_id,
+            "api_timestamp": api_ts,
+        }
+        if auth_data:
+            headers["authorization_data"] = auth_data
+
+        try:
+            resp = requests.post(self.TPB_URL, headers=headers, json=body, timeout=30)
+        except requests.RequestException as exc:
+            return ApiResponse.error(message="Không gọi được TPB GenQR", data={"error": str(exc)}, status=502)
+
+        try:
+            downstream = resp.json()
+        except ValueError:
+            downstream = {"raw": resp.text}
+
+        # Keep TPB status code for debugging
+        if resp.ok:
+            return ApiResponse.success(message="TPB GenQR success", data={"tpb_status": resp.status_code, "tpb_response": downstream}, status=resp.status_code)
+        return ApiResponse.error(message="TPB GenQR failed", data={"tpb_status": resp.status_code, "tpb_response": downstream}, status=resp.status_code)
     
 class PaymentView(APIView):
     """
@@ -641,6 +811,10 @@ class PaymentView(APIView):
         add_info = request.data.get("add_info")
         transfer_tracking_id = request.data.get("transfer_tracking_id", "")
 
+        # Tạo mặc định tracking_id nếu client không gửi
+        if not transfer_tracking_id:
+            transfer_tracking_id = f"BTMHVPB{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+
         payload = {
             "transaction_id": transaction_id,
             "source_account": source_account,
@@ -654,11 +828,32 @@ class PaymentView(APIView):
             "add_info": add_info
         }
 
-        if transfer_tracking_id:
-            payload["transfer_tracking_id"] = transfer_tracking_id
+        payload["transfer_tracking_id"] = transfer_tracking_id
 
         # Kiểm tra trường hợp tạo mới hay tra cứu để trả về response tương ứng
         # dumy các thông tin ngoài transfer_tracking_id
+
+        response_dt = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+        # Lưu cache trạng thái để tra cứu
+        TRANSFER_TX_STORE[transfer_tracking_id] = {
+            "transaction_id": transaction_id,
+            "transfer_data": {
+                "source_account": source_account,
+                "amount": amount,
+                "destination_citad_code": destination_citad_code,
+                "destination_napas_code": destination_napas_code,
+                "destination_account": destination_account,
+                "destination_name": destination_name,
+                "model": model,
+                "record_id": record_id,
+                "add_info": add_info,
+                "status_transfer": "SUCCESS",
+                "transfer_tracking_id": transfer_tracking_id,
+                "response_datetime": response_dt,
+                "signature": "DUMMY_SIGNATURE"
+            }
+        }
 
         return Response({
             "status_code": "200",   
@@ -676,11 +871,55 @@ class PaymentView(APIView):
                 "record_id": record_id,
                 "add_info": add_info,
                 "status_transfer": "SUCCESS",
-                "transfer_tracking_id": transfer_tracking_id if transfer_tracking_id else "BTMHVPB202406270001",
-                "response_datetime": datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                "transfer_tracking_id": transfer_tracking_id,
+                "response_datetime": response_dt,
                 "signature": "DUMMY_SIGNATURE"
             }
         })
+
+
+class PaymentStatusCheckView(APIView):
+    """
+    Dummy API kiểm tra trạng thái chuyển khoản theo transfer_tracking_id.
+
+    📌 Endpoint: POST /api/payment/transfer-status/
+
+    Body ví dụ:
+    {
+        "transfer_tracking_id": "BTMHVPB202406270001",
+        "transaction_id": "BTMHVPB202406270001"   // optional
+    }
+    """
+    def post(self, request):
+        transfer_tracking_id = request.data.get("transfer_tracking_id") if isinstance(request.data, dict) else None
+        transaction_id = request.data.get("transaction_id") if isinstance(request.data, dict) else None
+
+        if not transfer_tracking_id:
+            return ApiResponse.error(
+                message="Thiếu transfer_tracking_id",
+                data={"payload": request.data},
+                status=400,
+            )
+
+        cached = TRANSFER_TX_STORE.get(transfer_tracking_id)
+        if not cached:
+            return ApiResponse.error(
+                message="Không tìm thấy giao dịch",
+                data={"transfer_tracking_id": transfer_tracking_id},
+                status=404,
+            )
+
+        transfer_data = cached.get("transfer_data", {})
+        return ApiResponse.success(
+            message="Tra cứu trạng thái thành công",
+            data={
+                "status_code": "200",
+                "error_code": "",
+                "error_message": "",
+                "transaction_id": transaction_id or cached.get("transaction_id") or transfer_tracking_id,
+                "transfer_data": transfer_data,
+            },
+        )
     
     
 class PaymentQRProxyView(APIView):

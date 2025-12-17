@@ -8,12 +8,14 @@ from .views import (
     AllRateView,
     PriceCalcView,
     GenQRView,
+    TPBGenQRView,
     PaymentView,
     PaymentQRProxyView,
     OrderSellView,
     OrderShellView,
     OderPurchaseView,
     OderDepositView,
+    PaymentStatusCheckView,
     ProductImageView,
     OrderReplaceView,
     OderServiceView,
@@ -54,8 +56,14 @@ urlpatterns = [
     # Tạo mã QR
     path("api/generate-qr/", GenQRView.as_view(), name="generate_qr"),
 
+    # TPB B2B GenQR (UAT)
+    path("api/tpb/gen-qr/", TPBGenQRView.as_view(), name="tpb_gen_qr"),
+
     # Xử lý thanh toán
     path("api/payment/", PaymentView.as_view(), name="process_payment"),
+
+    # Tra cứu trạng thái chuyển khoản (dummy)
+    path("api/payment/transfer-status/", PaymentStatusCheckView.as_view(), name="payment_transfer_status"),
 
     # Proxy tạo QR từ hệ thống nội bộ
     path("api/payment/qr-proxy/", PaymentQRProxyView.as_view(), name="payment_qr_proxy"),
