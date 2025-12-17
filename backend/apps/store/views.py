@@ -1576,7 +1576,7 @@ class OderServiceView(APIView):
             #     status=500
             # )
         try:
-            response = requests.post(self.deposit_url, headers=self.headers, json=downstream_payload, timeout=30)
+            response = requests.post(self.service_url, headers=self.headers, json=downstream_payload, timeout=30)
             downstream = response.json() if response.ok else {"raw": response.text}
             return ApiResponse.success(
                 message="Lên đơn dịch vụ thành công",
