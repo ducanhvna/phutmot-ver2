@@ -1461,12 +1461,13 @@ class OderDepositView(APIView):
             )
 
         try:
-            create_deposit_order_from_json(normalized_data)
+            create_deposit_order_from_json(request.data)
         except Exception as e:
-            return ApiResponse.error(
-                message=f"Lỗi: {str(e)}",
-                status=500
-            )
+            pass
+            # return ApiResponse.error(
+            #     message=f"Lỗi: {str(e)}",
+            #     status=500
+            # )
 
         try:
             response = requests.post(self.deposit_url, headers=self.headers, json=downstream_payload, timeout=30)
@@ -1517,18 +1518,80 @@ class OderServiceView(APIView):
         "data": []
     }
     """
+    service_url = f"{INTERNAL_API_BASE}/api/public/updatedatehang_dv"
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+
+    def _normalize_payload(self, payload_source):
+        data = payload_source["data"] if isinstance(payload_source, dict) and isinstance(payload_source.get("data"), dict) else payload_source
+        ma_khachhang = data.get("phone", "").replace("*", "")
+        if not ma_khachhang:
+            raise ValueError("Thiếu thông tin mã khách hàng")
+
+        manhanvien = data.get("username_sale")
+        danh_sach = data.get("danh_sach") or []
+        if not danh_sach:
+            source_items = data.get("orderitems") or data.get("sellorderitems") or []
+            for item in source_items:
+                mahang = item.get("product_id")
+                soluong = item.get("quantity")
+                try:
+                    soluong_val = float(soluong)
+                except (TypeError, ValueError):
+                    continue
+                if mahang and soluong_val > 0:
+                    danh_sach.append({"mahang": str(mahang), "soluong": soluong_val})
+
+        if not danh_sach:
+            raise ValueError("Thiếu danh sách sản phẩm")
+
+        payload = {
+            "ma_khachhang": ma_khachhang,
+            "manhanvien": manhanvien,
+            "dien_giai": data.get("dien_giai", ""),
+            "ngay_giao": data.get("delivery_date", ""),
+            "danh_sach": danh_sach
+        }
+        return data, payload
+    
     def post(self, request):
         order_data = request.data
         try:
-            create_service_order_from_json(order_data)
-            return ApiResponse.success(
-                message="Đơn dịch vụ đã được tạo thành công!",
-                data=[]
-            )
-        except Exception as e:
+            normalized_data, downstream_payload = self._normalize_payload(order_data)
+        except ValueError as exc:
             return ApiResponse.error(
-                message=f"Lỗi: {str(e)}",
-                status=500
+                message=str(exc),
+                data={"payload": request.data},
+                status=400
+            )
+        try:
+            create_service_order_from_json(order_data)
+            # return ApiResponse.success(
+            #     message="Đơn dịch vụ đã được tạo thành công!",
+            #     data=[]
+            # )
+        except Exception as e:
+            pass
+            # return ApiResponse.error(
+            #     message=f"Lỗi: {str(e)}",
+            #     status=500
+            # )
+        try:
+            response = requests.post(self.deposit_url, headers=self.headers, json=downstream_payload, timeout=30)
+            downstream = response.json() if response.ok else {"raw": response.text}
+            return ApiResponse.success(
+                message="Lên đơn dịch vụ thành công",
+                data={"payload": downstream_payload, "downstream": downstream},
+                status=response.status_code
+            ) if response.ok else ApiResponse.error(
+                message="Lên đơn dịch vụ thành công",
+                data={"payload": downstream_payload, "downstream": downstream},
+                status=response.status_code
+            )
+        except requests.RequestException as exc:
+            return ApiResponse.error(
+                message="Không gọi được lên đơn dịch vụ",
+                data={"error": str(exc), "payload": downstream_payload},
+                status=502
             )
 
 
