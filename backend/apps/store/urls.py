@@ -26,7 +26,8 @@ from .views import (
     ProductDiscountBestView,
     BasePriceRawView,
     OrderDetailView,
-    DepositDetailView
+    DepositDetailView,
+    ServicesProductView
 )
 
 urlpatterns = [
@@ -105,4 +106,6 @@ urlpatterns = [
     path("api/sell-detail-view/", OrderDetailView.as_view(), name="sell_detail_view"),
 
     path("api/deposit-detail-view/", DepositDetailView.as_view(), name="deposit_detai_view"),
+
+    path("api/services-product/", ServicesProductView.as_view(), name="services_product_view"),
 ]

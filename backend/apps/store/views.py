@@ -2114,3 +2114,45 @@ class DepositDetailView(APIView):
                 data={"error": str(exc), "deposit_code": deposit_code},
                 status=502
             )
+
+
+class ServicesProductView(APIView):
+    """
+    API lấy danh sách dịch vụ sản phẩm.
+
+    📌 Endpoint:
+    GET /api/services/products/
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Lấy danh sách dịch vụ sản phẩm thành công",
+        "data": [ ... danh sách dịch vụ ... ]
+    }
+    """
+    base_url = f"{INTERNAL_API_BASE}/api/public/danh_sach_dv"
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+
+    def get(self, request):
+        try:
+            response = requests.get(self.base_url, headers=self.headers, timeout=5)
+            downstream = response.json() if response.ok else {"raw": response.text}
+
+            if response.ok:
+                return ApiResponse.success(
+                    message="Lấy danh sách dịch vụ sản phẩm thành công",
+                    data=downstream.get("data", []),
+                    status=response.status_code
+                )
+            else:
+                return ApiResponse.error(
+                    message="Không lấy được danh sách dịch vụ sản phẩm",
+                    data={"downstream": downstream},
+                    status=response.status_code
+                )
+        except requests.RequestException as exc:
+            return ApiResponse.error(
+                message="Không gọi được dịch vụ danh sách dịch vụ sản phẩm",
+                data={"error": str(exc)},
+                status=502
+            )
