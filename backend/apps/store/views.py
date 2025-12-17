@@ -259,14 +259,14 @@ reverse_map = {
 
 class RateView(APIView):
     def get(self, request):
-        url_tygia_k = "https://14.224.192.52:9999/api/v1/tigia"
-        response = requests.get(
-            url_tygia_k, 
-            cert=cert,
-            verify= CA_CERT_PATH) # hoặc verify=False nếu chỉ test
-        tygia_k_data = response.json().get('items', [])
-        rate_9999 = next((item for item in tygia_k_data if 'Vàng nữ trang 999.9' == item['Ten_VBTG']), None)
-        rate_999 = next((item for item in tygia_k_data if 'Vàng nữ trang 99.9' == item['Ten_VBTG']), None) 
+        # url_tygia_k = "https://14.224.192.52:9999/api/v1/tigia"
+        # response = requests.get(
+        #     url_tygia_k, 
+        #     cert=cert,
+        #     verify= CA_CERT_PATH) # hoặc verify=False nếu chỉ test
+        # tygia_k_data = response.json().get('items', [])
+        # rate_9999 = next((item for item in tygia_k_data if 'Vàng nữ trang 999.9' == item['Ten_VBTG']), None)
+        # rate_999 = next((item for item in tygia_k_data if 'Vàng nữ trang 99.9' == item['Ten_VBTG']), None) 
 
         ma_hang = request.query_params.get("ma_hang")
         if not ma_hang:
@@ -309,9 +309,9 @@ class RateView(APIView):
                             break
                     item["maLoaivang"] = mapped_code or "UNKNOWN"
                     if mapped_code == "9999":
-                        item['ty_gia_K'] = rate_9999.get('TyGia_MuaK') if rate_9999 else None
+                        item['ty_gia_K'] =  None
                     elif mapped_code == "999":
-                        item['ty_gia_K'] = rate_999.get('TyGia_MuaK') if rate_999 else None
+                        item['ty_gia_K'] =  None
                     else:
                         item['ty_gia_K'] = None
                 return Response(data)
@@ -322,22 +322,22 @@ class RateView(APIView):
 
 class AllRateView(APIView):
     def get(self, request):
-        url_tygia_k = "https://14.224.192.52:9999/api/v1/tigia"
-        response = requests.get(
-            url_tygia_k, 
-            verify=False) # hoặc verify=False nếu chỉ test
-        tygia_k_data = response.json().get('items', [])
-        #  {'Ten_VBTG': 'Vàng nữ trang 999.9',
-        #     'TyGia_MuaK': 14000000.0,
-        #     'TyGia_Mua': 14610000.0,
-        #     'TyGia_Ban': 14940000.0},
-        #     {'Ten_VBTG': 'Vàng nữ trang 99.9',
-        #     'TyGia_MuaK': 13950000.0,
-        #     'TyGia_Mua': 14600000.0,
-        #     'TyGia_Ban': 14930000.0}],
-        # lấy tỷ giá từ mảng với 2 tỷ gia 999.9 và 99.9 như trên
-        rate_9999 = next((item for item in tygia_k_data if 'Vàng nữ trang 999.9' == item['Ten_VBTG']), None)
-        rate_999 = next((item for item in tygia_k_data if 'Vàng nữ trang 99.9' == item['Ten_VBTG']), None) 
+        # url_tygia_k = "https://14.224.192.52:9999/api/v1/tigia"
+        # response = requests.get(
+        #     url_tygia_k, 
+        #     verify=False) # hoặc verify=False nếu chỉ test
+        # tygia_k_data = response.json().get('items', [])
+        # #  {'Ten_VBTG': 'Vàng nữ trang 999.9',
+        # #     'TyGia_MuaK': 14000000.0,
+        # #     'TyGia_Mua': 14610000.0,
+        # #     'TyGia_Ban': 14940000.0},
+        # #     {'Ten_VBTG': 'Vàng nữ trang 99.9',
+        # #     'TyGia_MuaK': 13950000.0,
+        # #     'TyGia_Mua': 14600000.0,
+        # #     'TyGia_Ban': 14930000.0}],
+        # # lấy tỷ giá từ mảng với 2 tỷ gia 999.9 và 99.9 như trên
+        # rate_9999 = next((item for item in tygia_k_data if 'Vàng nữ trang 999.9' == item['Ten_VBTG']), None)
+        # rate_999 = next((item for item in tygia_k_data if 'Vàng nữ trang 99.9' == item['Ten_VBTG']), None) 
 
         url = f"{BASE_URL}/getTyGia"
         headers = {
@@ -359,9 +359,9 @@ class AllRateView(APIView):
                             break
                     item["maLoaivang"] = mapped_code or "UNKNOWN"
                     if mapped_code == "9999":
-                        item['ty_gia_K'] = rate_9999.get('TyGia_MuaK') if rate_9999 else None
+                        item['ty_gia_K'] = None
                     elif mapped_code == "999":
-                        item['ty_gia_K'] = rate_999.get('TyGia_MuaK') if rate_999 else None
+                        item['ty_gia_K'] =  None
                     else:
                         item['ty_gia_K'] = None
                 return Response(data)
