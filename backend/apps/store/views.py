@@ -1539,7 +1539,7 @@ class OderServiceView(APIView):
                 except (TypeError, ValueError):
                     continue
                 if mahang and soluong_val > 0:
-                    danh_sach.append({"mahang": str(mahang), "soluong": soluong_val})
+                    danh_sach.append({"mahang": str(mahang), "soluong": soluong_val, "so_tien":200000})
 
         if not danh_sach:
             raise ValueError("Thiếu danh sách sản phẩm")
