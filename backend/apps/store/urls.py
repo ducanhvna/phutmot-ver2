@@ -30,7 +30,8 @@ from .views import (
     BasePriceRawView,
     OrderDetailView,
     DepositDetailView,
-    ServicesProductView
+    ServicesProductView,
+    DonHangHomNayView
 )
 
 urlpatterns = [
@@ -120,4 +121,6 @@ urlpatterns = [
     path("api/deposit-detail-view/", DepositDetailView.as_view(), name="deposit_detai_view"),
 
     path("api/services-product/", ServicesProductView.as_view(), name="services_product_view"),
+
+    path("api/today-orders/", DonHangHomNayView.as_view(), name="don_hang_hom_nay_view"),
 ]

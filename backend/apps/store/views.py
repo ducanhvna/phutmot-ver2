@@ -2541,3 +2541,33 @@ class ServicesProductView(APIView):
                 data={"error": str(exc)},
                 status=502
             )
+
+class DonHangHomNayView(APIView):
+    base_url = f"{INTERNAL_API_BASE}/api/public/don_hang_ngay_theo_ma_kho"
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+    def get(self, request):
+        makho = request.query_params.get("makho", "FS01")
+        # Lấy ngày hôm nay theo định dạng YYYY-MM-DD
+        today = datetime.today().strftime("%Y-%m-%d")
+        
+        # URL gốc
+        url = f"{self.base_url}/{makho}/{today}"
+        try:
+            response = requests.get(url, headers=self.headers, timeout=30)
+            data = response.json()
+            results = data.get("data", []) if response.ok else {"raw": response.text}
+            # downstream = response.json().get("data") if response.ok else {"raw": response.text}
+
+            if response.ok:
+                return ApiResponse.success(
+                    message="Lấy danh sách đơn hàng bán hôm nay thành công",
+                    data={"date": today, "results": results},
+                    status=response.status_code
+                )
+            
+        except Exception as e:
+            return ApiResponse.error(
+                message="Không gọi được dịch vụ danh sách đơn hàng bán",
+                data={"error": str(e), "date": today},
+                status=502
+            )
