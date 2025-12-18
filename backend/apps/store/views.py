@@ -247,14 +247,19 @@ BASE_URL = settings.TYGIA_API_BASE_URL
 
 # Bảng ánh xạ từ mô tả → mã loại vàng chuẩn
 reverse_map = {
+    "NL-BAC-999": ["Bạc Nguyên liệu 999"],
+    "NL9999": ["Vàng nguyên liệu 999,9", "Vàng nguyên liệu 999.9"],
+    "NL9999": ["Vàng nguyên liệu 99,9", "Vàng nguyên liệu 99.9"],
     "SJC": ["SJC"],
     "VRTL": ["Rồng Thăng Long"],
-    "KGB": ["ép vỉ Kim Gia Bảo"],
-    "9999": ["999.9", "9999"],
-    "999": ["99.9"],
+    "KGB": ["Vàng Kim Gia Bảo 24K"],
+    "BT-TKC": ["Vàng Tiểu Kim Cát 24K","Tiểu Kim Cát"],
+    "BAC-999-1KG": ["Bạc Thỏi BTMH 999 1 KG"],
+    "BAC-999": ["Bạc Thỏi BTMH 999"],
     "BT24K": ["BT 24K"],
     "KHS": ["Đồng vàng Kim Gia Bảo"],
-    "BT-TKC": ["Tiểu Kim Cát", "Trang sức"]
+    "9999": ["999.9", "9999"],
+    "999": ["99.9"],
 }
 
 class RateView(APIView):
