@@ -248,8 +248,8 @@ BASE_URL = settings.TYGIA_API_BASE_URL
 # Bảng ánh xạ từ mô tả → mã loại vàng chuẩn
 reverse_map = {
     "NL-BAC-999": ["Bạc Nguyên liệu 999"],
-    "NL9999": ["Vàng nguyên liệu 999,9", "Vàng nguyên liệu 999.9"],
-    "NL9999": ["Vàng nguyên liệu 99,9", "Vàng nguyên liệu 99.9"],
+    "NL9999": ["Vàng nguyên liệu 999,9", "Vàng nguyên liệu 999.9", "Vàng nguyên liệu 9999"],
+    "NL999": ["Vàng nguyên liệu 99,9", "Vàng nguyên liệu 99.9"],
     "SJC": ["SJC"],
     "VRTL": ["Rồng Thăng Long"],
     "KGB": ["Vàng Kim Gia Bảo 24K"],
@@ -309,7 +309,7 @@ class RateView(APIView):
                     original = item.get("loaiVang", "")
                     mapped_code = None
                     for ma, keywords in reverse_map.items():
-                        if any(kw.lower() in original.lower() for kw in keywords):
+                        if any(kw.lower().strip() in original.lower().strip() for kw in keywords):
                             mapped_code = ma
                             break
                     item["maLoaivang"] = mapped_code or "UNKNOWN"
