@@ -266,6 +266,8 @@ class CustomerCreateView(PostOnlyAPIView):
         incoming_data = request.data
         query = incoming_data.get("q", '').strip()
 
+        print("CustomerCreateView: incoming_data =", incoming_data)
+
         if is_phone_number(query) or is_id_card(query):
             payload = {"sdt": query}
             response = requests.post(EXTERNAL_CUSTOMER_SEARCH_URL, headers=headers, data=json.dumps(payload), timeout=15)
@@ -287,8 +289,10 @@ class CustomerCreateView(PostOnlyAPIView):
                     )
 
                     if is_phone_number(query):
-                        data = {"phone_number": query, "name": incoming_data.get("name"), "username": query, "id_card_number": None}
-                        response = requests.post(EXTERNAL_CUSTOMER_ADD_URL, headers=headers, data=json.dumps(payload), timeout=15)
+                        data_ = {"dien_thoai": query, "ho_ten_khach_hang": incoming_data.get("name"), "cccd_cmt": ""}
+                        response = requests.post(EXTERNAL_CUSTOMER_ADD_URL, headers=headers, data=json.dumps(data_), timeout=15)
+                        print(data_)
+                        print("CustomerCreateView: External add response =", response.status_code, response.text)
                         if response.status_code != 200:
                             logger.warning("External customer add failed (%s): %s", response.status_code, response.text)
 
