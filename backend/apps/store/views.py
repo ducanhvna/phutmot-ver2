@@ -2543,6 +2543,62 @@ class ServicesProductView(APIView):
             )
 
 class DonHangHomNayView(APIView):
+    """
+    API: Lấy danh sách đơn hàng bán trong ngày hôm nay theo mã kho.
+
+    - Endpoint: /api/donhang/homnay/?makho=<MA_KHO>
+    - Method: GET
+    - Query params:
+        + makho: mã kho cần lấy (mặc định = "FS01" nếu không truyền)
+    - Chức năng:
+        + Tự động lấy ngày hiện tại (YYYY-MM-DD)
+        + Gọi API nội bộ: {INTERNAL_API_BASE}/api/public/don_hang_ngay_theo_ma_kho/<MA_KHO>/<TODAY>
+        + Trả về dữ liệu JSON gồm:
+            {
+                "status": <HTTP status>,
+                "msg": "Thông điệp kết quả",
+                "data": {
+                    "date": <ngày hôm nay>,
+                    "orders": [
+                        {
+                            "ten_khach_hang": "Tên khách hàng",
+                            "so_dien_thoai": "SĐT",
+                            "nhan_vien": "Tên nhân viên",
+                            "tien_ck": <số tiền chiết khấu>,
+                            "dia_chi": "Địa chỉ",
+                            "ngay": "YYYY-MM-DD HH:mm:ss",
+                            "tong_tien": <tổng tiền>,
+                            "link": <link hoặc null>,
+                            "trang_thai_thanh_toan": <0|1>,
+                            "tong_tien_chuyen_khoan": <số tiền>,
+                            "ma_hoa_don": <mã số>,
+                            "trang_thai_tra_hang": <0|1>,
+                            "danh_sach": [
+                                {
+                                    "mahang": "Mã hàng",
+                                    "soluong": <số lượng>,
+                                    "ten_hang": "Tên hàng",
+                                    "gia_tien": <giá>,
+                                    "tien_ck": <chiết khấu>,
+                                    "ham_luong_kl": "KC",
+                                    "kl_vang": <số>,
+                                    "kl_da": <số>,
+                                    "tien_cong": <số>,
+                                    "tien_da": <số>,
+                                    "tong_kl": <số>,
+                                    "donvitinh": "Đơn vị tính"
+                                }
+                            ],
+                            "dien_gia": "Diễn giải",
+                            "ma_dat_coc": "Mã đặt cọc"
+                        }
+                    ]
+                }
+            }
+    - Trường hợp lỗi:
+        + Nếu không gọi được API nội bộ, trả về status 502 cùng thông tin lỗi.
+    """
+
     base_url = f"{INTERNAL_API_BASE}/api/public/don_hang_ngay_theo_ma_kho"
     headers = {"Content-Type": "application/json; charset=utf-8"}
     def get(self, request):
@@ -2555,13 +2611,13 @@ class DonHangHomNayView(APIView):
         try:
             response = requests.get(url, headers=self.headers, timeout=30)
             data = response.json()
-            results = data.get("data", []) if response.ok else {"raw": response.text}
+            orders = data.get("data", []) if response.ok else {"raw": response.text}
             # downstream = response.json().get("data") if response.ok else {"raw": response.text}
 
             if response.ok:
                 return ApiResponse.success(
                     message="Lấy danh sách đơn hàng bán hôm nay thành công",
-                    data={"date": today, "results": results},
+                    data={"date": today, "orders": orders},
                     status=response.status_code
                 )
             
