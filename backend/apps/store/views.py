@@ -2604,7 +2604,8 @@ class DonHangHomNayView(APIView):
     def get(self, request):
         makho = request.query_params.get("makho", "FS01")
         # Lấy ngày hôm nay theo định dạng YYYY-MM-DD
-        today = datetime.today().strftime("%Y-%m-%d")
+        vn_now = timezone.localtime(timezone.now())
+        today = vn_now.strftime("%Y-%m-%d")
         
         # URL gốc
         url = f"{self.base_url}/{makho}/{today}"
