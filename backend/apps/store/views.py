@@ -1350,6 +1350,75 @@ class OrderPaymentStatusView(APIView):
             )
 
 
+class DepositPaymentStatusView(APIView):
+    """
+    📌 Endpoint:
+    POST /api/deposit-payment-status/
+
+    📥 Request body ví dụ:
+    {
+        "ma_dat_coc": "DC20251208195900"
+    }
+    """
+
+    def post(self, request):
+        if not isinstance(request.data, dict):
+            return ApiResponse.error(
+                message="Payload phải là JSON object",
+                data={"payload": request.data},
+                status=400,
+            )
+
+        ma_dat_coc = request.data.get("ma_dat_coc")
+        if not ma_dat_coc:
+            return ApiResponse.error(
+                message="Thiếu mã đặt cọc",
+                data={"payload": request.data},
+                status=400,
+            )
+
+        api_url = f"{INTERNAL_API_BASE}/api/public/chi_tiet_don_hang_dat_coc/{ma_dat_coc}"
+
+        def _to_number(value):
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return 0.0
+
+        try:
+            response = requests.get(api_url, timeout=30)
+            downstream = response.json() if response.ok else {"raw": response.text}
+
+            if not response.ok:
+                return ApiResponse.error(
+                    message="Không lấy được chi tiết đơn đặt cọc",
+                    data={"ma_dat_coc": ma_dat_coc, "downstream": downstream},
+                    status=response.status_code,
+                )
+
+            # Ưu tiên lấy theo cấu trúc {data:{...}} giống các endpoint nội bộ khác
+            deposit_data = downstream.get("data") if isinstance(downstream, dict) else None
+            if not isinstance(deposit_data, dict):
+                deposit_data = downstream if isinstance(downstream, dict) else {}
+
+            tong_tien = _to_number(deposit_data.get("tong_tien"))
+            tong_tien_ck = _to_number(deposit_data.get("tong_tien_chuyen_khoan"))
+
+            remainder = tong_tien - tong_tien_ck
+            paid = remainder == 0
+
+            return ApiResponse.success(
+                message="Kiểm tra trạng thái thanh toán đặt cọc thành công",
+                data={"paid": paid, "remainder": remainder},
+            )
+        except requests.RequestException as exc:
+            return ApiResponse.error(
+                message="Không gọi được dịch vụ chi tiết đơn đặt cọc",
+                data={"error": str(exc), "ma_dat_coc": ma_dat_coc},
+                status=502,
+            )
+
+
 class OderPurchaseView(APIView):
     """
     API tạo đơn mua hàng.

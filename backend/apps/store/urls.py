@@ -23,6 +23,7 @@ from .views import (
     PaymentConfirmView,
     OrderDeTailView,
     OrderPaymentStatusView,
+    DepositPaymentStatusView,
     ProductDiscountView,
     ProductDiscountViewAugges,
     ProductDiscountBestView,
@@ -98,6 +99,9 @@ urlpatterns = [
 
     # Kiểm tra trạng thái thanh toán
     path("api/order-payment-status/", OrderPaymentStatusView.as_view(), name="order_payment_status"),
+
+    # Kiểm tra trạng thái thanh toán đặt cọc
+    path("api/deposit-payment-status/", DepositPaymentStatusView.as_view(), name="deposit_payment_status"),
 
     # Lấy số tiền chiết khấu cho sản phẩm
     path("api/product-discount/", ProductDiscountView.as_view(), name="product_discount"),
