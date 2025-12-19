@@ -332,3 +332,15 @@ def poll_payment_by_last_id_and_confirm(self, id_don: str, trans_desc: str, loai
         "max_id": max_id,
         "amount": amount,
     }
+
+
+# Backwards-compatible alias (some older code imported this symbol).
+@shared_task(bind=True, name="apps.store.tasks.poll_payment_and_confirm")
+def poll_payment_and_confirm(self, id_don: str, trans_desc: str, loai: int = 1, lock_token: Optional[str] = None):
+    return poll_payment_by_last_id_and_confirm(
+        self,
+        id_don=id_don,
+        trans_desc=trans_desc,
+        loai=loai,
+        lock_token=lock_token,
+    )
