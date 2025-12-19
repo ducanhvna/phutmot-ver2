@@ -205,7 +205,7 @@ ODDO_SERVER_URL = os.environ.get('ODDO_SERVER_URL', 'http://localhost:8069')
 ODDO_DB = os.environ.get('ODDO_DB', 'goldsun')
 ODDO_USERNAME = os.environ.get('ODDO_USERNAME', 'admin')
 ODDO_PASSWORD = os.environ.get('ODDO_PASSWORD', 'admin')
-
+ODDO_ADMIN_UID = os.environ.get('ODDO_ADMIN_UID', 2)
 # CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']

@@ -127,6 +127,8 @@ class LoginView(APIView):
         password = request.data.get("password")
         # Thử xác thưc người dùng trên odoo nếu thành công thì tạo user cục bộ
         uid = None
+        company_id = None
+        company_store_website = None
         try:
             ODOO_URL = settings.ODDO_SERVER_URL
             ODOO_DB =  settings.ODDO_DB
@@ -136,13 +138,27 @@ class LoginView(APIView):
             common = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/common')
             uid = common.authenticate(ODOO_DB, username, password, {})
             if not uid:
-                return {'status': 'fail', 'msg': 'Odoo login failed'}
+                # Tim kiem username trong odoo khong thay thi tra ve loi uid
+                model = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/object')
+                user_ids = model.execute_kw(ODOO_DB, settings.ODDO_ADMIN_UID, ROOT_ODOO_PASS,
+                    'res.users', 'search',
+                    [[['login', '=', username]]])
+                if not user_ids:
+                    uid = user_ids[0]
+                # return {'status': 'fail', 'msg': 'Odoo login failed'}
             else:
                 # find or create local user
                 user, created = settings.AUTH_USER_MODEL.objects.get_or_create(username=username)
                 if created:
                     user.set_password(password)
                     user.save()
+
+            # Ở đây bạn có thể lấy thêm thông tin công ty nếu cần
+            company_id = model.execute_kw(ODOO_DB, uid, password,
+                'res.users', 'read', [uid], {'fields': ['company_id']})[0]['company_id'][0]
+            company_store_website = model.execute_kw(ODOO_DB, uid, password,
+                'res.company', 'read', [company_id], {'fields': ['store_website']})[0]['store_website']     
+            
             # 2. Object proxy
             # models = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/object')
         except Exception as e:
@@ -167,7 +183,9 @@ class LoginView(APIView):
                     "printers": ['tichtru', 'tho', 'trangsuc'],
                     "store_url": 'https://demo.hinosoft.com' if ('a' in user.username) or (user.username == '0919933911') else 'http://192.168.104.85:5005' if (user.username== '0385249001') else 'http://192.168.10.26:5005',
                     "refresh": str(refresh),
-                    "uid": uid
+                    "uid": uid,
+                    "company_id": company_id,
+                    "company_store_website": company_store_website,
                 }
             )
      
