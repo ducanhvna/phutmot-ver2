@@ -2390,7 +2390,7 @@ class ProductImageView(APIView):
             )
 
 
-class OrderDetailView(APIView):
+class GetOrderDetailView(APIView):
     """
     API lấy chi tiết đơn hàng.
 

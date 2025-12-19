@@ -28,7 +28,7 @@ from .views import (
     ProductDiscountViewAugges,
     ProductDiscountBestView,
     BasePriceRawView,
-    OrderDetailView,
+    GetOrderDetailView,
     DepositDetailView,
     ServicesProductView,
     DonHangHomNayView
@@ -116,7 +116,7 @@ urlpatterns = [
     # Proxy giá gốc (trả nguyên dữ liệu từ dịch vụ downstream)
     path("api/base-price-raw/", BasePriceRawView.as_view(), name="base_price_raw"),
 
-    path("api/sell-detail-view/", OrderDetailView.as_view(), name="sell_detail_view"),
+    path("api/sell-detail-view/", GetOrderDetailView.as_view(), name="sell_detail_view"),
 
     path("api/deposit-detail-view/", DepositDetailView.as_view(), name="deposit_detai_view"),
 
