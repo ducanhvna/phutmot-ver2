@@ -4,7 +4,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from .serializers import UserSerializer
-import requests
+import xmlrpc.client
+from django.conf import settings
 
 class UserRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
@@ -35,11 +36,10 @@ class UserRegistrationView(generics.CreateAPIView):
         """
         Kiểm tra user trên Odoo, tạo mới nếu chưa có, đổi mật khẩu về unique_key bằng xmlrpc
         """
-        import xmlrpc.client
-        ODOO_URL = 'https://solienlacdientu.info'
-        ODOO_DB = 'goldsun'
-        ODOO_USER = 'admin'
-        ODOO_PASS = 'admin'
+        ODOO_URL = settings.ODDO_SERVER_URL
+        ODOO_DB =  settings.ODDO_DB
+        ODOO_USER = settings.ODDO_USERNAME
+        ODOO_PASS = settings.ODDO_USERNAME
         # 1. Authenticate
         common = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/common')
         uid = common.authenticate(ODOO_DB, ODOO_USER, ODOO_PASS, {})

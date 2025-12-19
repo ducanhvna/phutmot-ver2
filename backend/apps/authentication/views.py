@@ -14,7 +14,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-
+from django.conf import settings
 import jwt
 from datetime import datetime, timedelta
 from django.http import JsonResponse
@@ -122,8 +122,31 @@ class LoginView(APIView):
     - refresh (string): Refresh token (JWT) để lấy access token mới khi hết hạn
     """
     def post(self, request):
+        import xmlrpc.client
         username = request.data.get("username")
         password = request.data.get("password")
+        # Thử xác thưc người dùng trên odoo nếu thành công thì tạo user cục bộ
+        uid = None
+        try:
+            ODOO_URL = settings.ODDO_SERVER_URL
+            ODOO_DB =  settings.ODDO_DB
+            ROOT_ODOO_USER = settings.ODDO_USERNAME
+            ROOT_ODOO_PASS = settings.ODDO_USERNAME
+            # 1. Authenticate
+            common = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/common')
+            uid = common.authenticate(ODOO_DB, username, password, {})
+            if not uid:
+                return {'status': 'fail', 'msg': 'Odoo login failed'}
+            else:
+                # find or create local user
+                user, created = settings.AUTH_USER_MODEL.objects.get_or_create(username=username)
+                if created:
+                    user.set_password(password)
+                    user.save()
+            # 2. Object proxy
+            # models = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/object')
+        except Exception as e:
+            uid = None 
         user = authenticate(username=username, password=password)
         if user:
             refresh = RefreshToken.for_user(user)
@@ -144,6 +167,7 @@ class LoginView(APIView):
                     "printers": ['tichtru', 'tho', 'trangsuc'],
                     "store_url": 'https://demo.hinosoft.com' if ('a' in user.username) or (user.username == '0919933911') else 'http://192.168.104.85:5005' if (user.username== '0385249001') else 'http://192.168.10.26:5005',
                     "refresh": str(refresh),
+                    "uid": uid
                 }
             )
      
