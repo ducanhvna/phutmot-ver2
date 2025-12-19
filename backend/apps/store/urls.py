@@ -31,7 +31,8 @@ from .views import (
     GetOrderDetailView,
     DepositDetailView,
     ServicesProductView,
-    DonHangHomNayView
+    DonHangHomNayView,
+    AttachedProductsView,
 )
 
 urlpatterns = [
@@ -123,4 +124,6 @@ urlpatterns = [
     path("api/services-product/", ServicesProductView.as_view(), name="services_product_view"),
 
     path("api/today-orders/", DonHangHomNayView.as_view(), name="don_hang_hom_nay_view"),
+
+    path("api/attached-products/", AttachedProductsView.as_view(), name="attached_products_view"),
 ]

@@ -2628,3 +2628,44 @@ class DonHangHomNayView(APIView):
                 data={"error": str(e), "date": today},
                 status=502
             )
+
+class AttachedProductsView(APIView):
+    """
+    API lấy danh sách các sảnh phẩm đính kèm (bao bì, bảo hành, vận chuyển...).
+
+    📌 Endpoint:
+    GET /api/
+
+    📤 Response ví dụ (HTTP 200):
+    {
+        "success": true,
+        "message": "Lấy danh sách sản phẩm bao bì thành công",
+        "data": [ ... danh sách bao bì ... ]
+    }
+    """
+    base_url = f"{INTERNAL_API_BASE}/api/public/hang_dinh_kem"
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+
+    def get(self, request):
+        try:
+            response = requests.get(self.base_url, headers=self.headers, timeout=5)
+            downstream = response.json() if response.ok else {"raw": response.text}
+
+            if response.ok:
+                return ApiResponse.success(
+                    message="Lấy danh sách bao bì thành công",
+                    data=downstream.get("data", []),
+                    status=response.status_code
+                )
+            else:
+                return ApiResponse.error(
+                    message="Không lấy được danh sách sản phẩm bao bì",
+                    data={"downstream": downstream},
+                    status=response.status_code
+                )
+        except requests.RequestException as exc:
+            return ApiResponse.error(
+                message="Không gọi được dịch vụ danh sách bao bì sản phẩm",
+                data={"error": str(exc)},
+                status=502
+            )
