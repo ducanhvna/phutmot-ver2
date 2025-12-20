@@ -9,6 +9,8 @@ services:
       - db_network
       - web_network
       - redis_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - db
       - redis

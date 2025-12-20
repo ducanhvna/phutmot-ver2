@@ -201,7 +201,7 @@ STATICFILES_DIRS = (
 #############################################################
 
 
-ODDO_SERVER_URL = os.environ.get('ODDO_SERVER_URL', 'http://localhost:8069')
+ODDO_SERVER_URL = os.environ.get('ODDO_SERVER_URL', 'http://host.docker.internal:10017')
 ODDO_DB = os.environ.get('ODDO_DB', 'goldsun')
 ODDO_USERNAME = os.environ.get('ODDO_USERNAME', 'admin')
 ODDO_PASSWORD = os.environ.get('ODDO_PASSWORD', 'admin')
