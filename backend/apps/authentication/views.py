@@ -129,11 +129,12 @@ class LoginView(APIView):
         uid = None
         company_id = None
         company_store_website = None
+        ex = ""
         try:
             ODOO_URL = settings.ODDO_SERVER_URL
             ODOO_DB =  settings.ODDO_DB
             ROOT_ODOO_USER = settings.ODDO_USERNAME
-            ROOT_ODOO_PASS = settings.ODDO_USERNAME
+            ROOT_ODOO_PASS = settings.ODDO_PASSWORD
             # 1. Authenticate
             common = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/common')
             uid = common.authenticate(ODOO_DB, username, password, {})
@@ -142,7 +143,7 @@ class LoginView(APIView):
                 model = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/object')
                 user_ids = model.execute_kw(ODOO_DB, settings.ODDO_ADMIN_UID, ROOT_ODOO_PASS,
                     'res.users', 'search',
-                    [[['login', '=', username]]])
+                    [['|', ['login', '=', username], ['email', '=', username]]])
                 if not user_ids:
                     uid = user_ids[0]
                 # return {'status': 'fail', 'msg': 'Odoo login failed'}
@@ -162,7 +163,7 @@ class LoginView(APIView):
             # 2. Object proxy
             # models = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/object')
         except Exception as e:
-            uid = None 
+            ex = e
         user = authenticate(username=username, password=password)
         if user:
             refresh = RefreshToken.for_user(user)
@@ -186,6 +187,7 @@ class LoginView(APIView):
                     "uid": uid,
                     "company_id": company_id,
                     "company_store_website": company_store_website,
+                    "odoo_exception": str(ex),
                 }
             )
      
