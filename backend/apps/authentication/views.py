@@ -18,6 +18,7 @@ from django.conf import settings
 import jwt
 from datetime import datetime, timedelta
 from django.http import JsonResponse
+from django.contrib.auth import get_user_model
 
 # Load private key
 with open("private.pem", "r") as f:
@@ -149,7 +150,8 @@ class LoginView(APIView):
                 # return {'status': 'fail', 'msg': 'Odoo login failed'}
             else:
                 # find or create local user
-                user, created = settings.AUTH_USER_MODEL.objects.get_or_create(username=username)
+                User = get_user_model()
+                user, created = User.objects.get_or_create(username=username)
                 if created:
                     user.set_password(password)
                     user.save()
