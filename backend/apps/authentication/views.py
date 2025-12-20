@@ -167,7 +167,7 @@ class LoginView(APIView):
                 {'fields': ['company_id']}
             )[0]['company_id'][0]
 
-            company_store_website = model.execute_kw(ODOO_DB, uid, password,
+            company_store_website = models.execute_kw(ODOO_DB, settings.ODDO_ADMIN_UID, ROOT_ODOO_PASS,
                 'res.company', 'read', [company_id], {'fields': ['store_website']})[0]['store_website']     
             
             # 2. Object proxy
