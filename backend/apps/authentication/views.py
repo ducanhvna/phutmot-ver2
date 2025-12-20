@@ -157,8 +157,16 @@ class LoginView(APIView):
                     user.save()
 
             # Ở đây bạn có thể lấy thêm thông tin công ty nếu cần
-            company_id = model.execute_kw(ODOO_DB, uid, password,
-                'res.users', 'read', [uid], {'fields': ['company_id']})[0]['company_id'][0]
+            # Tạo models proxy để gọi các method
+            models = xmlrpc.client.ServerProxy(f"{ODOO_URL}/xmlrpc/2/object")
+
+            company_id = models.execute_kw(
+                ODOO_DB, settings.ODDO_ADMIN_UID, ROOT_ODOO_PASS,
+                'res.users', 'read',
+                [uid],
+                {'fields': ['company_id']}
+            )[0]['company_id'][0]
+
             company_store_website = model.execute_kw(ODOO_DB, uid, password,
                 'res.company', 'read', [company_id], {'fields': ['store_website']})[0]['store_website']     
             
