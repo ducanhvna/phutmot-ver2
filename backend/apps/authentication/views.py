@@ -144,7 +144,7 @@ class LoginView(APIView):
                 model = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/object')
                 user_ids = model.execute_kw(
                     ODOO_DB,
-                    settings.ODOO_ADMIN_UID,
+                    settings.ODDO_ADMIN_UID,
                     ROOT_ODOO_PASS,
                     'res.users',
                     'search',
