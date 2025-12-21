@@ -142,10 +142,16 @@ class LoginView(APIView):
             if not uid:
                 # Tim kiem username trong odoo khong thay thi tra ve loi uid
                 model = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/object')
-                user_ids = model.execute_kw(ODOO_DB, settings.ODDO_ADMIN_UID, ROOT_ODOO_PASS,
-                    'res.users', 'search',
-                    [['|', ['login', '=', username], ['email', '=', username]]])
-                if not user_ids:
+                user_ids = model.execute_kw(
+                    ODOO_DB,
+                    settings.ODOO_ADMIN_UID,
+                    ROOT_ODOO_PASS,
+                    'res.users',
+                    'search',
+                    [[ '|', ('login', '=', username), ('email', '=', username) ]]
+                )
+
+                if  len(user_ids)>0:
                     uid = user_ids[0]
                 # return {'status': 'fail', 'msg': 'Odoo login failed'}
             else:
@@ -186,6 +192,7 @@ class LoginView(APIView):
                 "iss": "sales-app",
             }
             token = jwt.encode(payload, PRIVATE_KEY, algorithm="RS256")
+            company_store_website = company_store_website if company_store_website and company_store_website != '' else 'https://demo.hinosoft.com'
             return ApiResponse.success(
                 message="Đăng nhập thành công",
                 data= {
