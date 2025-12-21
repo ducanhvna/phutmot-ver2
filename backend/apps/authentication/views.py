@@ -168,7 +168,7 @@ class LoginView(APIView):
             )[0]['company_id'][0]
 
             company_store_website = models.execute_kw(ODOO_DB, settings.ODDO_ADMIN_UID, ROOT_ODOO_PASS,
-                'res.company', 'read', [company_id], {'fields': ['store_website']})[0]['store_website']     
+                'res.company', 'read', [company_id], {'fields': ['website']})[0]['website']     
             
             # 2. Object proxy
             # models = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/object')
