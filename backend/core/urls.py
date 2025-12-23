@@ -11,6 +11,7 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('api/customers/', include('apps.customers.urls')),
     path('api/users/', include('apps.users.urls')),
+    path('api/supply/', include('apps.rates.urls')),
     path("", include("apps.authentication.urls")), # Auth routes - login / register
     path("", include(("apps.producttemplates.urls", "product"), namespace="product")),
     path("", include("apps.home.urls")),             # UI Kits Html files

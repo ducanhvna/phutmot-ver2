@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
 from .authentication import JWTAuthentication
-import pandas as pd
+# import pandas as pd
 from .data_loader import cert, CA_CERT_PATH
 import math
 import numpy as np
