@@ -13,7 +13,7 @@ from .orderpurchase import create_purchase_order_from_json
 from .orderdeposit import create_deposit_order_from_json
 from .orderservice import create_service_order_from_json
 from .orderreplace import create_replace_order_from_json
-from .tasks import poll_payment_and_confirm
+# from .tasks import poll_payment_and_confirm
 import requests
 import json
 from base64 import b64encode
@@ -2628,6 +2628,50 @@ class DonHangHomNayView(APIView):
                 data={"error": str(e), "date": today},
                 status=502
             )
+        
+
+class DonHangHomNayTracocView(APIView):
+    """
+    API: Lấy danh sách đơn hàng trả cọc trong ngày hôm nay theo mã kho.
+
+    - Endpoint: /api/donhang/tracoc/homnay/?makho=<MA_KHO>
+    - Method: GET
+    - Query params:
+        + makho: mã kho cần lấy (mặc định = "FS01" nếu không truyền)
+    - Chức năng:
+        + Tự động lấy ngày hiện tại (YYYY-MM-DD)
+        + Gọi API nội bộ: {INTERNAL_API_BASE}/api/public/don_hang_tra_coc_ngay_theo_ma_kho/<page>
+    """
+    base_url = f"{INTERNAL_API_BASE}/api/public/don_hang_dat_coc_kho_dat_truoc"
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+    def get(self, request):
+        makho = request.query_params.get("makho", "FS01")
+        # Lấy ngày hôm nay theo định dạng YYYY-MM-DD
+        vn_now = timezone.localtime(timezone.now())
+        today = vn_now.strftime("%Y-%m-%d")
+        page = request.query_params.get("page", "1")
+        # URL gốc
+        url = f"{self.base_url}/{makho}/{today}/{page}"
+        try:
+            response = requests.get(url, headers=self.headers, timeout=30)
+            data = response.json()
+            orders = data.get("data", []) if response.ok else {"raw": response.text}
+            # downstream = response.json().get("data") if response.ok else {"raw": response.text}
+
+            if response.ok:
+                return ApiResponse.success(
+                    message="Lấy danh sách đơn hàng cọc cần trả hôm nay thành công",
+                    data={"date": today, "orders": orders},
+                    status=response.status_code
+                )
+            
+        except Exception as e:
+            return ApiResponse.error(
+                message="Không gọi được cọc cần trả hôm nay",
+                data={"error": str(e), "date": today},
+                status=502
+            )
+
 
 class AttachedProductsView(APIView):
     """

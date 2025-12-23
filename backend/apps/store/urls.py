@@ -33,6 +33,7 @@ from .views import (
     ServicesProductView,
     DonHangHomNayView,
     AttachedProductsView,
+    DonHangHomNayTracocView
 )
 
 urlpatterns = [
@@ -126,4 +127,6 @@ urlpatterns = [
     path("api/today-orders/", DonHangHomNayView.as_view(), name="don_hang_hom_nay_view"),
 
     path("api/attached-products/", AttachedProductsView.as_view(), name="attached_products_view"),
+
+    path("api/today-deposit-orders/", DonHangHomNayTracocView.as_view(), name="don_hang_hom_nay_tracoc_view"),
 ]
