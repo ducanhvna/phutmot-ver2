@@ -61,3 +61,82 @@ class RateView(APIView):
             return ApiResponse.success(data=tygia_data)
         except Exception as e:
             return ApiResponse.error(message=str(e))
+        
+# làm 1 api chuyển tiếp việc gọi API update tỷ giá như sau:
+# BASE_URL = os.getenv("API_BASE_URL", "https://14.224.192.52:9999")
+# url = f"{BASE_URL}/api/v1/tigia/update"
+# # that: 0=DB chính, 1=DB khác (cần cấu hình tvf_db_dsn)
+# THAT = int(os.getenv("TIGIA_THAT", "0"))
+# payload = {
+#     "ma_vbtg": "9999",          # đổi mã theo DmVBTG
+#     "ty_gia_mua_cu": 31000,      # nếu sai -> API trả 409 và trả về current để bạn copy
+#     "ty_gia_ban_cu": 34000,      # nếu sai -> API trả 409 và trả về current để bạn copy
+#     "ty_gia_mua": 30000,
+#     "ty_gia_ban": 34000,
+#     "that": 1,
+# }
+# r = requests.post(url, json=payload, timeout=30, verify=False)
+# print("URL:", url)
+# print("Status:", r.status_code)
+# try:
+#     data = r.json()
+#     print(json.dumps(data, ensure_ascii=False, indent=2))
+# except Exception:
+#     print(r.text)
+#     raise 
+
+class RateUpdateView(APIView):
+    """
+    Cập nhật tỷ giá sản phẩm
+    """
+    authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            BASE_URL = os.getenv("API_BASE_URL", "https://14.224.192.52:9999")
+            url = f"{BASE_URL}/api/v1/tigia/update"
+            # that: 0=DB chính, 1=DB khác (cần cấu hình tvf_db_dsn)
+            THAT = int(os.getenv("TIGIA_THAT", "0"))       
+            danh_sach_cap_nhat = request.data.get("rates", [])
+            results = []
+            for item in danh_sach_cap_nhat:
+                ma_vbtg = None
+                try:
+                    ma_vbtg = item.get("ma_vbtg")
+                    ty_gia_mua_cu = item.get("ty_gia_mua_cu")
+                    ty_gia_ban_cu = item.get("ty_gia_ban_cu")
+                    ty_gia_mua = item.get("ty_gia_mua")             
+                    ty_gia_ban = item.get("ty_gia_ban")
+                    payload = {     
+                        "ma_vbtg": ma_vbtg,          # đổi mã theo DmVBTG
+                        "ty_gia_mua_cu": ty_gia_mua_cu,      # nếu sai -> API trả 409 và trả về current để bạn copy
+                        "ty_gia_ban_cu": ty_gia_ban_cu,      # nếu sai -> API trả 409 và trả về current để bạn copy
+                        "ty_gia_mua": ty_gia_mua,
+                        "ty_gia_ban": ty_gia_ban,
+                        "that": THAT,
+                    }
+                    r = requests.post(url, json=payload, timeout=30, verify=False)
+                    if r.status_code == 200:        
+                        data = r.json()
+                        results.append({
+                            "ma_vbtg": ma_vbtg,
+                            "status": "success",
+                            "data": data
+                        })
+                    else:
+                        results.append({
+                            "ma_vbtg": ma_vbtg,
+                            "status": "error",
+                            "message": f"Error {r.status_code}: {r.text}"
+                        })   
+                except Exception as e:
+                    results.append({
+                        "ma_vbtg": ma_vbtg,
+                        "status": "error",
+                        "message": str(e)
+                    })
+
+            return ApiResponse.success(data=results, message="Cập nhật tỷ giá hoàn tất")
+        except Exception as e:
+            return ApiResponse.error(message=str(e))
