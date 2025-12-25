@@ -324,7 +324,7 @@ class CustomerCreateView(PostOnlyAPIView):
                         if response.status_code != 200:
                             logger.warning("External customer add failed (%s): %s", response.status_code, response.text)
 
-                    serializer = CustomerSerializer(new_customer)
+                    serializer = CustomerCreatePopupSerializer(new_customer)
                     return ApiResponse.success(
                         message="Tạo khách hàng thành công",
                         data=serializer.data,
@@ -366,7 +366,7 @@ class CustomerCreateView(PostOnlyAPIView):
                         )
 
                 if customers.exists():
-                    serializer = CustomerSerializer(customers.first())
+                    serializer = CustomerCreatePopupSerializer(customers.first())
                     return ApiResponse.success(
                         message="Cập nhật khách hàng thành công",
                         data=serializer.data,
@@ -398,7 +398,7 @@ class CustomerCreateView(PostOnlyAPIView):
                         verification_status=True,
                         is_active=True,
                     )
-                    serializer = CustomerSerializer(new_customer)
+                    serializer = CustomerCreatePopupSerializer(new_customer)
                     return ApiResponse.success(
                         message="Tạo khách hàng từ Auggest thành công",
                         data=serializer.data,
