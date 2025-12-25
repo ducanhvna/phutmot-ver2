@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.exceptions import MethodNotAllowed
 import re
 from .models import Customer
-from .serializers import CustomerSerializer
+from .serializers import CustomerSerializer, CustomerCreatePopupSerializer
 from apps.home.utils import ApiResponse   # <-- class chuẩn hóa response
 from rest_framework.pagination import PageNumberPagination
 from django.conf import settings
@@ -73,6 +73,38 @@ def _normalize_date_for_downstream(value: str) -> str:
         return d.isoformat()
     except ValueError:
         return v
+
+
+def _normalize_gender_for_local(value):
+    if value is None:
+        return None
+    v = str(value).strip()
+    if not v:
+        return None
+
+    v_lower = v.lower()
+    if v_lower in {"nam", "male", "m"}:
+        return "Male"
+    if v_lower in {"nữ", "nu", "female", "f"}:
+        return "Female"
+    return None
+
+
+def _parse_birth_date_for_local(value):
+    if value is None:
+        return None
+    v = str(value).strip()
+    if not v:
+        return None
+
+    # Strip time if present
+    v = v.split("T")[0].split(" ")[0]
+
+    iso = _normalize_date_for_downstream(v)
+    try:
+        return datetime.date.fromisoformat(iso)
+    except ValueError:
+        return None
 
 
 # ---------------------------------------------------------------
@@ -266,8 +298,6 @@ class CustomerCreateView(PostOnlyAPIView):
         incoming_data = request.data
         query = incoming_data.get("q", '').strip()
 
-        print("CustomerCreateView: incoming_data =", incoming_data)
-
         if is_phone_number(query) or is_id_card(query):
             payload = {"sdt": query}
             response = requests.post(EXTERNAL_CUSTOMER_SEARCH_URL, headers=headers, data=json.dumps(payload), timeout=15)
@@ -289,10 +319,8 @@ class CustomerCreateView(PostOnlyAPIView):
                     )
 
                     if is_phone_number(query):
-                        data_ = {"dien_thoai": query, "ho_ten_khach_hang": incoming_data.get("name"), "cccd_cmt": ""}
-                        response = requests.post(EXTERNAL_CUSTOMER_ADD_URL, headers=headers, data=json.dumps(data_), timeout=15)
-                        print(data_)
-                        print("CustomerCreateView: External add response =", response.status_code, response.text)
+                        data = {"phone_number": query, "name": incoming_data.get("name"), "username": query, "id_card_number": None}
+                        response = requests.post(EXTERNAL_CUSTOMER_ADD_URL, headers=headers, data=json.dumps(payload), timeout=15)
                         if response.status_code != 200:
                             logger.warning("External customer add failed (%s): %s", response.status_code, response.text)
 
@@ -380,6 +408,41 @@ class CustomerCreateView(PostOnlyAPIView):
         # Trường hợp không phải phone/ID -> tạo mới nội bộ
         data = _map_local_fields(incoming_data)
         address = _parse_address(incoming_data)
+
+        if not address:
+            address = {
+                "dia_chi": incoming_data.get("dia_chi") or "",
+                "tinh": incoming_data.get("tinh") or "",
+                "quan": incoming_data.get("quan") or "",
+                "phuong": incoming_data.get("phuong") or "",
+            }
+        else:
+            # Fill missing address parts from top-level fields
+            address.setdefault("dia_chi", incoming_data.get("dia_chi") or "")
+            address.setdefault("tinh", incoming_data.get("tinh") or "")
+            address.setdefault("quan", incoming_data.get("quan") or "")
+            address.setdefault("phuong", incoming_data.get("phuong") or "")
+
+        data["address"] = address
+
+        email = incoming_data.get("email")
+        if email:
+            data["email"] = email
+
+        birth_date_value = (
+            incoming_data.get("ngay_sinh")
+            or incoming_data.get("dateOfBirth")
+            or incoming_data.get("birthday")
+        )
+        parsed_birth_date = _parse_birth_date_for_local(birth_date_value)
+        if parsed_birth_date is not None:
+            data["birth_date"] = parsed_birth_date
+
+        gender_value = incoming_data.get("gioi_tinh") or incoming_data.get("sex") or incoming_data.get("gender")
+        normalized_gender = _normalize_gender_for_local(gender_value)
+        if normalized_gender is not None:
+            data["gender"] = normalized_gender
+
         payload = _map_external_payload(incoming_data, address)
 
         try:
@@ -389,7 +452,8 @@ class CustomerCreateView(PostOnlyAPIView):
         except requests.RequestException as exc:
             logger.warning("External customer add request error: %s", exc)
 
-        serializer = CustomerSerializer(data=data)
+        # Use dedicated serializer so /create/ can accept & return popup-fill fields
+        serializer = CustomerCreatePopupSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return ApiResponse.success(
