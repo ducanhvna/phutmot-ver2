@@ -122,6 +122,7 @@ class LoginView(APIView):
         company_id = None
         company_store_website = None
         ex = ""
+        shop_ids = []
         inventory_code = 'FS01'
         try:
             ODOO_SERVER_URL = settings.ODOO_SERVER_URL
@@ -278,6 +279,7 @@ class LoginView(APIView):
                     "session_id": session_id,
                     "company_store_website": company_store_website,
                     "odoo_db": "btmh_erp",
+                    "shop_ids": shop_ids
                     "odoo_exception": str(ex),
                 }
             )
