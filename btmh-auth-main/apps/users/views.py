@@ -222,8 +222,9 @@ class LoginView(APIView):
                     "pos.session",
                     "search",
                     [[
-                        ("x_pos_user_ids", "in", [uid]),
-                        ("state", "=", "opened"),
+                        ("x_pos_user_ids", "in", [uid])
+                        # ,
+                        # ("state", "=", "opened"),
                     ]]
                 )
 
