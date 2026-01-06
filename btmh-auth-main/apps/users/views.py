@@ -199,10 +199,10 @@ class LoginView(APIView):
                     "pos.users",
                     "search_read",
                     [[("user_id", "=", uid)]],
-                    {"fields": ["id", "name", "user_id", "x_pos_session_ids"]}
+                    {"fields": ["id", "user_id"]}
                 )
                 print(pos_users)
-                pos_user_id = pos_users[0][id]
+                pos_user_id = pos_users[0]['id']
                 # shop_ids = self.odoo.search("pos.shop", [('code', '=', self.warhouse_code)], 1)
                 # if shop_ids and len(shop_ids) > 0:
                 #     shop_id = shop_ids[0][0]
