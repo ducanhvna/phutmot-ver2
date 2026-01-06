@@ -279,7 +279,7 @@ class LoginView(APIView):
                     "session_id": session_id,
                     "company_store_website": company_store_website,
                     "odoo_db": "btmh_erp",
-                    "shop_ids": shop_ids
+                    "shop_ids": shop_ids,
                     "odoo_exception": str(ex),
                 }
             )
