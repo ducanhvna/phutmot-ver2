@@ -257,7 +257,7 @@ class LoginView(APIView):
                             {'fields': ['code']}
                         )[0]['code']
                     except Exception as exsession:
-                        pass
+                        ex =exsession
             except Exception as e:
                 ex = e
             
