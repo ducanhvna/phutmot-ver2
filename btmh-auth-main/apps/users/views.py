@@ -202,41 +202,23 @@ class LoginView(APIView):
                     {"fields": ["id", "user_id"]}
                 )
                 print(pos_users)
-                pos_user_id = pos_users[0]['id']
-                # shop_ids = self.odoo.search("pos.shop", [('code', '=', self.warhouse_code)], 1)
-                # if shop_ids and len(shop_ids) > 0:
-                #     shop_id = shop_ids[0][0]
-                #     inventory_code = models.execute_kw(
-                #         ODOO_DB,
-                #         settings.ODOO_ADMIN_UID,
-                #         ODOO_PASSWORD,
-                #         "pos.shop",
-                #         'read',
-                #         [shop_id],
-                #         {'fields': ['code']}
-                #     )[0]['code']
-                    # config_ids = self.odoo.search("pos.config", [('x_pos_shop_id', '=', shop_id)], limit=1)
-                    # config_ids = models.execute_kw(
-                    #     ODOO_DB,
-                    #     settings.ODOO_ADMIN_UID,
-                    #     ODOO_PASSWORD,
-                    #     "pos.config",
-                    #     'search',
-                    #     [[ ('x_pos_shop_id', '=', shop_id) ]]
-                    # )
-                    # if config_ids and len(config_ids) >0:
-                    #     config_id = config_ids[0]
-                session_ids = models.execute_kw(
-                    ODOO_DB,
-                    settings.ODOO_ADMIN_UID,
-                    ODOO_PASSWORD,
-                    "pos.session",
-                    "search",
-                    [[
-                        ("x_pos_user_ids", "in", [pos_user_id]),
-                        ("state", "=", "opened"),
-                    ]]
-                )
+                session_ids = []
+                pos_user_id = None
+                for pos_user in pos_users:
+                    pos_user_id = pos_user['id']
+                    session_ids = models.execute_kw(
+                        ODOO_DB,
+                        settings.ODOO_ADMIN_UID,
+                        ODOO_PASSWORD,
+                        "pos.session",
+                        "search",
+                        [[
+                            ("x_pos_user_ids", "in", [pos_user_id]),
+                            ("state", "=", "opened"),
+                        ]]
+                    )
+                    if len(session_ids) > 0:
+                        break
 
                 if session_ids and len(session_ids) >0:
                     session_id = session_ids[0]
