@@ -158,16 +158,16 @@ class LoginView(APIView):
             # Tạo models proxy để gọi các method
             models = xmlrpc.client.ServerProxy(f"{ODOO_SERVER_URL}/xmlrpc/2/object")
 
-            company_id = models.execute_kw(
+            user_info = models.execute_kw(
                 ODOO_DB, settings.ODDO_ADMIN_UID, ODOO_PASSWORD,
                 'res.users', 'read',
                 [uid],
-                {'fields': ['company_id']}
+                {'fields': ['company_id', 'x_pos_shop_ids']}
             )[0]['company_id'][0]
-
+            company_id = user_info[0]['company_id'][0]
             company_store_website = models.execute_kw(ODOO_DB, settings.ODDO_ADMIN_UID, ODOO_PASSWORD,
                 'res.company', 'read', [company_id], {'fields': ['website']})[0]['website']     
-            
+            shop_ids = user_info[0]['x_pos_shop_ids']
             # 2. Object proxy
             # models = xmlrpc.client.ServerProxy(f'{ODOO_SERVER_URL}/xmlrpc/2/object')
         except Exception as e:
@@ -192,16 +192,17 @@ class LoginView(APIView):
                 models = xmlrpc.client.ServerProxy(f"{ODOO_SERVER_URL}/xmlrpc/2/object")
 
                 # shop_ids = self.odoo.search("pos.shop", [('code', '=', self.warhouse_code)], 1)
-                shop_ids = models.execute_kw(
-                    ODOO_DB,
-                    settings.ODOO_ADMIN_UID,
-                    ODOO_PASSWORD,
-                    "pos.shop",
-                    'search',
-                    [[ ('code', '=', inventory_code) ]]
-                )
                 if shop_ids and len(shop_ids) > 0:
-                    shop_id = shop_ids[0]
+                    shop_id = shop_ids[0][0]
+                    inventory_code = models.execute_kw(
+                        ODOO_DB,
+                        settings.ODOO_ADMIN_UID,
+                        ODOO_PASSWORD,
+                        "pos.shop",
+                        'read',
+                        [shop_id],
+                        {'fields': ['code']}
+                    )[0]['code']
                     # config_ids = self.odoo.search("pos.config", [('x_pos_shop_id', '=', shop_id)], limit=1)
                     config_ids = models.execute_kw(
                         ODOO_DB,
