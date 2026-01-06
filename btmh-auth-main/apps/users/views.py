@@ -192,39 +192,72 @@ class LoginView(APIView):
                 models = xmlrpc.client.ServerProxy(f"{ODOO_SERVER_URL}/xmlrpc/2/object")
 
                 # shop_ids = self.odoo.search("pos.shop", [('code', '=', self.warhouse_code)], 1)
-                if shop_ids and len(shop_ids) > 0:
-                    shop_id = shop_ids[0][0]
-                    inventory_code = models.execute_kw(
-                        ODOO_DB,
-                        settings.ODOO_ADMIN_UID,
-                        ODOO_PASSWORD,
-                        "pos.shop",
-                        'read',
-                        [shop_id],
-                        {'fields': ['code']}
-                    )[0]['code']
+                # if shop_ids and len(shop_ids) > 0:
+                #     shop_id = shop_ids[0][0]
+                #     inventory_code = models.execute_kw(
+                #         ODOO_DB,
+                #         settings.ODOO_ADMIN_UID,
+                #         ODOO_PASSWORD,
+                #         "pos.shop",
+                #         'read',
+                #         [shop_id],
+                #         {'fields': ['code']}
+                #     )[0]['code']
                     # config_ids = self.odoo.search("pos.config", [('x_pos_shop_id', '=', shop_id)], limit=1)
-                    config_ids = models.execute_kw(
-                        ODOO_DB,
-                        settings.ODOO_ADMIN_UID,
-                        ODOO_PASSWORD,
-                        "pos.config",
-                        'search',
-                        [[ ('x_pos_shop_id', '=', shop_id) ]]
-                    )
-                    if config_ids and len(config_ids) >0:
-                        config_id = config_ids[0]
-                        session_ids = models.execute_kw(
+                    # config_ids = models.execute_kw(
+                    #     ODOO_DB,
+                    #     settings.ODOO_ADMIN_UID,
+                    #     ODOO_PASSWORD,
+                    #     "pos.config",
+                    #     'search',
+                    #     [[ ('x_pos_shop_id', '=', shop_id) ]]
+                    # )
+                    # if config_ids and len(config_ids) >0:
+                    #     config_id = config_ids[0]
+                session_ids = models.execute_kw(
+                    ODOO_DB,
+                    settings.ODOO_ADMIN_UID,
+                    ODOO_PASSWORD,
+                    "pos.session",
+                    "search",
+                    [[
+                        ("x_pos_user_ids", "in", [uid]),
+                        ("state", "=", "opened"),
+                    ]]
+                )
+
+                if session_ids and len(session_ids) >0:
+                    session_id = session_ids[0]
+                    try:
+                        config_id = models.execute_kw(
                             ODOO_DB,
                             settings.ODOO_ADMIN_UID,
                             ODOO_PASSWORD,
                             "pos.session",
-                            'search',
-                            [[ ("config_id", "=", config_id),
-                                ("state", "=", "opened"),]]
-                        )
-                        if session_ids and len(session_ids) >0:
-                            session_id = session_ids[0]
+                            'read',
+                            [shop_id],
+                            {'fields': ['config_id']}
+                        )[0]['config_id'][0]
+                        shop_id = models.execute_kw(
+                            ODOO_DB,
+                            settings.ODOO_ADMIN_UID,
+                            ODOO_PASSWORD,
+                            "pos.config",
+                            'read',
+                            [shop_id],
+                            {'fields': ['x_pos_shop_id']}
+                        )[0]['x_pos_shop_id'][0]
+                        inventory_code = models.execute_kw(
+                            ODOO_DB,
+                            settings.ODOO_ADMIN_UID,
+                            ODOO_PASSWORD,
+                            "pos.shop",
+                            'read',
+                            [shop_id],
+                            {'fields': ['code']}
+                        )[0]['code']
+                    except Exception as exsession:
+                        pass
             except Exception as e:
                 ex = e
             
