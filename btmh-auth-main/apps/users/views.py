@@ -164,7 +164,7 @@ class LoginView(APIView):
                 'res.users', 'read',
                 [uid],
                 {'fields': ['company_id', 'x_pos_shop_ids']}
-            )[0]['company_id'][0]
+            )[0]
             company_id = user_info[0]['company_id'][0]
             company_store_website = models.execute_kw(ODOO_DB, settings.ODOO_ADMIN_UID, ODOO_PASSWORD,
                 'res.company', 'read', [company_id], {'fields': ['website']})[0]['website']     
