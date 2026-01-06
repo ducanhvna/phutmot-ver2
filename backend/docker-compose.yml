@@ -1,82 +1,81 @@
 version: '3.8'
 services:
-  btmh-app:
-    container_name: appseed_app
-    restart: always
-    env_file: .env
-    build: .
-    networks:
-      - db_network
-      - web_network
-      - redis_network
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    depends_on:
-      - db
-      - redis
-    ports:
-      - "5005:5005"
-    entrypoint: ["/bin/bash", "-c", "./wait-for-postgres.sh db python manage.py migrate && ./wait-for-postgres.sh db daphne -b 0.0.0.0 -p 5005 core.asgi:application"]
+  # btmh-app:
+  #   container_name: appseed_app
+  #   restart: always
+  #   env_file: .env
+  #   build: .
+  #   networks:
+  #     - db_network
+  #     - web_network
+  #     - redis_network
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #   depends_on:
+  #     - db
+  #     - redis
+  #   ports:
+  #     - "5005:5005"
+  #   entrypoint: ["/bin/bash", "-c", "./wait-for-postgres.sh db python manage.py migrate && ./wait-for-postgres.sh db daphne -b 0.0.0.0 -p 5005 core.asgi:application"]
 
-  celery-worker:
-    container_name: celery_worker
-    restart: always
-    build: .
-    command: celery -A core worker --loglevel=info
-    depends_on:
-      - redis
-      - btmh-app
-    networks:
-      - db_network
-      - redis_network
+  # celery-worker:
+  #   container_name: celery_worker
+  #   restart: always
+  #   build: .
+  #   command: celery -A core worker --loglevel=info
+  #   depends_on:
+  #     - redis
+  #     - btmh-app
+  #   networks:
+  #     - db_network
+  #     - redis_network
 
-  celery-beat:
-    container_name: celery_beat
-    restart: always
-    build: .
-    command: celery -A core beat --loglevel=info
-    depends_on:
-      - redis
-      - btmh-app
-    networks:
-      - db_network
-      - redis_network
+  # celery-beat:
+  #   container_name: celery_beat
+  #   restart: always
+  #   build: .
+  #   command: celery -A core beat --loglevel=info
+  #   depends_on:
+  #     - redis
+  #     - btmh-app
+  #   networks:
+  #     - db_network
+  #     - redis_network
 
-  redis:
-    container_name: redis
-    image: redis:7
-    restart: always
-    ports:
-      - "6379:6379"
-    networks:
-      - redis_network
+  # redis:
+  #   container_name: redis
+  #   image: redis:7
+  #   restart: always
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - redis_network
 
-  db:
-    container_name: postgres_db
-    image: postgres:latest
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: appseed_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - db_network
+  # db:
+  #   container_name: postgres_db
+  #   image: postgres:latest
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: appseed_db
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - db_network
 
-  nginx:
-    container_name: nginx
-    restart: always
-    image: "nginx:latest"
-    ports:
-      - "85:85"
-    volumes:
-      - ./nginx:/etc/nginx/conf.d
-    networks:
-      - web_network
-    depends_on: 
-      - btmh-app
-
+  # nginx:
+  #   container_name: nginx
+  #   restart: always
+  #   image: "nginx:latest"
+  #   ports:
+  #     - "85:85"
+  #   volumes:
+  #     - ./nginx:/etc/nginx/conf.d
+  #   networks:
+  #     - web_network
+  #   depends_on: 
+  #     - btmh-app
   odoo-db:
     image: postgres:17
     user: root
