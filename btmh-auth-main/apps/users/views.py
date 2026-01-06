@@ -123,6 +123,7 @@ class LoginView(APIView):
         company_store_website = None
         ex = ""
         shop_ids = []
+        pos_users = []
         inventory_code = 'FS01'
         try:
             ODOO_SERVER_URL = settings.ODOO_SERVER_URL
@@ -191,7 +192,17 @@ class LoginView(APIView):
             session_id = None
             try:
                 models = xmlrpc.client.ServerProxy(f"{ODOO_SERVER_URL}/xmlrpc/2/object")
-
+                pos_users = models.execute_kw(
+                    ODOO_DB,
+                    settings.ODOO_ADMIN_UID,
+                    ODOO_PASSWORD,
+                    "pos.users",
+                    "search_read",
+                    [[("user_id", "=", uid)]],
+                    {"fields": ["id", "name", "user_id", "x_pos_session_ids"]}
+                )
+                print(pos_users)
+                pos_user_id = pos_users[0][id]
                 # shop_ids = self.odoo.search("pos.shop", [('code', '=', self.warhouse_code)], 1)
                 # if shop_ids and len(shop_ids) > 0:
                 #     shop_id = shop_ids[0][0]
@@ -222,7 +233,7 @@ class LoginView(APIView):
                     "pos.session",
                     "search",
                     [[
-                        ("x_pos_user_ids", "in", [uid])
+                        ("x_pos_user_ids", "in", [pos_user_id])
                         # ,
                         # ("state", "=", "opened"),
                     ]]
@@ -281,6 +292,7 @@ class LoginView(APIView):
                     "company_store_website": company_store_website,
                     "odoo_db": "btmh_erp",
                     "shop_ids": shop_ids,
+                    "pos_users": pos_users,
                     "odoo_exception": str(ex),
                 }
             )
