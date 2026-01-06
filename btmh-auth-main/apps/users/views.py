@@ -295,6 +295,7 @@ class LoginView(APIView):
                     "pos_users": pos_users,
                     "odoo_server_url": ODOO_SERVER_URL,
                     "odoo_db": ODOO_DB,
+                    "odoo_username": username,
                     "odoo_password": password,
                     "odoo_exception": str(ex),
                 }
