@@ -235,7 +235,7 @@ class LoginView(APIView):
                             ODOO_PASSWORD,
                             "pos.session",
                             'read',
-                            [shop_id],
+                            [session_id],
                             {'fields': ['config_id']}
                         )[0]['config_id'][0]
                         shop_id = models.execute_kw(
@@ -244,7 +244,7 @@ class LoginView(APIView):
                             ODOO_PASSWORD,
                             "pos.config",
                             'read',
-                            [shop_id],
+                            [config_id],
                             {'fields': ['x_pos_shop_id']}
                         )[0]['x_pos_shop_id'][0]
                         inventory_code = models.execute_kw(
