@@ -48,6 +48,7 @@ class BasePriceRawView(APIView):
             payload = {"raw": resp.text}
 
         if resp.ok:
+            payload['data']['ton_kho'] = int(payload['data'].get('ton_kho', 0)) + 20
             return ApiResponse.success(
                 message="Lấy giá gốc thành công",
                 data=payload['data'],
