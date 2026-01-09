@@ -10,6 +10,7 @@ INTERNAL_API_BASE = settings.INTERNAL_API_BASE
 EXTERNAL_CUSTOMER_ADD_URL = f"{settings.INTERNAL_API_BASE}/api/public/khach_hang/add"
 EXTERNAL_CUSTOMER_UPDATE_URL = f"{settings.INTERNAL_API_BASE}/api/public/khach_hang/update"
 EXTERNAL_CUSTOMER_SEARCH_URL = f"{settings.INTERNAL_API_BASE}/api/public/khach_hang/timkiem"
+EXTERNAL_CUSTOMER_POINTS = f"{settings.INTERNAL_API_BASE}/api/public/diem_khach_hang"
 def is_phone_number(text: str) -> bool:
     # Số điện thoại Việt Nam thường có 10 chữ số, bắt đầu bằng 0 hoặc +84
     phone_pattern = re.compile(r"^(0\d{9}|\+84\d{9})$")
@@ -73,10 +74,18 @@ class CustomerSearchView(PostOnlyAPIView):
 
         if is_phone_number(query) or is_id_card(query):
             payload = {"sdt": query}
-            response = requests.post(EXTERNAL_CUSTOMER_SEARCH_URL, headers=headers, data=json.dumps(payload), timeout=15)
+            response = requests.post(EXTERNAL_CUSTOMER_SEARCH_URL, headers=headers, data=json.dumps(payload), timeout=25)
             data = response.json()
             results = data.get("data", [])
             new_customer = None
+
+            payload = {"tungay": 220101,
+                        "dennay": 291201,
+                        "sdt": query}
+            
+            response = requests.post(EXTERNAL_CUSTOMER_POINTS, headers=headers, data=json.dumps(payload), timeout=25)
+            point_data = response.json()
+
             if len(results)>0:
                 item = results[0]
                 birth_date = item.get("ngay_sinh")
@@ -101,6 +110,7 @@ class CustomerSearchView(PostOnlyAPIView):
                         "image_khach_hang": item.get("image_khach_hang"),
                         "qr_code": item.get("qr_code"),
                     },
+                    "point_data": point_data.get('data', 0)
                     "verification_status":True,
                     "is_active":True,
                 }
