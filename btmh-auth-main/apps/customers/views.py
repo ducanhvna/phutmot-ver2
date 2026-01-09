@@ -112,7 +112,7 @@ class CustomerSearchView(PostOnlyAPIView):
                         "image_khach_hang": item.get("image_khach_hang"),
                         "qr_code": item.get("qr_code"),
                     },
-                    "point_data": point_data.get('data', 0)
+                    "point_data": point_data.get('data', 0),
                     "verification_status":True,
                     "is_active":True,
                 }
