@@ -78,14 +78,16 @@ class CustomerSearchView(PostOnlyAPIView):
             data = response.json()
             results = data.get("data", [])
             new_customer = None
-
-            payload = {"tungay": 220101,
-                        "dennay": 291201,
-                        "sdt": query}
-            
-            response = requests.post(EXTERNAL_CUSTOMER_POINTS, headers=headers, data=json.dumps(payload), timeout=25)
-            point_data = response.json()
-
+            point_data = None
+            try:
+                payload = {"tungay": 220101,
+                            "dennay": 291201,
+                            "sdt": query}
+                
+                response = requests.post(EXTERNAL_CUSTOMER_POINTS, headers=headers, data=json.dumps(payload), timeout=25)
+                point_data = response.json()
+            except Exception as e2:
+                point_data = e2
             if len(results)>0:
                 item = results[0]
                 birth_date = item.get("ngay_sinh")
