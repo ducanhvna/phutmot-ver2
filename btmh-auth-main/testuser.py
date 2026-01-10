@@ -48,6 +48,24 @@ def find_demo_user(username, url, db, uid, password):
         return None
 
 
+def update_loyalty_points():
+    # Kết nối tới common endpoint để xác thực
+    common = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/common")
+
+    # Kết nối tới object endpoint
+    models = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/object")
+
+    # Ví dụ: cập nhật loyalty_points cho partner có id = 42
+    partner_id = 394985
+    new_points = 100
+
+    result = models.execute_kw(
+        db, uid, password,
+        'res.partner', 'write',
+        [[partner_id], {'loyalty_points': new_points, "rank_id": 2}]
+    )
+
+    print("Update result:", result)
 
 # Ví dụ sử dụng:
 if __name__ == "__main__":
@@ -58,4 +76,5 @@ if __name__ == "__main__":
     
     uid = odoo_login(url, db, username, password)
     if uid:
-        demo_user = find_demo_user("nvbotchngoquyen@btmh.vn", url, db, uid, password)
+        # demo_user = find_demo_user("nvbotchngoquyen@btmh.vn", url, db, uid, password)
+        update_loyalty_points()
