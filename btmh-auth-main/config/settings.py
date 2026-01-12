@@ -205,7 +205,7 @@ TYGIA_API_TOKEN = os.getenv('TYGIA_API_TOKEN', default='eyJhbGciOiJIUzI1NiJ9.eyJ
 
 # Postgres for CTKM (EmailTCKT)
 EMAILTCKT_PG_HOST = os.getenv('EMAILTCKT_PG_HOST', default='118.70.146.150')
-EMAILTCKT_PG_PORT = os.getenv('EMAILTCKT_PG_PORT', default=5432, cast=int)
+# EMAILTCKT_PG_PORT = os.getenv('EMAILTCKT_PG_PORT', default=5432, cast=int)
 EMAILTCKT_PG_DB = os.getenv('EMAILTCKT_PG_DB', default='EmailTCKT')
 EMAILTCKT_PG_USER = os.getenv('EMAILTCKT_PG_USER', default='postgres')
 EMAILTCKT_PG_PASSWORD = os.getenv('EMAILTCKT_PG_PASSWORD', default='admin')
