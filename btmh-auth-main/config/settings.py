@@ -199,4 +199,6 @@ AUTHENTICATION_BACKENDS = [
 
 INTERNAL_API_BASE = os.getenv('INTERNAL_API_BASE', default='http://192.168.0.223:8096')
 STORE_URL_FS01=os.getenv('STORE_URL_FS01',default='http://192.168.104.21:5085')
+
+TYGIA_API_BASE_URL = os.getenv('TYGIA_API_BASE_URL', default='https://tygia.baotinmanhhai.vn/api')
 TYGIA_API_TOKEN = os.getenv('TYGIA_API_TOKEN', default='eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIs')
