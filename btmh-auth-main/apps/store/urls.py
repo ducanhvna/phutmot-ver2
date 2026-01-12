@@ -20,9 +20,9 @@ from .views import (
     OrderDeTailView,
     OrderPaymentStatusView,
     DepositPaymentStatusView,
-    ProductDiscountView,
-    ProductDiscountViewAugges,
-    ProductDiscountBestView,
+    # ProductDiscountView,
+    # ProductDiscountViewAugges,
+    # ProductDiscountBestView,
     BasePriceRawView,
     GetOrderDetailView,
     DepositDetailView,
@@ -94,13 +94,13 @@ urlpatterns = [
     path("api/deposit-payment-status/", DepositPaymentStatusView.as_view(), name="deposit_payment_status"),
 
     # Lấy số tiền chiết khấu cho sản phẩm
-    path("api/product-discount/", ProductDiscountView.as_view(), name="product_discount"),
+    # path("api/product-discount/", ProductDiscountView.as_view(), name="product_discount"),
 
-    # Lấy chiết khấu từ Augges
-    path("api/product-discount-augges/", ProductDiscountViewAugges.as_view(), name="product_discount_augges"),
+    # # Lấy chiết khấu từ Augges
+    # path("api/product-discount-augges/", ProductDiscountViewAugges.as_view(), name="product_discount_augges"),
 
-    # Chọn chiết khấu tốt nhất (nội bộ vs Augges)
-    path("api/product-discount-best/", ProductDiscountBestView.as_view(), name="product_discount_best"),
+    # # Chọn chiết khấu tốt nhất (nội bộ vs Augges)
+    # path("api/product-discount-best/", ProductDiscountBestView.as_view(), name="product_discount_best"),
 
     # Proxy giá gốc (trả nguyên dữ liệu từ dịch vụ downstream)
     path("api/base-price-raw/", BasePriceRawView.as_view(), name="base_price_raw"),
