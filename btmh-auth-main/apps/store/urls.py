@@ -8,7 +8,7 @@ from .views import (
     AllRateView,
     PriceCalcView,
     GenQRView,
-    TPBGenQRView,
+    # TPBGenQRView,
     PaymentView,
     PaymentQRProxyView,
     OrderShellView,
@@ -58,7 +58,7 @@ urlpatterns = [
     path("api/generate-qr/", GenQRView.as_view(), name="generate_qr"),
 
     # TPB B2B GenQR (UAT)
-    path("api/tpb/gen-qr/", TPBGenQRView.as_view(), name="tpb_gen_qr"),
+    # path("api/tpb/gen-qr/", TPBGenQRView.as_view(), name="tpb_gen_qr"),
 
     # Xử lý thanh toán
     path("api/payment/", PaymentView.as_view(), name="process_payment"),

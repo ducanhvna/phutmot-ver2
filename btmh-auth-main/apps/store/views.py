@@ -632,141 +632,141 @@ def _tpb_build_signature_string(body: dict) -> str:
     return "".join(str(body.get(k) or "") for k in keys)
 
 
-def _tpb_try_sign_rsa_sha256(message: str) -> str | None:
-    """Return base64(signature) if private key configured and crypto available, else None."""
-    key_pem = os.environ.get("TPB_RSA_PRIVATE_KEY_PEM")
-    key_path = os.environ.get("TPB_RSA_PRIVATE_KEY_PATH")
-    if not key_pem and key_path:
-        try:
-            key_pem = open(key_path, "rb").read().decode("utf-8")
-        except Exception:
-            key_pem = None
+# def _tpb_try_sign_rsa_sha256(message: str) -> str | None:
+#     """Return base64(signature) if private key configured and crypto available, else None."""
+#     key_pem = os.environ.get("TPB_RSA_PRIVATE_KEY_PEM")
+#     key_path = os.environ.get("TPB_RSA_PRIVATE_KEY_PATH")
+#     if not key_pem and key_path:
+#         try:
+#             key_pem = open(key_path, "rb").read().decode("utf-8")
+#         except Exception:
+#             key_pem = None
 
-    if not key_pem:
-        return None
+#     if not key_pem:
+#         return None
 
-    try:
-        from cryptography.hazmat.primitives import hashes
-        from cryptography.hazmat.primitives.asymmetric import padding
-        from cryptography.hazmat.primitives.serialization import load_pem_private_key
-    except Exception:
-        return None
+#     try:
+#         from cryptography.hazmat.primitives import hashes
+#         from cryptography.hazmat.primitives.asymmetric import padding
+#         from cryptography.hazmat.primitives.serialization import load_pem_private_key
+#     except Exception:
+#         return None
 
-    try:
-        private_key = load_pem_private_key(key_pem.encode("utf-8"), password=None)
-        sig = private_key.sign(
-            message.encode("utf-8"),
-            padding.PKCS1v15(),
-            hashes.SHA256(),
-        )
-        return b64encode(sig).decode("ascii")
-    except Exception:
-        return None
+#     try:
+#         private_key = load_pem_private_key(key_pem.encode("utf-8"), password=None)
+#         sig = private_key.sign(
+#             message.encode("utf-8"),
+#             padding.PKCS1v15(),
+#             hashes.SHA256(),
+#         )
+#         return b64encode(sig).decode("ascii")
+#     except Exception:
+#         return None
 
 
-class TPBGenQRView(APIView):
-    """Proxy GenQR (TPB B2B) - UAT.
+# class TPBGenQRView(APIView):
+#     """Proxy GenQR (TPB B2B) - UAT.
 
-    POST /api/tpb/gen-qr/
-    - Nhận body theo spec (SourceAppId..Signature)
-    - Tự bổ sung một số trường nếu thiếu (FunctionCode/TransmissionTime/RequestDateTime/TraceNumber/TransactionId)
-    - Forward sang TPB sandbox endpoint và trả raw response.
-    """
+#     POST /api/tpb/gen-qr/
+#     - Nhận body theo spec (SourceAppId..Signature)
+#     - Tự bổ sung một số trường nếu thiếu (FunctionCode/TransmissionTime/RequestDateTime/TraceNumber/TransactionId)
+#     - Forward sang TPB sandbox endpoint và trả raw response.
+#     """
 
-    # authentication_classes = [JWTAuthentication]
-    permission_classes = []
+#     # authentication_classes = [JWTAuthentication]
+#     permission_classes = []
 
-    TPB_URL = "https://sandboxapi.tpb.vn:9303/tpb/public/api/fund-transfer-b2b-service/v1/support/gen-qr-uat"
+#     TPB_URL = "https://sandboxapi.tpb.vn:9303/tpb/public/api/fund-transfer-b2b-service/v1/support/gen-qr-uat"
 
-    def post(self, request):
-        incoming = request.data or {}
+#     def post(self, request):
+#         incoming = request.data or {}
 
-        api_timestamp, request_date_time_default, transmission_time_default = _tpb_now_headers()
+#         api_timestamp, request_date_time_default, transmission_time_default = _tpb_now_headers()
 
-        body = {
-            "SourceAppId": "BTMH",
-            "FunctionCode": incoming.get("FunctionCode") or "FT_B2B_GEN_QR",
-            "TransmissionTime": incoming.get("TransmissionTime") or transmission_time_default,
-            "TraceNumber": incoming.get("TraceNumber"),
-            "UserId": incoming.get("UserId"),
-            "TransactionId": incoming.get("TransactionId"),
-            "RequestDateTime": incoming.get("RequestDateTime") or request_date_time_default,
-            "AccountType": "1",
-            "AccountNo": incoming.get("AccountNo"),
-        }
+#         body = {
+#             "SourceAppId": "BTMH",
+#             "FunctionCode": incoming.get("FunctionCode") or "FT_B2B_GEN_QR",
+#             "TransmissionTime": incoming.get("TransmissionTime") or transmission_time_default,
+#             "TraceNumber": incoming.get("TraceNumber"),
+#             "UserId": incoming.get("UserId"),
+#             "TransactionId": incoming.get("TransactionId"),
+#             "RequestDateTime": incoming.get("RequestDateTime") or request_date_time_default,
+#             "AccountType": "1",
+#             "AccountNo": incoming.get("AccountNo"),
+#         }
 
-        # Optional
-        if incoming.get("Amount") is not None:
-            body["Amount"] = str(incoming.get("Amount"))
-        if incoming.get("AddInfo") is not None:
-            body["AddInfo"] = str(incoming.get("AddInfo"))
+#         # Optional
+#         if incoming.get("Amount") is not None:
+#             body["Amount"] = str(incoming.get("Amount"))
+#         if incoming.get("AddInfo") is not None:
+#             body["AddInfo"] = str(incoming.get("AddInfo"))
 
-        # Generate TraceNumber/TransactionId if missing (<=26 chars)
-        def _gen_ref(prefix: str) -> str:
-            stamp = timezone.localtime(timezone.now()).strftime("%Y%m%d%H%M%S")
-            rand = uuid.uuid4().hex[:6].upper()
-            raw = f"{prefix}{stamp}{rand}"
-            return raw[:26]
+#         # Generate TraceNumber/TransactionId if missing (<=26 chars)
+#         def _gen_ref(prefix: str) -> str:
+#             stamp = timezone.localtime(timezone.now()).strftime("%Y%m%d%H%M%S")
+#             rand = uuid.uuid4().hex[:6].upper()
+#             raw = f"{prefix}{stamp}{rand}"
+#             return raw[:26]
 
-        if not body.get("TraceNumber"):
-            body["TraceNumber"] = _gen_ref(str(body.get("SourceAppId") or "APP"))
-        if not body.get("TransactionId"):
-            body["TransactionId"] = _gen_ref("TX")
+#         if not body.get("TraceNumber"):
+#             body["TraceNumber"] = _gen_ref(str(body.get("SourceAppId") or "APP"))
+#         if not body.get("TransactionId"):
+#             body["TransactionId"] = _gen_ref("TX")
 
-        missing = [k for k in ["SourceAppId", "FunctionCode", "TransmissionTime", "TraceNumber", "UserId", "TransactionId", "RequestDateTime", "AccountType", "AccountNo"] if not (body.get(k) or "").strip()]
-        if missing:
-            return ApiResponse.error(message="Thiếu field bắt buộc", data={"missing": missing}, status=400)
+#         missing = [k for k in ["SourceAppId", "FunctionCode", "TransmissionTime", "TraceNumber", "UserId", "TransactionId", "RequestDateTime", "AccountType", "AccountNo"] if not (body.get(k) or "").strip()]
+#         if missing:
+#             return ApiResponse.error(message="Thiếu field bắt buộc", data={"missing": missing}, status=400)
 
-        # Signature: accept from client; if missing, try to generate from configured RSA private key
-        signature = incoming.get("Signature")
-        if not signature:
-            sign_str = _tpb_build_signature_string(body)
-            signature = _tpb_try_sign_rsa_sha256(sign_str)
-            if not signature:
-                return ApiResponse.error(
-                    message="Thiếu Signature và server chưa cấu hình khóa ký (TPB_RSA_PRIVATE_KEY_PEM/TPB_RSA_PRIVATE_KEY_PATH hoặc thư viện cryptography)",
-                    status=400,
-                )
-        body["Signature"] = signature
+#         # Signature: accept from client; if missing, try to generate from configured RSA private key
+#         signature = incoming.get("Signature")
+#         if not signature:
+#             sign_str = _tpb_build_signature_string(body)
+#             signature = _tpb_try_sign_rsa_sha256(sign_str)
+#             if not signature:
+#                 return ApiResponse.error(
+#                     message="Thiếu Signature và server chưa cấu hình khóa ký (TPB_RSA_PRIVATE_KEY_PEM/TPB_RSA_PRIVATE_KEY_PATH hoặc thư viện cryptography)",
+#                     status=400,
+#                 )
+#         body["Signature"] = signature
 
-        # --- Build TPB headers ---
-        auth = request.headers.get("authorization") or request.headers.get("Authorization")
-        if not auth:
-            token = os.environ.get("TPB_OAUTH_ACCESS_TOKEN")
-            if token:
-                auth = token if token.lower().startswith("bearer ") else f"Bearer {token}"
+#         # --- Build TPB headers ---
+#         auth = request.headers.get("authorization") or request.headers.get("Authorization")
+#         if not auth:
+#             token = os.environ.get("TPB_OAUTH_ACCESS_TOKEN")
+#             if token:
+#                 auth = token if token.lower().startswith("bearer ") else f"Bearer {token}"
 
-        if not auth:
-            return ApiResponse.error(message="Thiếu header Authorization (Bearer token)", status=401)
+#         if not auth:
+#             return ApiResponse.error(message="Thiếu header Authorization (Bearer token)", status=401)
 
-        transaction_id = request.headers.get("transaction_id") or request.headers.get("Transaction-Id") or str(uuid.uuid4())
-        auth_data = request.headers.get("authorization_data") or request.headers.get("Authorization-Data")
-        api_ts = request.headers.get("api_timestamp") or request.headers.get("Api-Timestamp") or api_timestamp
+#         transaction_id = request.headers.get("transaction_id") or request.headers.get("Transaction-Id") or str(uuid.uuid4())
+#         auth_data = request.headers.get("authorization_data") or request.headers.get("Authorization-Data")
+#         api_ts = request.headers.get("api_timestamp") or request.headers.get("Api-Timestamp") or api_timestamp
 
-        headers = {
-            "accept": "application/json",
-            "content-type": "application/json",
-            "authorization": auth,
-            "transaction_id": transaction_id,
-            "api_timestamp": api_ts,
-        }
-        if auth_data:
-            headers["authorization_data"] = auth_data
+#         headers = {
+#             "accept": "application/json",
+#             "content-type": "application/json",
+#             "authorization": auth,
+#             "transaction_id": transaction_id,
+#             "api_timestamp": api_ts,
+#         }
+#         if auth_data:
+#             headers["authorization_data"] = auth_data
 
-        try:
-            resp = requests.post(self.TPB_URL, headers=headers, json=body, timeout=30)
-        except requests.RequestException as exc:
-            return ApiResponse.error(message="Không gọi được TPB GenQR", data={"error": str(exc)}, status=502)
+#         try:
+#             resp = requests.post(self.TPB_URL, headers=headers, json=body, timeout=30)
+#         except requests.RequestException as exc:
+#             return ApiResponse.error(message="Không gọi được TPB GenQR", data={"error": str(exc)}, status=502)
 
-        try:
-            downstream = resp.json()
-        except ValueError:
-            downstream = {"raw": resp.text}
+#         try:
+#             downstream = resp.json()
+#         except ValueError:
+#             downstream = {"raw": resp.text}
 
-        # Keep TPB status code for debugging
-        if resp.ok:
-            return ApiResponse.success(message="TPB GenQR success", data={"tpb_status": resp.status_code, "tpb_response": downstream}, status=resp.status_code)
-        return ApiResponse.error(message="TPB GenQR failed", data={"tpb_status": resp.status_code, "tpb_response": downstream}, status=resp.status_code)
+#         # Keep TPB status code for debugging
+#         if resp.ok:
+#             return ApiResponse.success(message="TPB GenQR success", data={"tpb_status": resp.status_code, "tpb_response": downstream}, status=resp.status_code)
+#         return ApiResponse.error(message="TPB GenQR failed", data={"tpb_status": resp.status_code, "tpb_response": downstream}, status=resp.status_code)
     
 class PaymentView(APIView):
     """
