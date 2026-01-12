@@ -209,3 +209,5 @@ EMAILTCKT_PG_HOST = os.getenv('EMAILTCKT_PG_HOST', default='118.70.146.150')
 EMAILTCKT_PG_DB = os.getenv('EMAILTCKT_PG_DB', default='EmailTCKT')
 EMAILTCKT_PG_USER = os.getenv('EMAILTCKT_PG_USER', default='postgres')
 EMAILTCKT_PG_PASSWORD = os.getenv('EMAILTCKT_PG_PASSWORD', default='admin')
+
+PRICE_API_BASE = os.getenv('PRICE_API_BASE', default='http://118.70.146.150:8869')
