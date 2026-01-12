@@ -202,3 +202,10 @@ STORE_URL_FS01=os.getenv('STORE_URL_FS01',default='http://192.168.104.21:5085')
 
 TYGIA_API_BASE_URL = os.getenv('TYGIA_API_BASE_URL', default='https://tygia.baotinmanhhai.vn/api')
 TYGIA_API_TOKEN = os.getenv('TYGIA_API_TOKEN', default='eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIs')
+
+# Postgres for CTKM (EmailTCKT)
+EMAILTCKT_PG_HOST = os.getenv('EMAILTCKT_PG_HOST', default='118.70.146.150')
+EMAILTCKT_PG_PORT = os.getenv('EMAILTCKT_PG_PORT', default=5432, cast=int)
+EMAILTCKT_PG_DB = os.getenv('EMAILTCKT_PG_DB', default='EmailTCKT')
+EMAILTCKT_PG_USER = os.getenv('EMAILTCKT_PG_USER', default='postgres')
+EMAILTCKT_PG_PASSWORD = os.getenv('EMAILTCKT_PG_PASSWORD', default='admin')
