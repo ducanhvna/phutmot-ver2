@@ -31,5 +31,6 @@ urlpatterns = [
     # Orders service template
     path("customers/", include("apps.customers.urls")),
     path("products/", include("apps.products.urls")),
+    path("store/", include("apps.store.urls")),             # Store routes
     path("api/", include("apps.orders.urls")),
 ]
