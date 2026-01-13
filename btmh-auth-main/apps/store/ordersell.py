@@ -61,7 +61,8 @@ def get_latest_order_id(ma_khachhang, date_str):
     date_obj = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
     tomorrow = (date_obj + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
     
-    payload = {
+    # Bước 1: tìm partner theo phone
+    payload_partner = {
         "jsonrpc": "2.0",
         "method": "call",
         "params": {
@@ -71,24 +72,54 @@ def get_latest_order_id(ma_khachhang, date_str):
                 db,
                 uid,
                 password,
-                "pos.order",
+                "res.partner",
                 "search",
-                [[
-                    ["state", "in", ["order"]],
-                    ["partner_id", "=", ma_khachhang],
-                    ["date_order", ">=", date_str],
-                    ["date_order", "<", tomorrow]
-                ]],
-                {"limit": 1, "order": "id desc"},
+                [[["phone", "=", ma_khachhang]]],
             ],
         },
-        "id": 2,
+        "id": 1,
     }
-    response = requests.post(url, json=payload).json()
-    order_ids = response.get("result", [])
-    if order_ids:
-        return order_ids[0]
-    return None
+    response_partner = requests.post(url, json=payload_partner).json()
+    partner_ids = response_partner.get("result", [])
+
+    if partner_ids:
+        partner_id = partner_ids[0]
+
+        # Bước 2: tìm đơn pos.order hôm nay của partner đó
+        payload_order = {
+            "jsonrpc": "2.0",
+            "method": "call",
+            "params": {
+                "service": "object",
+                "method": "execute_kw",
+                "args": [
+                    db,
+                    uid,
+                    password,
+                    "pos.order",
+                    "search",
+                    [[
+                        ["state", "in", ["order"]],
+                        ["partner_id", "=", partner_id],
+                        ["date_order", ">=", date_str],
+                        ["date_order", "<", tomorrow]
+                    ]],
+                    {"limit": 1, "order": "id desc"},
+                ],
+            },
+            "id": 2,
+        }
+        response_order = requests.post(url, json=payload_order).json()
+        order_ids = response_order.get("result", [])
+        if order_ids:
+            result = order_ids[0]
+        else:
+            result = None
+    else:
+        result = None
+
+    return result
+
 
 def get_pos_order(uid, password, order_id):
     # Lấy thông tin đơn hàng chính
