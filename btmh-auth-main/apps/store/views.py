@@ -19,6 +19,8 @@ from apps.common.utils.api_response import ApiResponse   # <-- class chuẩn hó
 import os
 import uuid
 from django.utils import timezone
+from apps.store.augges import AuggesOrderService
+from .ordersell import *
 
 # Lưu tạm trạng thái giao dịch chuyển khoản theo transfer_tracking_id
 TRANSFER_TX_STORE: dict[str, dict] = {}
@@ -1090,12 +1092,14 @@ class OrderShellView(APIView):
     }
     """
     order_url = f"{INTERNAL_API_BASE}/api/public/updatedatehang"
+    auggesOrder = AuggesOrderService(f"{INTERNAL_API_BASE}/api/public/updatedatehang")
     headers = {
         "Content-Type": "application/json; charset=utf-8"
     }
 
     def post(self, request):
         payload_source = request.data
+        
         if isinstance(payload_source, dict) and isinstance(payload_source.get("data"), dict):
             data = payload_source.get("data")
         else:
@@ -1110,76 +1114,81 @@ class OrderShellView(APIView):
                 data={"payload": data},
                 status=400
             )
-
-        danh_sach = data.get("danh_sach") or []
-        items = data.get("sellorderitems", [])
-        for item in items:
-            product_id = item.get("product_id")
-            soluong = item.get("quantity")
-            if int(soluong) > 0:
-                danh_sach.append({
-                    "mahang": str(product_id),
-                    "soluong": item.get("quantity"),
-                    "so_tien": 0
-                })
-        if discount_amount > 0:
-            danh_sach.append({
-                "mahang": "",
-                "soluong": 0,
-                "so_tien": discount_amount
-            })
-        if not danh_sach:
-            return ApiResponse.error(
-                message="Thiếu danh sách sản phẩm",
-                data={
-                    "payload": data,
-                    "sellorderitems": data.get("sellorderitems", [])
-                },
-                status=400
-            )
-
-        payload = {
-            "ma_khachhang": ma_khachhang,
-            "manhanvien": data.get("username_sale", ""),
-            "dien_giai": data.get("dien_giai", ""),
-            "danh_sach": danh_sach
-        }
-
+        odoo_order = get_pos_order(2, 'admin', 6226)
         try:
-            response = requests.post(self.order_url, headers=self.headers, json=payload, timeout=30)
-            try:
-                body = response.json()
-                id_don = body.get('data', {})
-                resp = requests.get(f"{INTERNAL_API_BASE}/api/public/chi_tiet_don_hang/{id_don}", timeout=30)
-                so_tien = resp.json()["data"]["tong_tien"] - resp.json()["data"].get("tien_ck", 0)
-            except ValueError:
-                body = {"raw": response.text}
-                id_don = None
-                so_tien = None
+            result = self.auggesOrder.create_sell_order_from_odoo(odoo_data=odoo_order, data=data)
+       
+        # danh_sach = data.get("danh_sach") or []
+        # items = data.get("sellorderitems", [])
+        # for item in items:
+        #     product_id = item.get("product_id")
+        #     soluong = item.get("quantity")
+        #     if int(soluong) > 0:
+        #         danh_sach.append({
+        #             "mahang": str(product_id),
+        #             "soluong": item.get("quantity"),
+        #             "so_tien": 0
+        #         })
+        # if discount_amount > 0:
+        #     danh_sach.append({
+        #         "mahang": "",
+        #         "soluong": 0,
+        #         "so_tien": discount_amount
+        #     })
+        # if not danh_sach:
+        #     return ApiResponse.error(
+        #         message="Thiếu danh sách sản phẩm",
+        #         data={
+        #             "payload": data,
+        #             "sellorderitems": data.get("sellorderitems", [])
+        #         },
+        #         status=400
+        #     )
+
+        # payload = {
+        #     "ma_khachhang": ma_khachhang,
+        #     "manhanvien": data.get("username_sale", ""),
+        #     "dien_giai": data.get("dien_giai", ""),
+        #     "danh_sach": danh_sach
+        # }
+
+        # try:
+        #     response = requests.post(self.order_url, headers=self.headers, json=payload, timeout=30)
+        #     try:
+        #         body = response.json()
+        #         id_don = body.get('data', {})
+        #         resp = requests.get(f"{INTERNAL_API_BASE}/api/public/chi_tiet_don_hang/{id_don}", timeout=30)
+        #         so_tien = resp.json()["data"]["tong_tien"] - resp.json()["data"].get("tien_ck", 0)
+        #     except ValueError:
+        #         body = {"raw": response.text}
+        #         id_don = None
+        #         so_tien = None
 
             return ApiResponse.success(
                 message="Tạo đơn hàng thành công",
-                data={
-                    "id_don": id_don,
-                    "so_tien": so_tien,
-                    "downstream": body,
-                    "payload": payload
-                },
-                status=response.status_code
-            ) if response.ok else ApiResponse.error(
-                message="Tạo đơn hàng thất bại",
-                data={
-                    "id_don": id_don,
-                    "so_tien": so_tien,
-                    "downstream": body,
-                    "payload": payload
-                },
-                status=response.status_code
+                data= result,
+                # {
+                #     "id_don": id_don,
+                #     "so_tien": so_tien,
+                #     "downstream": body,
+                #     "payload": payload
+                # },
+                status= 200
             )
+            # if response.ok else ApiResponse.error(
+            #     message="Tạo đơn hàng thất bại",
+            #     data={
+            #         "id_don": id_don,
+            #         "so_tien": so_tien,
+            #         "downstream": body,
+            #         "payload": payload
+            #     },
+            #     status=response.status_code
+            # )
         except requests.RequestException as exc:
             return ApiResponse.error(
                 message="Không gọi được dịch vụ đích",
-                data={"error": str(exc), "payload": payload},
+                data={"error": str(exc), "payload": odoo_order},
                 status=502
             )
 

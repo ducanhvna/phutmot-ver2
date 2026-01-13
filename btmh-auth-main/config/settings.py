@@ -211,3 +211,31 @@ EMAILTCKT_PG_USER = os.getenv('EMAILTCKT_PG_USER', default='postgres')
 EMAILTCKT_PG_PASSWORD = os.getenv('EMAILTCKT_PG_PASSWORD', default='admin')
 
 PRICE_API_BASE = os.getenv('PRICE_API_BASE', default='http://118.70.146.150:8869')
+
+# === Odoo Inventory Config (Sync tồn kho) ===
+ODOO_INVENTORY_URL = os.getenv("ODOO_INVENTORY_URL", "http://192.168.104.107:8888")
+ODOO_INVENTORY_DB = os.getenv("ODOO_INVENTORY_DB", "btmh_uat_test")
+ODOO_INVENTORY_USER = os.getenv("ODOO_INVENTORY_USER", "admin")
+ODOO_INVENTORY_PASSWORD = os.getenv("ODOO_INVENTORY_PASSWORD", "admin")
+
+# Nếu bạn có custom User model trong apps/users/models.py
+AUTH_USER_MODEL = "users.User"
+
+AUTHENTICATION_BACKENDS = [
+    "apps.users.backends.EmailOrUsernameBackend",  # cho phép login bằng email hoặc username
+    "django.contrib.auth.backends.ModelBackend",   # backend mặc định
+]
+
+INTERNAL_API_BASE = os.getenv('INTERNAL_API_BASE', default='http://192.168.0.223:8096')
+STORE_URL_FS01=os.getenv('STORE_URL_FS01',default='http://192.168.104.21:5085')
+EXTERNAL_CUSTOMER_POINTS=os.getenv('EXTERNAL_CUSTOMER_POINTS',default='http://192.168.0.223:8887/api/public/diem_khach_hang')
+
+# === Celery Configuration ===
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Ho_Chi_Minh'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 60 * 60  # 60 minutes
