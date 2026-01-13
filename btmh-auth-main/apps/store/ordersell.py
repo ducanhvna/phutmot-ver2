@@ -74,7 +74,7 @@ def get_latest_order_id(ma_khachhang, date_str):
                 "pos.order",
                 "search",
                 [[
-                    ["state", "in", ["draft"]],
+                    ["state", "in", ["order"]],
                     ["partner_id", "=", ma_khachhang],
                     ["date_order", ">=", date_str],
                     ["date_order", "<", tomorrow]
