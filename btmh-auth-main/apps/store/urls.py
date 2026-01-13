@@ -70,7 +70,7 @@ urlpatterns = [
     path("api/payment/qr-proxy/", PaymentQRProxyView.as_view(), name="payment_qr_proxy"),
 
     # Đẩy đơn sang hệ thống backend nội bộ
-    path("api/order-shell/", OrderShellView.as_view(), name="create_order_shell"),
+    path("api/ordersell/", OrderShellView.as_view(), name="create_order_shell"),
 
     # Tạo đơn đặt cọc từ JSON
     path("api/deposit-order/", OderDepositView.as_view(), name="create_deposit_order"),
