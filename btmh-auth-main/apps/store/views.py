@@ -1114,9 +1114,20 @@ class OrderShellView(APIView):
                 data={"payload": data},
                 status=400
             )
-        odoo_order = get_pos_order(2, 'admin', 6226)
+        
+        today = timezone.now().date().strftime('%Y-%m-%d')
+        order_id = get_latest_order_id(ma_khachhang, today)
+
+        if not order_id:
+            return ApiResponse.error(
+                message="Không tìm thấy đơn hàng POS tương ứng",
+                data={"ma_khachhang": ma_khachhang, "date": today},
+                status=404
+            )
+        
+        odoo_order = get_pos_order(2, 'admin', order_id)
         try:
-            result = self.auggesOrder.create_sell_order_from_odoo(odoo_data=odoo_order, data=data)
+            result = self.auggesOrder.create_sell_order_from_odoo(odoo_data=odoo_order, data=data, ma_khachhang=ma_khachhang)
        
         # danh_sach = data.get("danh_sach") or []
         # items = data.get("sellorderitems", [])

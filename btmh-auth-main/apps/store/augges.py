@@ -44,7 +44,7 @@ class AuggesOrderService:
         # Payload gửi sang Augges
         payload = {
             "ma_khachhang": ma_khachhang,
-            "manhanvien": data.get("username_sale", ""),
+            "manhanvien": data.get("manhanvien", ""),
             "dien_giai": data.get("dien_giai", ""),
             "danh_sach": danh_sach
         }
