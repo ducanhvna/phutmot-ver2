@@ -1093,9 +1093,9 @@ class OrderShellView(APIView):
     """
     order_url = f"{INTERNAL_API_BASE}/api/public/updatedatehang"
     auggesOrder = AuggesOrderService(f"{INTERNAL_API_BASE}/api/public/updatedatehang")
-    headers = {
-        "Content-Type": "application/json; charset=utf-8"
-    }
+    # headers = {
+    #     "Content-Type": "application/json; charset=utf-8"
+    # }
 
     def post(self, request):
         payload_source = request.data
@@ -1106,7 +1106,7 @@ class OrderShellView(APIView):
             data = payload_source
 
         ma_khachhang = data.get("ma_khachhang") or data.get("phone", "").replace("*", "")
-        discount_amount = data.get("discount_amount", 0)
+        # discount_amount = data.get("discount_amount", 0)
 
         if not ma_khachhang:
             return ApiResponse.error(
