@@ -156,6 +156,8 @@ def get_pos_order(uid, password, order_id):
                             "price_unit",
                             "discount",
                             "price_subtotal",
+                            "total_discount",
+                            "money_promotion_total"
                         ]
                     },
                 ],

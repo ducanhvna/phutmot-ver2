@@ -22,11 +22,13 @@ class AuggesOrderService:
             product_detail = item.get("product_detail")
             product_sku = product_detail.get("default_code")
             soluong = item.get("qty") or item.get("quantity")
+            total_discount = item.get("total_discount", 0)
+            money_promotion_total = item.get("money_promotion_total", 0)
             if int(soluong) > 0:
                 danh_sach.append({
                     "mahang": product_sku,
                     "soluong": soluong,
-                    "so_tien": 0
+                    "so_tien": int(total_discount + money_promotion_total)
                 })
 
         # Thêm giảm giá nếu có
