@@ -6,7 +6,7 @@ class AuggesOrderService:
         self.order_url = order_url
         self.headers = headers
 
-    def create_sell_order_from_odoo(self, odoo_data, data, ma_khachhang, discount_amount=0):
+    def create_sell_order_from_odoo(self, odoo_data, data, ma_khachhang):
         """
         odoo_data: dict thông tin đơn hàng từ Odoo (bao gồm lines, promotions, ...)
         data: dict thông tin bổ sung (username_sale, dien_giai, ...)
@@ -31,13 +31,13 @@ class AuggesOrderService:
                     "so_tien": int(total_discount + money_promotion_total)
                 })
 
-        # Thêm giảm giá nếu có
-        if discount_amount > 0:
-            danh_sach.append({
-                "mahang": "",
-                "soluong": 0,
-                "so_tien": discount_amount
-            })
+        # # Thêm giảm giá nếu có
+        # if discount_amount > 0:
+        #     danh_sach.append({
+        #         "mahang": "",
+        #         "soluong": 0,
+        #         "so_tien": discount_amount
+        #     })
 
         # Nếu không có sản phẩm thì coi như lỗi
         if not danh_sach:
