@@ -1116,7 +1116,7 @@ class OrderShellView(APIView):
             )
         odoo_order = get_pos_order(2, 'admin', 6226)
         try:
-            result = self.auggesOrder.create_sell_order_from_odoo(odoo_data=odoo_order, data=data)
+            result = self.auggesOrder.create_sell_order_from_odoo(odoo_data=odoo_order, data=data, ma_khachhang=ma_khachhang)
        
         # danh_sach = data.get("danh_sach") or []
         # items = data.get("sellorderitems", [])
