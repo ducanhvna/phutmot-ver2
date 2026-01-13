@@ -117,6 +117,7 @@ def get_pos_order(uid, password, order_id):
                         "state",
                         "lines",                  # one2many tới pos.order.line
                         "applied_promotion_ids",  # many2many tới pos.promotion
+                        "total_discount"
                     ],
                     "limit": 1,
                 },
@@ -156,6 +157,8 @@ def get_pos_order(uid, password, order_id):
                             "price_unit",
                             "discount",
                             "price_subtotal",
+                            "total_discount",
+                            "money_promotion_total"
                         ]
                     },
                 ],
