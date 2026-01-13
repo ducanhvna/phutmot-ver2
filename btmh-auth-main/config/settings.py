@@ -218,15 +218,6 @@ ODOO_INVENTORY_DB = os.getenv("ODOO_INVENTORY_DB", "btmh_uat_test")
 ODOO_INVENTORY_USER = os.getenv("ODOO_INVENTORY_USER", "admin")
 ODOO_INVENTORY_PASSWORD = os.getenv("ODOO_INVENTORY_PASSWORD", "admin")
 
-# Nếu bạn có custom User model trong apps/users/models.py
-AUTH_USER_MODEL = "users.User"
-
-AUTHENTICATION_BACKENDS = [
-    "apps.users.backends.EmailOrUsernameBackend",  # cho phép login bằng email hoặc username
-    "django.contrib.auth.backends.ModelBackend",   # backend mặc định
-]
-
-INTERNAL_API_BASE = os.getenv('INTERNAL_API_BASE', default='http://192.168.0.223:8096')
 STORE_URL_FS01=os.getenv('STORE_URL_FS01',default='http://192.168.104.21:5085')
 EXTERNAL_CUSTOMER_POINTS=os.getenv('EXTERNAL_CUSTOMER_POINTS',default='http://192.168.0.223:8887/api/public/diem_khach_hang')
 
