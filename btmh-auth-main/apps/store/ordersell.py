@@ -1,5 +1,6 @@
 import os, json
 import requests
+import datetime
 from django.conf import settings
 # Config Odoo
 url = settings.ODOO_SERVER_URL + "/jsonrpc"
@@ -56,6 +57,39 @@ except Exception as e:
     uid = 2
 
 # 2. Lấy thông tin đơn hàng từ model pos.order
+def get_latest_order_id(ma_khachhang, date_str):
+    date_obj = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
+    tomorrow = (date_obj + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+    
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "call",
+        "params": {
+            "service": "object",
+            "method": "execute_kw",
+            "args": [
+                db,
+                uid,
+                password,
+                "pos.order",
+                "search",
+                [[
+                    ["state", "in", ["draft"]],
+                    ["partner_id", "=", ma_khachhang],
+                    ["date_order", ">=", date_str],
+                    ["date_order", "<", tomorrow]
+                ]],
+                {"limit": 1, "order": "id desc"},
+            ],
+        },
+        "id": 2,
+    }
+    response = requests.post(url, json=payload).json()
+    order_ids = response.get("result", [])
+    if order_ids:
+        return order_ids[0]
+    return None
+
 def get_pos_order(uid, password, order_id):
     # Lấy thông tin đơn hàng chính
     payload_order = {
