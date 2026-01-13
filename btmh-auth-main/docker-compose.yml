@@ -32,15 +32,13 @@ services:
       - web_auth_network
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    ports:
-      - "5006:5085"
 
   auth-nginx:
     container_name: auth_nginx
     image: nginx:latest
     restart: always
-    # ports:
-    #   - "5005:5085"
+    ports:
+      - "5005:5085"
     volumes:
       - ./nginx:/etc/nginx/conf.d
     networks:
