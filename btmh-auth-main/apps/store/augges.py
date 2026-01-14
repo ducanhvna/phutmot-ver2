@@ -13,7 +13,7 @@ class AuggesOrderService:
         ma_khachhang: mã khách hàng trên Augges
         discount_amount: tổng tiền giảm giá (nếu có)
         """
-
+        
         # Chuẩn bị danh sách sản phẩm
         danh_sach = data.get("danh_sach") or []
         items = odoo_data.get("lines", [])
@@ -47,7 +47,7 @@ class AuggesOrderService:
         # Payload gửi sang Augges
         payload = {
             "ma_khachhang": ma_khachhang,
-            "manhanvien": data.get("manhanvien", ""),
+            "manhanvien": data.get("manhanvien", "0919933911"),
             "dien_giai": data.get("dien_giai", ""),
             "danh_sach": danh_sach
         }
