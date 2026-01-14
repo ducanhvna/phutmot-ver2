@@ -262,8 +262,8 @@ def get_pos_order(uid, password, order_id):
         promotions_detail = resp_promos.get("result", [])
 
     # Tính tổng discount từ lines
-    total_discount = sum([(line.get("discount", 0) / 100.0) * line.get("price_unit", 0) * line.get("qty", 0)
-                          for line in lines_detail])
+    # total_discount = sum([(line.get("discount", 0) / 100.0) * line.get("price_unit", 0) * line.get("qty", 0)
+    #                       for line in lines_detail])
 
     # Ghép kết quả
     order_info = {
@@ -275,7 +275,7 @@ def get_pos_order(uid, password, order_id):
         "state": order["state"],
         "lines": lines_detail,
         "promotions": promotions_detail,
-        "total_discount": total_discount,
+        "total_discount": order['total_discount'],
     }
     return order_info
 

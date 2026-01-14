@@ -28,16 +28,17 @@ class AuggesOrderService:
                 danh_sach.append({
                     "mahang": product_sku,
                     "soluong": soluong,
-                    "so_tien": int(total_discount + money_promotion_total)
+                    "so_tien": 0
+                    # int(total_discount + money_promotion_total)
                 })
 
-        # # Thêm giảm giá nếu có
-        # if discount_amount > 0:
-        #     danh_sach.append({
-        #         "mahang": "",
-        #         "soluong": 0,
-        #         "so_tien": discount_amount
-        #     })
+        # Thêm giảm giá nếu có
+        if odoo_data['total_discount'] > 0:
+            danh_sach.append({
+                "mahang": "",
+                "soluong": 0,
+                "so_tien": odoo_data['total_discount']
+            })
 
         # Nếu không có sản phẩm thì coi như lỗi
         if not danh_sach:
