@@ -18,6 +18,9 @@ class AuggesOrderService:
         danh_sach = data.get("danh_sach") or []
         items = odoo_data.get("lines", [])
 
+        # Lấy thông tin khuyến mại
+        khuyen_mai = odoo_data.get("promotions", [])
+
         for item in items:
             product_detail = item.get("product_detail")
             product_sku = product_detail.get("default_code")
@@ -48,7 +51,7 @@ class AuggesOrderService:
         payload = {
             "ma_khachhang": ma_khachhang,
             "manhanvien": data.get("manhanvien", "0919933911"),
-            "dien_giai": data.get("dien_giai", ""),
+            "dien_giai": khuyen_mai[0].get("name", "Hợp đồng tạo từ app") if khuyen_mai else "Hợp đồng tạo từ app",
             "danh_sach": danh_sach
         }
         print(payload)
