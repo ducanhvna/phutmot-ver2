@@ -253,7 +253,7 @@ def get_pos_order(uid, password, order_id):
                     "pos.promotion",
                     "read",
                     [promo_ids],
-                    {"fields": ["id", "name", "promotion_type", "discount_value"]}
+                    {"fields": ["id", "name"]}
                 ],
             },
             "id": 4,
@@ -299,6 +299,30 @@ def update_pos_order_line(uid, password, line_id, values):
             ],
         },
         "id": 5,
+    }
+    response = requests.post(url, json=payload_update).json()
+    return response.get("result")
+
+def update_pos_order(uid, password, order_id, values):
+    """
+    Cập nhật một pos.order với các giá trị mới
+    """
+    payload_update = {
+        "jsonrpc": "2.0",
+        "method": "call",
+        "params": {
+            "service": "object",
+            "method": "execute_kw",
+            "args": [
+                db,
+                uid,
+                password,
+                "pos.order",
+                "write",
+                [[order_id], values],
+            ],
+        },
+        "id": 6,
     }
     response = requests.post(url, json=payload_update).json()
     return response.get("result")
