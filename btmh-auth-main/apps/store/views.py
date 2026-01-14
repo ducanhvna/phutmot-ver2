@@ -1125,12 +1125,12 @@ class OrderShellView(APIView):
                 status=404
             )
         
-        odoo_order = get_pos_order(2, 'admin', order_id)
+        odoo_order = get_pos_order(settings.ODOO_ADMIN_UID, settings.ODOO_PASSWORD, order_id)
         try:
             result = self.auggesOrder.create_sell_order_from_odoo(odoo_data=odoo_order, data=data, ma_khachhang=ma_khachhang)
 
             # Cập nhật id_augges trong pos.order
-            update_pos_order(2, 'admin', order_id, {'id_augges': result})
+            update_pos_order(settings.ODOO_ADMIN_UID, settings.ODOO_PASSWORD, order_id, {'id_augges': result})
         except Exception as exc:
             return ApiResponse.error(
                 message="Không tạo được đơn hàng trên hệ thống Augges",
