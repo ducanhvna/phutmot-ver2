@@ -42,6 +42,12 @@ class AuggesOrderService:
                 "soluong": 0,
                 "so_tien": odoo_data['total_discount']
             })
+        else:
+            danh_sach.append({
+                "mahang": "",
+                "soluong": 0,
+                "so_tien": 0
+            })
 
         # Nếu không có sản phẩm thì coi như lỗi
         if not danh_sach:
