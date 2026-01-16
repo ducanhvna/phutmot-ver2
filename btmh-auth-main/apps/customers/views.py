@@ -79,16 +79,16 @@ class CustomerSearchView(PostOnlyAPIView):
             results = data.get("data", [])
             new_customer = None
             point_data = None
-            try:
-                payload = {"tungay": 220101,
-                            "dennay": 291201,
-                            "sdt": query}
-                
-                response = requests.post(EXTERNAL_CUSTOMER_POINTS, headers=headers, data=json.dumps(payload), timeout=25)
-                point_data = response.json()
-            except Exception as e2:
-                point_data = e2
             if len(results)>0:
+                try:
+                    payload = {"tungay": 220101,
+                                "dennay": 291201,
+                                "sdt": query}
+                    
+                    response = requests.post(EXTERNAL_CUSTOMER_POINTS, headers=headers, data=json.dumps(payload), timeout=25)
+                    point_data = response.json()
+                except Exception as e2:
+                    point_data = e2
                 item = results[0]
                 birth_date = item.get("ngay_sinh")
                 new_customer = {
@@ -116,6 +116,15 @@ class CustomerSearchView(PostOnlyAPIView):
                     "verification_status":True,
                     "is_active":True,
                 }
+            else:
+                new_customer={
+                    "name": incoming_data.get("name"),
+                    "phone_number": query if is_phone_number(query) else '',
+                    "id_card_number": query if is_id_card(query) else '',
+                    "verification_status": False,
+                    "is_active": True,
+                }
+                    
             return ApiResponse.success(
                 message="Tạo khách hàng từ Auggest thành công",
                 data=new_customer,
