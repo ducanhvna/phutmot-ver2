@@ -94,7 +94,7 @@ class CustomerSearchView(PostOnlyAPIView):
                 new_customer = {
                     "username":item.get("dien_thoai"),
                     "name":item.get("ho_ten_khach_hang") or "",
-                    "phone_number":item.get("dien_thoai") or "",
+                    "phone":item.get("dien_thoai") or "",
                     "id_card_number":item.get("cccd_cmt") or "",
                     "gender":"Male" if item.get("gioi_tinh") == "Nam" else "Female" if item.get("gioi_tinh") == "Nữ" else "",
                     "birth_date":birth_date.split(" ")[0] if birth_date else None,
@@ -119,7 +119,7 @@ class CustomerSearchView(PostOnlyAPIView):
             else:
                 new_customer={
                     "name": incoming_data.get("name"),
-                    "phone_number": query if is_phone_number(query) else '',
+                    "phone": query if is_phone_number(query) else '',
                     "id_card_number": query if is_id_card(query) else '',
                     "verification_status": False,
                     "is_active": True,
