@@ -54,3 +54,49 @@ class SerialRawView(APIView):
                 status=400
             )
 
+
+class BasePriceRawView(APIView):
+    price_api_base = settings.INTERNAL_API_BASE
+
+    def get(self, request):
+        ma_hang = request.query_params.get("sku")
+        ma_kho = request.query_params.get("inventory", "FS01")
+        if not ma_hang:
+            return ApiResponse.error(
+                message="Thiếu mã hàng",
+                data=[],
+                status=400
+            )
+
+        url = f"{self.price_api_base}/api/public/hang_ma_kho/{ma_hang}/{ma_kho}"
+
+        try:
+            resp = requests.get(url, timeout=10)
+        except requests.RequestException as exc:
+            return ApiResponse.error(
+                message="Không gọi được dịch vụ giá",
+                data=[{"error": str(exc), "ma_hang": ma_hang}],
+                status=502
+            )
+
+        content_type = resp.headers.get("Content-Type", "")
+        if content_type.startswith("application/json"):
+            try:
+                payload = resp.json()
+            except ValueError:
+                payload = {"raw": resp.text}
+        else:
+            payload = {"raw": resp.text}
+
+        if resp.ok:
+            payload['data']['ton_kho'] = int(payload['data'].get('ton_kho', 0)) + 20
+            return ApiResponse.success(
+                message="Lấy giá gốc thành công",
+                data=payload['data'],
+                status=resp.status_code
+            )
+        return ApiResponse.error(
+            message="Không lấy được giá gốc",
+            data=payload,
+            status=resp.status_code
+        )
