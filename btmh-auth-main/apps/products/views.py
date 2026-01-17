@@ -4,58 +4,53 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
 # import pandas as pd
-import math
-import numpy as np
-import datetime
 # from .tasks import poll_payment_and_confirm
 import requests
-import json
-from base64 import b64encode
-from urllib.parse import urlencode
-import psycopg2
 from apps.common.utils.api_response import ApiResponse   # <-- class chuẩn hóa response
+from apps.store.syncodoo import OdooClient, ApiClient, ProductTemplate, ProductSyncService
 
-class BasePriceRawView(APIView):
+odoo_client = OdooClient(
+    base_url=settings.ODOO_SERVER_URL,
+    db=settings.ODOO_DB,
+    username=settings.ODOO_USERNAME,
+    password=settings.ODOO_PASSWORD,
+)
+
+# 2. Khởi tạo ApiClient (dùng INTERNAL_API_BASE trong settings)
+api_client = ApiClient()
+
+# 3. (Tùy chọn) Khởi tạo helper ProductTemplate nếu cần gọi trực tiếp
+product_helper = ProductTemplate(odoo=odoo_client)
+
+# 4. Khởi tạo service đồng bộ
+sync_service = ProductSyncService(odoo_client, api_client)
+
+class SerialRawView(APIView):
     price_api_base = settings.INTERNAL_API_BASE
 
     def get(self, request):
-        ma_hang = request.query_params.get("sku")
-        if not ma_hang:
+        code = request.query_params.get("code")
+        ma_kho = request.query_params.get("inventory", "FS01")
+        if not code:
             return ApiResponse.error(
                 message="Thiếu mã hàng",
                 data=[],
                 status=400
             )
 
-        url = f"{self.price_api_base}/api/public/hang_ma_kho/{ma_hang}/FS01"
-
+        # run_sync.py
         try:
-            resp = requests.get(url, timeout=10)
-        except requests.RequestException as exc:
-            return ApiResponse.error(
-                message="Không gọi được dịch vụ giá",
-                data=[{"error": str(exc), "ma_hang": ma_hang}],
-                status=502
-            )
+            result = sync_service.sync_product_and_serial(code, ma_kho)
 
-        content_type = resp.headers.get("Content-Type", "")
-        if content_type.startswith("application/json"):
-            try:
-                payload = resp.json()
-            except ValueError:
-                payload = {"raw": resp.text}
-        else:
-            payload = {"raw": resp.text}
-
-        if resp.ok:
-            payload['data']['ton_kho'] = int(payload['data'].get('ton_kho', 0)) + 20
             return ApiResponse.success(
-                message="Lấy giá gốc thành công",
-                data=payload['data'],
-                status=resp.status_code
+                message="Serial thanh cong",
+                data=result,
+                status=200
             )
-        return ApiResponse.error(
-            message="Không lấy được giá gốc",
-            data=payload,
-            status=resp.status_code
-        )
+        except Exception as ex:
+            return ApiResponse.error(
+                message="Xay ra su co",
+                data=result,
+                status=400
+            )
+

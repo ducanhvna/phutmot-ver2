@@ -310,7 +310,7 @@ class ProductSyncService:
                     else:
                         product_id = None
                     _logger.info("Found existing serial %s -> lot_id=%s, product_id=%s", code, lot_id, product_id)
-                    return {"product_id": product_id, "serial_id": lot_id}
+                    return {"product_id": product_id, "lot_id": lot_id}
                 except Exception as e:
                     _logger.exception("Failed to read stock.lot %s: %s", lot_id, e)
                     product_id = None
@@ -359,7 +359,7 @@ class ProductSyncService:
                 )
                 raise
 
-        return {"product_id": product_id, "serial_id": serial_id}
+        return {"product_id": product_id, "lot_id": serial_id}
 
     def sync_product(self, product: ApiWarehouse) -> Optional[int]:
         """
