@@ -2057,6 +2057,7 @@ class BasePriceRawView(APIView):
     price_api_base = settings.PRICE_API_BASE
 
     def get(self, request):
+        ma_kho = request.query_params.get("inventory", "FS01")
         ma_hang = request.query_params.get("sku")
         if not ma_hang:
             return ApiResponse.error(
@@ -2065,7 +2066,7 @@ class BasePriceRawView(APIView):
                 status=400
             )
 
-        url = f"{self.price_api_base}/api/public/hang_ma_kho/{ma_hang}/FS01"
+        url = f"{self.price_api_base}/api/public/hang_ma_kho/{ma_hang}/{ma_kho}"
 
         try:
             resp = requests.get(url, timeout=10)
