@@ -280,11 +280,11 @@ class ProductSyncService:
 
         Hành vi bổ sung:
         - Luôn tìm serial trước. Nếu tìm thấy serial (stock.lot) thì
-        hàm **ngay lập tức** trả về cả serial_id và product_variant_id (nếu có).
+        hàm **ngay lập tức** trả về cả serial_id và product_id (nếu có).
         - Nếu không tìm thấy serial thì tiếp tục luồng bình thường: lấy dữ liệu từ API,
         đồng bộ product và tạo serial (nếu cần).
 
-        Trả về dict: {"product_variant_id": int | None, "serial_id": int | None}
+        Trả về dict: {"product_id": int | None, "serial_id": int | None}
         """
         # Nếu serial đã tồn tại trong Odoo -> trả về ngay
         parts = code.split("-")
@@ -304,16 +304,16 @@ class ProductSyncService:
                         product_field = recs[0].get("product_id")
                         # product_field có thể là dạng (id, name) hoặc id
                         if isinstance(product_field, (list, tuple)) and product_field:
-                            product_variant_id = product_field[0]
+                            product_id = product_field[0]
                         else:
-                            product_variant_id = int(product_field) if product_field else None
+                            product_id = int(product_field) if product_field else None
                     else:
-                        product_variant_id = None
-                    _logger.info("Found existing serial %s -> lot_id=%s, product_variant_id=%s", code, lot_id, product_variant_id)
-                    return {"product_variant_id": product_variant_id, "serial_id": lot_id}
+                        product_id = None
+                    _logger.info("Found existing serial %s -> lot_id=%s, product_id=%s", code, lot_id, product_id)
+                    return {"product_id": product_id, "serial_id": lot_id}
                 except Exception as e:
                     _logger.exception("Failed to read stock.lot %s: %s", lot_id, e)
-                    product_variant_id = None
+                    product_id = None
 
         # Nếu chưa có serial, tiếp tục luồng bình thường
         parts = code.split("-")
@@ -336,30 +336,30 @@ class ProductSyncService:
         product_data = self.api.get_product_warehouse_info(code, warehouse_code)
 
         # Đồng bộ product -> trả về product.product id (variant)
-        product_variant_id = self.sync_product(product_data)
+        product_id = self.sync_product(product_data)
 
         serial_id: Optional[int] = None
-        if serial_code and product_variant_id:
+        if serial_code and product_id:
             # Tạo serial (stock.lot) liên kết với product.product
             try:
-                serial_payload = {"name": serial_code, "product_id": product_variant_id}
+                serial_payload = {"name": serial_code, "product_id": product_id}
                 serial_id = self.odoo.create("stock.lot", serial_payload)
                 _logger.info(
                     "Created serial %s (id=%s) for product_variant %s",
                     serial_code,
                     serial_id,
-                    product_variant_id,
+                    product_id,
                 )
             except Exception as e:
                 _logger.exception(
                     "Failed to create serial %s for product %s: %s",
                     serial_code,
-                    product_variant_id,
+                    product_id,
                     e,
                 )
                 raise
 
-        return {"product_variant_id": product_variant_id, "serial_id": serial_id}
+        return {"product_id": product_id, "serial_id": serial_id}
 
     def sync_product(self, product: ApiWarehouse) -> Optional[int]:
         """

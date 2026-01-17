@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from apps.store.syncodoo import OdooClient, ApiClient, ProductTemplate, ProductSyncService
 
-logging.basicConfig(lev`el=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 _logger = logging.getLogger(__name__)
 
 # 1. Khởi tạo OdooClient bằng cấu hình trong settings
