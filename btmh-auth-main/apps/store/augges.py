@@ -1,4 +1,17 @@
 import requests
+import unicodedata
+
+def remove_accents(text):
+    """Convert Vietnamese text to non-accented version"""
+    if not text:
+        return text
+    # Normalize to NFD (decomposed form)
+    nfd = unicodedata.normalize('NFD', text)
+    # Remove combining characters (accents)
+    without_accents = ''.join(char for char in nfd if unicodedata.category(char) != 'Mn')
+    # Handle Đ/đ separately
+    without_accents = without_accents.replace('Đ', 'D').replace('đ', 'd')
+    return without_accents
 
 class AuggesOrderService:
     def __init__(self, order_url):
@@ -20,6 +33,13 @@ class AuggesOrderService:
 
         # Lấy thông tin khuyến mại
         khuyen_mai = odoo_data.get("promotions", [])
+        
+        # Convert promotion name to non-accented Vietnamese
+        promotion_name = "Hop dong tao tu app"
+        if khuyen_mai and len(khuyen_mai) > 0:
+            original_name = khuyen_mai[0].get("name", "")
+            if original_name:
+                promotion_name = remove_accents(original_name)
 
         for item in items:
             product_detail = item.get("product_detail")
@@ -56,8 +76,8 @@ class AuggesOrderService:
         # Payload gửi sang Augges
         payload = {
             "ma_khachhang": ma_khachhang,
-            "manhanvien": data.get("manhanvien", "0919933911"),
-            "dien_giai": khuyen_mai[0].get("name", "Hợp đồng tạo từ app") if khuyen_mai else "Hợp đồng tạo từ app",
+            "manhanvien": data.get("sale_phone", "0919933911"),
+            "dien_giai": promotion_name,
             "danh_sach": danh_sach
         }
         print(payload)

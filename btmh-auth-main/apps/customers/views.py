@@ -10,7 +10,8 @@ INTERNAL_API_BASE = settings.INTERNAL_API_BASE
 EXTERNAL_CUSTOMER_ADD_URL = f"{settings.INTERNAL_API_BASE}/api/public/khach_hang/add"
 EXTERNAL_CUSTOMER_UPDATE_URL = f"{settings.INTERNAL_API_BASE}/api/public/khach_hang/update"
 EXTERNAL_CUSTOMER_SEARCH_URL = f"{settings.INTERNAL_API_BASE}/api/public/khach_hang/timkiem"
-EXTERNAL_CUSTOMER_POINTS = f"{settings.INTERNAL_API_BASE}/api/public/diem_khach_hang"
+
+EXTERNAL_CUSTOMER_POINTS = f"{settings.EXTERNAL_CUSTOMER_POINTS}"
 def is_phone_number(text: str) -> bool:
     # Số điện thoại Việt Nam thường có 10 chữ số, bắt đầu bằng 0 hoặc +84
     phone_pattern = re.compile(r"^(0\d{9}|\+84\d{9})$")
@@ -81,8 +82,8 @@ class CustomerSearchView(PostOnlyAPIView):
             point_data = None
             if len(results)>0:
                 try:
-                    payload = {"tungay": 220101,
-                                "dennay": 291201,
+                    payload = {"tungay": 220917,
+                                "denngay": 291014,
                                 "sdt": query}
                     
                     response = requests.post(EXTERNAL_CUSTOMER_POINTS, headers=headers, data=json.dumps(payload), timeout=25)
@@ -129,4 +130,88 @@ class CustomerSearchView(PostOnlyAPIView):
                 message="Tạo khách hàng từ Auggest thành công",
                 data=new_customer,
                 status=status.HTTP_201_CREATED
+            )
+
+class CustomerCreateView(PostOnlyAPIView):
+    @staticmethod
+    def create_customer_from_odoo(data):
+        incoming_data = data
+        
+        # Validate required fields
+        name = incoming_data.get("name", '').strip()
+        phone = incoming_data.get("phone", '').strip()
+        
+        if not name:
+            raise ValueError("Tên khách hàng là bắt buộc")
+        
+        if not phone or not is_phone_number(phone):
+            raise ValueError("Số điện thoại hợp lệ là bắt buộc")
+        
+        # Prepare data for external API
+        customer_payload = {
+            'cccd_cmt': incoming_data.get('id_card_number', ''),
+            'ho_ten_khach_hang': name,
+            'gioi_tinh': 'nam' if incoming_data.get('gender') == 'Male' else ('nu' if incoming_data.get('gender') == 'Female' else 'khac'),
+            'dia_chi': incoming_data.get('address', {}).get('dia_chi', ''),
+            'ngay_sinh': incoming_data.get('birth_date', ''),
+            'email': incoming_data.get('email', ''),
+            'tinh': incoming_data.get('address', {}).get('tinh', ''),
+            'quan': incoming_data.get('address', {}).get('quan', ''),
+            'phuong': incoming_data.get('address', {}).get('phuong', ''),
+            'nguoi_tao': incoming_data.get('nguoi_tao', ''),
+            'dien_thoai': phone,
+            'dien_thoai_2': incoming_data.get('dien_thoai_2', ''),
+            'dien_thoai_3': incoming_data.get('dien_thoai_3', ''),
+            'dien_thoai_4': incoming_data.get('dien_thoai_4', ''),
+            'qr_code': incoming_data.get('qr_code', 1),
+            'loai_nhan_vien': incoming_data.get('loai_nhan_vien', 0),
+        }
+        
+        try:
+            # Create customer in external system
+            create_response = requests.post(EXTERNAL_CUSTOMER_ADD_URL, headers=headers, data=json.dumps(customer_payload), timeout=25)
+            
+            if create_response.status_code == 200:
+                create_data = create_response.json()
+                
+                # Format response data
+                new_customer = {
+                    "id": create_data.get("id"),
+                    "username": phone,
+                    "name": name,
+                    "phone": phone,
+                    "id_card_number": incoming_data.get('id_card_number', ''),
+                    "gender": incoming_data.get('gender', ''),
+                    "birth_date": incoming_data.get('birth_date', ''),
+                    "email": incoming_data.get('email', ''),
+                    "address": incoming_data.get('address', {}),
+                    "verification_status": True,
+                    "is_active": True,
+                }
+                
+                return new_customer
+            else:
+                raise ValueError(f"Lỗi tạo khách hàng: HTTP {create_response.status_code}")
+                
+        except requests.exceptions.Timeout:
+            raise ValueError("Timeout khi kết nối đến augges")
+        except requests.exceptions.RequestException as e:
+            raise ValueError(f"Lỗi kết nối đến augges: {str(e)}")
+        except Exception as e:
+            raise ValueError(f"Lỗi không xác định: {str(e)}")
+
+    def post(self, request):
+        incoming_data = request.data
+        
+        try:
+            new_customer = self.create_customer_from_odoo(incoming_data)
+            return ApiResponse.success(
+                message="Tạo khách hàng thành công",
+                data=new_customer,
+                status=status.HTTP_201_CREATED
+            )
+        except ValueError as e:
+            return ApiResponse.error(
+                message=str(e),
+                status=status.HTTP_400_BAD_REQUEST
             )

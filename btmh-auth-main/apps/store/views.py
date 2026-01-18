@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 # from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
+from apps.customers.views import CustomerCreateView, CustomerSearchView
 # from .authentication import JWTAuthentication
 # import pandas as pd
 from .data_loader import cert, CA_CERT_PATH
@@ -1098,6 +1099,9 @@ class OrderShellView(APIView):
     # }
 
     def post(self, request):
+        headers = {"Content-Type": "application/json; charset=utf-8"}
+        EXTERNAL_CUSTOMER_SEARCH_URL = f"{INTERNAL_API_BASE}/api/public/khach_hang/timkiem"
+        
         payload_source = request.data
         
         if isinstance(payload_source, dict) and isinstance(payload_source.get("data"), dict):
@@ -1126,6 +1130,30 @@ class OrderShellView(APIView):
             )
         
         odoo_order = get_pos_order(settings.ODOO_ADMIN_UID, settings.ODOO_PASSWORD, order_id)
+        
+        # Check if customer exists in Augges
+        customer_exists = False
+        try:
+            search_payload = {"sdt": ma_khachhang}
+            search_response = requests.post(EXTERNAL_CUSTOMER_SEARCH_URL, headers=headers, data=json.dumps(search_payload), timeout=25)
+            search_data = search_response.json()
+            search_results = search_data.get("data", [])
+            customer_exists = len(search_results) > 0
+            print(customer_exists)
+        except Exception as e:
+            customer_exists = False
+        
+        if not customer_exists:
+            print("Không tìm thấy khách hàng trên hệ thống Augges, tiến hành tạo mới.")
+            try:
+                new_customer = CustomerCreateView.create_customer_from_odoo(payload_source)
+            except ValueError as e:
+                return ApiResponse.error(
+                    message=f"Không tạo được khách hàng trên hệ thống Augges: {str(e)}",
+                    data={"ma_khachhang": ma_khachhang},
+                    status=502
+                )
+
         try:
             result = self.auggesOrder.create_sell_order_from_odoo(odoo_data=odoo_order, data=data, ma_khachhang=ma_khachhang)
 
@@ -2057,7 +2085,6 @@ class BasePriceRawView(APIView):
     price_api_base = settings.PRICE_API_BASE
 
     def get(self, request):
-        ma_kho = request.query_params.get("inventory", "FS01")
         ma_hang = request.query_params.get("sku")
         if not ma_hang:
             return ApiResponse.error(
@@ -2066,7 +2093,7 @@ class BasePriceRawView(APIView):
                 status=400
             )
 
-        url = f"{self.price_api_base}/api/public/hang_ma_kho/{ma_hang}/{ma_kho}"
+        url = f"{self.price_api_base}/api/public/hang_ma_kho/{ma_hang}/FS01"
 
         try:
             resp = requests.get(url, timeout=10)
