@@ -28,7 +28,7 @@ class AuggesOrderService:
         """
         
         # Chuẩn bị danh sách sản phẩm
-        danh_sach = data.get("danh_sach") or []
+        danh_sach = []
         items = odoo_data.get("lines", [])
 
         # Lấy thông tin khuyến mại
@@ -68,10 +68,6 @@ class AuggesOrderService:
                 "soluong": 0,
                 "so_tien": 0
             })
-
-        # Nếu không có sản phẩm thì coi như lỗi
-        if not danh_sach:
-            raise ValueError("Thiếu danh sách sản phẩm")
 
         # Payload gửi sang Augges
         payload = {
