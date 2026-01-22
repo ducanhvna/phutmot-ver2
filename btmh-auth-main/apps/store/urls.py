@@ -75,6 +75,9 @@ urlpatterns = [
     # Tạo đơn đặt cọc từ JSON
     path("api/deposit-order/", OderDepositView.as_view(), name="create_deposit_order"),
 
+    # Tạo đơn chế tác từ JSON, ĐANG DÙNG CHUNG VIEW VỚI ĐƠN ĐẶT CỌC
+    path("manufacturing-order/", OderDepositView.as_view(), name="create_deposit_order"),
+
     # Tạo đơn dịch vụ từ JSON
     path("api/service-order/", OderServiceView.as_view(), name="create_service_order"),
 
